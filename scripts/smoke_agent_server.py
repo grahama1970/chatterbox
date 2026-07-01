@@ -85,6 +85,37 @@ def main() -> None:
     if "temperature" not in (synth.get("generation_params") or {}):
         failed_gates.append("temperature_param_present")
 
+    batch = post_json(
+        f"{args.base_url.rstrip('/')}/synthesize-batch",
+        {
+            "answer_text": (
+                "Hmm. I found the control family now. It expands to system and information "
+                "integrity. The important part is that Embry should say the long form, not "
+                "just the acronym, because acronyms are hard to understand in speech."
+            ),
+            "max_chars": 115,
+            "pause_after_ms": 300,
+            "completion_cue": "Anything else you need?",
+            "label": "agent_server_smoke_finished_response",
+            "include_completion_cue": True,
+        },
+        timeout=240,
+    )
+    if not batch.get("ok"):
+        failed_gates.append("batch_synthesis_ok")
+    if not batch.get("chunks"):
+        failed_gates.append("batch_chunks_present")
+    if not batch.get("completion_cue"):
+        failed_gates.append("batch_completion_cue_present")
+    finished_metrics = batch.get("finished_response_metrics") or {}
+    if int(finished_metrics.get("bytes") or 0) <= 44:
+        failed_gates.append("batch_finished_response_audio_non_empty")
+    if float(finished_metrics.get("duration_seconds") or 0.0) <= 0:
+        failed_gates.append("batch_finished_response_duration_present")
+    chunk_audios = [chunk.get("audio") for chunk in batch.get("chunks") or [] if chunk.get("audio")]
+    if not chunk_audios:
+        failed_gates.append("batch_chunk_audio_paths_present")
+
     receipt = {
         "ok": not failed_gates,
         "mocked": False,
@@ -94,6 +125,7 @@ def main() -> None:
         "presets": presets,
         "render_plan": plan,
         "synthesis": synth,
+        "batch_synthesis": batch,
         "failed_gates": failed_gates,
     }
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
