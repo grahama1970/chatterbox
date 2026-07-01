@@ -186,6 +186,46 @@ def eta_responses_for_expected_delay(expected_wait_ms: int) -> list[str]:
     return ["I should have it almost immediately."]
 
 
+def wait_decision_for_expected_delay(
+    expected_wait_ms: int,
+    *,
+    variant_offset: int = 0,
+    eta_requested: bool = False,
+    allow_hum: bool = True,
+) -> dict[str, Any]:
+    """Choose the cached utterance and optional hum action for a wait estimate.
+
+    The expected wait comes from the orchestrator or subagent task budget. This
+    function does not predict tool latency from model internals.
+    """
+    candidates = (
+        eta_responses_for_expected_delay(expected_wait_ms)
+        if eta_requested
+        else wait_responses_for_expected_delay(expected_wait_ms)
+    )
+    text = candidates[variant_offset % len(candidates)] if candidates else None
+    should_start_hum = allow_hum and not eta_requested and expected_wait_ms >= 8000
+    return {
+        "expected_wait_ms": expected_wait_ms,
+        "eta_requested": eta_requested,
+        "text": text,
+        "text_sha256": sha256_text(text) if text else None,
+        "candidate_count": len(candidates),
+        "should_speak": text is not None,
+        "should_start_hum": should_start_hum,
+        "hum": {
+            "enabled": should_start_hum,
+            "persona": "embry",
+            "channel": "humming",
+            "volume": 0.6,
+            "duck_to": 0.0,
+            "duck_when": ["speech_starts", "user_interrupts"],
+            "source": "hum-cache",
+        },
+        "keeps_existing_work_alive": eta_requested,
+    }
+
+
 INTERNAL_SPOKEN_TERMS = {
     "turn_id",
     "stale chunk",
