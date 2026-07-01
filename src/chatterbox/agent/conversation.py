@@ -46,6 +46,146 @@ INTERRUPTION_ACKNOWLEDGEMENTS = [
     "Okay, new direction.",
 ]
 
+LOW_BUFFER_FILLERS = [
+    "Hmm.",
+    "Okay.",
+    "Let me check.",
+    "I'm looking now.",
+    "One moment.",
+    "Got it.",
+    "I see.",
+    "Checking that.",
+    "Looking into it.",
+    "I'm pulling that up.",
+    "Almost there.",
+    "I have part of it.",
+    "That's coming in now.",
+    "I'm still checking.",
+    "Still with you.",
+    "I found something.",
+    "Let me verify that.",
+    "One check is still running.",
+    "I have enough to start.",
+    "Here's what I'm seeing.",
+    "Hmm. Give me another second.",
+    "I'm still here. I'm checking one more thing.",
+    "Hold on. I have part of it.",
+    "Give me one more second.",
+]
+
+WAIT_RESPONSE_RULES = [
+    {
+        "min_wait_ms": 700,
+        "max_wait_ms": 2000,
+        "recommended_idle_action": "speak_filler",
+        "texts": [
+            "Hmm.",
+            "Okay.",
+            "Let me check.",
+            "One moment.",
+            "I see.",
+        ],
+    },
+    {
+        "min_wait_ms": 2000,
+        "max_wait_ms": 5000,
+        "recommended_idle_action": "speak_progress",
+        "texts": [
+            "I'm looking now.",
+            "Checking that.",
+            "Looking into it.",
+            "I'm pulling that up.",
+            "Still with you.",
+            "That's coming in now.",
+        ],
+    },
+    {
+        "min_wait_ms": 5000,
+        "max_wait_ms": 8000,
+        "recommended_idle_action": "speak_longer_progress",
+        "texts": [
+            "I have part of it.",
+            "I'm still checking.",
+            "Let me verify that.",
+            "I have enough to start.",
+            "Here's what I'm seeing.",
+            "Hmm. Give me another second.",
+        ],
+    },
+    {
+        "min_wait_ms": 8000,
+        "max_wait_ms": None,
+        "recommended_idle_action": "speak_then_optional_hum",
+        "texts": [
+            "I'm still here. I'm checking one more thing.",
+            "Hold on. I have part of it.",
+            "Give me one more second.",
+            "One check is still running.",
+            "This will take a little while. You can grab coffee if you want.",
+            "This is a longer check. I'll keep working and come back with the answer.",
+            "I need a bit more time on this one. I'll stay with it.",
+            "This is going to take a minute, so I'll keep checking in.",
+        ],
+    },
+]
+
+
+ETA_RESPONSE_RULES = [
+    {
+        "min_wait_ms": 700,
+        "max_wait_ms": 2000,
+        "texts": [
+            "About another second.",
+            "I should have it almost immediately.",
+        ],
+    },
+    {
+        "min_wait_ms": 2000,
+        "max_wait_ms": 5000,
+        "texts": [
+            "Probably three to five more seconds.",
+            "Give me a few more seconds.",
+        ],
+    },
+    {
+        "min_wait_ms": 5000,
+        "max_wait_ms": 12000,
+        "texts": [
+            "Probably under ten seconds.",
+            "I need a little more time, probably less than ten seconds.",
+        ],
+    },
+    {
+        "min_wait_ms": 12000,
+        "max_wait_ms": None,
+        "texts": [
+            "This may take a bit longer. I'll keep checking in.",
+            "This is a longer one, likely more than ten seconds.",
+        ],
+    },
+]
+
+
+def wait_responses_for_expected_delay(expected_wait_ms: int) -> list[str]:
+    """Return appropriate cached filler candidates for an expected wait."""
+    if expected_wait_ms < 700:
+        return []
+    for rule in WAIT_RESPONSE_RULES:
+        max_wait_ms = rule["max_wait_ms"]
+        if expected_wait_ms >= rule["min_wait_ms"] and (max_wait_ms is None or expected_wait_ms < max_wait_ms):
+            return list(rule["texts"])
+    return []
+
+
+def eta_responses_for_expected_delay(expected_wait_ms: int) -> list[str]:
+    """Return cached ETA response candidates for a human ETA interruption."""
+    for rule in ETA_RESPONSE_RULES:
+        max_wait_ms = rule["max_wait_ms"]
+        if expected_wait_ms >= rule["min_wait_ms"] and (max_wait_ms is None or expected_wait_ms < max_wait_ms):
+            return list(rule["texts"])
+    return ["I should have it almost immediately."]
+
+
 INTERNAL_SPOKEN_TERMS = {
     "turn_id",
     "stale chunk",
