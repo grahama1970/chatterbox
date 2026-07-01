@@ -21,6 +21,7 @@ import httpx
 
 from chatterbox.agent.conversation import (
     ETA_RESPONSE_RULES,
+    HUM_INTERSTITIALS,
     INTERRUPTION_ACKNOWLEDGEMENTS,
     LOW_BUFFER_FILLERS,
     WAIT_RESPONSE_RULES,
@@ -115,6 +116,19 @@ def cache_usages() -> list[dict[str, Any]]:
                     "interrupt_policy": "answer_eta_without_cancelling_work",
                 }
             )
+    for index, text in enumerate(HUM_INTERSTITIALS, start=1):
+        usages.append(
+            {
+                "category": "hum_laughter_interstitial",
+                "usage_index": index,
+                "text": text,
+                "delivery_stage": "holding",
+                "recommended_idle_action": "duck_hum_speak_interstitial_resume_hum",
+                "interrupt_policy": "keeps_existing_work_alive",
+                "can_interrupt_hum": True,
+                "duck_hum_to": 0.05,
+            }
+        )
     return usages
 
 

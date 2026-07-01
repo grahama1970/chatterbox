@@ -10,6 +10,7 @@ import unittest
 
 from chatterbox.agent.conversation import (
     ETA_RESPONSE_RULES,
+    HUM_INTERSTITIALS,
     INTERRUPTION_ACKNOWLEDGEMENTS,
     LOW_BUFFER_FILLERS,
     WAIT_RESPONSE_RULES,
@@ -50,7 +51,17 @@ class VoiceCachePolicyTest(unittest.TestCase):
         self.assertTrue(decision["should_speak"])
         self.assertTrue(decision["should_start_hum"])
         self.assertEqual(decision["hum"]["channel"], "humming")
+        self.assertTrue(decision["hum"]["start_muted"])
+        self.assertEqual(decision["hum"]["volume"], 0.25)
+        self.assertEqual(decision["hum"]["fade_in_after"], "speech_finishes")
         self.assertEqual(decision["hum"]["duck_when"], ["speech_starts", "user_interrupts"])
+        self.assertEqual(decision["hum"]["selection"]["mode"], "persona_cache")
+        self.assertTrue(decision["hum"]["selection"]["allow_singing"])
+        self.assertTrue(decision["hum"]["selection"]["avoid_forbidden"])
+        self.assertTrue(decision["hum"]["interstitials"]["enabled"])
+        self.assertTrue(decision["hum"]["interstitials"]["can_interrupt_hum"])
+        self.assertTrue(decision["hum"]["interstitials"]["keeps_existing_work_alive"])
+        self.assertIn("[chuckle]", decision["hum"]["interstitials"]["texts"])
 
     def test_eta_decision_answers_without_cancelling_existing_work(self) -> None:
         decision = wait_decision_for_expected_delay(9000, eta_requested=True)
@@ -67,6 +78,7 @@ class VoiceCachePolicyTest(unittest.TestCase):
             {
                 "eta_response",
                 "expected_wait_response",
+                "hum_laughter_interstitial",
                 "interruption_acknowledgement",
                 "low_buffer_filler",
             },
@@ -88,6 +100,17 @@ class VoiceCachePolicyTest(unittest.TestCase):
                 usage.get("interrupt_policy") == "answer_eta_without_cancelling_work"
                 for usage in usages
                 if usage["category"] == "eta_response"
+            )
+        )
+        self.assertEqual(
+            sum(1 for usage in usages if usage["category"] == "hum_laughter_interstitial"),
+            len(HUM_INTERSTITIALS),
+        )
+        self.assertTrue(
+            all(
+                usage.get("can_interrupt_hum") and usage.get("interrupt_policy") == "keeps_existing_work_alive"
+                for usage in usages
+                if usage["category"] == "hum_laughter_interstitial"
             )
         )
 

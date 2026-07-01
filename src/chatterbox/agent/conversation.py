@@ -165,6 +165,13 @@ ETA_RESPONSE_RULES = [
     },
 ]
 
+HUM_INTERSTITIALS = [
+    "[chuckle]",
+    "Still with you. [chuckle]",
+    "I'm working on it. [chuckle]",
+    "This one is taking a minute. [chuckle]",
+]
+
 
 def wait_responses_for_expected_delay(expected_wait_ms: int) -> list[str]:
     """Return appropriate cached filler candidates for an expected wait."""
@@ -217,10 +224,29 @@ def wait_decision_for_expected_delay(
             "enabled": should_start_hum,
             "persona": "embry",
             "channel": "humming",
-            "volume": 0.6,
+            "start_muted": True,
+            "volume": 0.25,
             "duck_to": 0.0,
+            "fade_in_after": "speech_finishes",
             "duck_when": ["speech_starts", "user_interrupts"],
             "source": "hum-cache",
+            "selection": {
+                "mode": "persona_cache",
+                "mood": ["playful", "curious"],
+                "bridge_attributes": ["Loyalty", "Resilience"],
+                "allow_singing": True,
+                "avoid_forbidden": True,
+            },
+            "interstitials": {
+                "enabled": should_start_hum,
+                "type": "chatterbox_voice",
+                "texts": HUM_INTERSTITIALS,
+                "max_frequency_ms": 12000,
+                "duck_hum_to": 0.05,
+                "can_interrupt_hum": True,
+                "keeps_existing_work_alive": True,
+                "only_when": ["long_wait_continues", "user_not_speaking", "context_is_casual"],
+            },
         },
         "keeps_existing_work_alive": eta_requested,
     }
