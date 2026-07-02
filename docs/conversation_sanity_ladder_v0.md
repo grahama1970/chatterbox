@@ -365,7 +365,12 @@ Stop rule:
 2. Add fixture manifest support:
    `tests/fixtures/conversation_ladder/manifest.json`.
 3. Implement rung 1 file-backed listener contract.
-4. Extend the same runner to rung 2 local state.
+4. Extend the same runner to rung 2 local state. Initial rung-2 runner exists,
+   and live rung-2 receipt
+   `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung2-live-20260702T111722Z/rung2.json`
+   passed with `mocked=false`, `live=true`, empty `failed_gates`, turn 1
+   input/output ASR WER `0.0`, turn 2 input/output ASR WER `0.0`, final state
+   `favorite_color=blue`, and omitted-turn-1 fail-closed proof.
 5. Add memory recall adapter and rung 3 gates.
 6. Reuse existing interruption and turn-control primitives for rung 4.
 7. Add Brave Search/tool-latency adapter and rung 5 gates.

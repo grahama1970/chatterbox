@@ -69,3 +69,48 @@ def test_rung1_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Pa
     assert "chatterbox_health_ok" in receipt["failed_gates"]
     assert receipt["services"]["asr"]["kind"] == "openai_compatible"
     assert "api_key" not in receipt["services"]["asr"]
+
+
+def test_rung2_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Path, monkeypatch) -> None:
+    mod = load_ladder_module()
+    monkeypatch.delenv("WHISPER_API_KEY", raising=False)
+    args = Namespace(
+        rung=2,
+        base_url="http://127.0.0.1:9",
+        memory_url="http://127.0.0.1:8601",
+        fixture=None,
+        turn1_fixture=tmp_path / "missing-turn1.wav",
+        turn2_fixture=tmp_path / "missing-turn2.wav",
+        fixture_provenance="unit_test_missing_fixture",
+        expected_transcript=None,
+        expected_turn1_transcript="My favorite color is blue.",
+        expected_turn2_transcript="What color did I say I like?",
+        response_text="Hello. I am listening.",
+        label=None,
+        run_id="unit-rung2",
+        session_id=None,
+        out=tmp_path / "rung2.json",
+        wait_health_s=0,
+        synthesis_timeout_s=1,
+        asr_openai_base_url="http://127.0.0.1:9000",
+        api_key_env="WHISPER_API_KEY",
+        asr_model="small.en",
+        asr_device="cpu",
+        asr_compute_type="int8",
+        max_input_wer=0.25,
+        max_output_wer=0.35,
+        path_map=[],
+    )
+
+    receipt = mod.run_rung2(args)
+
+    assert receipt["schema"] == mod.RUNG2_SCHEMA
+    assert receipt["mocked"] is False
+    assert receipt["live"] is False
+    assert receipt["ok"] is False
+    assert receipt["claims"]["proves"] == []
+    assert "asr_backend_available" in receipt["failed_gates"]
+    assert "chatterbox_health_ok" in receipt["failed_gates"]
+    assert "turn_1_input_audio_exists" in receipt["failed_gates"]
+    assert "turn_2_input_audio_exists" in receipt["failed_gates"]
+    assert receipt["omitted_turn1_gate"]["proves_fail_closed_without_turn1_state"] is True

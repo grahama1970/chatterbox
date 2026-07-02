@@ -16,6 +16,38 @@
         "channels": 1,
         "duration_seconds": 2.74
       }
+    },
+    {
+      "id": "rung2_turn1",
+      "path": "tests/fixtures/conversation_ladder/rung2_turn1.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-2 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung2_turn1.wav -s 140 -v en-us 'My favorite color is blue.'",
+      "expected_transcript": "My favorite color is blue.",
+      "last_observed": {
+        "bytes": 98750,
+        "sha256": "e8ec43779ce57c4f948bc494a612cff45f60a259a3e88203eeb86407a9cd8c95",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 2.238
+      }
+    },
+    {
+      "id": "rung2_turn2",
+      "path": "tests/fixtures/conversation_ladder/rung2_turn2.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-2 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung2_turn2.wav -s 140 -v en-us 'What color did I say I like?'",
+      "expected_transcript": "What color did I say I like?",
+      "last_observed": {
+        "bytes": 102660,
+        "sha256": "7beee9cc982b4e361f37109b2185c55ccc07cecbd624e923c700fccad82f7d70",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 2.327
+      }
     }
   ],
   "live_receipts": [
@@ -27,6 +59,26 @@
       "ok": true,
       "input_wer": 0.0,
       "output_wer": 0.0,
+      "failed_gates": []
+    },
+    {
+      "rung": 2,
+      "path": "/tmp/chatterbox-fork-agent-out/conversation-ladder/rung2-live-20260702T111722Z/rung2.json",
+      "mocked": false,
+      "live": true,
+      "ok": true,
+      "turn1_input_wer": 0.0,
+      "turn1_output_wer": 0.0,
+      "turn2_input_wer": 0.0,
+      "turn2_output_wer": 0.0,
+      "final_state": {
+        "facts": {
+          "favorite_color": "blue"
+        }
+      },
+      "omitted_turn1_gate": {
+        "proves_fail_closed_without_turn1_state": true
+      },
       "failed_gates": []
     }
   ]

@@ -742,6 +742,7 @@ def main() -> int:
     parser.add_argument("--response-text", default=DEFAULT_RESPONSE_TEXT)
     parser.add_argument("--label", default=None)
     parser.add_argument("--run-id", default=None)
+    parser.add_argument("--session-id", default=None)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--wait-health-s", default=240, type=int)
     parser.add_argument("--synthesis-timeout-s", default=300, type=int)
