@@ -130,7 +130,9 @@ def build_render_plan(
     completion_cue: str | None = None,
     arc: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
-    chunks = split_spoken_chunks(answer_text, max_chars=max_chars)
+    requested_max_chars = max_chars
+    effective_max_chars = min(max_chars, 300)
+    chunks = split_spoken_chunks(answer_text, max_chars=effective_max_chars)
     planned_chunks = []
     total = len(chunks)
     for index, text in enumerate(chunks, start=1):
@@ -153,7 +155,22 @@ def build_render_plan(
     return {
         "answer_text": answer_text,
         "answer_text_sha256": sha256_text(answer_text),
-        "max_chars": max_chars,
+        "max_chars": effective_max_chars,
+        "requested_max_chars": requested_max_chars,
+        "chunking_strategy": {
+            "name": "sentence_aware_turbo_safety",
+            "target_max_chars": effective_max_chars,
+            "requested_max_chars": requested_max_chars,
+            "turbo_safety_recommended_max_chars": 300,
+            "safety_activated": (
+                requested_max_chars > effective_max_chars
+                or len(answer_text) > effective_max_chars
+                or any(len(chunk) > effective_max_chars for chunk in chunks)
+            ),
+            "hard_cap_enforced": True,
+            "splitter": "regex_sentence_then_clause_then_words",
+            "does_not_split_inside_words": True,
+        },
         "chunks": planned_chunks,
         "chunk_count": len(planned_chunks),
         "completion_cue": completion_cue,

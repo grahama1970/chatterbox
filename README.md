@@ -117,6 +117,76 @@ ta.save("test-2.wav", wav, model.sr)
 ```
 See `example_tts.py` and `example_vc.py` for more examples.
 
+## Agent Server Smoke
+
+This fork includes a local Chatterbox Turbo agent server used for interruptible,
+ASR-gated voice-agent experiments. The launcher is dry-run by default:
+
+```bash
+./scripts/start_agent_server_docker.sh
+./scripts/start_agent_server_docker.sh --execute
+```
+
+The launcher expects the existing Whisper container named `whisper`, creates or
+uses the Docker network `chatterbox-voice-net`, attaches Whisper with the
+`whisper` DNS alias, and starts Chatterbox on `http://127.0.0.1:8018`.
+
+Run the ASR-gated batch smoke:
+
+```bash
+python scripts/smoke_asr_gated_batch.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-asr-gated-batch-script.json
+```
+
+The smoke writes a receipt with `mocked=false`, `live=true`, chunk-level ASR
+candidate gates, accepted candidate indexes, and the finished response audio
+path.
+
+Accepted ASR-gated chunks are cached under `/out/_accepted_audio_cache` inside
+the container. Repeating the same text, delivery stage, reference audio, ASR
+gates, and candidate policy can reuse accepted audio instead of rendering again:
+
+```bash
+python scripts/smoke_asr_gated_batch.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-asr-cache-fill.json
+
+python scripts/smoke_asr_gated_batch.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-asr-cache-hit.json \
+  --expect-cache-hit
+```
+
+Run the raw PCM chunk-stream smoke:
+
+```bash
+python scripts/smoke_stream_endpoint.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-stream-endpoint-script.json
+```
+
+This stream smoke proves the chunked `audio/L16` transport and playable PCM
+conversion only. It intentionally does not claim ASR text fidelity.
+
+Run the combined live sanity bundle:
+
+```bash
+python scripts/smoke_full_live_sanity.py \
+  --base-url http://127.0.0.1:8018 \
+  --out-dir /tmp/chatterbox-fork-agent-out/full-live-sanity-$(date -u +%Y%m%dT%H%M%SZ) \
+  --reset-cache
+```
+
+The bundle chains ASR-gated cache fill, ASR-gated cache hit, raw chunk-stream
+transport, interruption handling, and live cancel/duck/stop turn-control
+endpoints into one index receipt. It records
+`mocked=false`, `live=true`, child receipt paths, cache reset method, stale
+chunk skip counts, stream first-byte timing, final turn-control state, and
+explicit `does_not_prove` boundaries. If the accepted audio cache is
+container-owned, the runner falls back to deleting `/out/_accepted_audio_cache`
+from inside `chatterbox-fork-agent-server`.
+
 ## Supported Languages
 The general-purpose Chatterbox Multilingual model supports the following languages:
 

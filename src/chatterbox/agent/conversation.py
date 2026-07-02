@@ -172,6 +172,62 @@ HUM_INTERSTITIALS = [
     "This one is taking a minute. [chuckle]",
 ]
 
+WAIT_ENTERTAINMENT_ACTIVITIES = [
+    {
+        "id": "soft_hum",
+        "kind": "cached_audio",
+        "channel": "humming",
+        "min_wait_ms": 8000,
+        "mood_tags": ["playful", "curious", "warm"],
+        "tone_tags": ["casual", "patient", "light"],
+        "avoid_when": ["serious_grief", "angry_user", "high_stakes"],
+        "description": "Low-volume curated hum bed from the persona cache.",
+    },
+    {
+        "id": "low_singing",
+        "kind": "cached_audio",
+        "channel": "singing",
+        "min_wait_ms": 12000,
+        "mood_tags": ["gentle", "warm", "patient"],
+        "tone_tags": ["long_wait", "calm", "endearing"],
+        "avoid_when": ["angry_user", "high_stakes"],
+        "description": "Quiet curated singing track for a particularly long wait.",
+    },
+    {
+        "id": "mouth_beatbox",
+        "kind": "chatterbox_voice",
+        "channel": "voice_interstitial",
+        "min_wait_ms": 10000,
+        "mood_tags": ["playful", "energetic"],
+        "tone_tags": ["casual", "entertaining"],
+        "avoid_when": ["serious_grief", "angry_user", "high_stakes"],
+        "texts": ["Okay, tiny beat while I check. Pff ts, pff ts."],
+        "description": "Short mouth-rhythm gesture; never for serious contexts.",
+    },
+    {
+        "id": "count_primes",
+        "kind": "chatterbox_voice",
+        "channel": "voice_interstitial",
+        "min_wait_ms": 9000,
+        "mood_tags": ["curious", "focused"],
+        "tone_tags": ["casual", "thinking"],
+        "avoid_when": ["serious_grief", "high_stakes"],
+        "texts": ["I'll count primes while this runs. Two, three, five, seven, eleven."],
+        "description": "Light thinking behavior for a non-serious wait.",
+    },
+    {
+        "id": "plain_presence",
+        "kind": "chatterbox_voice",
+        "channel": "voice_interstitial",
+        "min_wait_ms": 8000,
+        "mood_tags": ["calm", "steady"],
+        "tone_tags": ["serious", "focused", "low_energy"],
+        "avoid_when": [],
+        "texts": ["Still with you. I'm keeping this quiet while I check."],
+        "description": "Calm wait presence for serious, frustrated, or high-stakes contexts.",
+    },
+]
+
 
 def wait_responses_for_expected_delay(expected_wait_ms: int) -> list[str]:
     """Return appropriate cached filler candidates for an expected wait."""
@@ -193,12 +249,63 @@ def eta_responses_for_expected_delay(expected_wait_ms: int) -> list[str]:
     return ["I should have it almost immediately."]
 
 
+def wait_entertainment_for_context(
+    expected_wait_ms: int,
+    *,
+    conversation_tone: str = "casual",
+    user_mood: str = "neutral",
+    variant_offset: int = 0,
+    allow_singing: bool = True,
+) -> dict[str, Any] | None:
+    """Choose a cancellable idle-presence behavior for a long wait.
+
+    This selects non-factual presence behavior only. It must not produce answer
+    content or expose internal tool state.
+    """
+    if expected_wait_ms < 8000:
+        return None
+
+    normalized = {conversation_tone.lower(), user_mood.lower()}
+    serious = bool(normalized & {"serious", "grief", "serious_grief", "frustrated", "angry", "high_stakes"})
+    candidates: list[dict[str, Any]] = []
+    for activity in WAIT_ENTERTAINMENT_ACTIVITIES:
+        if expected_wait_ms < int(activity["min_wait_ms"]):
+            continue
+        if activity["id"] == "low_singing" and not allow_singing:
+            continue
+        avoid_when = set(activity.get("avoid_when", []))
+        if serious and avoid_when:
+            continue
+        candidates.append(activity)
+
+    if not candidates:
+        candidates = [activity for activity in WAIT_ENTERTAINMENT_ACTIVITIES if activity["id"] == "plain_presence"]
+
+    chosen = candidates[variant_offset % len(candidates)]
+    return {
+        "id": chosen["id"],
+        "kind": chosen["kind"],
+        "channel": chosen["channel"],
+        "mood_tags": list(chosen["mood_tags"]),
+        "tone_tags": list(chosen["tone_tags"]),
+        "text": (chosen.get("texts") or [None])[0],
+        "text_sha256": sha256_text(chosen["texts"][0]) if chosen.get("texts") else None,
+        "interruptible": True,
+        "duck_when": ["speech_starts", "user_interrupts"],
+        "keeps_existing_work_alive": True,
+        "description": chosen["description"],
+    }
+
+
 def wait_decision_for_expected_delay(
     expected_wait_ms: int,
     *,
     variant_offset: int = 0,
     eta_requested: bool = False,
     allow_hum: bool = True,
+    conversation_tone: str = "casual",
+    user_mood: str = "neutral",
+    allow_singing: bool = True,
 ) -> dict[str, Any]:
     """Choose the cached utterance and optional hum action for a wait estimate.
 
@@ -211,7 +318,18 @@ def wait_decision_for_expected_delay(
         else wait_responses_for_expected_delay(expected_wait_ms)
     )
     text = candidates[variant_offset % len(candidates)] if candidates else None
-    should_start_hum = allow_hum and not eta_requested and expected_wait_ms >= 8000
+    wait_entertainment = (
+        wait_entertainment_for_context(
+            expected_wait_ms,
+            conversation_tone=conversation_tone,
+            user_mood=user_mood,
+            variant_offset=variant_offset,
+            allow_singing=allow_singing,
+        )
+        if allow_hum and not eta_requested
+        else None
+    )
+    should_start_hum = bool(wait_entertainment and wait_entertainment["kind"] == "cached_audio")
     return {
         "expected_wait_ms": expected_wait_ms,
         "eta_requested": eta_requested,
@@ -220,10 +338,11 @@ def wait_decision_for_expected_delay(
         "candidate_count": len(candidates),
         "should_speak": text is not None,
         "should_start_hum": should_start_hum,
+        "wait_activity": wait_entertainment,
         "hum": {
             "enabled": should_start_hum,
             "persona": "embry",
-            "channel": "humming",
+            "channel": wait_entertainment["channel"] if wait_entertainment else "humming",
             "start_muted": True,
             "volume": 0.25,
             "duck_to": 0.0,
@@ -232,9 +351,9 @@ def wait_decision_for_expected_delay(
             "source": "hum-cache",
             "selection": {
                 "mode": "persona_cache",
-                "mood": ["playful", "curious"],
+                "mood": wait_entertainment["mood_tags"] if wait_entertainment else ["playful", "curious"],
                 "bridge_attributes": ["Loyalty", "Resilience"],
-                "allow_singing": True,
+                "allow_singing": allow_singing,
                 "avoid_forbidden": True,
             },
             "interstitials": {
@@ -519,10 +638,34 @@ async def run_interruption_scenario(
         for event in recorder.events
         if event["type"] == "tts.submitted"
     }
+    interruption_events = [
+        event
+        for event in recorder.events
+        if event["type"] == "interruption.requested"
+    ]
+    cancel_received_seq = interruption_events[0]["sequence"] if interruption_events else None
+    post_cancel_old_turn_submissions = [
+        event
+        for event in recorder.events
+        if event["type"] == "tts.submitted"
+        and event.get("turn_id") == old_turn_id
+        and cancel_received_seq is not None
+        and event["sequence"] > cancel_received_seq
+    ]
+    new_turn_audio_events = [
+        event
+        for event in recorder.events
+        if event["type"] == "tts.submitted"
+        and event.get("turn_id") == new_turn_id
+        and cancel_received_seq is not None
+        and event["sequence"] > cancel_received_seq
+    ]
     if not stale_skipped:
         failed_gates.append("stale_chunks_skipped_after_interruption")
     if stale_chunk_ids & submitted_chunk_ids:
         failed_gates.append("stale_chunks_not_submitted_to_tts")
+    if post_cancel_old_turn_submissions:
+        failed_gates.append("post_cancel_old_turn_audio_bytes_zero")
     if not ack_result.get("ok"):
         failed_gates.append("interrupt_ack_tts_ok")
     if int(((ack_result.get("metrics") or {}).get("bytes")) or 0) <= 44:
@@ -547,6 +690,33 @@ async def run_interruption_scenario(
         "old_plan": old_plan,
         "new_plan": new_plan,
         "spoken_results": spoken_results,
+        "interruption_timeline": {
+            "old_turn_id": old_turn_id,
+            "new_turn_id": new_turn_id,
+            "cancel_received_seq": cancel_received_seq,
+            "first_old_chunk_submitted_seq": next(
+                (
+                    event["sequence"]
+                    for event in recorder.events
+                    if event["type"] == "tts.submitted" and event.get("chunk_id") == "old-answer-1"
+                ),
+                None,
+            ),
+            "cancel_ack_submitted_seq": next(
+                (
+                    event["sequence"]
+                    for event in recorder.events
+                    if event["type"] == "tts.submitted" and event.get("chunk_id") == "interrupt-ack"
+                ),
+                None,
+            ),
+            "stale_chunk_ids_skipped": sorted(stale_chunk_ids),
+            "post_cancel_old_turn_audio_bytes_emitted": 0 if not post_cancel_old_turn_submissions else None,
+            "post_cancel_old_turn_submitted_chunk_ids": [
+                str(event.get("chunk_id")) for event in post_cancel_old_turn_submissions
+            ],
+            "new_turn_audio_started_after_cancel": bool(new_turn_audio_events),
+        },
         "stale_skipped_count": len(stale_skipped),
         "stale_skipped_chunk_ids": sorted(stale_chunk_ids),
         "submitted_chunk_ids": sorted(submitted_chunk_ids),

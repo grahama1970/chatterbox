@@ -13,10 +13,12 @@ from chatterbox.agent.conversation import (
     HUM_INTERSTITIALS,
     INTERRUPTION_ACKNOWLEDGEMENTS,
     LOW_BUFFER_FILLERS,
+    WAIT_ENTERTAINMENT_ACTIVITIES,
     WAIT_RESPONSE_RULES,
     acknowledgement_for_interrupt,
     eta_responses_for_expected_delay,
     has_internal_terms,
+    wait_entertainment_for_context,
     wait_decision_for_expected_delay,
     wait_responses_for_expected_delay,
 )
@@ -49,8 +51,11 @@ class VoiceCachePolicyTest(unittest.TestCase):
         decision = wait_decision_for_expected_delay(9000, variant_offset=4)
         self.assertEqual(decision["text"], "This will take a little while. You can grab coffee if you want.")
         self.assertTrue(decision["should_speak"])
-        self.assertTrue(decision["should_start_hum"])
-        self.assertEqual(decision["hum"]["channel"], "humming")
+        self.assertFalse(decision["should_start_hum"])
+        self.assertEqual(decision["wait_activity"]["id"], "count_primes")
+        self.assertEqual(decision["wait_activity"]["kind"], "chatterbox_voice")
+        self.assertTrue(decision["wait_activity"]["interruptible"])
+        self.assertEqual(decision["hum"]["channel"], "voice_interstitial")
         self.assertTrue(decision["hum"]["start_muted"])
         self.assertEqual(decision["hum"]["volume"], 0.25)
         self.assertEqual(decision["hum"]["fade_in_after"], "speech_finishes")
@@ -58,10 +63,47 @@ class VoiceCachePolicyTest(unittest.TestCase):
         self.assertEqual(decision["hum"]["selection"]["mode"], "persona_cache")
         self.assertTrue(decision["hum"]["selection"]["allow_singing"])
         self.assertTrue(decision["hum"]["selection"]["avoid_forbidden"])
-        self.assertTrue(decision["hum"]["interstitials"]["enabled"])
+        self.assertFalse(decision["hum"]["interstitials"]["enabled"])
         self.assertTrue(decision["hum"]["interstitials"]["can_interrupt_hum"])
         self.assertTrue(decision["hum"]["interstitials"]["keeps_existing_work_alive"])
         self.assertIn("[chuckle]", decision["hum"]["interstitials"]["texts"])
+
+    def test_wait_entertainment_supports_multiple_idle_behaviors(self) -> None:
+        ids = {activity["id"] for activity in WAIT_ENTERTAINMENT_ACTIVITIES}
+        self.assertGreaterEqual(
+            ids,
+            {"soft_hum", "low_singing", "mouth_beatbox", "count_primes", "plain_presence"},
+        )
+        for activity in WAIT_ENTERTAINMENT_ACTIVITIES:
+            self.assertIn(activity["kind"], {"cached_audio", "chatterbox_voice"})
+            self.assertIn("mood_tags", activity)
+            self.assertIn("tone_tags", activity)
+            self.assertIn("avoid_when", activity)
+
+    def test_wait_entertainment_can_choose_cached_singing_for_long_waits(self) -> None:
+        activity = wait_entertainment_for_context(13000, conversation_tone="casual", variant_offset=1)
+        self.assertIsNotNone(activity)
+        self.assertEqual(activity["id"], "low_singing")
+        self.assertEqual(activity["kind"], "cached_audio")
+        self.assertEqual(activity["channel"], "singing")
+
+    def test_wait_decision_records_when_singing_is_disallowed(self) -> None:
+        decision = wait_decision_for_expected_delay(13000, variant_offset=1, allow_singing=False)
+
+        self.assertIsNotNone(decision["wait_activity"])
+        self.assertNotEqual(decision["wait_activity"]["id"], "low_singing")
+        self.assertFalse(decision["hum"]["selection"]["allow_singing"])
+
+    def test_wait_entertainment_uses_plain_presence_for_serious_context(self) -> None:
+        activity = wait_entertainment_for_context(
+            13000,
+            conversation_tone="serious_grief",
+            user_mood="frustrated",
+        )
+        self.assertIsNotNone(activity)
+        self.assertEqual(activity["id"], "plain_presence")
+        self.assertEqual(activity["kind"], "chatterbox_voice")
+        self.assertNotIn("playful", activity["mood_tags"])
 
     def test_eta_decision_answers_without_cancelling_existing_work(self) -> None:
         decision = wait_decision_for_expected_delay(9000, eta_requested=True)
