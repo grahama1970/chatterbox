@@ -1,0 +1,33 @@
+{
+  "schema": "chatterbox.conversation_ladder.fixture_manifest.v1",
+  "fixtures": [
+    {
+      "id": "rung1_simple",
+      "path": "tests/fixtures/conversation_ladder/rung1_simple.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-1 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung1_simple.wav -s 140 -v en-us 'Hello, I am testing the listener.'",
+      "expected_transcript": "Hello, I am testing the listener.",
+      "last_observed": {
+        "bytes": 120862,
+        "sha256": "52363b932ccd0b40dc1612bb3fb477269babab8d32487820e318cad92c186a80",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 2.74
+      }
+    }
+  ],
+  "live_receipts": [
+    {
+      "rung": 1,
+      "path": "/tmp/chatterbox-fork-agent-out/conversation-ladder/rung1-live-20260702T111209Z/rung1.json",
+      "mocked": false,
+      "live": true,
+      "ok": true,
+      "input_wer": 0.0,
+      "output_wer": 0.0,
+      "failed_gates": []
+    }
+  ]
+}
