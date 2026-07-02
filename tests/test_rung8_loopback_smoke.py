@@ -44,6 +44,7 @@ def test_capture_loopback_missing_audio_fails_closed(tmp_path: Path, monkeypatch
         play_audio=tmp_path / "missing.wav",
         sink_target=None,
         record_target=None,
+        capture_kind="monitor_loopback",
         raw_capture_rate=48000,
         raw_capture_channels=2,
         capture_rate=16000,

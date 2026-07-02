@@ -280,10 +280,12 @@ The latest recorded proof artifacts are local files under
 | `/tmp/chatterbox-speaker-memory-rungs-20260702T1748Z/rung3_known_horus_missing_fact_writeback.json` | Physical Horus Lupercal audio through ECAPA, live memory `/speaker/resolve`, `/intent`, collection-scoped `/recall` miss, missing-fact clarification, `/upsert`, and `/recall/by-keys` readback. Uses `--speaker-memory-only`, so it does not claim ASR/Tau rendering. |
 | `/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json` | Fresh physical Horus Lupercal turn after writeback; live `/recall` finds the scoped `persona_memory` record written by the prior receipt with `speaker_id=horus_lupercal`, `found=true`, `confidence=0.85`, and the answer `Horus Lupercal grew up on Cthonia.` |
 | `/tmp/chatterbox-fork-agent-out/rung8-loopback-20260702T204049Z/rung8-loopback-listener.json` | Rung 8 PipeWire monitor loopback: plays the Horus+factory+Embry stress WAV through sink target `64`, captures the sink monitor, feeds captured audio through RealtimeSTT automatic VAD, then routes the captured WAV through rung 7 speaker-memory. Receipt has `mocked=false`, `live=true`, `failed_gates=[]`; captured WAV is `30.891s`, RMS `1958`; Horus similarity is `0.6259` at loopback threshold `0.62`; memory resolves `speaker_id=horus_lupercal` and speaker-scoped recall finds `voice_fact_52102e4bc2ebc124f7e95e66`. |
+| `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/rung8-physical-mic-listener.json` | Rung 8 physical microphone capture: plays the Horus+factory+Embry stress WAV through Jabra speaker sink `64`, records Jabra microphone source `62`, feeds captured room audio through RealtimeSTT automatic VAD, then routes the captured WAV through rung 7 speaker-memory. Receipt has `mocked=false`, `live=true`, `failed_gates=[]`; captured WAV is `31.083s`, RMS `1955`; Horus similarity is `0.6589` at threshold `0.62`; memory resolves `speaker_id=horus_lupercal` and speaker-scoped recall finds `voice_fact_52102e4bc2ebc124f7e95e66`. |
 
-These receipts do not prove live microphone capture, WebRTC/browser transport,
-production memory-agent admission review, subjective voice quality, noisy-room
-robustness, or mid-buffer audio-device flush after cancellation.
+These receipts do not prove WebRTC/browser transport, production memory-agent
+admission review, subjective voice quality, noisy-room robustness beyond the
+configured fixture, overlapping-speaker diarization, or mid-buffer audio-device
+flush after cancellation.
 
 ## Upstream Chatterbox
 

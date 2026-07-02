@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Run Rung 8 live PipeWire loopback listener smoke.
+"""Run Rung 8 live PipeWire listener capture smoke.
 
 This harness moves beyond file-fed WAVs by playing a configured stress WAV
-through PipeWire, recording the selected sink monitor/source with pw-record, and
+through PipeWire, recording the selected sink monitor or microphone with pw-record, and
 then feeding the captured audio to the existing RealtimeSTT and rung 7 listener
 receipts.
 """
@@ -137,6 +137,7 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
         "play_audio": input_metrics,
         "captured_audio": None,
         "pipewire": {
+            "capture_kind": args.capture_kind,
             "sink_target": sink_target,
             "record_target": record_target,
             "status": pw,
@@ -304,7 +305,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "--fixture",
             str(captured_path),
             "--fixture-provenance",
-            "pipewire_monitor_loopback_capture_of_horus_factory_embry_stress",
+            f"pipewire_{args.capture_kind}_capture_of_horus_factory_embry_stress",
             "--primary-speaker-enrollment",
             str(args.primary_speaker_enrollment),
             "--primary-speaker-threshold",
@@ -316,7 +317,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "--speaker-confidence",
             "0.0",
             "--speaker-evidence-source",
-            "pipewire_loopback_resemblyzer",
+            f"pipewire_{args.capture_kind}_resemblyzer",
             "--speaker-resolve-threshold",
             str(args.speaker_resolve_threshold),
             "--speaker-memory-recall-collection",
@@ -370,14 +371,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "failed_gates": failed_gates,
         "claims": {
             "proves": [
-                "pipewire_monitor_loopback_captures_played_stress_audio",
+                f"pipewire_{args.capture_kind}_captures_played_stress_audio",
                 "captured_loopback_audio_feeds_realtimestt_automatic_vad",
                 "captured_loopback_audio_routes_through_rung7_speaker_memory_contract",
             ]
             if ok
             else [],
             "does_not_prove": [
-                "physical_room_microphone_capture",
+                *([] if args.capture_kind == "physical_microphone" else ["physical_room_microphone_capture"]),
                 "browser_webrtc_transport",
                 "overlapping_speaker_diarization",
                 "subjective_voice_quality",
@@ -393,6 +394,7 @@ def main() -> int:
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--sink-target", default=None)
     parser.add_argument("--record-target", default=None)
+    parser.add_argument("--capture-kind", choices=["monitor_loopback", "physical_microphone"], default="monitor_loopback")
     parser.add_argument("--raw-capture-rate", default=48000, type=int)
     parser.add_argument("--raw-capture-channels", default=2, type=int)
     parser.add_argument("--capture-rate", default=16000, type=int)
