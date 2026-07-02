@@ -1,14 +1,233 @@
+# Chatterbox Voice Agent Fork
+
+This repository is our Chatterbox fork for Embry-style voice-agent rendering.
+It keeps the upstream Resemble AI Chatterbox models, and adds a local FastAPI
+Chatterbox Turbo agent server with ASR-gated audio acceptance, sentence-aware
+Turbo chunking, interruptible PCM streaming, turn controls, conversation sanity
+receipts, and memory-gated blessed-QRA instant playback.
+
+Current primary runtime:
+
+```text
+listener/coordinator text -> memory/QRA gate when available ->
+Chatterbox Turbo render plan -> ASR-gated or blessed cached audio ->
+PCM stream / WAV receipts
+```
+
+Chatterbox remains the renderer. Memory, QRA trust, search/tool use, reasoning,
+and emotional steering decisions belong to the coordinator and memory pipeline.
+
+## Fork Additions
+
+| Area | Current implementation |
+| --- | --- |
+| Agent server | `src/chatterbox/agent/server.py` exposes `/health`, `/presets`, `/render-plan`, `/synthesize`, `/synthesize-batch`, `/synthesize-batch-stream`, `/turn/{turn_id}/cancel`, `/playback/{turn_id}/duck`, and `/playback/{turn_id}/stop`. |
+| Docker launcher | `scripts/start_agent_server_docker.sh` starts the server on `127.0.0.1:8018`, mounting this repo read-only and `/tmp/chatterbox-fork-agent-out` as `/out`. |
+| ASR acceptance | `/synthesize-batch` can render multiple candidates, transcribe through the configured OpenAI-compatible Whisper endpoint, accept the first candidate passing WER/duration/repetition gates, and cache accepted WAV audio. |
+| Turbo chunking | `src/chatterbox/agent/chunking.py` hard-clamps chunks to 300 characters, preserves word boundaries, records hashes, delivery stage, pause metadata, and interruptibility. |
+| Streaming | `/synthesize-batch-stream` streams signed 16-bit little-endian PCM chunks and honors `turn_id` cancellation/stop state before synthesis and before PCM block emission. |
+| Turn controls | Cancel, duck, and stop endpoints record live turn-control state; cancel/stop can terminate matching stream playback. |
+| Blessed QRA cache | Approved QRA answers can be pre-rendered into five Embry audio variants with `scripts/bless_qra_audio_variants.py`; runtime playback requires a near-exact memory/QRA gate by default. |
+| Conversation ladder | `scripts/smoke_conversation_ladder.py` and `docs/conversation_sanity_ladder_v0.md` define and exercise rungs 1-6 for file-backed listener input, state, memory, interruption, Brave Search latency, and emotional steering receipts. |
+| Listener contract | Rung 7 is documented as a service boundary: audio frames in, VAD/ASR events and heard-text ledger out, coordinator turn events out. It is not implemented yet. |
+
+## Quick Start: Agent Server
+
+The Docker launcher is dry-run by default:
+
+```bash
+./scripts/start_agent_server_docker.sh
+./scripts/start_agent_server_docker.sh --execute
+```
+
+The launcher expects an existing Whisper container named `whisper`, creates or
+uses the Docker network `chatterbox-voice-net`, attaches Whisper with the
+`whisper` DNS alias, and starts Chatterbox on `http://127.0.0.1:8018`.
+
+Run a basic server smoke:
+
+```bash
+python scripts/smoke_agent_server.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-agent-server.json
+```
+
+## API Surface
+
+Primary request models live in `src/chatterbox/agent/server.py`:
+
+- `RenderPlanRequest`: `answer_text`, `max_chars`, `pause_after_ms`,
+  `completion_cue`.
+- `SynthesisRequest`: single text render with optional `ref_audio`,
+  `delivery_stage`, and supported Turbo generation parameters.
+- `SynthesisBatchRequest`: render/stream batch request with ASR gates,
+  `turn_id`, blessed-QRA cache controls, variant selection, and memory gate
+  fields.
+- `TurnControlRequest`: cancel/duck/stop reason and old/new turn ids.
+
+Important environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `CHATTERBOX_OUT_DIR` | Output/cache directory inside the server container, default `/out`. |
+| `CHATTERBOX_REF_AUDIO` | Default voice reference audio path. |
+| `CHATTERBOX_REF_AUDIO_ROOTS` | Colon-separated allowed roots for reference audio paths. |
+| `CHATTERBOX_DEVICE` | Model device, default `cuda`. |
+| `CHATTERBOX_ASR_OPENAI_BASE_URL` | Server-side Whisper/OpenAI-compatible ASR base URL. |
+| `CHATTERBOX_ASR_API_KEY_ENV` | Environment variable name for the ASR API key, default `WHISPER_API_KEY`. |
+| `CHATTERBOX_BLESSED_QRA_LEDGER` | Optional blessed-QRA audio ledger path, default `/out/_blessed_qra_ledger.json`. |
+
+## ASR-Gated Audio Cache
+
+Run the ASR-gated batch smoke:
+
+```bash
+python scripts/smoke_asr_gated_batch.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-asr-gated-batch-script.json
+```
+
+The smoke writes a receipt with `mocked=false`, `live=true`, chunk-level ASR
+candidate gates, accepted candidate indexes, and the finished response audio
+path.
+
+Accepted ASR-gated chunks are cached under `/out/_accepted_audio_cache` inside
+the container. Repeating the same text, delivery stage, reference audio, ASR
+gates, and candidate policy can reuse accepted audio instead of rendering again:
+
+```bash
+python scripts/smoke_asr_gated_batch.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-asr-cache-fill.json
+
+python scripts/smoke_asr_gated_batch.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-asr-cache-hit.json \
+  --expect-cache-hit
+```
+
+## Streaming And Turn Controls
+
+Run the raw PCM chunk-stream smoke:
+
+```bash
+python scripts/smoke_stream_endpoint.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/smoke-stream-endpoint-script.json
+```
+
+This stream smoke proves the chunked `audio/L16` transport and playable PCM
+conversion only. It intentionally does not claim ASR text fidelity.
+
+Run the focused stream-cancel smoke:
+
+```bash
+python scripts/smoke_stream_turn_cancel.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/stream-cancel-smoke.json
+```
+
+`/synthesize-batch-stream` accepts an optional `turn_id`. When the matching
+turn-control state is cancelled or stopped, the stream generator stops before
+synthesis and before PCM block emission. The smoke proves a baseline stream
+emits bytes and a pre-cancelled old turn emits zero bytes.
+
+## Blessed QRA Instant Playback
+
+Known, reviewed QRA answers can be pre-rendered into Embry audio variants and
+played back without waiting for new Chatterbox generation. This path is
+fail-closed: local text similarity is not enough by default. The caller must
+provide a memory/QRA gate from the coordinator:
+
+- `blessed_qra_memory_key` must match the blessed QRA entry.
+- `blessed_qra_memory_similarity` must meet `blessed_qra_min_similarity`
+  (default `0.99`).
+- `blessed_qra_memory_review_status` must be `approved`, `blessed`, or
+  `verified`.
+- Set `use_blessed_qra_cache=false` to disable this fast path for a request.
+
+Create or refresh the five Embry audio variants for an approved QRA:
+
+```bash
+python scripts/bless_qra_audio_variants.py \
+  --base-url http://127.0.0.1:8018 \
+  --ledger /tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json \
+  --host-out-dir /tmp/chatterbox-fork-agent-out \
+  --qra-id qra-smoke-si \
+  --memory-key qra-smoke-si \
+  --question "Which control family should I use when the answer says SI?" \
+  --answer "Use system and communications protection."
+```
+
+Use a cached variant from `/synthesize-batch` by passing `question_text`,
+`blessed_qra_variant`, and the memory gate fields. Set
+`blessed_qra_preserve_pauses=true` to keep a variant's recorded pause profile;
+leave it false for fastest playback.
+
+## Conversation Sanity Ladder
+
+The current ladder is documented in `docs/conversation_sanity_ladder_v0.md` and
+audited in `docs/conversation_sanity_ladder_audit.md`.
+
+Implemented evidence rungs:
+
+| Rung | Scope |
+| --- | --- |
+| 1 | File-backed listener input through ASR/TTS loop. |
+| 2 | Two-turn state and fail-closed missing context. |
+| 3 | Memory-grounded response with preserved recall evidence. |
+| 4 | Interruption harness, stale old-turn skip, live cancel/duck/stop controls. |
+| 5 | Brave Search/tool-latency wait behavior with source URLs. |
+| 6 | Dynamic emotion cue extraction, memory comparison, and utterance policy receipts. |
+
+Rung 7 is defined but not implemented: live listener service with audio frames
+in, VAD/ASR events and heard-text ledger out, and coordinator turn events out.
+
+## Full Live Sanity Bundle
+
+Run the combined live sanity bundle:
+
+```bash
+python scripts/smoke_full_live_sanity.py \
+  --base-url http://127.0.0.1:8018 \
+  --out-dir /tmp/chatterbox-fork-agent-out/full-live-sanity-$(date -u +%Y%m%dT%H%M%SZ) \
+  --reset-cache
+```
+
+The bundle chains ASR-gated cache fill, ASR-gated cache hit, raw chunk-stream
+transport, stream-cancel proof, interruption handling, and live cancel/duck/stop
+turn-control endpoints into one index receipt. It records `mocked=false`,
+`live=true`, child receipt paths, cache reset method, stale chunk skip counts,
+stream first-byte timing, final turn-control state, and explicit
+`does_not_prove` boundaries. If the accepted audio cache is container-owned, the
+runner falls back to deleting `/out/_accepted_audio_cache` from inside
+`chatterbox-fork-agent-server`.
+
+## Current Proof Artifacts
+
+The latest recorded proof artifacts are local files under
+`/tmp/chatterbox-fork-agent-out/`:
+
+| Artifact | What it proves |
+| --- | --- |
+| `conversation-ladder/rung1-live-20260702T111209Z/rung1.json` through `rung6-live-20260702T113313Z/rung6.json` | Rungs 1-6 with `mocked=false`, `live=true`, and empty `failed_gates`. |
+| `stream-cancel-20260702T1150/stream-cancel.json` | Pre-cancelled stream emits zero old-turn bytes after cancel. |
+| `blessed-qra-cache-hit-20260702T1214.json` | Near-exact approved memory gate can select a blessed Embry QRA variant and return cached audio in `157.103 ms`. |
+
+These receipts do not prove live microphone capture, WebRTC/browser transport,
+production memory-agent admission review, subjective voice quality, noisy-room
+robustness, or mid-buffer audio-device flush after cancellation.
+
+## Upstream Chatterbox
+
 ![Chatterbox Multilingual Image](./Chatterbox-Multilingual.png)
-
-
-# Chatterbox TTS
 
 [![Alt Text](https://img.shields.io/badge/listen-demo_samples-blue)](https://resemble-ai.github.io/chatterbox_demopage/)
 [![Alt Text](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS)
 [![Alt Text](https://static-public.podonos.com/badges/insight-on-pdns-sm-dark.svg)](https://podonos.com/resembleai/chatterbox)
 [![Discord](https://img.shields.io/discord/1377773249798344776?label=join%20discord&logo=discord&style=flat)](https://discord.gg/rJq9cRJBJ6)
 
-*Made with ♥️ by* <a href="https://resemble.ai" target="_blank"><img width="100" alt="resemble-logo-horizontal" src="https://github.com/user-attachments/assets/35cf756b-3506-4943-9c72-c05ddfa4e525" /></a>
+*Made with love by* <a href="https://resemble.ai" target="_blank"><img width="100" alt="resemble-logo-horizontal" src="https://github.com/user-attachments/assets/35cf756b-3506-4943-9c72-c05ddfa4e525" /></a>
 
 **Chatterbox** is a family of state-of-the-art, open-source text-to-speech models by Resemble AI.
 
@@ -116,121 +335,6 @@ wav = model.generate(text, audio_prompt_path=AUDIO_PROMPT_PATH)
 ta.save("test-2.wav", wav, model.sr)
 ```
 See `example_tts.py` and `example_vc.py` for more examples.
-
-## Agent Server Smoke
-
-This fork includes a local Chatterbox Turbo agent server used for interruptible,
-ASR-gated voice-agent experiments. The launcher is dry-run by default:
-
-```bash
-./scripts/start_agent_server_docker.sh
-./scripts/start_agent_server_docker.sh --execute
-```
-
-The launcher expects the existing Whisper container named `whisper`, creates or
-uses the Docker network `chatterbox-voice-net`, attaches Whisper with the
-`whisper` DNS alias, and starts Chatterbox on `http://127.0.0.1:8018`.
-
-Run the ASR-gated batch smoke:
-
-```bash
-python scripts/smoke_asr_gated_batch.py \
-  --base-url http://127.0.0.1:8018 \
-  --out /tmp/chatterbox-fork-agent-out/smoke-asr-gated-batch-script.json
-```
-
-The smoke writes a receipt with `mocked=false`, `live=true`, chunk-level ASR
-candidate gates, accepted candidate indexes, and the finished response audio
-path.
-
-Accepted ASR-gated chunks are cached under `/out/_accepted_audio_cache` inside
-the container. Repeating the same text, delivery stage, reference audio, ASR
-gates, and candidate policy can reuse accepted audio instead of rendering again:
-
-```bash
-python scripts/smoke_asr_gated_batch.py \
-  --base-url http://127.0.0.1:8018 \
-  --out /tmp/chatterbox-fork-agent-out/smoke-asr-cache-fill.json
-
-python scripts/smoke_asr_gated_batch.py \
-  --base-url http://127.0.0.1:8018 \
-  --out /tmp/chatterbox-fork-agent-out/smoke-asr-cache-hit.json \
-  --expect-cache-hit
-```
-
-Run the raw PCM chunk-stream smoke:
-
-```bash
-python scripts/smoke_stream_endpoint.py \
-  --base-url http://127.0.0.1:8018 \
-  --out /tmp/chatterbox-fork-agent-out/smoke-stream-endpoint-script.json
-```
-
-This stream smoke proves the chunked `audio/L16` transport and playable PCM
-conversion only. It intentionally does not claim ASR text fidelity.
-
-Run the combined live sanity bundle:
-
-```bash
-python scripts/smoke_full_live_sanity.py \
-  --base-url http://127.0.0.1:8018 \
-  --out-dir /tmp/chatterbox-fork-agent-out/full-live-sanity-$(date -u +%Y%m%dT%H%M%SZ) \
-  --reset-cache
-```
-
-The bundle chains ASR-gated cache fill, ASR-gated cache hit, raw chunk-stream
-transport, interruption handling, and live cancel/duck/stop turn-control
-endpoints into one index receipt. It records
-`mocked=false`, `live=true`, child receipt paths, cache reset method, stale
-chunk skip counts, stream first-byte timing, final turn-control state, and
-explicit `does_not_prove` boundaries. If the accepted audio cache is
-container-owned, the runner falls back to deleting `/out/_accepted_audio_cache`
-from inside `chatterbox-fork-agent-server`.
-
-Run the focused stream-cancel smoke:
-
-```bash
-python scripts/smoke_stream_turn_cancel.py \
-  --base-url http://127.0.0.1:8018 \
-  --out /tmp/chatterbox-fork-agent-out/stream-cancel-smoke.json
-```
-
-`/synthesize-batch-stream` accepts an optional `turn_id`. When the matching
-turn-control state is cancelled or stopped, the stream generator stops before
-synthesis and before PCM block emission. The smoke proves a baseline stream
-emits bytes and a pre-cancelled old turn emits zero bytes.
-
-### Blessed QRA Instant Playback
-
-Known, reviewed QRA answers can be pre-rendered into Embry audio variants and
-played back without waiting for new Chatterbox generation. This path is
-fail-closed: local text similarity is not enough by default. The caller must
-provide a memory/QRA gate from the coordinator:
-
-- `blessed_qra_memory_key` must match the blessed QRA entry.
-- `blessed_qra_memory_similarity` must meet `blessed_qra_min_similarity`
-  (default `0.99`).
-- `blessed_qra_memory_review_status` must be `approved`, `blessed`, or
-  `verified`.
-- Set `use_blessed_qra_cache=false` to disable this fast path for a request.
-
-Create or refresh the five Embry audio variants for an approved QRA:
-
-```bash
-python scripts/bless_qra_audio_variants.py \
-  --base-url http://127.0.0.1:8018 \
-  --ledger /tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json \
-  --host-out-dir /tmp/chatterbox-fork-agent-out \
-  --qra-id qra-smoke-si \
-  --memory-key qra-smoke-si \
-  --question "Which control family should I use when the answer says SI?" \
-  --answer "Use system and communications protection."
-```
-
-Use a cached variant from `/synthesize-batch` by passing `question_text`,
-`blessed_qra_variant`, and the memory gate fields. Set
-`blessed_qra_preserve_pauses=true` to keep a variant's recorded pause profile;
-leave it false for fastest playback.
 
 ## Supported Languages
 The general-purpose Chatterbox Multilingual model supports the following languages:
