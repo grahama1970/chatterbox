@@ -34,6 +34,12 @@ dependencies = [
     "httpx>=0.24.0"
 ]
 
+[project.optional-dependencies]
+listener = [
+    "resemblyzer==0.1.4",
+    "soundfile==0.13.1"
+]
+
 [project.urls]
 Homepage = "https://github.com/resemble-ai/chatterbox"
 Repository = "https://github.com/resemble-ai/chatterbox"

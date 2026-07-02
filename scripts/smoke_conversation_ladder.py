@@ -86,6 +86,127 @@ def wav_metrics(path: Path) -> dict[str, Any]:
     }
 
 
+def build_rung7_stress_fixture(args: argparse.Namespace, run_id: str, receipt_root: Path) -> tuple[Path | None, dict[str, Any]]:
+    primary_audio = getattr(args, "stress_primary_audio", None)
+    if primary_audio is None:
+        return None, {"enabled": False}
+
+    started = time.perf_counter()
+    primary_audio = Path(primary_audio).resolve()
+    noise_audio = Path(args.stress_noise_audio).resolve() if args.stress_noise_audio else None
+    competing_audio = Path(args.stress_competing_audio).resolve() if args.stress_competing_audio else None
+    output = Path(args.stress_output_fixture).resolve() if args.stress_output_fixture else receipt_root / f"{run_id}-stress-input.wav"
+    components = {
+        "primary": {"role": "primary_speaker", "path": str(primary_audio), "exists": primary_audio.exists()},
+        "noise": {"role": "factory_floor_background", "path": str(noise_audio), "exists": noise_audio.exists()} if noise_audio else None,
+        "competing": {"role": "competing_speaker", "path": str(competing_audio), "exists": competing_audio.exists()} if competing_audio else None,
+    }
+    failed_gates: list[str] = []
+    if not primary_audio.exists():
+        failed_gates.append("stress_primary_audio_exists")
+    if noise_audio and not noise_audio.exists():
+        failed_gates.append("stress_noise_audio_exists")
+    if competing_audio and not competing_audio.exists():
+        failed_gates.append("stress_competing_audio_exists")
+    if not noise_audio and not competing_audio:
+        failed_gates.append("stress_has_noise_or_competing_audio")
+
+    for key, value in list(components.items()):
+        if value and value["exists"]:
+            try:
+                value.update(wav_metrics(Path(value["path"])))
+            except Exception as exc:  # noqa: BLE001 - receipt should preserve bad audio metadata
+                value["metrics_error"] = f"{type(exc).__name__}: {exc}"
+                failed_gates.append(f"stress_{key}_wav_readable")
+
+    receipt: dict[str, Any] = {
+        "schema": "chatterbox.listener.stress_fixture.v1",
+        "enabled": True,
+        "kind": args.stress_kind,
+        "output": str(output),
+        "component_roles": {
+            "primary": "Horus Lupercal or configured primary speaker",
+            "noise": "factory-floor or industrial background noise",
+            "competing": "non-primary competing speaker, optionally female",
+        },
+        "components": components,
+        "mix": {
+            "primary_gain_db": args.stress_primary_gain_db,
+            "noise_gain_db": args.stress_noise_gain_db,
+            "competing_gain_db": args.stress_competing_gain_db,
+            "sample_rate": 16000,
+            "channels": 1,
+            "duration": "primary",
+        },
+        "failed_gates": failed_gates,
+    }
+    if failed_gates:
+        receipt["ok"] = False
+        receipt["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 3)
+        return None, receipt
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    filter_parts = [f"[0:a]volume={args.stress_primary_gain_db}dB[a0]"]
+    input_labels = ["[a0]"]
+    command = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(primary_audio)]
+    input_index = 1
+    if noise_audio:
+        command.extend(["-stream_loop", "-1", "-i", str(noise_audio)])
+        filter_parts.append(f"[{input_index}:a]volume={args.stress_noise_gain_db}dB,atrim=0:duration=9999[a{input_index}]")
+        input_labels.append(f"[a{input_index}]")
+        input_index += 1
+    if competing_audio:
+        command.extend(["-i", str(competing_audio)])
+        filter_parts.append(f"[{input_index}:a]volume={args.stress_competing_gain_db}dB[a{input_index}]")
+        input_labels.append(f"[a{input_index}]")
+        input_index += 1
+    filter_complex = (
+        ";".join(filter_parts)
+        + ";"
+        + "".join(input_labels)
+        + f"amix=inputs={len(input_labels)}:duration=first:dropout_transition=0,"
+        + "aresample=16000,pan=mono|c0=c0[out]"
+    )
+    command.extend(
+        [
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[out]",
+            "-ac",
+            "1",
+            "-ar",
+            "16000",
+            "-sample_fmt",
+            "s16",
+            str(output),
+        ]
+    )
+    receipt["command"] = command
+    try:
+        completed = subprocess.run(command, check=False, text=True, capture_output=True, timeout=args.stress_timeout_s)
+        receipt["ffmpeg"] = {
+            "returncode": completed.returncode,
+            "stderr_tail": completed.stderr[-2000:],
+        }
+        if completed.returncode != 0:
+            receipt["ok"] = False
+            receipt["failed_gates"] = failed_gates + ["stress_ffmpeg_mix_ok"]
+            receipt["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 3)
+            return None, receipt
+        receipt["output_audio"] = wav_metrics(output)
+        receipt["ok"] = True
+        receipt["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 3)
+        return output, receipt
+    except Exception as exc:  # noqa: BLE001
+        receipt["ok"] = False
+        receipt["failed_gates"] = failed_gates + ["stress_fixture_built"]
+        receipt["error_type"] = type(exc).__name__
+        receipt["error"] = str(exc)
+        receipt["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 3)
+        return None, receipt
+
+
 def wav_frame_events(
     *,
     audio_path: Path,
@@ -257,6 +378,193 @@ def transcribe_audio(backend: dict[str, Any], audio_path: Path) -> str:
     return transcribe_faster_whisper(model, audio_path)
 
 
+def parse_bool_arg(value: str) -> bool:
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "y", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "n", "off"}:
+        return False
+    raise argparse.ArgumentTypeError(f"expected boolean value, got {value!r}")
+
+
+def verify_primary_speaker(
+    *,
+    enrollment_audio: Path,
+    candidate_audio: Path,
+    engine: str,
+    threshold: float,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    receipt: dict[str, Any] = {
+        "schema": "chatterbox.listener.primary_speaker_verification.v1",
+        "engine": engine,
+        "threshold": threshold,
+        "enrollment_audio": str(enrollment_audio),
+        "candidate_audio": str(candidate_audio),
+        "timestamp_utc": utc_now(),
+    }
+    if not enrollment_audio.exists():
+        return {
+            **receipt,
+            "ok": False,
+            "primary_speaker_match": False,
+            "error": "enrollment_audio_missing",
+        }
+    if not candidate_audio.exists():
+        return {
+            **receipt,
+            "ok": False,
+            "primary_speaker_match": False,
+            "error": "candidate_audio_missing",
+        }
+    if engine == "resemblyzer":
+        return verify_primary_speaker_resemblyzer(
+            receipt=receipt,
+            started=started,
+            enrollment_audio=enrollment_audio,
+            candidate_audio=candidate_audio,
+            threshold=threshold,
+        )
+    if engine == "speechbrain_ecapa":
+        return verify_primary_speaker_ecapa(
+            receipt=receipt,
+            started=started,
+            enrollment_audio=enrollment_audio,
+            candidate_audio=candidate_audio,
+            threshold=threshold,
+        )
+    return {
+        **receipt,
+        "ok": False,
+        "primary_speaker_match": False,
+        "error": f"unsupported_primary_speaker_engine:{engine}",
+    }
+
+
+def verify_primary_speaker_resemblyzer(
+    *,
+    receipt: dict[str, Any],
+    started: float,
+    enrollment_audio: Path,
+    candidate_audio: Path,
+    threshold: float,
+) -> dict[str, Any]:
+    try:
+        import numpy as np
+        from resemblyzer import VoiceEncoder, preprocess_wav
+    except Exception as exc:  # noqa: BLE001
+        return {
+            **receipt,
+            "ok": False,
+            "primary_speaker_match": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+
+    try:
+        encoder = VoiceEncoder()
+        load_elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+
+        def embed(path: Path) -> tuple[Any, dict[str, Any]]:
+            preprocess_started = time.perf_counter()
+            wav = preprocess_wav(path)
+            preprocess_elapsed_ms = round((time.perf_counter() - preprocess_started) * 1000, 3)
+            if len(wav) == 0:
+                raise ValueError(f"empty_audio_after_preprocess:{path}")
+            embed_started = time.perf_counter()
+            embedding = encoder.embed_utterance(wav)
+            return embedding, {
+                "samples_after_preprocess": int(len(wav)),
+                "preprocess_elapsed_ms": preprocess_elapsed_ms,
+                "embed_elapsed_ms": round((time.perf_counter() - embed_started) * 1000, 3),
+            }
+
+        enrollment_embedding, enrollment_metrics = embed(enrollment_audio)
+        candidate_embedding, candidate_metrics = embed(candidate_audio)
+        similarity = float(np.inner(enrollment_embedding, candidate_embedding))
+        match = similarity >= threshold
+        return {
+            **receipt,
+            "ok": True,
+            "primary_speaker_match": bool(match),
+            "similarity": round(similarity, 4),
+            "device": str(getattr(encoder, "device", "unknown")),
+            "load_elapsed_ms": load_elapsed_ms,
+            "enrollment": enrollment_metrics,
+            "candidate": candidate_metrics,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+    except Exception as exc:  # noqa: BLE001
+        return {
+            **receipt,
+            "ok": False,
+            "primary_speaker_match": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+
+
+def verify_primary_speaker_ecapa(
+    *,
+    receipt: dict[str, Any],
+    started: float,
+    enrollment_audio: Path,
+    candidate_audio: Path,
+    threshold: float,
+) -> dict[str, Any]:
+    try:
+        import torch
+        from speechbrain.inference.speaker import SpeakerRecognition
+    except Exception as exc:  # noqa: BLE001
+        return {
+            **receipt,
+            "ok": False,
+            "primary_speaker_match": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+
+    try:
+        device = os.getenv("CHATTERBOX_ECAPA_DEVICE", "cpu")
+        if device == "cuda" and not torch.cuda.is_available():
+            device = "cpu"
+        verifier = SpeakerRecognition.from_hparams(
+            source=os.getenv("CHATTERBOX_ECAPA_MODEL", "speechbrain/spkrec-ecapa-voxceleb"),
+            savedir=os.getenv("CHATTERBOX_ECAPA_SAVEDIR", "/tmp/chatterbox-ecapa-spkrec-ecapa-voxceleb"),
+            run_opts={"device": device},
+        )
+        load_elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+        score_started = time.perf_counter()
+        score, model_prediction = verifier.verify_files(str(enrollment_audio), str(candidate_audio))
+        score_value = float(score.detach().cpu().flatten()[0]) if hasattr(score, "detach") else float(score)
+        match = score_value >= threshold
+        return {
+            **receipt,
+            "ok": True,
+            "primary_speaker_match": bool(match),
+            "similarity": round(score_value, 4),
+            "model_prediction": bool(model_prediction.detach().cpu().flatten()[0])
+            if hasattr(model_prediction, "detach")
+            else bool(model_prediction),
+            "device": device,
+            "load_elapsed_ms": load_elapsed_ms,
+            "candidate": {
+                "score_elapsed_ms": round((time.perf_counter() - score_started) * 1000, 3),
+            },
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+    except Exception as exc:  # noqa: BLE001
+        return {
+            **receipt,
+            "ok": False,
+            "primary_speaker_match": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+
+
 def append_event(events: list[dict[str, Any]], started: float, event_type: str, **fields: Any) -> None:
     events.append(
         {
@@ -341,12 +649,16 @@ def route_turn2_from_state(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def post_memory_recall(memory_url: str, payload: dict[str, Any], timeout_s: int) -> dict[str, Any]:
+    return post_memory_json(memory_url, "/recall", payload, timeout_s=timeout_s)
+
+
+def post_memory_json(memory_url: str, endpoint: str, payload: dict[str, Any], timeout_s: int) -> dict[str, Any]:
     import httpx
 
-    response = httpx.post(f"{memory_url.rstrip('/')}/recall", json=payload, timeout=timeout_s)
+    response = httpx.post(f"{memory_url.rstrip('/')}{endpoint}", json=payload, timeout=timeout_s)
     response.raise_for_status()
     data = response.json()
-    if "items" not in data:
+    if endpoint == "/recall" and "items" not in data:
         raise RuntimeError("memory_recall_missing_items")
     return data
 
@@ -383,6 +695,38 @@ def response_from_embry_memory(item: dict[str, Any]) -> str:
     if {"location:hawaii", "person:kai"} & tags and "grief" in emotion:
         return "Rain links Kai with grief."
     return "The memory links rain with grief."
+
+
+def build_speaker_resolve_payload(
+    *,
+    args: argparse.Namespace,
+    session_id: str,
+    turn_id: str,
+    primary_speaker_verification: dict[str, Any] | None,
+) -> dict[str, Any]:
+    confidence = args.speaker_confidence
+    source = args.speaker_evidence_source
+    if primary_speaker_verification:
+        confidence = float(primary_speaker_verification.get("similarity") or confidence or 0.0)
+        source = str(primary_speaker_verification.get("engine") or source)
+    candidate = {
+        "speaker_id": args.speaker_id,
+        "display_name": args.speaker_display_name,
+        "confidence": confidence,
+        "source": source,
+        "tags": args.speaker_tag,
+    }
+    return {
+        "speaker_evidence_id": f"{args.run_id or turn_id}:primary-speaker-verification",
+        "session_id": session_id,
+        "turn_id": turn_id,
+        "persona_id": args.active_persona_id,
+        "threshold": args.speaker_resolve_threshold,
+        "ambiguity_margin": args.speaker_ambiguity_margin,
+        "prompt_variant": args.speaker_prompt_variant,
+        "allow_personal_memory": True,
+        "candidates": [candidate],
+    }
 
 
 def extract_emotional_cues(transcript: str) -> list[dict[str, Any]]:
@@ -529,6 +873,38 @@ def write_rung7_sidecar_artifacts(receipt: dict[str, Any], out_path: Path) -> No
     )
     (root / "asr-transcript.json").write_text(
         json.dumps(receipt.get("asr_transcript") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "primary-speaker-verification.json").write_text(
+        json.dumps(receipt.get("primary_speaker_verification") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "stress-fixture.json").write_text(
+        json.dumps(receipt.get("stress_fixture") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "speaker-resolution.json").write_text(
+        json.dumps(receipt.get("speaker_resolution") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "memory-intent.json").write_text(
+        json.dumps(receipt.get("memory_intent") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "speaker-memory-recall.json").write_text(
+        json.dumps(receipt.get("speaker_memory_recall") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "missing-fact-clarification.json").write_text(
+        json.dumps(receipt.get("missing_fact_clarification") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "memory-writeback.json").write_text(
+        json.dumps(receipt.get("memory_writeback") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "memory-writeback-readback.json").write_text(
+        json.dumps(receipt.get("memory_writeback_readback") or {}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (root / "tau-voice-render-request.json").write_text(
@@ -1856,6 +2232,39 @@ def run_rung6(args: argparse.Namespace) -> dict[str, Any]:
 
 def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
     started = time.perf_counter()
+    rung7_defaults = {
+        "primary_speaker_engine": "resemblyzer",
+        "enable_speaker_identity_memory": False,
+        "enable_speaker_memory_recall": False,
+        "enable_missing_fact_writeback": False,
+        "speaker_memory_only": False,
+        "speaker_id": "horus_lupercal",
+        "speaker_display_name": "Horus Lupercal",
+        "active_persona_id": "embry",
+        "speaker_tag": ["persona:horus_lupercal"],
+        "speaker_confidence": 0.0,
+        "speaker_evidence_source": "listener",
+        "speaker_resolve_threshold": 0.82,
+        "speaker_ambiguity_margin": 0.05,
+        "speaker_prompt_variant": 0,
+        "speaker_intent_scope": "persona_memory",
+        "speaker_memory_collection": "voice_conversation_memory",
+        "speaker_memory_recall_collection": None,
+        "speaker_memory_recall_tag": [],
+        "speaker_writeback_answer": None,
+        "stress_primary_audio": None,
+        "stress_noise_audio": None,
+        "stress_competing_audio": None,
+        "stress_output_fixture": None,
+        "stress_kind": "factory_floor_primary_speaker",
+        "stress_primary_gain_db": 0.0,
+        "stress_noise_gain_db": -18.0,
+        "stress_competing_gain_db": -24.0,
+        "stress_timeout_s": 60,
+    }
+    for key, value in rung7_defaults.items():
+        if not hasattr(args, key):
+            setattr(args, key, value)
     run_id = args.run_id or f"rung7-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     session_id = args.session_id or f"session-{run_id}"
     turn_id = args.turn_id or f"{run_id}-turn-1"
@@ -1868,6 +2277,20 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
     coordinator_events: list[dict[str, Any]] = []
     heard_text_ledger: list[dict[str, Any]] = []
     asr_transcript: dict[str, Any] | None = None
+    primary_speaker_verification: dict[str, Any] | None = None
+    speaker_resolution: dict[str, Any] | None = None
+    memory_intent: dict[str, Any] | None = None
+    speaker_memory_recall: dict[str, Any] | None = None
+    missing_fact_clarification: dict[str, Any] | None = None
+    memory_writeback: dict[str, Any] | None = None
+    memory_writeback_readback: dict[str, Any] | None = None
+    primary_speaker_gate_enabled = args.primary_speaker_enrollment is not None
+    expected_primary_speaker = args.expected_primary_speaker
+    turn_allowed_by_speaker_gate = True
+    skip_asr_and_render_for_memory_only = bool(args.speaker_memory_only and args.enable_speaker_identity_memory)
+    transcript = ""
+    input_asr: dict[str, Any] | None = None
+    stress_fixture: dict[str, Any] | None = None
 
     append_event(events, started, "rung.started", rung=7, run_id=run_id, session_id=session_id, turn_id=turn_id)
     append_event(events, started, "turn.started", session_id=session_id, turn_id=turn_id)
@@ -1880,7 +2303,28 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
         }
     )
 
-    fixture = args.fixture.resolve()
+    stress_fixture_path, stress_fixture = build_rung7_stress_fixture(args, run_id, receipt_root)
+    if stress_fixture and stress_fixture.get("enabled"):
+        artifacts["stress_fixture"] = stress_fixture
+        artifacts["stress_fixture_path"] = str(receipt_root / "stress-fixture.json")
+        append_event(
+            events,
+            started,
+            "listener.stress_fixture_built",
+            ok=stress_fixture.get("ok"),
+            kind=stress_fixture.get("kind"),
+            output=stress_fixture.get("output"),
+        )
+        if not stress_fixture.get("ok"):
+            failed_gates.extend(stress_fixture.get("failed_gates") or ["stress_fixture_built"])
+        elif stress_fixture_path is not None:
+            args.fixture = stress_fixture_path
+
+    if args.fixture is None:
+        failed_gates.append("input_audio_exists")
+        fixture = Path("__missing_rung7_fixture__.wav").resolve()
+    else:
+        fixture = args.fixture.resolve()
     if not fixture.exists():
         failed_gates.append("input_audio_exists")
     elif fixture.suffix.lower() != ".wav":
@@ -1912,14 +2356,311 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
             artifacts["listener_frames"] = {"error_type": type(exc).__name__, "error": str(exc)}
             failed_gates.append("listener_audio_frames_present")
 
-    backend = build_asr_backend(args)
+    if primary_speaker_gate_enabled and fixture.exists():
+        primary_speaker_verification = verify_primary_speaker(
+            enrollment_audio=args.primary_speaker_enrollment.resolve(),
+            candidate_audio=fixture,
+            engine=args.primary_speaker_engine,
+            threshold=args.primary_speaker_threshold,
+        )
+        services["primary_speaker_verifier"] = {
+            "kind": primary_speaker_verification.get("engine"),
+            "ok": primary_speaker_verification.get("ok"),
+            "threshold": primary_speaker_verification.get("threshold"),
+            "device": primary_speaker_verification.get("device"),
+            "error_type": primary_speaker_verification.get("error_type"),
+            "error": primary_speaker_verification.get("error"),
+        }
+        artifacts["primary_speaker_verification_path"] = str(receipt_root / "primary-speaker-verification.json")
+        append_event(
+            events,
+            started,
+            "listener.primary_speaker_verified",
+            turn_id=turn_id,
+            ok=primary_speaker_verification.get("ok"),
+            primary_speaker_match=primary_speaker_verification.get("primary_speaker_match"),
+            similarity=primary_speaker_verification.get("similarity"),
+            threshold=primary_speaker_verification.get("threshold"),
+        )
+        listener_events.append(
+            {
+                "type": "listener.primary_speaker_verified",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "ok": primary_speaker_verification.get("ok"),
+                "primary_speaker_match": primary_speaker_verification.get("primary_speaker_match"),
+                "similarity": primary_speaker_verification.get("similarity"),
+                "threshold": primary_speaker_verification.get("threshold"),
+                "timestamp_utc": utc_now(),
+            }
+        )
+        if not primary_speaker_verification.get("ok"):
+            failed_gates.append("primary_speaker_verifier_available")
+        speaker_match = bool(primary_speaker_verification.get("primary_speaker_match"))
+        turn_allowed_by_speaker_gate = speaker_match
+        if expected_primary_speaker and not speaker_match:
+            failed_gates.append("primary_speaker_expected_match")
+        if not expected_primary_speaker and speaker_match:
+            failed_gates.append("non_primary_speaker_suppressed")
+        if not speaker_match:
+            listener_events.append(
+                {
+                    "type": "listener.speech_suppressed",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "reason": "primary_speaker_gate_rejected",
+                    "similarity": primary_speaker_verification.get("similarity"),
+                    "threshold": primary_speaker_verification.get("threshold"),
+                    "timestamp_utc": utc_now(),
+                }
+            )
+            coordinator_events.append(
+                {
+                    "type": "turn.suppressed",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "reason": "primary_speaker_gate_rejected",
+                    "timestamp_utc": utc_now(),
+                }
+            )
+
+    memory_url = args.memory_url.rstrip("/")
+    services["memory"] = {"base_url": memory_url}
+    if args.enable_speaker_identity_memory:
+        try:
+            speaker_payload = build_speaker_resolve_payload(
+                args=args,
+                session_id=session_id,
+                turn_id=turn_id,
+                primary_speaker_verification=primary_speaker_verification,
+            )
+            speaker_resolution = post_memory_json(
+                memory_url,
+                "/speaker/resolve",
+                speaker_payload,
+                timeout_s=args.memory_timeout_s,
+            )
+            artifacts["speaker_resolution_path"] = str(receipt_root / "speaker-resolution.json")
+            coordinator_events.append(
+                {
+                    "type": "memory.speaker_resolved",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "status": speaker_resolution.get("status"),
+                    "speaker_id": speaker_resolution.get("speaker_id"),
+                    "confidence": speaker_resolution.get("confidence"),
+                    "timestamp_utc": utc_now(),
+                }
+            )
+            intent_query = transcript or args.question
+            memory_intent = post_memory_json(
+                memory_url,
+                "/intent",
+                {
+                    "q": intent_query,
+                    "scope": args.speaker_intent_scope,
+                    "fast": True,
+                    "speaker_resolution": speaker_resolution,
+                },
+                timeout_s=args.memory_timeout_s,
+            )
+            artifacts["memory_intent_path"] = str(receipt_root / "memory-intent.json")
+            coordinator_events.append(
+                {
+                    "type": "memory.intent_routed",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "action": memory_intent.get("action"),
+                    "reason": memory_intent.get("reason"),
+                    "clarify_kind": memory_intent.get("clarify_kind"),
+                    "timestamp_utc": utc_now(),
+                }
+            )
+            if (
+                args.enable_speaker_memory_recall
+                and turn_allowed_by_speaker_gate
+                and speaker_resolution.get("status") == "known"
+            ):
+                recall_tags = list(speaker_resolution.get("memory_tags") or []) + list(args.speaker_memory_recall_tag or [])
+                recall_payload = {
+                    "q": args.question,
+                    "scope": args.speaker_intent_scope,
+                    "k": args.memory_k,
+                    "threshold": args.min_memory_confidence,
+                    "tags": recall_tags,
+                    "recall_profile": speaker_resolution.get("recall_profile"),
+                    "required_artifacts": ["speaker_identity", "speaker_scoped_memory"],
+                }
+                if args.speaker_memory_recall_collection:
+                    recall_payload["collections"] = list(args.speaker_memory_recall_collection)
+                recall_profile_fallback: dict[str, Any] | None = None
+                try:
+                    speaker_memory_recall_response = post_memory_recall(
+                        memory_url,
+                        recall_payload,
+                        timeout_s=args.memory_timeout_s,
+                    )
+                except Exception as exc:  # noqa: BLE001 - preserve live service compatibility issue
+                    response = getattr(exc, "response", None)
+                    status_code = getattr(response, "status_code", None)
+                    response_text = str(getattr(response, "text", ""))
+                    rejected_profile = recall_payload.get("recall_profile")
+                    if status_code == 422 and rejected_profile and "Unknown recall_profile" in response_text:
+                        fallback_payload = dict(recall_payload)
+                        fallback_payload.pop("recall_profile", None)
+                        recall_profile_fallback = {
+                            "schema": "chatterbox.memory.recall_profile_fallback.v1",
+                            "reason": "memory_service_rejected_recall_profile",
+                            "rejected_profile": rejected_profile,
+                            "status_code": status_code,
+                            "response_text": response_text[:500],
+                            "fallback_request": fallback_payload,
+                        }
+                        speaker_memory_recall_response = post_memory_recall(
+                            memory_url,
+                            fallback_payload,
+                            timeout_s=args.memory_timeout_s,
+                        )
+                    else:
+                        raise
+                speaker_memory_recall = {
+                    "request": recall_payload,
+                    "recall_profile_fallback": recall_profile_fallback,
+                    "found": speaker_memory_recall_response.get("found"),
+                    "confidence": speaker_memory_recall_response.get("confidence"),
+                    "should_scan": speaker_memory_recall_response.get("should_scan"),
+                    "items": speaker_memory_recall_response.get("items") or [],
+                    "meta": speaker_memory_recall_response.get("meta"),
+                    "raw": speaker_memory_recall_response,
+                }
+                artifacts["speaker_memory_recall_path"] = str(receipt_root / "speaker-memory-recall.json")
+                coordinator_events.append(
+                    {
+                        "type": "memory.speaker_recall_finished",
+                        "session_id": session_id,
+                        "turn_id": turn_id,
+                        "speaker_id": speaker_resolution.get("speaker_id"),
+                        "found": speaker_memory_recall.get("found"),
+                        "confidence": speaker_memory_recall.get("confidence"),
+                        "item_count": len(speaker_memory_recall.get("items") or []),
+                        "timestamp_utc": utc_now(),
+                    }
+                )
+                if not speaker_memory_recall.get("found"):
+                    missing_fact_clarification = {
+                        "schema": "chatterbox.memory.missing_fact_clarification.v1",
+                        "speaker_id": speaker_resolution.get("speaker_id"),
+                        "display_name": speaker_resolution.get("display_name"),
+                        "question": args.question,
+                        "reason": "speaker_scoped_memory_recall_miss",
+                        "text": "I do not know that yet. Tell me, and I will remember it for this speaker.",
+                        "timestamp_utc": utc_now(),
+                    }
+                    artifacts["missing_fact_clarification_path"] = str(receipt_root / "missing-fact-clarification.json")
+                    coordinator_events.append(
+                        {
+                            "type": "memory.missing_fact_clarification_created",
+                            "session_id": session_id,
+                            "turn_id": turn_id,
+                            "speaker_id": speaker_resolution.get("speaker_id"),
+                            "reason": "speaker_scoped_memory_recall_miss",
+                            "timestamp_utc": utc_now(),
+                        }
+                    )
+                    if args.enable_missing_fact_writeback and args.speaker_writeback_answer:
+                        writeback_text = f"{speaker_resolution.get('display_name') or args.speaker_display_name}: {args.speaker_writeback_answer}"
+                        writeback_key = sha256_text(
+                            "|".join(
+                                [
+                                    str(speaker_resolution.get("speaker_id") or args.speaker_id),
+                                    args.question,
+                                    args.speaker_writeback_answer,
+                                ]
+                            )
+                        )[:24]
+                        writeback_payload = {
+                            "collection": args.speaker_memory_collection,
+                            "documents": [
+                                {
+                                    "_key": f"voice_fact_{writeback_key}",
+                                    "schema": "memory.voice_conversation_fact.v1",
+                                    "speaker_id": speaker_resolution.get("speaker_id"),
+                                    "display_name": speaker_resolution.get("display_name"),
+                                    "persona_id": args.active_persona_id,
+                                    "scope": args.speaker_intent_scope,
+                                    "question": args.question,
+                                    "answer": args.speaker_writeback_answer,
+                                    "text": writeback_text,
+                                    "tags": sorted(set(recall_tags + ["voice_conversation_fact", "speaker_memory_writeback"])),
+                                    "session_id": session_id,
+                                    "turn_id": turn_id,
+                                    "source": "chatterbox_rung7_missing_fact_writeback",
+                                    "created_at": utc_now(),
+                                }
+                            ],
+                        }
+                        memory_writeback = post_memory_json(
+                            memory_url,
+                            "/upsert",
+                            writeback_payload,
+                            timeout_s=args.memory_timeout_s,
+                        )
+                        memory_writeback_readback = post_memory_json(
+                            memory_url,
+                            "/recall/by-keys",
+                            {
+                                "collection": args.speaker_memory_collection,
+                                "key_field": "_key",
+                                "keys": [writeback_payload["documents"][0]["_key"]],
+                                "return_fields": [
+                                    "_key",
+                                    "speaker_id",
+                                    "persona_id",
+                                    "question",
+                                    "answer",
+                                    "tags",
+                                ],
+                            },
+                            timeout_s=args.memory_timeout_s,
+                        )
+                        artifacts["memory_writeback_path"] = str(receipt_root / "memory-writeback.json")
+                        artifacts["memory_writeback_readback_path"] = str(receipt_root / "memory-writeback-readback.json")
+                        coordinator_events.append(
+                            {
+                                "type": "memory.writeback_finished",
+                                "session_id": session_id,
+                                "turn_id": turn_id,
+                                "speaker_id": speaker_resolution.get("speaker_id"),
+                                "collection": args.speaker_memory_collection,
+                                "document_key": writeback_payload["documents"][0]["_key"],
+                                "timestamp_utc": utc_now(),
+                            }
+                        )
+        except Exception as exc:  # noqa: BLE001
+            speaker_resolution = speaker_resolution or {
+                "schema": "memory.speaker_resolution.v1",
+                "status": "error",
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            services["memory"]["speaker_identity_error"] = {
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "response_status_code": getattr(getattr(exc, "response", None), "status_code", None),
+                "response_text": str(getattr(getattr(exc, "response", None), "text", ""))[:500],
+            }
+            failed_gates.append("memory_speaker_identity_roundtrip")
+
+    backend = (
+        build_asr_backend(args)
+        if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only
+        else {"kind": "not_called", "live": False}
+    )
     services["asr"] = asr_backend_receipt(backend)
-    if not backend.get("live"):
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only and not backend.get("live"):
         failed_gates.append("asr_backend_available")
 
-    transcript = ""
-    input_asr: dict[str, Any] | None = None
-    if fixture.exists() and backend.get("live"):
+    if fixture.exists() and turn_allowed_by_speaker_gate and backend.get("live"):
         listener_events.append(
             {
                 "type": "listener.speech_started",
@@ -2011,7 +2752,7 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
             }
             failed_gates.append("input_asr_transcribed")
 
-    cancel_requested = transcript_requests_cancel(transcript)
+    cancel_requested = transcript_requests_cancel(transcript) if turn_allowed_by_speaker_gate else False
     if transcript:
         coordinator_events.append(
             {
@@ -2037,53 +2778,140 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
 
-    render_request = build_tau_voice_render_request(
-        run_id=run_id,
-        session_id=session_id,
-        turn_id=turn_id,
-        transcript=transcript,
-        response_text=args.response_text,
-        receipt_root=receipt_root,
-        old_turn_id=args.old_turn_id,
-        cancel_requested=cancel_requested,
-    )
-    coordinator_events.append(
-        {
-            "type": "turn.renderer_request_created",
-            "session_id": session_id,
-            "turn_id": turn_id,
-            "schema": render_request["schema"],
-            "request_sha256": sha256_text(json.dumps(render_request, sort_keys=True)),
-            "timestamp_utc": utc_now(),
-        }
-    )
-    append_event(events, started, "turn.renderer_request_created", turn_id=turn_id, schema=render_request["schema"])
+    render_request = None
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only:
+        render_request = build_tau_voice_render_request(
+            run_id=run_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            transcript=transcript,
+            response_text=args.response_text,
+            receipt_root=receipt_root,
+            old_turn_id=args.old_turn_id,
+            cancel_requested=cancel_requested,
+        )
+        coordinator_events.append(
+            {
+                "type": "turn.renderer_request_created",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "schema": render_request["schema"],
+                "request_sha256": sha256_text(json.dumps(render_request, sort_keys=True)),
+                "timestamp_utc": utc_now(),
+            }
+        )
+        append_event(events, started, "turn.renderer_request_created", turn_id=turn_id, schema=render_request["schema"])
 
     if not listener_events:
         failed_gates.append("listener_events_present")
     if not any(event.get("type") == "listener.audio_frame_received" for event in listener_events):
         failed_gates.append("listener_audio_frame_events_present")
-    if asr_transcript is None or not asr_transcript.get("text"):
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only and (asr_transcript is None or not asr_transcript.get("text")):
         failed_gates.append("asr_transcript_final_text_present")
-    if not heard_text_ledger:
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only and not heard_text_ledger:
         failed_gates.append("heard_text_ledger_present")
-    for event_type in ["turn.started", "turn.user_text_final", "turn.renderer_request_created"]:
+    required_coordinator_events = ["turn.started"]
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only:
+        required_coordinator_events.extend(["turn.user_text_final", "turn.renderer_request_created"])
+    elif turn_allowed_by_speaker_gate:
+        required_coordinator_events.append("memory.speaker_resolved")
+    else:
+        required_coordinator_events.append("turn.suppressed")
+    for event_type in required_coordinator_events:
         if not any(event.get("type") == event_type for event in coordinator_events):
             failed_gates.append(f"coordinator_{event_type.replace('.', '_')}_present")
-    if render_request["schema"] != "tau.voice_render_request.v1":
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only and (not render_request or render_request["schema"] != "tau.voice_render_request.v1"):
         failed_gates.append("tau_voice_render_request_schema")
-    if render_request["memory_route_decision"]["called"]:
+    if turn_allowed_by_speaker_gate and not skip_asr_and_render_for_memory_only and render_request and render_request["memory_route_decision"]["called"]:
         failed_gates.append("listener_boundary_did_not_call_memory")
+    if args.enable_speaker_identity_memory:
+        if not speaker_resolution or speaker_resolution.get("schema") != "memory.speaker_resolution.v1":
+            failed_gates.append("speaker_resolution_schema")
+        if not memory_intent:
+            failed_gates.append("memory_intent_present")
+        speaker_status = (speaker_resolution or {}).get("status")
+        if not turn_allowed_by_speaker_gate and speaker_status not in {"unknown", "ambiguous"}:
+            failed_gates.append("non_primary_speaker_resolves_unknown_or_ambiguous")
+        if not turn_allowed_by_speaker_gate and memory_intent:
+            if memory_intent.get("action") != "CLARIFY" or memory_intent.get("clarify_kind") != "speaker_identity":
+                failed_gates.append("unknown_speaker_intent_clarifies_identity")
+        if turn_allowed_by_speaker_gate and speaker_status == "known":
+            expected_tags = {f"speaker:{args.speaker_id}", f"user:{args.speaker_id}", f"persona:{args.active_persona_id}"}
+            returned_tags = set((speaker_resolution or {}).get("memory_tags") or [])
+            if not expected_tags.issubset(returned_tags):
+                failed_gates.append("known_speaker_memory_tags_present")
+            if args.enable_speaker_memory_recall:
+                if not speaker_memory_recall:
+                    failed_gates.append("speaker_memory_recall_present")
+                else:
+                    recall_request = speaker_memory_recall.get("request") or {}
+                    recall_tags = set(recall_request.get("tags") or [])
+                    if not expected_tags.issubset(recall_tags):
+                        failed_gates.append("speaker_memory_recall_tags_present")
+                    if speaker_memory_recall.get("found"):
+                        items = speaker_memory_recall.get("items") or []
+                        if not items:
+                            failed_gates.append("speaker_memory_recall_items_present")
+                    else:
+                        if not missing_fact_clarification:
+                            failed_gates.append("missing_fact_clarification_present")
+                        if args.enable_missing_fact_writeback:
+                            if not memory_writeback:
+                                failed_gates.append("memory_writeback_present")
+                            elif memory_writeback.get("ok") is False:
+                                failed_gates.append("memory_writeback_ok")
+                            elif not memory_writeback_readback or not (
+                                (memory_writeback_readback.get("results") or [])
+                                or (memory_writeback_readback.get("documents") or [])
+                            ):
+                                failed_gates.append("memory_writeback_readback_present")
 
     artifacts.update(
         {
             "heard_text_ledger_path": str(receipt_root / "heard-text-ledger.jsonl"),
             "listener_turn_events_path": str(receipt_root / "listener-turn-events.jsonl"),
             "asr_transcript_path": str(receipt_root / "asr-transcript.json"),
+            "primary_speaker_verification_path": str(receipt_root / "primary-speaker-verification.json"),
+            "speaker_resolution_path": str(receipt_root / "speaker-resolution.json"),
+            "memory_intent_path": str(receipt_root / "memory-intent.json"),
+            "speaker_memory_recall_path": str(receipt_root / "speaker-memory-recall.json"),
+            "missing_fact_clarification_path": str(receipt_root / "missing-fact-clarification.json"),
+            "memory_writeback_path": str(receipt_root / "memory-writeback.json"),
+            "memory_writeback_readback_path": str(receipt_root / "memory-writeback-readback.json"),
             "tau_voice_render_request_path": str(receipt_root / "tau-voice-render-request.json"),
         }
     )
     append_event(events, started, "rung.finished", ok=not failed_gates)
+    proves: list[str] = []
+    if not failed_gates:
+        proves.append("listener_boundary_accepts_real_wav_audio_frames")
+        if primary_speaker_gate_enabled:
+            proves.append("primary_speaker_gate_makes_auditable_accept_or_suppress_decision")
+        if stress_fixture and stress_fixture.get("ok"):
+            proves.append("stress_fixture_mixes_primary_speaker_with_background_or_competing_audio")
+            proves.append("configured_stress_fixture_audio_is_the_listener_input")
+        if args.enable_speaker_identity_memory:
+            proves.append("listener_speaker_evidence_roundtrips_through_memory_speaker_resolve_and_intent")
+        if args.enable_speaker_memory_recall and speaker_memory_recall:
+            proves.append("known_speaker_identity_routes_recall_through_speaker_scoped_memory_tags")
+            if not speaker_memory_recall.get("found") and missing_fact_clarification:
+                proves.append("speaker_scoped_recall_miss_creates_missing_fact_clarification")
+            if memory_writeback:
+                proves.append("missing_fact_answer_is_written_back_to_memory")
+        if turn_allowed_by_speaker_gate:
+            if skip_asr_and_render_for_memory_only:
+                proves.append("speaker_memory_only_mode_skips_asr_and_tau_without_claiming_transcription_or_rendering")
+            else:
+                proves.extend(
+                    [
+                        "configured_asr_backend_produces_auditable_final_text",
+                        "coordinator_creates_tau_voice_render_request_without_listener_owning_memory_or_tts",
+                    ]
+                )
+        else:
+            proves.append("primary_speaker_gate_suppresses_non_primary_audio_before_asr_or_rendering")
+            if args.enable_speaker_identity_memory:
+                proves.append("unknown_or_non_primary_speaker_routes_to_identity_clarification_without_personal_recall")
     return {
         "schema": RUNG7_SCHEMA,
         "ok": not failed_gates,
@@ -2092,7 +2920,12 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
         "session_id": session_id,
         "turn_id": turn_id,
         "mocked": False,
-        "live": bool(backend.get("live") and fixture.exists() and not failed_gates),
+        "live": bool(
+            fixture.exists()
+            and turn_allowed_by_speaker_gate
+            and not failed_gates
+            and (backend.get("live") or skip_asr_and_render_for_memory_only)
+        ),
         "started_at_utc": datetime.fromtimestamp(
             time.time() - (time.perf_counter() - started),
             timezone.utc,
@@ -2105,6 +2938,21 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
             "fixture_provenance": args.fixture_provenance,
             "listener_frame_ms": args.listener_frame_ms,
             "old_turn_id": args.old_turn_id,
+            "primary_speaker_gate_enabled": primary_speaker_gate_enabled,
+            "primary_speaker_enrollment": str(args.primary_speaker_enrollment.resolve()) if args.primary_speaker_enrollment else None,
+            "primary_speaker_threshold": args.primary_speaker_threshold,
+            "primary_speaker_engine": args.primary_speaker_engine,
+            "expected_primary_speaker": expected_primary_speaker,
+            "speaker_identity_memory_enabled": args.enable_speaker_identity_memory,
+            "speaker_memory_recall_enabled": args.enable_speaker_memory_recall,
+            "missing_fact_writeback_enabled": args.enable_missing_fact_writeback,
+            "speaker_memory_only": args.speaker_memory_only,
+            "speaker_id": args.speaker_id,
+            "speaker_display_name": args.speaker_display_name,
+            "active_persona_id": args.active_persona_id,
+            "speaker_memory_collection": args.speaker_memory_collection,
+            "stress_fixture_enabled": bool(stress_fixture and stress_fixture.get("enabled")),
+            "stress_kind": (stress_fixture or {}).get("kind"),
         },
         "artifacts": artifacts,
         "events": events,
@@ -2113,22 +2961,27 @@ def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
         "coordinator_events": coordinator_events,
         "input_asr": input_asr,
         "asr_transcript": asr_transcript,
+        "primary_speaker_verification": primary_speaker_verification,
+        "stress_fixture": stress_fixture,
+        "speaker_resolution": speaker_resolution,
+        "memory_intent": memory_intent,
+        "speaker_memory_recall": speaker_memory_recall,
+        "missing_fact_clarification": missing_fact_clarification,
+        "memory_writeback": memory_writeback,
+        "memory_writeback_readback": memory_writeback_readback,
         "tau_voice_render_request": render_request,
         "failed_gates": failed_gates,
         "claims": {
-            "proves": [
-                "listener_boundary_accepts_real_wav_audio_frames",
-                "configured_asr_backend_produces_auditable_final_text",
-                "coordinator_creates_tau_voice_render_request_without_listener_owning_memory_or_tts",
-            ]
-            if not failed_gates
-            else [],
+            "proves": proves,
             "does_not_prove": [
-                "production_noise_robustness",
+                *([] if stress_fixture and stress_fixture.get("ok") else ["configured_noise_or_competing_voice_stress_case"]),
+                "generalized_production_noise_robustness_beyond_the_configured_fixture",
                 "browser_webrtc_readiness",
                 "memory_salience_or_qra_correctness",
                 "subjective_interruption_feel",
                 "chatterbox_tts_output_quality",
+                "physical_speaker_to_microphone_identity_gating",
+                "overlapping_speaker_diarization",
             ],
         },
     }
@@ -2164,6 +3017,37 @@ def main() -> int:
     parser.add_argument("--turn-id", default=None)
     parser.add_argument("--old-turn-id", default=None)
     parser.add_argument("--listener-frame-ms", default=20, type=int)
+    parser.add_argument("--primary-speaker-enrollment", type=Path, default=None)
+    parser.add_argument("--primary-speaker-engine", choices=["resemblyzer", "speechbrain_ecapa"], default="resemblyzer")
+    parser.add_argument("--primary-speaker-threshold", default=0.82, type=float)
+    parser.add_argument("--expected-primary-speaker", default=True, type=parse_bool_arg)
+    parser.add_argument("--enable-speaker-identity-memory", action="store_true")
+    parser.add_argument("--enable-speaker-memory-recall", action="store_true")
+    parser.add_argument("--enable-missing-fact-writeback", action="store_true")
+    parser.add_argument("--speaker-memory-only", action="store_true")
+    parser.add_argument("--speaker-id", default="horus_lupercal")
+    parser.add_argument("--speaker-display-name", default="Horus Lupercal")
+    parser.add_argument("--active-persona-id", default="embry")
+    parser.add_argument("--speaker-tag", action="append", default=["persona:horus_lupercal"])
+    parser.add_argument("--speaker-confidence", default=0.0, type=float)
+    parser.add_argument("--speaker-evidence-source", default="listener")
+    parser.add_argument("--speaker-resolve-threshold", default=0.82, type=float)
+    parser.add_argument("--speaker-ambiguity-margin", default=0.05, type=float)
+    parser.add_argument("--speaker-prompt-variant", default=0, type=int)
+    parser.add_argument("--speaker-intent-scope", default="persona_memory")
+    parser.add_argument("--speaker-memory-collection", default="voice_conversation_memory")
+    parser.add_argument("--speaker-memory-recall-collection", action="append", default=None)
+    parser.add_argument("--speaker-memory-recall-tag", action="append", default=[])
+    parser.add_argument("--speaker-writeback-answer", default=None)
+    parser.add_argument("--stress-primary-audio", type=Path, default=None)
+    parser.add_argument("--stress-noise-audio", type=Path, default=None)
+    parser.add_argument("--stress-competing-audio", type=Path, default=None)
+    parser.add_argument("--stress-output-fixture", type=Path, default=None)
+    parser.add_argument("--stress-kind", default="factory_floor_primary_speaker")
+    parser.add_argument("--stress-primary-gain-db", default=0.0, type=float)
+    parser.add_argument("--stress-noise-gain-db", default=-18.0, type=float)
+    parser.add_argument("--stress-competing-gain-db", default=-24.0, type=float)
+    parser.add_argument("--stress-timeout-s", default=60, type=int)
     parser.add_argument("--question", default="Embry, which control family should I use when the answer says SI?")
     parser.add_argument("--first-answer", default=None)
     parser.add_argument("--new-answer", default=None)
@@ -2220,8 +3104,8 @@ def main() -> int:
             )
         receipt = run_rung6(args)
     else:
-        if not args.fixture:
-            parser.error("--fixture is required for --rung 7")
+        if not args.fixture and not args.stress_primary_audio:
+            parser.error("--fixture or --stress-primary-audio is required for --rung 7")
         receipt = run_rung7(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     if args.rung == 7:

@@ -9,7 +9,7 @@ receipts, and memory-gated blessed-QRA instant playback.
 Current primary runtime:
 
 ```text
-listener/coordinator text -> memory/QRA gate when available ->
+listener audio/text -> optional primary-speaker gate -> memory/QRA gate when available ->
 Chatterbox Turbo render plan -> ASR-gated or blessed cached audio ->
 PCM stream / WAV receipts
 ```
@@ -29,7 +29,7 @@ and emotional steering decisions belong to the coordinator and memory pipeline.
 | Turn controls | Cancel, duck, and stop endpoints record live turn-control state; cancel/stop can terminate matching stream playback. |
 | Blessed QRA cache | Approved QRA creation events can invoke `scripts/qra_creation_audio_hook.py`, which uses `scripts/bless_qra_audio_variants.py` to pre-render five Embry audio variants; runtime playback requires a near-exact memory/QRA gate by default. |
 | Conversation ladder | `scripts/smoke_conversation_ladder.py` and `docs/conversation_sanity_ladder_v0.md` define rungs 1-7 for file-backed listener input, state, memory, interruption, Brave Search latency, emotional steering, and listener-boundary receipts. |
-| Listener contract | Rung 7 has a live boundary runner: audio frames in, ASR/heard-text ledger out, coordinator turn events out, and a `tau.voice_render_request.v1` envelope. |
+| Listener contract | Rung 7 has a live boundary runner: audio frames in, optional primary-speaker verification, ASR/heard-text ledger out, coordinator turn events out, and a `tau.voice_render_request.v1` envelope only for accepted primary-speaker turns. |
 
 ## Quick Start: Agent Server
 
@@ -202,9 +202,24 @@ Implemented evidence rungs:
 Rung 7 is implemented as a listener-boundary runner. It accepts a WAV transport,
 records frame-level listener events, runs the configured ASR backend, writes
 `heard-text-ledger.jsonl`, `listener-turn-events.jsonl`, `asr-transcript.json`,
-and creates `tau-voice-render-request.json`. It does not call memory, search, or
-Chatterbox directly. A local run on this checkout failed closed because
-`faster_whisper` was unavailable.
+`primary-speaker-verification.json`, and, for accepted primary-speaker turns,
+creates `tau-voice-render-request.json`. It does not call memory, search, or
+Chatterbox directly. Enable the primary-speaker gate with
+`--primary-speaker-enrollment`, `--primary-speaker-threshold`, and
+`--expected-primary-speaker`.
+
+Install the optional listener gate dependencies only when needed:
+
+```bash
+python -m pip install ".[listener]"
+```
+
+Latest fixture-level primary-speaker gate suite:
+`/tmp/chatterbox-fork-agent-out/primary-speaker-gate-20260702T150040Z/suite-summary.json`.
+It accepted the generated primary male voice, suppressed generated alternate
+male/female voices and white noise before ASR/rendering, and records
+`mocked=false`. It does not prove physical speaker-to-microphone playback, real
+user enrollment, room background noise, overlapping diarization, or GPU latency.
 
 ## Full Live Sanity Bundle
 
@@ -261,6 +276,9 @@ The latest recorded proof artifacts are local files under
 | `listener-memory-tau-qra-20260702T135037Z/listener-memory-tau-qra.json` | Full listener -> memory/QRA -> Tau render -> blessed cache chain: live heard text, live `sparta_qra` recall key `qra__run-recovery-verify__2085979782`, five generated Embry variants, Tau cache hit, memory gate passed, and host WAV metrics. |
 | `listener-memory-tau-qra-20260702T140108Z-creation-hook/listener-memory-tau-qra.json` | Same combined chain routed through `qra_creation_audio_hook.py`: approved QRA creation event, hook `live=true`, five generated variants over two chunks, Tau cache hit, memory gate passed, selected variant `gentle`, and host WAV `1198158` bytes / `24.96` seconds. |
 | `full-live-sanity-20260702T140317Z-creation-hook/full-live-sanity.json` | Augmented full bundle with ASR cache fill/hit, stream, stream cancel, interruption, turn controls, Tau ingress, and listener-memory-QRA creation-hook chain all `mocked=false`, `live=true`, and empty `failed_gates`. |
+| `primary-speaker-gate-20260702T150040Z/suite-summary.json` | Rung 7 optional primary-speaker gate accepted generated primary voice and suppressed generated alternate male, generated female, and white-noise inputs before ASR/Tau rendering. |
+| `/tmp/chatterbox-speaker-memory-rungs-20260702T1748Z/rung3_known_horus_missing_fact_writeback.json` | Physical Horus Lupercal audio through ECAPA, live memory `/speaker/resolve`, `/intent`, collection-scoped `/recall` miss, missing-fact clarification, `/upsert`, and `/recall/by-keys` readback. Uses `--speaker-memory-only`, so it does not claim ASR/Tau rendering. |
+| `/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json` | Fresh physical Horus Lupercal turn after writeback; live `/recall` finds the scoped `persona_memory` record written by the prior receipt with `speaker_id=horus_lupercal`, `found=true`, `confidence=0.85`, and the answer `Horus Lupercal grew up on Cthonia.` |
 
 These receipts do not prove live microphone capture, WebRTC/browser transport,
 production memory-agent admission review, subjective voice quality, noisy-room
