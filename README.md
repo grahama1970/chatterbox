@@ -284,6 +284,7 @@ The latest recorded proof artifacts are local files under
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/speaker-segment-evidence.json` | Segment-level Horus-vs-Embry speaker evidence over the physical microphone capture. Receipt has `mocked=false`, `live=true`, `failed_gates=[]`; 24 voiced windows, 19 Horus-labeled, 1 Embry-labeled, 4 ambiguous, Horus ratio `0.7917`, mean primary margin `0.0794`. This is fixed-window speaker evidence, not pyannote/spectral-clustering diarization or overlap separation. |
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-preflight.json` | Pyannote diarization preflight for the same physical microphone capture. Receipt has `mocked=false`, `live=false`, `ok=false`, `failed_gates=["hf_token_or_local_model_available"]`; no `HF_TOKEN`, `HUGGINGFACE_TOKEN`, `HUGGING_FACE_HUB_TOKEN`, or local pyannote model path was available. This is a fail-closed model-access receipt, not a live diarization pass. |
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-live-cpu.json` | Live pyannote diarization over the physical microphone capture using `pyannote/speaker-diarization-community-1` on CPU. Receipt has `mocked=false`, `live=true`, `ok=true`, `failed_gates=[]`; 2 diarization segments, 2 exclusive segments, 1 speaker label `SPEAKER_00`, and `overlap_seconds=0.0`. GPU auto mode hit a local NVIDIA driver/CUDA compatibility error, so this receipt proves local CPU pyannote execution only. |
+| `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-container-restart-cpu.json` | Same pyannote CPU smoke from the restarted Docker container. Receipt has `mocked=false`, `live=true`, `ok=true`, `failed_gates=[]`; 2 diarization segments, 1 speaker label `SPEAKER_00`, and `overlap_seconds=0.0`. The container keeps Chatterbox on global `torch 2.6.0` and runs pyannote from isolated `/opt/chatterbox-diarization-venv`. |
 
 These receipts do not prove WebRTC/browser transport, production memory-agent
 admission review, subjective voice quality, noisy-room robustness beyond the
@@ -300,6 +301,12 @@ HF_TOKEN=<token> python scripts/smoke_pyannote_diarization.py \
   --device cpu \
   --min-speakers 1
 ```
+
+The Docker launcher exports `CHATTERBOX_DIARIZATION_PYTHON` and passes
+`HF_TOKEN` into the container when available. The local
+`chatterbox-voice-sanity:local` image includes an isolated
+`/opt/chatterbox-diarization-venv` for pyannote so the Chatterbox server Python
+can remain on its CUDA-tested Torch stack.
 
 ## Upstream Chatterbox
 

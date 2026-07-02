@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 import time
 import wave
 from datetime import datetime, timezone
@@ -142,6 +143,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         receipt["ended_at_utc"] = utc_now()
         receipt["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 3)
         return receipt
+
+    # The current Chatterbox Docker image uses Python 3.11.0rc1, which predates
+    # these CPython integer-string safety helpers. Some pyannote dependencies
+    # probe for them at import time.
+    if not hasattr(sys, "get_int_max_str_digits"):
+        def get_int_max_str_digits() -> int:
+            return 0
+
+        sys.get_int_max_str_digits = get_int_max_str_digits  # type: ignore[attr-defined]
+    if not hasattr(sys, "set_int_max_str_digits"):
+        def set_int_max_str_digits(maxdigits: int) -> None:
+            return None
+
+        sys.set_int_max_str_digits = set_int_max_str_digits  # type: ignore[attr-defined]
 
     try:
         import torch

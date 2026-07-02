@@ -13,6 +13,11 @@ out_dir="${CHATTERBOX_OUT_DIR_HOST:-/tmp/chatterbox-fork-agent-out}"
 ref_audio="${CHATTERBOX_REF_AUDIO_HOST:-/home/graham/workspace/experiments/agent-skills/skills/persona-dream/voice_clone_candidates/embry_kling_clone_candidate.wav}"
 device="${CHATTERBOX_DEVICE:-cuda}"
 asr_url="${CHATTERBOX_ASR_OPENAI_BASE_URL:-http://whisper:9000}"
+diarization_python="${CHATTERBOX_DIARIZATION_PYTHON:-/opt/chatterbox-diarization-venv/bin/python}"
+hf_token="${HF_TOKEN:-}"
+if [[ -z "$hf_token" ]] && command -v zsh >/dev/null 2>&1; then
+  hf_token="$(zsh -lc 'source ~/.zshrc >/dev/null 2>&1; print -r -- ${HF_TOKEN:-}' || true)"
+fi
 
 usage() {
   cat <<EOF
@@ -32,6 +37,8 @@ Environment overrides:
   CHATTERBOX_OUT_DIR_HOST        default: ${out_dir}
   CHATTERBOX_REF_AUDIO_HOST      default: ${ref_audio}
   CHATTERBOX_ASR_OPENAI_BASE_URL default: ${asr_url}
+  CHATTERBOX_DIARIZATION_PYTHON  default: ${diarization_python}
+  HF_TOKEN                       optional; used for gated pyannote model access
 EOF
 }
 
@@ -79,6 +86,12 @@ echo "repo_root=$repo_root"
 echo "out_dir=$out_dir"
 echo "ref_audio=$ref_audio"
 echo "asr_url=$asr_url"
+echo "diarization_python=$diarization_python"
+if [[ -n "$hf_token" ]]; then
+  echo "hf_token=set"
+else
+  echo "hf_token=unset"
+fi
 echo "execute=$execute"
 
 if [[ "$execute" != true ]]; then
@@ -104,6 +117,20 @@ trap 'rm -f "$key_file"' EXIT
 docker exec "$whisper_container" sh -lc 'cat /var/lib/whisper/.api_key' > "$key_file"
 chmod 600 "$key_file"
 
+docker_env=(
+  -e PYTHONPATH=/work/src
+  -e CHATTERBOX_OUT_DIR=/out
+  -e CHATTERBOX_REF_AUDIO=/data/embry_ref.wav
+  -e CHATTERBOX_REF_AUDIO_ROOTS=/data:/voices:/work
+  -e CHATTERBOX_DEVICE="$device"
+  -e CHATTERBOX_ASR_OPENAI_BASE_URL="$asr_url"
+  -e CHATTERBOX_DIARIZATION_PYTHON="$diarization_python"
+  -e WHISPER_API_KEY="$(cat "$key_file")"
+)
+if [[ -n "$hf_token" ]]; then
+  docker_env+=(-e HF_TOKEN="$hf_token")
+fi
+
 docker rm -f "$chatterbox_container" >/dev/null 2>&1 || true
 docker run -d \
   --gpus all \
@@ -111,13 +138,7 @@ docker run -d \
   --network "$network" \
   --entrypoint python3.11 \
   -p "127.0.0.1:${host_port}:${container_port}" \
-  -e PYTHONPATH=/work/src \
-  -e CHATTERBOX_OUT_DIR=/out \
-  -e CHATTERBOX_REF_AUDIO=/data/embry_ref.wav \
-  -e CHATTERBOX_REF_AUDIO_ROOTS=/data:/voices:/work \
-  -e CHATTERBOX_DEVICE="$device" \
-  -e CHATTERBOX_ASR_OPENAI_BASE_URL="$asr_url" \
-  -e WHISPER_API_KEY="$(cat "$key_file")" \
+  "${docker_env[@]}" \
   -v "${repo_root}:/work:ro" \
   -v "${out_dir}:/out" \
   -v "${ref_audio}:/data/embry_ref.wav:ro" \
