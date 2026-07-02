@@ -187,6 +187,51 @@ explicit `does_not_prove` boundaries. If the accepted audio cache is
 container-owned, the runner falls back to deleting `/out/_accepted_audio_cache`
 from inside `chatterbox-fork-agent-server`.
 
+Run the focused stream-cancel smoke:
+
+```bash
+python scripts/smoke_stream_turn_cancel.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/stream-cancel-smoke.json
+```
+
+`/synthesize-batch-stream` accepts an optional `turn_id`. When the matching
+turn-control state is cancelled or stopped, the stream generator stops before
+synthesis and before PCM block emission. The smoke proves a baseline stream
+emits bytes and a pre-cancelled old turn emits zero bytes.
+
+### Blessed QRA Instant Playback
+
+Known, reviewed QRA answers can be pre-rendered into Embry audio variants and
+played back without waiting for new Chatterbox generation. This path is
+fail-closed: local text similarity is not enough by default. The caller must
+provide a memory/QRA gate from the coordinator:
+
+- `blessed_qra_memory_key` must match the blessed QRA entry.
+- `blessed_qra_memory_similarity` must meet `blessed_qra_min_similarity`
+  (default `0.99`).
+- `blessed_qra_memory_review_status` must be `approved`, `blessed`, or
+  `verified`.
+- Set `use_blessed_qra_cache=false` to disable this fast path for a request.
+
+Create or refresh the five Embry audio variants for an approved QRA:
+
+```bash
+python scripts/bless_qra_audio_variants.py \
+  --base-url http://127.0.0.1:8018 \
+  --ledger /tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json \
+  --host-out-dir /tmp/chatterbox-fork-agent-out \
+  --qra-id qra-smoke-si \
+  --memory-key qra-smoke-si \
+  --question "Which control family should I use when the answer says SI?" \
+  --answer "Use system and communications protection."
+```
+
+Use a cached variant from `/synthesize-batch` by passing `question_text`,
+`blessed_qra_variant`, and the memory gate fields. Set
+`blessed_qra_preserve_pauses=true` to keep a variant's recorded pause profile;
+leave it false for fastest playback.
+
 ## Supported Languages
 The general-purpose Chatterbox Multilingual model supports the following languages:
 
