@@ -379,7 +379,14 @@ Stop rule:
    `should_scan=false`, top memory key `embry_age15_19_b03_memory_040`,
    `persona_id=embry`, top emotion `grief, longing`, and response text
    `Rain links Kai with grief.`.
-6. Reuse existing interruption and turn-control primitives for rung 4.
+6. Reuse existing interruption and turn-control primitives for rung 4. Initial
+   rung-4 runner exists, and live rung-4 receipt
+   `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung4-live-20260702T112513Z/rung4.json`
+   passed with `mocked=false`, `live=true`, empty `failed_gates`, interrupt
+   input ASR WER `0.0`, `stale_skipped_count=2`,
+   `post_cancel_old_turn_audio_bytes_emitted=0`,
+   `new_turn_audio_started_after_cancel=true`, and turn-control action order
+   `[cancel, duck, stop]`.
 7. Add Brave Search/tool-latency adapter and rung 5 gates.
 8. Add cue extraction, memory comparison, and emotion-state receipt fields for
    rung 6.

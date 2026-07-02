@@ -64,6 +64,22 @@
         "channels": 1,
         "duration_seconds": 2.543
       }
+    },
+    {
+      "id": "rung4_interrupt",
+      "path": "tests/fixtures/conversation_ladder/rung4_interrupt.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-4 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung4_interrupt.wav -s 150 -v en-us 'Wait stop.'",
+      "expected_transcript": "Wait stop.",
+      "last_observed": {
+        "bytes": 53754,
+        "sha256": "c71320d1dc043c9ce70c1bbb87b64c1a1afa809e9c5362cd1e0e879d324d8b9d",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 1.218
+      }
     }
   ],
   "live_receipts": [
@@ -112,6 +128,23 @@
       "top_persona_id": "embry",
       "top_emotion": "grief, longing",
       "response_text": "Rain links Kai with grief.",
+      "failed_gates": []
+    },
+    {
+      "rung": 4,
+      "path": "/tmp/chatterbox-fork-agent-out/conversation-ladder/rung4-live-20260702T112513Z/rung4.json",
+      "mocked": false,
+      "live": true,
+      "ok": true,
+      "input_wer": 0.0,
+      "stale_skipped_count": 2,
+      "post_cancel_old_turn_audio_bytes_emitted": 0,
+      "new_turn_audio_started_after_cancel": true,
+      "turn_control_action_order": [
+        "cancel",
+        "duck",
+        "stop"
+      ],
       "failed_gates": []
     }
   ]

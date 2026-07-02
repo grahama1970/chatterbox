@@ -8,6 +8,7 @@ drive one real ASR -> Chatterbox TTS -> ASR verification loop.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import hashlib
 import json
 import os
@@ -24,12 +25,24 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from chatterbox.agent.asr_acceptance import acceptance_result
+from chatterbox.agent.conversation import run_interruption_scenario
 
 
 RUNG1_SCHEMA = "chatterbox.conversation_ladder.rung1.v1"
 RUNG2_SCHEMA = "chatterbox.conversation_ladder.rung2.v1"
 RUNG3_SCHEMA = "chatterbox.conversation_ladder.rung3.v1"
+RUNG4_SCHEMA = "chatterbox.conversation_ladder.rung4.v1"
 DEFAULT_RESPONSE_TEXT = "Hello. I am listening."
+RUNG4_FIRST_ANSWER = (
+    "I want to be careful with that because saying only the letters can be hard to hear. "
+    "The family is System and Information Integrity, and Embry should usually say the "
+    "long form before using the short identifier. For a spoken answer, the useful phrasing "
+    "is System and Information Integrity, then the specific control name if we know it."
+)
+RUNG4_NEW_ANSWER = (
+    "Okay, the practical rule is simple. Say the full control family first, then the short "
+    "identifier only if it helps traceability."
+)
 
 
 def utc_now() -> str:
@@ -319,6 +332,50 @@ def response_from_embry_memory(item: dict[str, Any]) -> str:
     if {"location:hawaii", "person:kai"} & tags and "grief" in emotion:
         return "Rain links Kai with grief."
     return "The memory links rain with grief."
+
+
+def exercise_turn_controls(base_url: str, old_turn_id: str, new_turn_id: str) -> dict[str, Any]:
+    failed_gates: list[str] = []
+    requests = [
+        (
+            "cancel",
+            f"{base_url.rstrip()}/turn/{old_turn_id}/cancel",
+            {"reason": "barge-in", "old_turn_id": old_turn_id, "new_turn_id": new_turn_id},
+        ),
+        (
+            "duck",
+            f"{base_url.rstrip()}/playback/{old_turn_id}/duck",
+            {"reason": "user starts speaking", "old_turn_id": old_turn_id, "new_turn_id": new_turn_id},
+        ),
+        (
+            "stop",
+            f"{base_url.rstrip()}/playback/{old_turn_id}/stop",
+            {"reason": "new turn takes floor", "old_turn_id": old_turn_id, "new_turn_id": new_turn_id},
+        ),
+    ]
+    responses: list[dict[str, Any]] = []
+    for action, url, payload in requests:
+        try:
+            response = post_json(url, payload, timeout=30)
+        except Exception as exc:  # noqa: BLE001
+            response = {"ok": False, "error_type": type(exc).__name__, "error": str(exc)}
+        responses.append({"action": action, "request": payload, "response": response})
+        if not response.get("ok"):
+            failed_gates.append(f"{action}_response_ok")
+    final_control = (responses[-1].get("response") or {}).get("control") or {}
+    action_order = [event.get("action") for event in final_control.get("events") or []]
+    if action_order[-3:] != ["cancel", "duck", "stop"]:
+        failed_gates.append("control_event_order")
+    for key in ["cancelled", "stale_chunks_should_skip", "ducked", "stopped"]:
+        if not final_control.get(key):
+            failed_gates.append(f"{key}_true")
+    return {
+        "ok": not failed_gates,
+        "responses": responses,
+        "final_control": final_control,
+        "action_order": action_order,
+        "failed_gates": failed_gates,
+    }
 
 
 def run_rung1(args: argparse.Namespace) -> dict[str, Any]:
@@ -993,9 +1050,169 @@ def run_rung3(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
+    started = time.perf_counter()
+    run_id = args.run_id or f"rung4-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    path_maps = parse_path_maps(args.path_map)
+    failed_gates: list[str] = []
+    events: list[dict[str, Any]] = []
+    services: dict[str, Any] = {}
+    artifacts: dict[str, Any] = {}
+    input_asr: dict[str, Any] | None = None
+
+    append_event(events, started, "rung.started", rung=4, run_id=run_id)
+    fixture = args.fixture.resolve()
+    if not fixture.exists():
+        failed_gates.append("interrupt_audio_exists")
+    elif fixture.suffix.lower() != ".wav":
+        failed_gates.append("interrupt_audio_is_wav")
+    else:
+        artifacts["interrupt_audio"] = wav_metrics(fixture)
+        append_event(events, started, "listener.interrupt_audio_ready", audio=str(fixture))
+
+    backend = build_asr_backend(args)
+    services["asr"] = asr_backend_receipt(backend)
+    if not backend.get("live"):
+        failed_gates.append("asr_backend_available")
+
+    base_url = args.base_url.rstrip("/")
+    services["chatterbox"] = {"base_url": base_url}
+    health: dict[str, Any] | None = None
+    try:
+        health = wait_for_health(base_url, args.wait_health_s)
+        services["chatterbox"]["health"] = health
+        append_event(events, started, "chatterbox.health_ok", model_loaded=health.get("model_loaded"))
+    except Exception as exc:  # noqa: BLE001
+        services["chatterbox"]["health_error"] = f"{type(exc).__name__}: {exc}"
+        failed_gates.append("chatterbox_health_ok")
+
+    interrupt_text = args.expected_transcript
+    if fixture.exists() and backend.get("live"):
+        try:
+            input_asr = transcript_gate(
+                backend=backend,
+                audio_path=fixture,
+                expected_text=args.expected_transcript,
+                max_wer=args.max_input_wer,
+            )
+            interrupt_text = input_asr["transcript"]
+            append_event(events, started, "asr.interrupt_transcribed", ok=input_asr["gate"]["ok"], wer=input_asr["gate"]["wer"])
+            if not input_asr["gate"]["ok"]:
+                failed_gates.extend(f"interrupt_asr_{gate}" for gate in input_asr["gate"]["failed_gates"])
+        except Exception as exc:  # noqa: BLE001
+            input_asr = {
+                "expected_text": args.expected_transcript,
+                "expected_text_sha256": sha256_text(args.expected_transcript),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            failed_gates.append("interrupt_asr_transcribed")
+
+    scenario_out_dir = args.out.parent / f"{args.out.stem}-scenario"
+    interruption_receipt: dict[str, Any] | None = None
+    if health and health.get("ok") and not any(gate.startswith("interrupt_asr_") for gate in failed_gates):
+        try:
+            interruption_receipt = asyncio.run(
+                run_interruption_scenario(
+                    base_url=base_url,
+                    out_dir=scenario_out_dir,
+                    question=args.question,
+                    first_answer=args.first_answer or RUNG4_FIRST_ANSWER,
+                    interrupt_text=interrupt_text,
+                    new_answer=args.new_answer or RUNG4_NEW_ANSWER,
+                    variant_offset=args.variant_offset,
+                )
+            )
+            append_event(
+                events,
+                started,
+                "interruption.scenario_finished",
+                ok=interruption_receipt.get("ok"),
+                stale_skipped_count=interruption_receipt.get("stale_skipped_count"),
+            )
+            if not interruption_receipt.get("ok"):
+                failed_gates.append("interruption_scenario_ok")
+            if int(interruption_receipt.get("stale_skipped_count") or 0) <= 0:
+                failed_gates.append("stale_chunks_skipped_after_interruption")
+            timeline = interruption_receipt.get("interruption_timeline") or {}
+            if timeline.get("post_cancel_old_turn_audio_bytes_emitted") != 0:
+                failed_gates.append("post_cancel_old_turn_audio_bytes_zero")
+            if not timeline.get("new_turn_audio_started_after_cancel"):
+                failed_gates.append("new_turn_audio_started_after_cancel")
+            for spoken in interruption_receipt.get("spoken_results") or []:
+                audio_path = spoken.get("audio")
+                if audio_path:
+                    host_audio = apply_path_maps(Path(str(audio_path)), path_maps)
+                    if not host_audio.exists():
+                        failed_gates.append("spoken_audio_exists")
+        except Exception as exc:  # noqa: BLE001
+            interruption_receipt = {"ok": False, "error_type": type(exc).__name__, "error": str(exc)}
+            failed_gates.append("interruption_scenario_ran")
+
+    control_receipt = None
+    if interruption_receipt and interruption_receipt.get("old_turn_id") and interruption_receipt.get("new_turn_id"):
+        control_receipt = exercise_turn_controls(
+            base_url,
+            str(interruption_receipt["old_turn_id"]),
+            str(interruption_receipt["new_turn_id"]),
+        )
+        append_event(events, started, "turn_controls.finished", ok=control_receipt.get("ok"))
+        if not control_receipt.get("ok"):
+            failed_gates.extend(f"turn_controls_{gate}" for gate in control_receipt.get("failed_gates") or [])
+
+    append_event(events, started, "rung.finished", ok=not failed_gates)
+    return {
+        "schema": RUNG4_SCHEMA,
+        "ok": not failed_gates,
+        "rung": 4,
+        "run_id": run_id,
+        "mocked": False,
+        "live": bool(health and health.get("ok") and backend.get("live") and interruption_receipt and interruption_receipt.get("ok") and control_receipt and control_receipt.get("ok") and not failed_gates),
+        "started_at_utc": datetime.fromtimestamp(
+            time.time() - (time.perf_counter() - started),
+            timezone.utc,
+        ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "ended_at_utc": utc_now(),
+        "services": services,
+        "inputs": {
+            "fixture": str(fixture),
+            "expected_transcript": args.expected_transcript,
+            "expected_transcript_sha256": sha256_text(args.expected_transcript),
+            "fixture_provenance": args.fixture_provenance,
+            "question": args.question,
+        },
+        "events": events,
+        "artifacts": {
+            **artifacts,
+            "scenario_dir": str(scenario_out_dir),
+            "scenario_receipt": str(scenario_out_dir / "final-response.json"),
+            "scenario_events": str(scenario_out_dir / "task-events.jsonl"),
+        },
+        "input_asr": input_asr,
+        "interruption": interruption_receipt,
+        "turn_controls": control_receipt,
+        "path_maps": {source: str(target) for source, target in path_maps.items()},
+        "failed_gates": failed_gates,
+        "claims": {
+            "proves": [
+                "barge_in_audio_can_drive_interruption_scenario",
+                "stale_old_turn_chunks_are_skipped_after_cancel",
+                "turn_control_endpoints_record_cancel_duck_stop_state",
+            ]
+            if not failed_gates
+            else [],
+            "does_not_prove": [
+                "robust_noisy_room_interruption_handling",
+                "adaptive_false_interruption_recovery",
+                "physical_speaker_playback_stop_latency",
+            ],
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rung", type=int, choices=[1, 2, 3], required=True)
+    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4], required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8018")
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--fixture", type=Path)
@@ -1018,6 +1235,10 @@ def main() -> int:
     parser.add_argument("--label", default=None)
     parser.add_argument("--run-id", default=None)
     parser.add_argument("--session-id", default=None)
+    parser.add_argument("--question", default="Embry, which control family should I use when the answer says SI?")
+    parser.add_argument("--first-answer", default=None)
+    parser.add_argument("--new-answer", default=None)
+    parser.add_argument("--variant-offset", default=4, type=int)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--wait-health-s", default=240, type=int)
     parser.add_argument("--synthesis-timeout-s", default=300, type=int)
@@ -1046,10 +1267,14 @@ def main() -> int:
         if not args.expected_turn1_transcript or not args.expected_turn2_transcript:
             parser.error("--expected-turn1-transcript and --expected-turn2-transcript are required for --rung 2")
         receipt = run_rung2(args)
-    else:
+    elif args.rung == 3:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 3")
         receipt = run_rung3(args)
+    else:
+        if not args.fixture or not args.expected_transcript:
+            parser.error("--fixture and --expected-transcript are required for --rung 4")
+        receipt = run_rung4(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
