@@ -18,6 +18,7 @@ from chatterbox.agent.server import (
     DEFAULT_ASR_OPENAI_BASE_URL,
     SynthesisBatchRequest,
     SynthesisRequest,
+    TauVoiceRenderRequest,
     TurnControlRequest,
     accepted_audio_cache_key,
     accepted_audio_cache_material,
@@ -34,8 +35,10 @@ from chatterbox.agent.server import (
     stop_playback,
     cancel_turn,
     stream_turn_should_stop,
+    synthesis_batch_request_from_tau_voice_render,
     synthesize_to_file,
     synthesize_batch,
+    tau_voice_render,
 )
 
 
@@ -147,6 +150,65 @@ def test_batch_request_accepts_optional_turn_id_for_stream_controls() -> None:
     request = SynthesisBatchRequest(answer_text="I found the answer.", turn_id="turn-stream-123")
 
     assert request.turn_id == "turn-stream-123"
+
+
+def test_tau_voice_render_request_maps_to_batch_request() -> None:
+    chunk_text = "Use system and communications protection."
+    request = TauVoiceRenderRequest(
+        conversation_id="conv-1",
+        turn_id="turn-1",
+        question_text="Which control family should I use when the answer says SI?",
+        question_text_sha256=server.sha256_text("Which control family should I use when the answer says SI?"),
+        memory_route_decision={"called": True, "source": "memory"},
+        speakable_chunks=[
+            {
+                "chunk_id": "turn-1-chunk-1",
+                "text": chunk_text,
+                "text_sha256": server.sha256_text(chunk_text),
+                "delivery_stage": "neutral",
+                "pause_after_ms": 0,
+                "max_chars": 300,
+            }
+        ],
+        use_blessed_qra_cache=True,
+        blessed_qra_memory_key="qra-si-answer",
+        blessed_qra_memory_similarity=1.0,
+        blessed_qra_memory_review_status="approved",
+        blessed_qra_variant="variant_1",
+    )
+
+    batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
+
+    assert receipt["ok"] is True
+    assert receipt["schema"] == "tau.voice_render_request.v1"
+    assert receipt["failed_gates"] == []
+    assert batch.answer_text == chunk_text
+    assert batch.turn_id == "turn-1"
+    assert batch.question_text == "Which control family should I use when the answer says SI?"
+    assert batch.max_chars == 300
+    assert batch.use_blessed_qra_cache is True
+    assert batch.blessed_qra_memory_key == "qra-si-answer"
+
+
+def test_tau_voice_render_request_fails_closed_on_hash_mismatch() -> None:
+    request = TauVoiceRenderRequest(
+        conversation_id="conv-1",
+        turn_id="turn-1",
+        question_text="Original question",
+        question_text_sha256="wrong",
+        speakable_chunks=[
+            {
+                "text": "Use system and communications protection.",
+                "text_sha256": "wrong",
+            }
+        ],
+    )
+
+    _batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
+
+    assert receipt["ok"] is False
+    assert "question_text_sha256_matches" in receipt["failed_gates"]
+    assert "chunk_1_text_sha256_matches" in receipt["failed_gates"]
 
 
 def test_stream_turn_should_stop_only_for_cancel_or_stop() -> None:
@@ -322,6 +384,53 @@ def test_synthesize_batch_uses_blessed_qra_cache_with_memory_gate(tmp_path: Path
     assert result["chunks"][0]["source"] == "blessed_qra_cache"
     assert result["chunks"][0]["pause_after_ms"] == 25
     assert Path(result["finished_response_audio"]).exists()
+
+
+def test_tau_voice_render_endpoint_uses_blessed_qra_cache_with_memory_gate(tmp_path: Path, monkeypatch) -> None:
+    ledger = write_blessed_qra_ledger(tmp_path)
+    monkeypatch.setattr(server, "BLESSED_QRA_LEDGER_PATH", ledger)
+    monkeypatch.setattr(server, "OUT_DIR", tmp_path / "out")
+
+    def fake_combine_audio_segments(segments, out_path, *, crossfade_ms=20):
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        write_tiny_wav(out_path)
+        return {"path": str(out_path), "exists": True, "bytes": out_path.stat().st_size, "duration_seconds": 0.1}
+
+    monkeypatch.setattr(server, "combine_audio_segments", fake_combine_audio_segments)
+
+    result = tau_voice_render(
+        TauVoiceRenderRequest(
+            conversation_id="conv-qra",
+            turn_id="turn-qra",
+            question_text="Which control family should I use when the answer says SI?",
+            question_text_sha256=server.sha256_text("Which control family should I use when the answer says SI?"),
+            memory_route_decision={"called": True, "source": "memory.recall"},
+            speakable_chunks=[
+                {
+                    "text": "Fallback answer should not render.",
+                    "text_sha256": server.sha256_text("Fallback answer should not render."),
+                    "delivery_stage": "neutral",
+                    "max_chars": 300,
+                }
+            ],
+            use_blessed_qra_cache=True,
+            blessed_qra_memory_key="qra-si-answer",
+            blessed_qra_memory_similarity=1.0,
+            blessed_qra_memory_review_status="approved",
+            blessed_qra_variant="variant_1",
+            blessed_qra_preserve_pauses=True,
+            include_completion_cue=False,
+            crossfade_ms=0,
+        )
+    )
+
+    assert result["ok"] is True
+    assert result["source"] == "tau_voice_render_request"
+    assert result["tau_voice_render_request"]["schema"] == "tau.voice_render_request.v1"
+    assert result["blessed_qra_cache"]["hit"] is True
+    assert result["blessed_qra_cache"]["memory_gate"]["passed"] is True
+    assert result["cache_material"]["variant_id"] == "variant_1"
+    assert result["chunks"][0]["source"] == "blessed_qra_cache"
 
 
 def test_accepted_audio_cache_key_changes_with_text(tmp_path: Path) -> None:

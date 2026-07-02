@@ -346,3 +346,67 @@ def test_rung6_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Pa
     assert "turn_1_input_audio_exists" in receipt["failed_gates"]
     assert "turn_2_input_audio_exists" in receipt["failed_gates"]
     assert "turn_3_input_audio_exists" in receipt["failed_gates"]
+
+
+def test_rung7_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Path, monkeypatch) -> None:
+    mod = load_ladder_module()
+    monkeypatch.delenv("WHISPER_API_KEY", raising=False)
+    args = Namespace(
+        rung=7,
+        base_url="http://127.0.0.1:9",
+        memory_url="http://127.0.0.1:9",
+        fixture=tmp_path / "missing-listener.wav",
+        turn1_fixture=None,
+        turn2_fixture=None,
+        turn3_fixture=None,
+        fixture_provenance="unit_test_missing_fixture",
+        expected_transcript="Stop that old answer.",
+        expected_turn1_transcript=None,
+        expected_turn2_transcript=None,
+        expected_turn3_transcript=None,
+        response_text="I hear you. Let me redirect.",
+        memory_question="unused",
+        memory_tag=["persona:embry"],
+        memory_k=5,
+        memory_timeout_s=1,
+        min_memory_confidence=0.3,
+        required_persona_id="embry",
+        label=None,
+        run_id="unit-rung7",
+        session_id="unit-session",
+        turn_id="unit-turn-7",
+        old_turn_id="old-turn-6",
+        listener_frame_ms=20,
+        question="unused",
+        first_answer=None,
+        new_answer=None,
+        variant_offset=4,
+        tool_query="unused",
+        tool_count=3,
+        tool_timeout_s=1,
+        out=tmp_path / "rung7.json",
+        wait_health_s=0,
+        synthesis_timeout_s=1,
+        asr_openai_base_url="http://127.0.0.1:9000",
+        api_key_env="WHISPER_API_KEY",
+        asr_model="small.en",
+        asr_device="cpu",
+        asr_compute_type="int8",
+        max_input_wer=0.25,
+        max_output_wer=0.35,
+        path_map=[],
+    )
+
+    receipt = mod.run_rung7(args)
+
+    assert receipt["schema"] == mod.RUNG7_SCHEMA
+    assert receipt["mocked"] is False
+    assert receipt["live"] is False
+    assert receipt["ok"] is False
+    assert receipt["claims"]["proves"] == []
+    assert "input_audio_exists" in receipt["failed_gates"]
+    assert "asr_backend_available" in receipt["failed_gates"]
+    assert "listener_audio_frame_events_present" in receipt["failed_gates"]
+    assert "heard_text_ledger_present" in receipt["failed_gates"]
+    assert receipt["tau_voice_render_request"]["schema"] == "tau.voice_render_request.v1"
+    assert receipt["tau_voice_render_request"]["memory_route_decision"]["called"] is False

@@ -21,15 +21,15 @@ and emotional steering decisions belong to the coordinator and memory pipeline.
 
 | Area | Current implementation |
 | --- | --- |
-| Agent server | `src/chatterbox/agent/server.py` exposes `/health`, `/presets`, `/render-plan`, `/synthesize`, `/synthesize-batch`, `/synthesize-batch-stream`, `/turn/{turn_id}/cancel`, `/playback/{turn_id}/duck`, and `/playback/{turn_id}/stop`. |
+| Agent server | `src/chatterbox/agent/server.py` exposes `/health`, `/presets`, `/render-plan`, `/synthesize`, `/synthesize-batch`, `/synthesize-batch-stream`, `/tau/voice-render`, `/turn/{turn_id}/cancel`, `/playback/{turn_id}/duck`, and `/playback/{turn_id}/stop`. |
 | Docker launcher | `scripts/start_agent_server_docker.sh` starts the server on `127.0.0.1:8018`, mounting this repo read-only and `/tmp/chatterbox-fork-agent-out` as `/out`. |
 | ASR acceptance | `/synthesize-batch` can render multiple candidates, transcribe through the configured OpenAI-compatible Whisper endpoint, accept the first candidate passing WER/duration/repetition gates, and cache accepted WAV audio. |
 | Turbo chunking | `src/chatterbox/agent/chunking.py` hard-clamps chunks to 300 characters, preserves word boundaries, records hashes, delivery stage, pause metadata, and interruptibility. |
 | Streaming | `/synthesize-batch-stream` streams signed 16-bit little-endian PCM chunks and honors `turn_id` cancellation/stop state before synthesis and before PCM block emission. |
 | Turn controls | Cancel, duck, and stop endpoints record live turn-control state; cancel/stop can terminate matching stream playback. |
 | Blessed QRA cache | Approved QRA answers can be pre-rendered into five Embry audio variants with `scripts/bless_qra_audio_variants.py`; runtime playback requires a near-exact memory/QRA gate by default. |
-| Conversation ladder | `scripts/smoke_conversation_ladder.py` and `docs/conversation_sanity_ladder_v0.md` define and exercise rungs 1-6 for file-backed listener input, state, memory, interruption, Brave Search latency, and emotional steering receipts. |
-| Listener contract | Rung 7 is documented as a service boundary: audio frames in, VAD/ASR events and heard-text ledger out, coordinator turn events out. It is not implemented yet. |
+| Conversation ladder | `scripts/smoke_conversation_ladder.py` and `docs/conversation_sanity_ladder_v0.md` define rungs 1-7 for file-backed listener input, state, memory, interruption, Brave Search latency, emotional steering, and listener-boundary receipts. |
+| Listener contract | Rung 7 has a live boundary runner: audio frames in, ASR/heard-text ledger out, coordinator turn events out, and a `tau.voice_render_request.v1` envelope. |
 
 ## Quick Start: Agent Server
 
@@ -63,6 +63,10 @@ Primary request models live in `src/chatterbox/agent/server.py`:
 - `SynthesisBatchRequest`: render/stream batch request with ASR gates,
   `turn_id`, blessed-QRA cache controls, variant selection, and memory gate
   fields.
+- `TauVoiceRenderRequest`: Embry/Tau coordinator envelope accepted by
+  `/tau/voice-render`; preserves listener evidence, memory route metadata,
+  text hashes, turn controls, and blessed-QRA gate fields before mapping into
+  the batch renderer.
 - `TurnControlRequest`: cancel/duck/stop reason and old/new turn ids.
 
 Important environment variables:
@@ -180,8 +184,12 @@ Implemented evidence rungs:
 | 5 | Brave Search/tool-latency wait behavior with source URLs. |
 | 6 | Dynamic emotion cue extraction, memory comparison, and utterance policy receipts. |
 
-Rung 7 is defined but not implemented: live listener service with audio frames
-in, VAD/ASR events and heard-text ledger out, and coordinator turn events out.
+Rung 7 is implemented as a listener-boundary runner. It accepts a WAV transport,
+records frame-level listener events, runs the configured ASR backend, writes
+`heard-text-ledger.jsonl`, `listener-turn-events.jsonl`, `asr-transcript.json`,
+and creates `tau-voice-render-request.json`. It does not call memory, search, or
+Chatterbox directly. A local run on this checkout failed closed because
+`faster_whisper` was unavailable.
 
 ## Full Live Sanity Bundle
 
@@ -201,7 +209,27 @@ turn-control endpoints into one index receipt. It records `mocked=false`,
 stream first-byte timing, final turn-control state, and explicit
 `does_not_prove` boundaries. If the accepted audio cache is container-owned, the
 runner falls back to deleting `/out/_accepted_audio_cache` from inside
-`chatterbox-fork-agent-server`.
+`chatterbox-fork-agent-server`. Add `--include-listener-rung7` when a local or
+OpenAI-compatible ASR backend is available and you want the listener-boundary
+receipt included in the same bundle. Add `--include-tau-voice-render` to include
+the Embry/Tau render ingress smoke. Add `--include-listener-memory-tau-qra` to
+exercise the listener -> memory/QRA -> Tau render -> blessed audio cache chain.
+
+Focused Tau ingress smoke:
+
+```bash
+python scripts/smoke_tau_voice_render.py \
+  --base-url http://127.0.0.1:8018 \
+  --out /tmp/chatterbox-fork-agent-out/tau-voice-render-smoke.json \
+  --expect-cache-hit
+```
+
+Focused combined chain smoke:
+
+```bash
+WHISPER_API_KEY=<token> python scripts/smoke_listener_memory_tau_qra.py \
+  --out-dir /tmp/chatterbox-fork-agent-out/listener-memory-tau-qra-smoke
+```
 
 ## Current Proof Artifacts
 
@@ -213,6 +241,10 @@ The latest recorded proof artifacts are local files under
 | `conversation-ladder/rung1-live-20260702T111209Z/rung1.json` through `rung6-live-20260702T113313Z/rung6.json` | Rungs 1-6 with `mocked=false`, `live=true`, and empty `failed_gates`. |
 | `stream-cancel-20260702T1150/stream-cancel.json` | Pre-cancelled stream emits zero old-turn bytes after cancel. |
 | `blessed-qra-cache-hit-20260702T1214.json` | Near-exact approved memory gate can select a blessed Embry QRA variant and return cached audio in `157.103 ms`. |
+| `tau-voice-render-20260702T134405Z.json` | Restarted server accepted `tau.voice_render_request.v1`, mapped it to batch rendering, selected the blessed QRA `gentle` variant, and wrote host WAV metrics with `mocked=false`, `live=true`, and empty `failed_gates`. |
+| `conversation-ladder/rung7-live-openai/rung7.json` | Rung 7 listener boundary with OpenAI-compatible Whisper: 137 audio frame events, final transcript WER `0.0`, heard-text ledger, coordinator events, and `tau.voice_render_request.v1`; `mocked=false`, `live=true`, empty `failed_gates`. |
+| `listener-memory-tau-qra-20260702T135037Z/listener-memory-tau-qra.json` | Full listener -> memory/QRA -> Tau render -> blessed cache chain: live heard text, live `sparta_qra` recall key `qra__run-recovery-verify__2085979782`, five generated Embry variants, Tau cache hit, memory gate passed, and host WAV metrics. |
+| `full-live-sanity-20260702T135416Z-tau-combined/full-live-sanity.json` | Augmented full bundle with ASR cache fill/hit, stream, stream cancel, interruption, turn controls, Tau ingress, and listener-memory-QRA-Tau chain all `mocked=false`, `live=true`, and empty `failed_gates`. |
 
 These receipts do not prove live microphone capture, WebRTC/browser transport,
 production memory-agent admission review, subjective voice quality, noisy-room

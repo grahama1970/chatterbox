@@ -124,6 +124,53 @@ class SynthesisBatchRequest(RenderPlanRequest):
     asr_cache: bool = True
 
 
+class TauVoiceChunk(BaseModel):
+    chunk_id: str | None = Field(default=None, max_length=160)
+    text: str = Field(min_length=1, max_length=1200)
+    text_sha256: str | None = Field(default=None, max_length=128)
+    delivery_stage: str | None = Field(default=None, max_length=80)
+    pause_after_ms: int | None = Field(default=None, ge=0, le=3000)
+    interruptible: bool = True
+    max_chars: int | None = Field(default=None, ge=80, le=300)
+
+
+class TauVoiceTurnControlPolicy(BaseModel):
+    old_turn_id: str | None = Field(default=None, max_length=120)
+    cancel_requested: bool = False
+    stale_old_turn_chunks_should_skip: bool = False
+
+
+class TauVoiceRenderRequest(BaseModel):
+    schema: str = Field(default="tau.voice_render_request.v1")
+    run_id: str | None = Field(default=None, max_length=160)
+    conversation_id: str = Field(min_length=1, max_length=160)
+    turn_id: str = Field(min_length=1, max_length=120)
+    route: str = Field(default="tau_voice_render", max_length=160)
+    active_domain_persona: str | None = Field(default=None, max_length=120)
+    question_text: str | None = Field(default=None, max_length=12000)
+    question_text_sha256: str | None = Field(default=None, max_length=128)
+    memory_route_decision: dict[str, Any] = Field(default_factory=dict)
+    speakable_chunks: list[TauVoiceChunk] = Field(min_length=1)
+    delivery_stage: str | None = Field(default="neutral", max_length=80)
+    interruptible: bool = True
+    use_blessed_qra_cache: bool = True
+    blessed_qra_min_similarity: float = Field(default=0.99, ge=0.0, le=1.0)
+    blessed_qra_variant: str | None = Field(default=None, max_length=120)
+    blessed_qra_preserve_pauses: bool = False
+    require_blessed_qra_memory_gate: bool = True
+    blessed_qra_memory_key: str | None = Field(default=None, max_length=240)
+    blessed_qra_memory_similarity: float | None = Field(default=None, ge=0.0)
+    blessed_qra_memory_review_status: str | None = Field(default=None, max_length=80)
+    turn_control_policy: TauVoiceTurnControlPolicy = Field(default_factory=TauVoiceTurnControlPolicy)
+    external_evidence: dict[str, Any] = Field(default_factory=dict)
+    receipt_root: str | None = Field(default=None, max_length=2048)
+    label: str | None = Field(default=None, max_length=160)
+    completion_cue: str | None = Field(default=None, max_length=240)
+    include_completion_cue: bool = False
+    crossfade_ms: int = Field(default=20, ge=0, le=250)
+    asr_verify: bool = False
+
+
 class TurnControlRequest(BaseModel):
     reason: str | None = Field(default=None, max_length=240)
     old_turn_id: str | None = Field(default=None, max_length=120)
@@ -136,6 +183,17 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def model_to_dict(model: BaseModel) -> dict[str, Any]:
+    dump = getattr(model, "model_dump", None)
+    if callable(dump):
+        return dump()
+    return model.dict()
 
 
 def latency_event(events: list[dict[str, Any]], name: str, started: float, **extra: Any) -> None:
@@ -1049,6 +1107,104 @@ def blessed_qra_cache_disabled_receipt() -> dict[str, Any]:
     }
 
 
+def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest) -> tuple[SynthesisBatchRequest, dict[str, Any]]:
+    failed_gates: list[str] = []
+    if request.schema != "tau.voice_render_request.v1":
+        failed_gates.append("tau_voice_render_schema")
+    if request.question_text and request.question_text_sha256 and sha256_text(request.question_text) != request.question_text_sha256:
+        failed_gates.append("question_text_sha256_matches")
+
+    chunk_texts: list[str] = []
+    delivery_stages: list[str] = []
+    requested_max_chars: list[int] = []
+    chunk_receipts: list[dict[str, Any]] = []
+    for index, chunk in enumerate(request.speakable_chunks, start=1):
+        text = chunk.text.strip()
+        actual_sha = sha256_text(text)
+        if chunk.text_sha256 and chunk.text_sha256 != actual_sha:
+            failed_gates.append(f"chunk_{index}_text_sha256_matches")
+        if len(text) > 300:
+            failed_gates.append(f"chunk_{index}_text_len_lte_300")
+        chunk_texts.append(text)
+        if chunk.delivery_stage:
+            delivery_stages.append(chunk.delivery_stage)
+        if chunk.max_chars:
+            requested_max_chars.append(chunk.max_chars)
+        chunk_receipts.append(
+            {
+                "chunk_id": chunk.chunk_id or f"{request.turn_id}-chunk-{index}",
+                "index": index,
+                "text_sha256": actual_sha,
+                "declared_text_sha256": chunk.text_sha256,
+                "delivery_stage": chunk.delivery_stage or request.delivery_stage or "neutral",
+                "pause_after_ms": chunk.pause_after_ms,
+                "interruptible": chunk.interruptible,
+                "char_len": len(text),
+            }
+        )
+
+    answer_text = " ".join(chunk_texts).strip()
+    if not answer_text:
+        failed_gates.append("speakable_chunks_text_present")
+
+    max_chars = min(requested_max_chars) if requested_max_chars else 300
+    max_chars = max(80, min(max_chars, 300))
+    pause_values = [chunk.pause_after_ms for chunk in request.speakable_chunks if chunk.pause_after_ms is not None]
+    pause_after_ms = int(pause_values[0]) if pause_values else 250
+    delivery_stage = delivery_stages[0] if delivery_stages else request.delivery_stage
+    label = request.label or f"tau_{safe_label(request.conversation_id)}_{safe_label(request.turn_id)}"
+
+    batch_request = SynthesisBatchRequest(
+        answer_text=answer_text or " ",
+        max_chars=max_chars,
+        pause_after_ms=pause_after_ms,
+        completion_cue=request.completion_cue,
+        turn_id=request.turn_id,
+        question_text=request.question_text,
+        use_blessed_qra_cache=request.use_blessed_qra_cache,
+        blessed_qra_min_similarity=request.blessed_qra_min_similarity,
+        blessed_qra_variant=request.blessed_qra_variant,
+        blessed_qra_preserve_pauses=request.blessed_qra_preserve_pauses,
+        require_blessed_qra_memory_gate=request.require_blessed_qra_memory_gate,
+        blessed_qra_memory_key=request.blessed_qra_memory_key,
+        blessed_qra_memory_similarity=request.blessed_qra_memory_similarity,
+        blessed_qra_memory_review_status=request.blessed_qra_memory_review_status,
+        label=label,
+        include_completion_cue=request.include_completion_cue,
+        crossfade_ms=request.crossfade_ms,
+        asr_verify=request.asr_verify,
+    )
+    receipt = {
+        "schema": request.schema,
+        "ok": not failed_gates,
+        "conversation_id": request.conversation_id,
+        "turn_id": request.turn_id,
+        "route": request.route,
+        "active_domain_persona": request.active_domain_persona,
+        "question_text_sha256": sha256_text(request.question_text or ""),
+        "declared_question_text_sha256": request.question_text_sha256,
+        "answer_text_sha256": sha256_text(answer_text),
+        "source_chunk_count": len(request.speakable_chunks),
+        "source_chunks": chunk_receipts,
+        "memory_route_decision": request.memory_route_decision,
+        "turn_control_policy": model_to_dict(request.turn_control_policy),
+        "external_evidence": request.external_evidence,
+        "receipt_root": request.receipt_root,
+        "mapped_batch": {
+            "answer_text_sha256": sha256_text(answer_text),
+            "max_chars": batch_request.max_chars,
+            "pause_after_ms": batch_request.pause_after_ms,
+            "turn_id": batch_request.turn_id,
+            "use_blessed_qra_cache": batch_request.use_blessed_qra_cache,
+            "blessed_qra_variant": batch_request.blessed_qra_variant,
+            "require_blessed_qra_memory_gate": batch_request.require_blessed_qra_memory_gate,
+            "asr_verify": batch_request.asr_verify,
+        },
+        "failed_gates": failed_gates,
+    }
+    return batch_request, receipt
+
+
 def apply_blessed_qra_memory_gate(request: SynthesisBatchRequest, match: dict[str, Any]) -> dict[str, Any]:
     if not match.get("hit"):
         return match
@@ -1520,6 +1676,31 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "blessed_qra_cache": blessed_qra_lookup,
         "latency_events": batch_events,
         "total_elapsed_ms": round((time.perf_counter() - started_total) * 1000, 3),
+        "failed_gates": failed_gates,
+    }
+
+
+@app.post("/tau/voice-render")
+def tau_voice_render(request: TauVoiceRenderRequest) -> dict[str, Any]:
+    batch_request, tau_receipt = synthesis_batch_request_from_tau_voice_render(request)
+    if tau_receipt["failed_gates"]:
+        return {
+            "ok": False,
+            "mocked": False,
+            "live": False,
+            "engine": "chatterbox_turbo",
+            "source": "tau_voice_render_request",
+            "tau_voice_render_request": tau_receipt,
+            "failed_gates": [f"tau_voice_render:{gate}" for gate in tau_receipt["failed_gates"]],
+        }
+
+    batch = synthesize_batch(batch_request)
+    failed_gates = list(batch.get("failed_gates") or [])
+    return {
+        **batch,
+        "source": "tau_voice_render_request",
+        "tau_voice_render_request": tau_receipt,
+        "ok": bool(batch.get("ok")) and not failed_gates,
         "failed_gates": failed_gates,
     }
 

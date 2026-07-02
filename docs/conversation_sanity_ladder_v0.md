@@ -389,8 +389,10 @@ Required outputs:
   - `turn.user_text_final`,
   - `turn.cancel_requested` when barge-in targets old audio,
   - `turn.renderer_request_created`.
-- Renderer request envelope with `turn_id`, response text, delivery stage, and
-  the external evidence pointers used by the coordinator.
+- Renderer request envelope with schema `tau.voice_render_request.v1`,
+  `turn_id`, response text, delivery stage, and the external evidence pointers
+  used by the coordinator. The executable server ingress for this envelope is
+  `/tau/voice-render`.
 
 Pass gates:
 
@@ -403,6 +405,8 @@ Pass gates:
 - The listener does not call memory, search, or the Chatterbox model directly.
   It only emits transcript and endpointing events.
 - The coordinator, not the listener, creates the renderer request envelope.
+- `/tau/voice-render` rejects stale or corrupted envelopes when declared
+  question/chunk text hashes do not match the submitted text.
 
 Receipt schema: `chatterbox.conversation_ladder.rung7.listener_contract.v1`
 

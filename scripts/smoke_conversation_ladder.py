@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Run live, non-mocked Chatterbox conversation sanity ladder rungs.
 
-Only rung 1 is implemented initially. It proves a file-backed listener input can
-drive one real ASR -> Chatterbox TTS -> ASR verification loop.
+The rungs are deliberately narrow. Each receipt states what it proves and what
+it leaves out.
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ RUNG3_SCHEMA = "chatterbox.conversation_ladder.rung3.v1"
 RUNG4_SCHEMA = "chatterbox.conversation_ladder.rung4.v1"
 RUNG5_SCHEMA = "chatterbox.conversation_ladder.rung5.v1"
 RUNG6_SCHEMA = "chatterbox.conversation_ladder.rung6.v1"
+RUNG7_SCHEMA = "chatterbox.conversation_ladder.rung7.listener_contract.v1"
 DEFAULT_RESPONSE_TEXT = "Hello. I am listening."
 BRAVE_SEARCH_RUNNER = "/home/graham/workspace/experiments/agent-skills/skills/brave-search/run.sh"
 RUNG4_FIRST_ANSWER = (
@@ -82,6 +83,51 @@ def wav_metrics(path: Path) -> dict[str, Any]:
         "channels": channels,
         "sample_width": sample_width,
         "frame_count": frame_count,
+    }
+
+
+def wav_frame_events(
+    *,
+    audio_path: Path,
+    session_id: str,
+    turn_id: str,
+    started: float,
+    frame_ms: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    frame_events: list[dict[str, Any]] = []
+    if frame_ms <= 0:
+        raise ValueError("frame_ms_must_be_positive")
+    with wave.open(str(audio_path), "rb") as handle:
+        sample_rate = handle.getframerate()
+        channels = handle.getnchannels()
+        sample_width = handle.getsampwidth()
+        frames_per_chunk = max(1, int(sample_rate * frame_ms / 1000))
+        index = 0
+        total_bytes = 0
+        while True:
+            data = handle.readframes(frames_per_chunk)
+            if not data:
+                break
+            index += 1
+            total_bytes += len(data)
+            frame_events.append(
+                {
+                    "sequence": index,
+                    "type": "listener.audio_frame_received",
+                    "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "byte_count": len(data),
+                    "sample_rate": sample_rate,
+                    "channels": channels,
+                    "sample_width": sample_width,
+                    "frame_ms": frame_ms,
+                }
+            )
+    return frame_events, {
+        "frame_count": len(frame_events),
+        "total_bytes": total_bytes,
+        "frame_ms": frame_ms,
     }
 
 
@@ -413,6 +459,82 @@ def utterance_policy_for_state(state: dict[str, Any], turn_index: int) -> dict[s
         "rejected_alternatives": ["playful_wait_activity", "high_energy_delivery"],
         "reason": "match_response_to_recorded_emotion_state",
     }
+
+
+def transcript_requests_cancel(transcript: str) -> bool:
+    return bool(re.search(r"\b(stop|cancel|wait|hold on|interrupt|pause)\b", transcript, flags=re.IGNORECASE))
+
+
+def build_tau_voice_render_request(
+    *,
+    run_id: str,
+    session_id: str,
+    turn_id: str,
+    transcript: str,
+    response_text: str,
+    receipt_root: Path,
+    old_turn_id: str | None,
+    cancel_requested: bool,
+) -> dict[str, Any]:
+    return {
+        "schema": "tau.voice_render_request.v1",
+        "run_id": run_id,
+        "conversation_id": session_id,
+        "turn_id": turn_id,
+        "route": "listener_rung7_boundary",
+        "active_domain_persona": "embry",
+        "question_text": transcript,
+        "question_text_sha256": sha256_text(transcript),
+        "memory_route_decision": {
+            "called": False,
+            "reason": "rung7_listener_boundary_does_not_call_memory",
+        },
+        "speakable_chunks": [
+            {
+                "chunk_id": f"{turn_id}-chunk-1",
+                "text": response_text,
+                "text_sha256": sha256_text(response_text),
+                "delivery_stage": "neutral",
+                "interruptible": True,
+                "max_chars": 300,
+            }
+        ],
+        "delivery_stage": "neutral",
+        "interruptible": True,
+        "use_blessed_qra_cache": False,
+        "turn_control_policy": {
+            "old_turn_id": old_turn_id,
+            "cancel_requested": cancel_requested,
+            "stale_old_turn_chunks_should_skip": bool(cancel_requested and old_turn_id),
+        },
+        "external_evidence": {
+            "heard_text_ledger": str(receipt_root / "heard-text-ledger.jsonl"),
+            "listener_turn_events": str(receipt_root / "listener-turn-events.jsonl"),
+            "asr_transcript": str(receipt_root / "asr-transcript.json"),
+        },
+        "receipt_root": str(receipt_root),
+    }
+
+
+def write_rung7_sidecar_artifacts(receipt: dict[str, Any], out_path: Path) -> None:
+    root = out_path.resolve().parent
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "heard-text-ledger.jsonl").write_text(
+        "".join(json.dumps(item, sort_keys=True) + "\n" for item in receipt.get("heard_text_ledger") or []),
+        encoding="utf-8",
+    )
+    (root / "listener-turn-events.jsonl").write_text(
+        "".join(json.dumps(item, sort_keys=True) + "\n" for item in receipt.get("listener_events") or []),
+        encoding="utf-8",
+    )
+    (root / "asr-transcript.json").write_text(
+        json.dumps(receipt.get("asr_transcript") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (root / "tau-voice-render-request.json").write_text(
+        json.dumps(receipt.get("tau_voice_render_request") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def exercise_turn_controls(base_url: str, old_turn_id: str, new_turn_id: str) -> dict[str, Any]:
@@ -1732,9 +1854,289 @@ def run_rung6(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_rung7(args: argparse.Namespace) -> dict[str, Any]:
+    started = time.perf_counter()
+    run_id = args.run_id or f"rung7-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    session_id = args.session_id or f"session-{run_id}"
+    turn_id = args.turn_id or f"{run_id}-turn-1"
+    receipt_root = args.out.resolve().parent
+    failed_gates: list[str] = []
+    events: list[dict[str, Any]] = []
+    artifacts: dict[str, Any] = {}
+    services: dict[str, Any] = {}
+    listener_events: list[dict[str, Any]] = []
+    coordinator_events: list[dict[str, Any]] = []
+    heard_text_ledger: list[dict[str, Any]] = []
+    asr_transcript: dict[str, Any] | None = None
+
+    append_event(events, started, "rung.started", rung=7, run_id=run_id, session_id=session_id, turn_id=turn_id)
+    append_event(events, started, "turn.started", session_id=session_id, turn_id=turn_id)
+    coordinator_events.append(
+        {
+            "type": "turn.started",
+            "session_id": session_id,
+            "turn_id": turn_id,
+            "timestamp_utc": utc_now(),
+        }
+    )
+
+    fixture = args.fixture.resolve()
+    if not fixture.exists():
+        failed_gates.append("input_audio_exists")
+    elif fixture.suffix.lower() != ".wav":
+        failed_gates.append("input_audio_is_wav")
+    else:
+        artifacts["input_audio"] = wav_metrics(fixture)
+        append_event(events, started, "listener.input_audio_ready", turn_id=turn_id, audio=str(fixture))
+        try:
+            frame_events, frame_summary = wav_frame_events(
+                audio_path=fixture,
+                session_id=session_id,
+                turn_id=turn_id,
+                started=started,
+                frame_ms=args.listener_frame_ms,
+            )
+            listener_events.extend(frame_events)
+            artifacts["listener_frames"] = frame_summary
+            append_event(
+                events,
+                started,
+                "listener.frames_ingested",
+                turn_id=turn_id,
+                frame_count=frame_summary["frame_count"],
+                total_bytes=frame_summary["total_bytes"],
+            )
+            if frame_summary["frame_count"] <= 0:
+                failed_gates.append("listener_audio_frames_present")
+        except Exception as exc:  # noqa: BLE001
+            artifacts["listener_frames"] = {"error_type": type(exc).__name__, "error": str(exc)}
+            failed_gates.append("listener_audio_frames_present")
+
+    backend = build_asr_backend(args)
+    services["asr"] = asr_backend_receipt(backend)
+    if not backend.get("live"):
+        failed_gates.append("asr_backend_available")
+
+    transcript = ""
+    input_asr: dict[str, Any] | None = None
+    if fixture.exists() and backend.get("live"):
+        listener_events.append(
+            {
+                "type": "listener.speech_started",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "timestamp_utc": utc_now(),
+                "source": "wav_frame_endpoint",
+            }
+        )
+        try:
+            transcript = transcribe_audio(backend, fixture)
+            asr_transcript = {
+                "schema": "chatterbox.listener.asr_transcript.v1",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "backend": asr_backend_receipt(backend),
+                "text": transcript,
+                "text_sha256": sha256_text(transcript),
+                "partial_transcripts": [],
+                "partial_unavailable_reason": "offline_asr_backend_final_only",
+                "timestamp_utc": utc_now(),
+            }
+            listener_events.append(
+                {
+                    "type": "listener.speech_final",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "text": transcript,
+                    "text_sha256": sha256_text(transcript),
+                    "timestamp_utc": utc_now(),
+                }
+            )
+            listener_events.append(
+                {
+                    "type": "listener.speech_ended",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "timestamp_utc": utc_now(),
+                }
+            )
+            heard_text_ledger.append(
+                {
+                    "schema": "chatterbox.listener.heard_text.v1",
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "final_text": transcript,
+                    "final_text_sha256": sha256_text(transcript),
+                    "partial_transcripts": [],
+                    "partial_unavailable_reason": "offline_asr_backend_final_only",
+                    "asr_backend": asr_backend_receipt(backend),
+                    "audio": artifacts.get("input_audio"),
+                    "timestamp_utc": utc_now(),
+                }
+            )
+            append_event(events, started, "asr.input_transcribed", turn_id=turn_id, transcript_sha256=sha256_text(transcript))
+            if not transcript:
+                failed_gates.append("asr_final_text_present")
+            if args.expected_transcript:
+                gate = acceptance_result(
+                    expected_text=args.expected_transcript,
+                    transcript=transcript,
+                    max_wer=args.max_input_wer,
+                )
+                input_asr = {
+                    "expected_text": args.expected_transcript,
+                    "expected_text_sha256": sha256_text(args.expected_transcript),
+                    "transcript": transcript,
+                    "gate": gate,
+                }
+                if not gate["ok"]:
+                    failed_gates.extend(f"input_asr_{gate_name}" for gate_name in gate["failed_gates"])
+            else:
+                input_asr = {"transcript": transcript, "transcript_sha256": sha256_text(transcript)}
+        except Exception as exc:  # noqa: BLE001 - preserve live ASR failure
+            asr_transcript = {
+                "schema": "chatterbox.listener.asr_transcript.v1",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "backend": asr_backend_receipt(backend),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "timestamp_utc": utc_now(),
+            }
+            input_asr = {
+                "expected_text": args.expected_transcript,
+                "expected_text_sha256": sha256_text(args.expected_transcript or ""),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            failed_gates.append("input_asr_transcribed")
+
+    cancel_requested = transcript_requests_cancel(transcript)
+    if transcript:
+        coordinator_events.append(
+            {
+                "type": "turn.user_text_final",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "text": transcript,
+                "text_sha256": sha256_text(transcript),
+                "timestamp_utc": utc_now(),
+            }
+        )
+    if cancel_requested:
+        if not args.old_turn_id:
+            failed_gates.append("old_turn_id_present_for_cancel")
+        coordinator_events.append(
+            {
+                "type": "turn.cancel_requested",
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "old_turn_id": args.old_turn_id,
+                "reason": "listener_transcript_cancel_intent",
+                "timestamp_utc": utc_now(),
+            }
+        )
+
+    render_request = build_tau_voice_render_request(
+        run_id=run_id,
+        session_id=session_id,
+        turn_id=turn_id,
+        transcript=transcript,
+        response_text=args.response_text,
+        receipt_root=receipt_root,
+        old_turn_id=args.old_turn_id,
+        cancel_requested=cancel_requested,
+    )
+    coordinator_events.append(
+        {
+            "type": "turn.renderer_request_created",
+            "session_id": session_id,
+            "turn_id": turn_id,
+            "schema": render_request["schema"],
+            "request_sha256": sha256_text(json.dumps(render_request, sort_keys=True)),
+            "timestamp_utc": utc_now(),
+        }
+    )
+    append_event(events, started, "turn.renderer_request_created", turn_id=turn_id, schema=render_request["schema"])
+
+    if not listener_events:
+        failed_gates.append("listener_events_present")
+    if not any(event.get("type") == "listener.audio_frame_received" for event in listener_events):
+        failed_gates.append("listener_audio_frame_events_present")
+    if asr_transcript is None or not asr_transcript.get("text"):
+        failed_gates.append("asr_transcript_final_text_present")
+    if not heard_text_ledger:
+        failed_gates.append("heard_text_ledger_present")
+    for event_type in ["turn.started", "turn.user_text_final", "turn.renderer_request_created"]:
+        if not any(event.get("type") == event_type for event in coordinator_events):
+            failed_gates.append(f"coordinator_{event_type.replace('.', '_')}_present")
+    if render_request["schema"] != "tau.voice_render_request.v1":
+        failed_gates.append("tau_voice_render_request_schema")
+    if render_request["memory_route_decision"]["called"]:
+        failed_gates.append("listener_boundary_did_not_call_memory")
+
+    artifacts.update(
+        {
+            "heard_text_ledger_path": str(receipt_root / "heard-text-ledger.jsonl"),
+            "listener_turn_events_path": str(receipt_root / "listener-turn-events.jsonl"),
+            "asr_transcript_path": str(receipt_root / "asr-transcript.json"),
+            "tau_voice_render_request_path": str(receipt_root / "tau-voice-render-request.json"),
+        }
+    )
+    append_event(events, started, "rung.finished", ok=not failed_gates)
+    return {
+        "schema": RUNG7_SCHEMA,
+        "ok": not failed_gates,
+        "rung": 7,
+        "run_id": run_id,
+        "session_id": session_id,
+        "turn_id": turn_id,
+        "mocked": False,
+        "live": bool(backend.get("live") and fixture.exists() and not failed_gates),
+        "started_at_utc": datetime.fromtimestamp(
+            time.time() - (time.perf_counter() - started),
+            timezone.utc,
+        ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "ended_at_utc": utc_now(),
+        "services": services,
+        "inputs": {
+            "fixture": str(fixture),
+            "expected_transcript": args.expected_transcript,
+            "fixture_provenance": args.fixture_provenance,
+            "listener_frame_ms": args.listener_frame_ms,
+            "old_turn_id": args.old_turn_id,
+        },
+        "artifacts": artifacts,
+        "events": events,
+        "listener_events": listener_events,
+        "heard_text_ledger": heard_text_ledger,
+        "coordinator_events": coordinator_events,
+        "input_asr": input_asr,
+        "asr_transcript": asr_transcript,
+        "tau_voice_render_request": render_request,
+        "failed_gates": failed_gates,
+        "claims": {
+            "proves": [
+                "listener_boundary_accepts_real_wav_audio_frames",
+                "configured_asr_backend_produces_auditable_final_text",
+                "coordinator_creates_tau_voice_render_request_without_listener_owning_memory_or_tts",
+            ]
+            if not failed_gates
+            else [],
+            "does_not_prove": [
+                "production_noise_robustness",
+                "browser_webrtc_readiness",
+                "memory_salience_or_qra_correctness",
+                "subjective_interruption_feel",
+                "chatterbox_tts_output_quality",
+            ],
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4, 5, 6], required=True)
+    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4, 5, 6, 7], required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8018")
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--fixture", type=Path)
@@ -1759,6 +2161,9 @@ def main() -> int:
     parser.add_argument("--label", default=None)
     parser.add_argument("--run-id", default=None)
     parser.add_argument("--session-id", default=None)
+    parser.add_argument("--turn-id", default=None)
+    parser.add_argument("--old-turn-id", default=None)
+    parser.add_argument("--listener-frame-ms", default=20, type=int)
     parser.add_argument("--question", default="Embry, which control family should I use when the answer says SI?")
     parser.add_argument("--first-answer", default=None)
     parser.add_argument("--new-answer", default=None)
@@ -1806,7 +2211,7 @@ def main() -> int:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 5")
         receipt = run_rung5(args)
-    else:
+    elif args.rung == 6:
         if not args.turn1_fixture or not args.turn2_fixture or not args.turn3_fixture:
             parser.error("--turn1-fixture, --turn2-fixture, and --turn3-fixture are required for --rung 6")
         if not args.expected_turn1_transcript or not args.expected_turn2_transcript or not args.expected_turn3_transcript:
@@ -1814,7 +2219,13 @@ def main() -> int:
                 "--expected-turn1-transcript, --expected-turn2-transcript, and --expected-turn3-transcript are required for --rung 6"
             )
         receipt = run_rung6(args)
+    else:
+        if not args.fixture:
+            parser.error("--fixture is required for --rung 7")
+        receipt = run_rung7(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    if args.rung == 7:
+        write_rung7_sidecar_artifacts(receipt, args.out)
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
         json.dumps(
