@@ -11,6 +11,7 @@ import threading
 import time
 import urllib.request
 from datetime import datetime, timezone
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -36,6 +37,8 @@ DEVICE = os.getenv("CHATTERBOX_DEVICE", "cuda")
 DEFAULT_ASR_OPENAI_BASE_URL = os.getenv("CHATTERBOX_ASR_OPENAI_BASE_URL", "http://172.17.0.1:9000")
 ASR_API_KEY_ENV = os.getenv("CHATTERBOX_ASR_API_KEY_ENV", "WHISPER_API_KEY")
 CACHE_SCHEMA_VERSION = "accepted_audio_cache.v2"
+BLESSED_QRA_SCHEMA_VERSION = "blessed_qra_response_cache.v1"
+BLESSED_QRA_LEDGER_PATH = Path(os.getenv("CHATTERBOX_BLESSED_QRA_LEDGER", str(OUT_DIR / "_blessed_qra_ledger.json")))
 ASR_ACCEPTANCE_VERSION = "asr_acceptance.v1"
 TEXT_NORMALIZATION_VERSION = "asr_acceptance.normalize_text.v1"
 STREAM_PROTOCOL_VERSION = "pcm_l16_chunk_stream.v1"
@@ -100,6 +103,15 @@ class SynthesisRequest(BaseModel):
 
 class SynthesisBatchRequest(RenderPlanRequest):
     turn_id: str | None = Field(default=None, max_length=120)
+    question_text: str | None = Field(default=None, max_length=12000)
+    use_blessed_qra_cache: bool = True
+    blessed_qra_min_similarity: float = Field(default=0.99, ge=0.0, le=1.0)
+    blessed_qra_variant: str | None = Field(default=None, max_length=120)
+    blessed_qra_preserve_pauses: bool = False
+    require_blessed_qra_memory_gate: bool = True
+    blessed_qra_memory_key: str | None = Field(default=None, max_length=240)
+    blessed_qra_memory_similarity: float | None = Field(default=None, ge=0.0)
+    blessed_qra_memory_review_status: str | None = Field(default=None, max_length=80)
     ref_audio: str | None = None
     label: str | None = None
     include_completion_cue: bool = True
@@ -183,6 +195,260 @@ def audio_metrics(path: Path) -> dict[str, Any]:
             }
         )
     return metrics
+
+
+def normalize_qra_text(text: str) -> str:
+    return " ".join("".join(ch.lower() if ch.isalnum() else " " for ch in text).split())
+
+
+def qra_similarity(left: str, right: str) -> float:
+    normalized_left = normalize_qra_text(left)
+    normalized_right = normalize_qra_text(right)
+    if not normalized_left or not normalized_right:
+        return 0.0
+    if normalized_left == normalized_right:
+        return 1.0
+    return round(SequenceMatcher(None, normalized_left, normalized_right).ratio(), 6)
+
+
+def load_blessed_qra_ledger(path: Path | None = None) -> dict[str, Any]:
+    ledger_path = path or BLESSED_QRA_LEDGER_PATH
+    if not ledger_path.exists():
+        return {
+            "ok": False,
+            "enabled": True,
+            "path": str(ledger_path),
+            "entries": [],
+            "failed_gates": ["ledger_present"],
+        }
+    try:
+        payload = json.loads(ledger_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - exposed as receipt data
+        return {
+            "ok": False,
+            "enabled": True,
+            "path": str(ledger_path),
+            "entries": [],
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "failed_gates": ["ledger_json_valid"],
+        }
+    if isinstance(payload, list):
+        payload = {"schema_version": BLESSED_QRA_SCHEMA_VERSION, "entries": payload}
+    entries = payload.get("entries")
+    if not isinstance(entries, list):
+        return {
+            "ok": False,
+            "enabled": True,
+            "path": str(ledger_path),
+            "entries": [],
+            "schema_version": payload.get("schema_version"),
+            "failed_gates": ["ledger_entries_list"],
+        }
+    return {
+        "ok": True,
+        "enabled": bool(payload.get("enabled", True)),
+        "path": str(ledger_path),
+        "schema_version": payload.get("schema_version"),
+        "entries": entries,
+        "failed_gates": [],
+    }
+
+
+def blessed_qra_candidate_questions(entry: dict[str, Any]) -> list[str]:
+    candidates: list[str] = []
+    for key in ["question_text", "question", "question_normalized"]:
+        value = entry.get(key)
+        if isinstance(value, str) and value.strip():
+            candidates.append(value)
+    variants = entry.get("question_variants")
+    if isinstance(variants, list):
+        candidates.extend(item for item in variants if isinstance(item, str) and item.strip())
+    return candidates
+
+
+def select_blessed_qra_variant(entry: dict[str, Any], preferred_variant: str | None) -> dict[str, Any]:
+    variants = entry.get("audio_variants") or entry.get("variants")
+    if isinstance(variants, list) and variants:
+        valid_variants = [variant for variant in variants if isinstance(variant, dict) and variant.get("blessed", True)]
+        if preferred_variant:
+            for variant in valid_variants:
+                if preferred_variant in {str(variant.get("id")), str(variant.get("name"))}:
+                    return variant
+        for variant in valid_variants:
+            if variant.get("default") or variant.get("id") == "default_fast":
+                return variant
+        if valid_variants:
+            return valid_variants[0]
+    return {
+        "id": "default",
+        "name": "default",
+        "default": True,
+        "emotion_arc": entry.get("emotion_arc") or entry.get("emotion_policy"),
+        "pause_profile": entry.get("pause_profile"),
+        "chunks": entry.get("chunks"),
+    }
+
+
+def resolve_blessed_qra_audio_path(path_value: str, *, ledger_path: Path) -> Path:
+    candidate = Path(path_value)
+    if not candidate.is_absolute():
+        candidate = ledger_path.parent / candidate
+    return candidate.resolve(strict=False)
+
+
+def find_blessed_qra_match(
+    question_text: str | None,
+    *,
+    min_similarity: float,
+    preferred_variant: str | None = None,
+    ledger_path: Path | None = None,
+) -> dict[str, Any]:
+    if not question_text or not question_text.strip():
+        return {
+            "enabled": True,
+            "hit": False,
+            "reason": "question_text_missing",
+            "min_similarity": min_similarity,
+            "failed_gates": [],
+        }
+    ledger = load_blessed_qra_ledger(ledger_path)
+    if not ledger.get("ok"):
+        return {
+            "enabled": True,
+            "hit": False,
+            "reason": "ledger_unavailable",
+            "ledger": {key: ledger.get(key) for key in ["path", "schema_version", "failed_gates", "error_type", "error"]},
+            "min_similarity": min_similarity,
+            "failed_gates": [],
+        }
+    if not ledger.get("enabled", True):
+        return {
+            "enabled": False,
+            "hit": False,
+            "reason": "ledger_disabled",
+            "ledger": {"path": ledger.get("path"), "schema_version": ledger.get("schema_version")},
+            "min_similarity": min_similarity,
+            "failed_gates": [],
+        }
+
+    best: dict[str, Any] | None = None
+    for entry in ledger["entries"]:
+        if not isinstance(entry, dict) or not entry.get("blessed", True):
+            continue
+        for candidate in blessed_qra_candidate_questions(entry):
+            similarity = qra_similarity(question_text, candidate)
+            if best is None or similarity > best["similarity"]:
+                best = {
+                    "entry": entry,
+                    "matched_question": candidate,
+                    "similarity": similarity,
+                }
+    if not best or best["similarity"] < min_similarity:
+        return {
+            "enabled": True,
+            "hit": False,
+            "reason": "similarity_below_threshold",
+            "best_similarity": best["similarity"] if best else None,
+            "min_similarity": min_similarity,
+            "ledger": {"path": ledger.get("path"), "schema_version": ledger.get("schema_version")},
+            "failed_gates": [],
+        }
+
+    entry = best["entry"]
+    variant = select_blessed_qra_variant(entry, preferred_variant)
+    chunks = variant.get("chunks")
+    answer_text = entry.get("answer_text")
+    if not isinstance(answer_text, str) or not answer_text.strip():
+        return {
+            "enabled": True,
+            "hit": False,
+            "reason": "entry_answer_text_missing",
+            "entry_id": entry.get("id"),
+            "similarity": best["similarity"],
+            "failed_gates": ["entry_answer_text_present"],
+        }
+    if not isinstance(chunks, list) or not chunks:
+        return {
+            "enabled": True,
+            "hit": False,
+            "reason": "entry_chunks_missing",
+            "entry_id": entry.get("id"),
+            "variant_id": variant.get("id"),
+            "similarity": best["similarity"],
+            "failed_gates": ["entry_chunks_present"],
+        }
+
+    ledger_file = Path(str(ledger["path"]))
+    resolved_chunks = []
+    failed_gates = []
+    for index, chunk in enumerate(chunks, start=1):
+        if not isinstance(chunk, dict):
+            failed_gates.append(f"chunk_{index}_object")
+            continue
+        text = chunk.get("text")
+        audio = chunk.get("audio")
+        if not isinstance(text, str) or not text.strip():
+            failed_gates.append(f"chunk_{index}_text_present")
+            continue
+        if len(text) > 300:
+            failed_gates.append(f"chunk_{index}_text_300_char_max")
+        if not isinstance(audio, str) or not audio.strip():
+            failed_gates.append(f"chunk_{index}_audio_present")
+            continue
+        audio_path = resolve_blessed_qra_audio_path(audio, ledger_path=ledger_file)
+        if not audio_path.exists():
+            failed_gates.append(f"chunk_{index}_audio_exists")
+            continue
+        metrics = audio_metrics(audio_path)
+        if int(metrics.get("bytes") or 0) <= 44 or float(metrics.get("duration_seconds") or 0.0) <= 0:
+            failed_gates.append(f"chunk_{index}_audio_non_empty")
+        expected_sha256 = chunk.get("audio_sha256")
+        if expected_sha256 and metrics.get("sha256") != expected_sha256:
+            failed_gates.append(f"chunk_{index}_audio_sha256_match")
+        resolved_chunks.append({**chunk, "index": chunk.get("index") or index, "audio": str(audio_path), "metrics": metrics})
+
+    if failed_gates:
+        return {
+            "enabled": True,
+            "hit": False,
+            "reason": "entry_validation_failed",
+            "entry_id": entry.get("id"),
+            "similarity": best["similarity"],
+            "failed_gates": failed_gates,
+        }
+
+    return {
+        "enabled": True,
+        "hit": True,
+        "reason": "similarity_threshold_met",
+        "schema_version": BLESSED_QRA_SCHEMA_VERSION,
+        "ledger": {"path": ledger.get("path"), "schema_version": ledger.get("schema_version")},
+        "entry_id": entry.get("id"),
+        "variant_id": variant.get("id"),
+        "variant_name": variant.get("name"),
+        "variant_count": len(entry.get("audio_variants") or entry.get("variants") or [variant]),
+        "memory_keys": [
+            str(item)
+            for item in (
+                entry.get("memory_keys")
+                or entry.get("qra_memory_keys")
+                or ([entry.get("memory_key")] if entry.get("memory_key") else [])
+            )
+        ],
+        "question_text": question_text,
+        "matched_question": best["matched_question"],
+        "similarity": best["similarity"],
+        "min_similarity": min_similarity,
+        "answer_text": answer_text,
+        "answer_text_sha256": hashlib.sha256(answer_text.encode("utf-8")).hexdigest(),
+        "evidence": entry.get("evidence"),
+        "emotion_policy": variant.get("emotion_policy") or entry.get("emotion_policy"),
+        "emotion_arc": variant.get("emotion_arc") or entry.get("emotion_arc"),
+        "pause_profile": variant.get("pause_profile") or entry.get("pause_profile"),
+        "chunks": resolved_chunks,
+        "failed_gates": [],
+    }
 
 
 def safe_resolve_within(path_value: str | Path, roots: list[Path] | None = None) -> Path:
@@ -773,6 +1039,165 @@ def combine_audio_segments(
     return audio_metrics(out_path)
 
 
+def blessed_qra_cache_disabled_receipt() -> dict[str, Any]:
+    return {
+        "enabled": False,
+        "hit": False,
+        "reason": "request_disabled",
+        "schema_version": BLESSED_QRA_SCHEMA_VERSION,
+        "failed_gates": [],
+    }
+
+
+def apply_blessed_qra_memory_gate(request: SynthesisBatchRequest, match: dict[str, Any]) -> dict[str, Any]:
+    if not match.get("hit"):
+        return match
+    if not request.require_blessed_qra_memory_gate:
+        gated = dict(match)
+        gated["memory_gate"] = {
+            "required": False,
+            "passed": True,
+            "reason": "request_disabled_memory_gate",
+        }
+        return gated
+
+    failed_gates = []
+    review_status = (request.blessed_qra_memory_review_status or "").lower()
+    memory_key = request.blessed_qra_memory_key
+    memory_similarity = request.blessed_qra_memory_similarity
+    allowed_keys = {str(match.get("entry_id"))}
+    for key in match.get("memory_keys") or []:
+        allowed_keys.add(str(key))
+    if review_status not in {"approved", "blessed", "verified"}:
+        failed_gates.append("memory_review_status_approved")
+    if not memory_key or str(memory_key) not in allowed_keys:
+        failed_gates.append("memory_key_matches_blessed_qra")
+    if memory_similarity is None or float(memory_similarity) < request.blessed_qra_min_similarity:
+        failed_gates.append("memory_similarity_near_exact")
+
+    gated = dict(match)
+    gated["memory_gate"] = {
+        "required": True,
+        "passed": not failed_gates,
+        "memory_key": memory_key,
+        "allowed_keys": sorted(allowed_keys),
+        "memory_similarity": memory_similarity,
+        "min_similarity": request.blessed_qra_min_similarity,
+        "review_status": request.blessed_qra_memory_review_status,
+        "failed_gates": failed_gates,
+    }
+    if failed_gates:
+        gated.update(
+            {
+                "hit": False,
+                "reason": "memory_gate_failed",
+                "failed_gates": failed_gates,
+            }
+        )
+    return gated
+
+
+def blessed_qra_batch_response(
+    request: SynthesisBatchRequest,
+    *,
+    match: dict[str, Any],
+    batch_label: str,
+    batch_dir: Path,
+    started_total: float,
+    batch_events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    plan = build_render_plan(
+        match["answer_text"],
+        max_chars=request.max_chars,
+        pause_after_ms=0,
+        completion_cue=None,
+    )
+    chunk_results = []
+    for index, chunk in enumerate(match["chunks"], start=1):
+        metrics = dict(chunk.get("metrics") or audio_metrics(Path(str(chunk["audio"]))))
+        pause_after_ms = int(chunk.get("pause_after_ms") or 0) if request.blessed_qra_preserve_pauses else 0
+        chunk_results.append(
+            {
+                "ok": True,
+                "mocked": False,
+                "live": True,
+                "engine": "chatterbox_turbo",
+                "phase": "answer_chunk",
+                "source": "blessed_qra_cache",
+                "text": chunk["text"],
+                "text_sha256": hashlib.sha256(str(chunk["text"]).encode("utf-8")).hexdigest(),
+                "audio": chunk["audio"],
+                "metrics": metrics,
+                "duration_seconds": float(metrics.get("duration_seconds") or 0.0),
+                "delivery_stage": chunk.get("delivery_stage") or "neutral",
+                "chunk_index": index,
+                "chunk_total": len(match["chunks"]),
+                "pause_after_ms": pause_after_ms,
+                "can_interrupt_after": True,
+                "cache": {
+                    "hit": True,
+                    "kind": "blessed_qra_audio",
+                    "entry_id": match.get("entry_id"),
+                    "variant_id": match.get("variant_id"),
+                    "ledger": (match.get("ledger") or {}).get("path"),
+                },
+                "asr_verification": {
+                    "enabled": True,
+                    "ok": True,
+                    "source": "blessed_qra_cache",
+                    "cache_hit": True,
+                    "failed_gates": [],
+                },
+                "failed_gates": [],
+            }
+        )
+    segments = [{"audio": item["audio"], "pause_after_ms": item.get("pause_after_ms", 0)} for item in chunk_results]
+    finished_audio = batch_dir / "finished_response.wav"
+    finished_metrics = combine_audio_segments(segments, finished_audio, crossfade_ms=request.crossfade_ms)
+    latency_event(batch_events, "blessed_qra_cache_hit", started_total, entry_id=match.get("entry_id"), similarity=match.get("similarity"))
+    latency_event(batch_events, "finished_audio_ready", started_total, bytes=finished_metrics.get("bytes"))
+    return {
+        "ok": True,
+        "mocked": False,
+        "live": True,
+        "engine": "chatterbox_turbo",
+        "batch_label": batch_label,
+        "cache_key": f"blessed_qra:{match.get('entry_id')}",
+        "cache_material": {
+            "schema_version": BLESSED_QRA_SCHEMA_VERSION,
+            "entry_id": match.get("entry_id"),
+            "variant_id": match.get("variant_id"),
+            "variant_name": match.get("variant_name"),
+            "variant_count": match.get("variant_count"),
+            "answer_text_sha256": match.get("answer_text_sha256"),
+            "question_text": match.get("question_text"),
+            "matched_question": match.get("matched_question"),
+            "similarity": match.get("similarity"),
+        },
+        "answer_text_sha256": match["answer_text_sha256"],
+        "render_plan": {
+            **plan,
+            "source": "blessed_qra_cache",
+            "cached_chunk_count": len(match["chunks"]),
+        },
+        "chunks": chunk_results,
+        "completion_cue": None,
+        "finished_response_audio": str(finished_audio),
+        "finished_response_metrics": finished_metrics,
+        "crossfade_ms": request.crossfade_ms,
+        "asr_verification": {
+            "enabled": True,
+            "ok": True,
+            "source": "blessed_qra_cache",
+            "failed_gates": [],
+        },
+        "blessed_qra_cache": match,
+        "latency_events": batch_events,
+        "total_elapsed_ms": round((time.perf_counter() - started_total) * 1000, 3),
+        "failed_gates": [],
+    }
+
+
 def cache_key_for_batch(
     plan: dict[str, Any],
     *,
@@ -917,6 +1342,35 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
     batch_dir = OUT_DIR / batch_label
     batch_dir.mkdir(parents=True, exist_ok=True)
     latency_event(batch_events, "batch_dir_ready", started_total)
+    blessed_qra_lookup = (
+        apply_blessed_qra_memory_gate(
+            request,
+            find_blessed_qra_match(
+                request.question_text,
+                min_similarity=request.blessed_qra_min_similarity,
+                preferred_variant=request.blessed_qra_variant,
+            ),
+        )
+        if request.use_blessed_qra_cache
+        else blessed_qra_cache_disabled_receipt()
+    )
+    latency_event(
+        batch_events,
+        "blessed_qra_lookup_done",
+        started_total,
+        enabled=blessed_qra_lookup.get("enabled"),
+        hit=blessed_qra_lookup.get("hit"),
+        reason=blessed_qra_lookup.get("reason"),
+    )
+    if blessed_qra_lookup.get("hit"):
+        return blessed_qra_batch_response(
+            request,
+            match=blessed_qra_lookup,
+            batch_label=batch_label,
+            batch_dir=batch_dir,
+            started_total=started_total,
+            batch_events=batch_events,
+        )
     plan = build_render_plan(
         request.answer_text,
         max_chars=request.max_chars,
@@ -1063,6 +1517,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "finished_response_metrics": finished_metrics,
         "crossfade_ms": request.crossfade_ms,
         "asr_verification": asr_receipt,
+        "blessed_qra_cache": blessed_qra_lookup,
         "latency_events": batch_events,
         "total_elapsed_ms": round((time.perf_counter() - started_total) * 1000, 3),
         "failed_gates": failed_gates,
@@ -1103,6 +1558,30 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
         batch_label = safe_label(request.label or f"stream-{uuid4().hex[:8]}")
         batch_dir = OUT_DIR / batch_label
         batch_dir.mkdir(parents=True, exist_ok=True)
+        blessed_qra_lookup = (
+            apply_blessed_qra_memory_gate(
+                request,
+                find_blessed_qra_match(
+                    request.question_text,
+                    min_similarity=request.blessed_qra_min_similarity,
+                    preferred_variant=request.blessed_qra_variant,
+                ),
+            )
+            if request.use_blessed_qra_cache
+            else blessed_qra_cache_disabled_receipt()
+        )
+        if blessed_qra_lookup.get("hit"):
+            for chunk in blessed_qra_lookup["chunks"]:
+                if stop_if_turn_controlled():
+                    return
+                wav, sr = ta.load(str(chunk["audio"]))
+                yield from guarded_pcm_chunks(wav)
+                pause_ms = int(chunk.get("pause_after_ms") or 0) if request.blessed_qra_preserve_pauses else 0
+                if pause_ms > 0:
+                    silence_len = int(sr * (pause_ms / 1000))
+                    if silence_len > 0:
+                        yield from guarded_pcm_chunks(torch.zeros((1, silence_len), dtype=torch.float32))
+            return
         plan = build_render_plan(
             request.answer_text,
             max_chars=request.max_chars,

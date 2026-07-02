@@ -425,6 +425,65 @@ Stop rule:
   Rung 7 passes only when the listener boundary emits auditable events and the
   coordinator owns downstream decisions.
 
+## Blessed QRA Instant Playback Contract
+
+Purpose: when memory recall returns a near-exact approved QRA, play pre-rendered
+Embry audio immediately instead of waiting for live Chatterbox generation.
+
+Required creation-time path:
+
+```text
+QRA generated -> QRA reviewed/approved -> answer split to <=300 char chunks ->
+five Embry audio variants rendered -> chunk audio hashes recorded ->
+blessed QRA ledger updated
+```
+
+Required runtime path:
+
+```text
+ASR final text -> memory intent/recall -> approved QRA near-exact match ->
+coordinator passes memory gate fields -> Chatterbox blessed ledger lookup ->
+cached chunk audio streams immediately
+```
+
+Default gate:
+
+- `use_blessed_qra_cache=true` enables the fast path.
+- `require_blessed_qra_memory_gate=true` means local text similarity is not
+  enough. The caller must pass:
+  - `blessed_qra_memory_key`,
+  - `blessed_qra_memory_similarity >= blessed_qra_min_similarity`,
+  - `blessed_qra_memory_review_status` in `approved`, `blessed`, or `verified`.
+- `use_blessed_qra_cache=false` disables instant playback and forces normal
+  rendering.
+
+Variant policy:
+
+- A blessed QRA may carry up to five Embry audio variants, such as
+  `default_fast`, `gentle`, `warm`, `confident`, and `urgent_clear`.
+- `blessed_qra_variant` selects a named variant.
+- `blessed_qra_preserve_pauses=false` strips inter-chunk pauses for fastest
+  playback. Set it to `true` when the selected emotional arc needs its recorded
+  pause profile.
+
+Claims this proves after live receipt exists:
+
+- Known, approved QRA answers can begin playback without generation latency.
+- Chatterbox remains the renderer/playback surface; memory owns recall and QRA
+  trust.
+
+Does not prove:
+
+- A pending or unreviewed QRA is safe to play.
+- Loose semantic similarity is enough for instant playback.
+- The selected emotional variant is subjectively best.
+
+Stop rule:
+
+- Do not let the Chatterbox server independently decide QRA truth. It can only
+  use a blessed audio ledger after the coordinator supplies a near-exact memory
+  gate from the memory pipeline.
+
 ## Implementation Order
 
 1. Add `scripts/smoke_conversation_ladder.py` with `--rung 1` only. Initial

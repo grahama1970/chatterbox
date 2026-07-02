@@ -42,6 +42,27 @@ Observed result:
   `baseline_bytes=65536`, `old_turn_bytes_after_cancel=0`, and empty
   `failed_gates`.
 
+Latest blessed-QRA instant playback follow-up checks:
+
+```bash
+python3 -m py_compile src/chatterbox/agent/server.py scripts/bless_qra_audio_variants.py scripts/smoke_stream_turn_cancel.py scripts/smoke_full_live_sanity.py
+PYTHONPATH=src pytest tests/test_agent_server_primitives.py tests/test_conversation_ladder_smoke.py tests/test_agent_voice_cache.py
+python3 scripts/bless_qra_audio_variants.py --base-url http://127.0.0.1:8018 --ledger /tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json --host-out-dir /tmp/chatterbox-fork-agent-out --qra-id qra-smoke-si --memory-key qra-smoke-si --question "Which control family should I use when the answer says SI?" --answer "Use system and communications protection." --label-prefix blessed_qra_live_smoke
+```
+
+Observed result:
+
+- `py_compile`: exit 0.
+- `pytest`: 39 passed, 2 warnings.
+- `bless_qra_audio_variants.py`: live Chatterbox server produced five Embry
+  variants for `qra-smoke-si`; ledger path
+  `/tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json`.
+- Live cache-hit receipt
+  `/tmp/chatterbox-fork-agent-out/blessed-qra-cache-hit-20260702T1214.json`:
+  `ok=true`, `blessed_qra_cache.hit=true`, `entry_id=qra-smoke-si`,
+  `variant_id=gentle`, `memory_gate.passed=true`, chunk source
+  `blessed_qra_cache`, `client_elapsed_ms=157.103`, and empty `failed_gates`.
+
 ## Live Receipts
 
 All live receipts below are local artifacts under
@@ -62,6 +83,7 @@ Additional live stream-control receipt:
 | Receipt | Primary evidence |
 |---|---|
 | `/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json` | Patched server accepted `turn_id` on `/synthesize-batch-stream`; baseline stream emitted `65536` bytes; pre-cancelled old turn emitted `0` bytes after cancel. |
+| `/tmp/chatterbox-fork-agent-out/blessed-qra-cache-hit-20260702T1214.json` | Patched server accepted a near-exact memory gate for `qra-smoke-si`, selected the `gentle` Embry audio variant, and returned cached chunk audio without live generation. |
 
 ## Requirement Mapping
 
@@ -76,6 +98,7 @@ Additional live stream-control receipt:
 | Dynamic emotional steering | Rung 6 records cue spans, memory evidence, emotion transition, utterance policy, and ASR-verified responses. | Satisfied |
 | Receipt-backed validation | All six rungs have local JSON receipts with `mocked=false`, `live=true`, `ok=true`, and empty `failed_gates`. | Satisfied |
 | Stream turn cancellation | `scripts/smoke_stream_turn_cancel.py` records live baseline stream bytes, cancel endpoint state, and zero old-turn stream bytes after cancel. | Satisfied for pre-cancelled turn stream suppression; mid-buffer audio-device flush remains out of scope. |
+| Blessed QRA instant playback | `scripts/bless_qra_audio_variants.py` can generate five Embry audio variants when a QRA is blessed; `/synthesize-batch` requires a near-exact approved memory gate before using the cached chunks. | Satisfied for one live smoke QRA and fixture-backed gate tests; production memory-agent integration remains out of scope. |
 | Listener rung 7 contract | `docs/conversation_sanity_ladder_v0.md` defines audio frames in, ASR transcript events out, coordinator turn events out, and listener non-ownership of memory/search/reasoning/rendering. | Defined, not implemented. |
 
 ## Boundaries
@@ -85,6 +108,7 @@ The ladder still does not prove:
 - live microphone capture or WebRTC transport,
 - implemented rung 7 listener service,
 - mid-buffer audio-device flush after a cancel races with already-buffered PCM,
+- production memory-agent GPT review of QRA cache admission,
 - subjective voice preference,
 - noisy-room robustness,
 - globally correct memory salience ranking,

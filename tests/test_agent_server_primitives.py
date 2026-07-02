@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+import json
 from pathlib import Path
 import sys
 import time
@@ -20,10 +21,13 @@ from chatterbox.agent.server import (
     TurnControlRequest,
     accepted_audio_cache_key,
     accepted_audio_cache_material,
+    apply_blessed_qra_memory_gate,
     append_with_crossfade,
     candidate_variants,
     duck_playback,
+    find_blessed_qra_match,
     load_accepted_audio_cache,
+    qra_similarity,
     resolve_reference_audio,
     safe_resolve_within,
     save_accepted_audio_cache,
@@ -31,6 +35,7 @@ from chatterbox.agent.server import (
     cancel_turn,
     stream_turn_should_stop,
     synthesize_to_file,
+    synthesize_batch,
 )
 
 
@@ -191,6 +196,132 @@ def write_tiny_wav(path: Path) -> None:
         handle.setsampwidth(2)
         handle.setframerate(24000)
         handle.writeframes(b"\x00\x00" * 2400)
+
+
+def write_blessed_qra_ledger(tmp_path: Path) -> Path:
+    audio_paths = []
+    for index in range(5):
+        audio = tmp_path / f"variant-{index}.wav"
+        write_tiny_wav(audio)
+        audio_paths.append(audio)
+    variants = []
+    for index, audio in enumerate(audio_paths):
+        variants.append(
+            {
+                "id": f"variant_{index}",
+                "name": f"Variant {index}",
+                "default": index == 0,
+                "blessed": True,
+                "emotion_arc": {"tone": "gentle" if index == 1 else "neutral"},
+                "pause_profile": {"pause_after_ms": index * 25},
+                "chunks": [
+                    {
+                        "index": 1,
+                        "text": "Use system and communications protection.",
+                        "delivery_stage": "neutral",
+                        "pause_after_ms": index * 25,
+                        "audio": str(audio),
+                        "audio_sha256": server.sha256_file(audio),
+                    }
+                ],
+            }
+        )
+    ledger = {
+        "schema_version": "blessed_qra_response_cache.v1",
+        "enabled": True,
+        "entries": [
+            {
+                "id": "qra-si-answer",
+                "memory_keys": ["qra-si-answer"],
+                "blessed": True,
+                "question_text": "Which control family should I use when the answer says SI?",
+                "question_variants": ["Which control family should I use when the answer says SI"],
+                "answer_text": "Use system and communications protection.",
+                "audio_variants": variants,
+            }
+        ],
+    }
+    path = tmp_path / "blessed-qra-ledger.json"
+    path.write_text(json.dumps(ledger), encoding="utf-8")
+    return path
+
+
+def test_qra_similarity_normalizes_near_exact_questions() -> None:
+    assert qra_similarity(
+        "Which control family should I use when the answer says SI?",
+        "which control family should i use when the answer says si",
+    ) == 1.0
+
+
+def test_blessed_qra_lookup_selects_requested_audio_variant(tmp_path: Path) -> None:
+    ledger = write_blessed_qra_ledger(tmp_path)
+
+    match = find_blessed_qra_match(
+        "Which control family should I use when the answer says SI?",
+        min_similarity=0.99,
+        preferred_variant="variant_3",
+        ledger_path=ledger,
+    )
+
+    assert match["hit"] is True
+    assert match["entry_id"] == "qra-si-answer"
+    assert match["variant_id"] == "variant_3"
+    assert match["variant_count"] == 5
+    assert match["similarity"] == 1.0
+    assert match["chunks"][0]["pause_after_ms"] == 75
+
+
+def test_blessed_qra_memory_gate_is_required_by_default(tmp_path: Path) -> None:
+    ledger = write_blessed_qra_ledger(tmp_path)
+    match = find_blessed_qra_match(
+        "Which control family should I use when the answer says SI?",
+        min_similarity=0.99,
+        ledger_path=ledger,
+    )
+    request = SynthesisBatchRequest(
+        answer_text="Fallback answer.",
+        question_text="Which control family should I use when the answer says SI?",
+    )
+
+    gated = apply_blessed_qra_memory_gate(request, match)
+
+    assert gated["hit"] is False
+    assert gated["reason"] == "memory_gate_failed"
+    assert "memory_key_matches_blessed_qra" in gated["memory_gate"]["failed_gates"]
+
+
+def test_synthesize_batch_uses_blessed_qra_cache_with_memory_gate(tmp_path: Path, monkeypatch) -> None:
+    ledger = write_blessed_qra_ledger(tmp_path)
+    monkeypatch.setattr(server, "BLESSED_QRA_LEDGER_PATH", ledger)
+    monkeypatch.setattr(server, "OUT_DIR", tmp_path / "out")
+    def fake_combine_audio_segments(segments, out_path, *, crossfade_ms=20):
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        write_tiny_wav(out_path)
+        return {"path": str(out_path), "exists": True, "bytes": out_path.stat().st_size, "duration_seconds": 0.1}
+
+    monkeypatch.setattr(server, "combine_audio_segments", fake_combine_audio_segments)
+
+    result = synthesize_batch(
+        SynthesisBatchRequest(
+            answer_text="Fallback answer should not render.",
+            question_text="Which control family should I use when the answer says SI?",
+            blessed_qra_memory_key="qra-si-answer",
+            blessed_qra_memory_similarity=1.0,
+            blessed_qra_memory_review_status="approved",
+            blessed_qra_variant="variant_1",
+            blessed_qra_preserve_pauses=True,
+            crossfade_ms=0,
+            label="blessed-qra-test",
+        )
+    )
+
+    assert result["ok"] is True
+    assert result["blessed_qra_cache"]["hit"] is True
+    assert result["blessed_qra_cache"]["memory_gate"]["passed"] is True
+    assert result["cache_material"]["variant_id"] == "variant_1"
+    assert result["chunks"][0]["source"] == "blessed_qra_cache"
+    assert result["chunks"][0]["pause_after_ms"] == 25
+    assert Path(result["finished_response_audio"]).exists()
 
 
 def test_accepted_audio_cache_key_changes_with_text(tmp_path: Path) -> None:
