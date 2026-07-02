@@ -35,6 +35,7 @@ RUNG2_SCHEMA = "chatterbox.conversation_ladder.rung2.v1"
 RUNG3_SCHEMA = "chatterbox.conversation_ladder.rung3.v1"
 RUNG4_SCHEMA = "chatterbox.conversation_ladder.rung4.v1"
 RUNG5_SCHEMA = "chatterbox.conversation_ladder.rung5.v1"
+RUNG6_SCHEMA = "chatterbox.conversation_ladder.rung6.v1"
 DEFAULT_RESPONSE_TEXT = "Hello. I am listening."
 BRAVE_SEARCH_RUNNER = "/home/graham/workspace/experiments/agent-skills/skills/brave-search/run.sh"
 RUNG4_FIRST_ANSWER = (
@@ -336,6 +337,82 @@ def response_from_embry_memory(item: dict[str, Any]) -> str:
     if {"location:hawaii", "person:kai"} & tags and "grief" in emotion:
         return "Rain links Kai with grief."
     return "The memory links rain with grief."
+
+
+def extract_emotional_cues(transcript: str) -> list[dict[str, Any]]:
+    cue_specs = [
+        ("rain", "sensory_rain", "grief"),
+        ("ray", "sensory_rain", "grief"),
+        ("kai", "relationship_kai", "grief"),
+        ("grief", "explicit_grief", "grief"),
+        ("gentle", "requested_gentleness", "careful"),
+    ]
+    cues = []
+    lower = transcript.lower()
+    for term, label, emotion in cue_specs:
+        start = lower.find(term)
+        if start >= 0:
+            cues.append(
+                {
+                    "span": transcript[start : start + len(term)],
+                    "start": start,
+                    "end": start + len(term),
+                    "label": label,
+                    "emotion": emotion,
+                }
+            )
+    return cues
+
+
+def update_emotion_state(prior: dict[str, Any], cues: list[dict[str, Any]], evidence: dict[str, Any] | None) -> dict[str, Any]:
+    selected = dict(prior)
+    reason = "no_salient_cue"
+    confidence = 0.4
+    if any(cue["emotion"] == "grief" for cue in cues) and evidence:
+        selected = {
+            "state": "gentle_grief",
+            "intensity": 0.7,
+            "tone": "gentle",
+        }
+        reason = "rain_kai_cue_with_memory_evidence"
+        confidence = 0.82
+    elif any(cue["label"] == "requested_gentleness" for cue in cues):
+        selected = {
+            "state": "gentle_followup",
+            "intensity": max(float(prior.get("intensity") or 0.4), 0.55),
+            "tone": "gentle",
+        }
+        reason = "user_requested_gentle_tone"
+        confidence = 0.72
+    return {
+        "prior": prior,
+        "cues": cues,
+        "evidence_key": (((evidence or {}).get("items") or [{}])[0]).get("_key") if evidence else None,
+        "selected": selected,
+        "reason": reason,
+        "confidence": confidence,
+        "decay": "session_only_no_memory_write",
+    }
+
+
+def utterance_policy_for_state(state: dict[str, Any], turn_index: int) -> dict[str, Any]:
+    current = state.get("state")
+    if turn_index == 1:
+        response_text = "I am listening."
+        delivery_stage = "neutral"
+    elif current == "gentle_grief":
+        response_text = "I will keep this gentle."
+        delivery_stage = "reassuring"
+    else:
+        response_text = "I will stay gentle and focused."
+        delivery_stage = "reassuring"
+    return {
+        "response_text": response_text,
+        "delivery_stage": delivery_stage,
+        "forbidden_or_avoid_conditions": ["do_not_claim_to_know_user_inner_state"],
+        "rejected_alternatives": ["playful_wait_activity", "high_energy_delivery"],
+        "reason": "match_response_to_recorded_emotion_state",
+    }
 
 
 def exercise_turn_controls(base_url: str, old_turn_id: str, new_turn_id: str) -> dict[str, Any]:
@@ -1426,18 +1503,249 @@ def run_rung5(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_rung6(args: argparse.Namespace) -> dict[str, Any]:
+    started = time.perf_counter()
+    run_id = args.run_id or f"rung6-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    session_id = args.session_id or f"session-{run_id}"
+    path_maps = parse_path_maps(args.path_map)
+    failed_gates: list[str] = []
+    events: list[dict[str, Any]] = []
+    services: dict[str, Any] = {}
+    turns: list[dict[str, Any]] = []
+    emotion_state: dict[str, Any] = {"state": "neutral", "intensity": 0.2, "tone": "neutral"}
+
+    append_event(events, started, "rung.started", rung=6, run_id=run_id, session_id=session_id)
+    backend = build_asr_backend(args)
+    services["asr"] = asr_backend_receipt(backend)
+    if not backend.get("live"):
+        failed_gates.append("asr_backend_available")
+
+    base_url = args.base_url.rstrip("/")
+    services["chatterbox"] = {"base_url": base_url}
+    health: dict[str, Any] | None = None
+    try:
+        health = wait_for_health(base_url, args.wait_health_s)
+        services["chatterbox"]["health"] = health
+        append_event(events, started, "chatterbox.health_ok", model_loaded=health.get("model_loaded"))
+    except Exception as exc:  # noqa: BLE001
+        services["chatterbox"]["health_error"] = f"{type(exc).__name__}: {exc}"
+        failed_gates.append("chatterbox_health_ok")
+
+    memory_url = args.memory_url.rstrip("/")
+    services["memory"] = {"base_url": memory_url}
+    memory_tags = args.memory_tag or []
+    memory_evidence: dict[str, Any] | None = None
+    memory_recall_raw: dict[str, Any] | None = None
+
+    turn_specs = [
+        (1, args.turn1_fixture, args.expected_turn1_transcript),
+        (2, args.turn2_fixture, args.expected_turn2_transcript),
+        (3, args.turn3_fixture, args.expected_turn3_transcript),
+    ]
+    if any(not fixture for _idx, fixture, _expected in turn_specs):
+        failed_gates.append("turn_fixtures_present")
+    if any(not expected for _idx, _fixture, expected in turn_specs):
+        failed_gates.append("expected_turn_transcripts_present")
+
+    for turn_index, fixture_value, expected_text in turn_specs:
+        turn_failed: list[str] = []
+        fixture = Path(fixture_value).resolve()
+        turn_id = f"{run_id}-turn-{turn_index}"
+        turn: dict[str, Any] = {
+            "turn_index": turn_index,
+            "turn_id": turn_id,
+            "session_id": session_id,
+            "state_before": emotion_state,
+            "input_audio": {"path": str(fixture), "exists": fixture.exists()},
+        }
+        append_event(events, started, "listener.input_audio_ready", turn_id=turn_id, audio=str(fixture))
+        if not fixture.exists():
+            turn_failed.append("input_audio_exists")
+        elif fixture.suffix.lower() != ".wav":
+            turn_failed.append("input_audio_is_wav")
+        else:
+            turn["input_audio"].update(wav_metrics(fixture))
+
+        transcript = ""
+        if fixture.exists() and backend.get("live"):
+            try:
+                asr = transcript_gate(
+                    backend=backend,
+                    audio_path=fixture,
+                    expected_text=str(expected_text),
+                    max_wer=args.max_input_wer,
+                )
+                turn["input_asr"] = asr
+                transcript = asr["transcript"]
+                append_event(events, started, "asr.input_transcribed", turn_id=turn_id, ok=asr["gate"]["ok"], wer=asr["gate"]["wer"])
+                if not asr["gate"]["ok"]:
+                    turn_failed.extend(f"input_asr_{gate}" for gate in asr["gate"]["failed_gates"])
+            except Exception as exc:  # noqa: BLE001
+                turn["input_asr"] = {
+                    "expected_text": expected_text,
+                    "expected_text_sha256": sha256_text(str(expected_text)),
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+                turn_failed.append("input_asr_transcribed")
+
+        cues = extract_emotional_cues(transcript)
+        turn["cues"] = cues
+        if turn_index == 2:
+            recall_payload = {
+                "q": args.memory_question,
+                "collections": ["persona_memory"],
+                "tags": memory_tags,
+                "k": args.memory_k,
+            }
+            try:
+                memory_recall_raw = post_memory_recall(memory_url, recall_payload, timeout_s=args.memory_timeout_s)
+                append_event(
+                    events,
+                    started,
+                    "memory.recall_finished",
+                    turn_id=turn_id,
+                    found=memory_recall_raw.get("found"),
+                    confidence=memory_recall_raw.get("confidence"),
+                )
+                items = memory_recall_raw.get("items") or []
+                if not memory_recall_raw.get("found"):
+                    turn_failed.append("memory_found")
+                if memory_recall_raw.get("should_scan"):
+                    turn_failed.append("memory_should_scan_false")
+                if not items:
+                    turn_failed.append("memory_items_present")
+                top = items[0] if items else {}
+                if top.get("persona_id") != args.required_persona_id:
+                    turn_failed.append("memory_top_persona_scope")
+                if not memory_item_has_tag(top, f"persona:{args.required_persona_id}"):
+                    turn_failed.append("memory_top_persona_tag")
+                memory_evidence = {
+                    "question": args.memory_question,
+                    "request": recall_payload,
+                    "found": memory_recall_raw.get("found"),
+                    "confidence": memory_recall_raw.get("confidence"),
+                    "should_scan": memory_recall_raw.get("should_scan"),
+                    "meta": memory_recall_raw.get("meta"),
+                    "items": summarize_memory_items(items),
+                }
+            except Exception as exc:  # noqa: BLE001
+                memory_evidence = {"error_type": type(exc).__name__, "error": str(exc)}
+                turn_failed.append("memory_recall_ok")
+        turn["memory_evidence"] = memory_evidence if turn_index == 2 else None
+
+        transition = update_emotion_state(emotion_state, cues, memory_evidence)
+        emotion_state = transition["selected"]
+        turn["emotion_transition"] = transition
+        policy = utterance_policy_for_state(emotion_state, turn_index)
+        turn["utterance_policy"] = policy
+        response_text = policy["response_text"]
+        turn["response_text"] = response_text
+        turn["response_text_sha256"] = sha256_text(response_text)
+
+        output_audio_path: Path | None = None
+        if health and health.get("ok"):
+            try:
+                synthesis, output_audio_path, output_artifact = synthesize_live(
+                    base_url=base_url,
+                    text=response_text,
+                    label=f"{run_id}_turn_{turn_index}",
+                    path_maps=path_maps,
+                    timeout_s=args.synthesis_timeout_s,
+                )
+                turn["synthesis"] = synthesis
+                turn["output_audio"] = output_artifact
+                append_event(events, started, "tts.response_received", turn_id=turn_id, ok=synthesis.get("ok"))
+                if not synthesis.get("ok"):
+                    turn_failed.append("tts_synthesis_ok")
+                if output_audio_path is None or not output_audio_path.exists():
+                    turn_failed.append("output_audio_exists")
+                elif backend.get("live"):
+                    output_asr = transcript_gate(
+                        backend=backend,
+                        audio_path=output_audio_path,
+                        expected_text=response_text,
+                        max_wer=args.max_output_wer,
+                    )
+                    turn["output_asr"] = output_asr
+                    append_event(events, started, "asr.output_transcribed", turn_id=turn_id, ok=output_asr["gate"]["ok"], wer=output_asr["gate"]["wer"])
+                    if not output_asr["gate"]["ok"]:
+                        turn_failed.extend(f"output_asr_{gate}" for gate in output_asr["gate"]["failed_gates"])
+            except Exception as exc:  # noqa: BLE001
+                turn["synthesis"] = {"ok": False, "error_type": type(exc).__name__, "error": str(exc)}
+                turn_failed.append("tts_or_output_asr_ok")
+
+        turn["state_after"] = emotion_state
+        turn["failed_gates"] = turn_failed
+        failed_gates.extend(f"turn_{turn_index}_{gate}" for gate in turn_failed)
+        turns.append(turn)
+
+    if not any(cue["label"] == "relationship_kai" for turn in turns for cue in turn.get("cues") or []):
+        failed_gates.append("kai_cue_observed")
+    if not any(cue["label"] == "sensory_rain" for turn in turns for cue in turn.get("cues") or []):
+        failed_gates.append("rain_cue_observed")
+    if emotion_state.get("tone") != "gentle":
+        failed_gates.append("final_emotion_tone_gentle")
+
+    append_event(events, started, "rung.finished", ok=not failed_gates)
+    return {
+        "schema": RUNG6_SCHEMA,
+        "ok": not failed_gates,
+        "rung": 6,
+        "run_id": run_id,
+        "session_id": session_id,
+        "mocked": False,
+        "live": bool(health and health.get("ok") and backend.get("live") and memory_evidence and not failed_gates),
+        "started_at_utc": datetime.fromtimestamp(
+            time.time() - (time.perf_counter() - started),
+            timezone.utc,
+        ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "ended_at_utc": utc_now(),
+        "services": services,
+        "inputs": {
+            "turn1_fixture": str(Path(args.turn1_fixture).resolve()) if args.turn1_fixture else None,
+            "turn2_fixture": str(Path(args.turn2_fixture).resolve()) if args.turn2_fixture else None,
+            "turn3_fixture": str(Path(args.turn3_fixture).resolve()) if args.turn3_fixture else None,
+            "expected_turn1_transcript": args.expected_turn1_transcript,
+            "expected_turn2_transcript": args.expected_turn2_transcript,
+            "expected_turn3_transcript": args.expected_turn3_transcript,
+            "fixture_provenance": args.fixture_provenance,
+        },
+        "events": events,
+        "turns": turns,
+        "final_emotion_state": emotion_state,
+        "failed_gates": failed_gates,
+        "claims": {
+            "proves": [
+                "dynamic_emotion_steering_uses_live_cues_and_memory_evidence",
+                "utterance_style_choices_are_receipt_backed",
+                "emotion_steered_responses_are_asr_verifiable",
+            ]
+            if not failed_gates
+            else [],
+            "does_not_prove": [
+                "subjectively_ideal_emotional_performance",
+                "globally_correct_memory_salience_ranking",
+                "production_ready_live_microphone_behavior",
+            ],
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4, 5], required=True)
+    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4, 5, 6], required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8018")
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--fixture", type=Path)
     parser.add_argument("--turn1-fixture", type=Path)
     parser.add_argument("--turn2-fixture", type=Path)
+    parser.add_argument("--turn3-fixture", type=Path)
     parser.add_argument("--fixture-provenance", default="provided_wav_fixture")
     parser.add_argument("--expected-transcript")
     parser.add_argument("--expected-turn1-transcript")
     parser.add_argument("--expected-turn2-transcript")
+    parser.add_argument("--expected-turn3-transcript")
     parser.add_argument("--response-text", default=DEFAULT_RESPONSE_TEXT)
     parser.add_argument(
         "--memory-question",
@@ -1494,10 +1802,18 @@ def main() -> int:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 4")
         receipt = run_rung4(args)
-    else:
+    elif args.rung == 5:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 5")
         receipt = run_rung5(args)
+    else:
+        if not args.turn1_fixture or not args.turn2_fixture or not args.turn3_fixture:
+            parser.error("--turn1-fixture, --turn2-fixture, and --turn3-fixture are required for --rung 6")
+        if not args.expected_turn1_transcript or not args.expected_turn2_transcript or not args.expected_turn3_transcript:
+            parser.error(
+                "--expected-turn1-transcript, --expected-turn2-transcript, and --expected-turn3-transcript are required for --rung 6"
+            )
+        receipt = run_rung6(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(

@@ -286,3 +286,63 @@ def test_rung5_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Pa
     assert "asr_backend_available" in receipt["failed_gates"]
     assert "chatterbox_health_ok" in receipt["failed_gates"]
     assert "brave_search_ok" in receipt["failed_gates"]
+
+
+def test_rung6_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Path, monkeypatch) -> None:
+    mod = load_ladder_module()
+    monkeypatch.delenv("WHISPER_API_KEY", raising=False)
+    args = Namespace(
+        rung=6,
+        base_url="http://127.0.0.1:9",
+        memory_url="http://127.0.0.1:9",
+        fixture=None,
+        turn1_fixture=tmp_path / "missing-turn1.wav",
+        turn2_fixture=tmp_path / "missing-turn2.wav",
+        turn3_fixture=tmp_path / "missing-turn3.wav",
+        fixture_provenance="unit_test_missing_fixture",
+        expected_transcript=None,
+        expected_turn1_transcript="Hello there.",
+        expected_turn2_transcript="Rain reminds me of Kai.",
+        expected_turn3_transcript="Can we keep this gentle?",
+        response_text="Hello. I am listening.",
+        memory_question="What memory explains why Embry Lawson reacts to Hawaii, surfing, Kai, and afternoon rain with grief?",
+        memory_tag=["persona:embry"],
+        memory_k=5,
+        memory_timeout_s=1,
+        min_memory_confidence=0.3,
+        required_persona_id="embry",
+        question="unused",
+        first_answer=None,
+        new_answer=None,
+        variant_offset=4,
+        tool_query="unused",
+        tool_count=3,
+        tool_timeout_s=1,
+        label=None,
+        run_id="unit-rung6",
+        session_id=None,
+        out=tmp_path / "rung6.json",
+        wait_health_s=0,
+        synthesis_timeout_s=1,
+        asr_openai_base_url="http://127.0.0.1:9000",
+        api_key_env="WHISPER_API_KEY",
+        asr_model="small.en",
+        asr_device="cpu",
+        asr_compute_type="int8",
+        max_input_wer=0.25,
+        max_output_wer=0.35,
+        path_map=[],
+    )
+
+    receipt = mod.run_rung6(args)
+
+    assert receipt["schema"] == mod.RUNG6_SCHEMA
+    assert receipt["mocked"] is False
+    assert receipt["live"] is False
+    assert receipt["ok"] is False
+    assert receipt["claims"]["proves"] == []
+    assert "asr_backend_available" in receipt["failed_gates"]
+    assert "chatterbox_health_ok" in receipt["failed_gates"]
+    assert "turn_1_input_audio_exists" in receipt["failed_gates"]
+    assert "turn_2_input_audio_exists" in receipt["failed_gates"]
+    assert "turn_3_input_audio_exists" in receipt["failed_gates"]

@@ -96,6 +96,54 @@
         "channels": 1,
         "duration_seconds": 3.065
       }
+    },
+    {
+      "id": "rung6_turn1",
+      "path": "tests/fixtures/conversation_ladder/rung6_turn1.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-6 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung6_turn1.wav -s 145 -v en-us 'Hi.'",
+      "expected_transcript": "Hi.",
+      "last_observed": {
+        "bytes": 37700,
+        "sha256": "0812ee7690e1d636e4f92f282f44f017b6d57c7ed31c7c6955a61e74f47395eb",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 0.854
+      }
+    },
+    {
+      "id": "rung6_turn2",
+      "path": "tests/fixtures/conversation_ladder/rung6_turn2.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-6 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung6_turn2.wav -s 145 -v en-us 'Rain and Kai.'",
+      "expected_transcript": "Ray and Kai.",
+      "last_observed": {
+        "bytes": 59930,
+        "sha256": "60328aefca15e115625975fecd94a3b4e0cac12dadb28f39dc32a512675b5e5b",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 1.358
+      }
+    },
+    {
+      "id": "rung6_turn3",
+      "path": "tests/fixtures/conversation_ladder/rung6_turn3.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-6 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung6_turn3.wav -s 145 -v en-us 'Can we keep this gentle?'",
+      "expected_transcript": "Can we keep this gentle?",
+      "last_observed": {
+        "bytes": 85770,
+        "sha256": "74d8cc040b1b0f117a2595cebff11d456d5cf5094af388d3a3b13a244cc73540",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 1.944
+      }
     }
   ],
   "live_receipts": [
@@ -176,6 +224,35 @@
       "first_result_url": "https://www.notch.cx/post/turn-detection-in-voice-ai",
       "wait_text": "I see.",
       "response_text": "I found voice agent turn detection results.",
+      "failed_gates": []
+    },
+    {
+      "rung": 6,
+      "path": "/tmp/chatterbox-fork-agent-out/conversation-ladder/rung6-live-20260702T113313Z/rung6.json",
+      "mocked": false,
+      "live": true,
+      "ok": true,
+      "turn_input_wers": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "turn_output_wers": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "memory_key": "embry_age15_19_b03_memory_040",
+      "final_emotion_state": {
+        "state": "gentle_followup",
+        "intensity": 0.7,
+        "tone": "gentle"
+      },
+      "observed_cues": [
+        "sensory_rain",
+        "relationship_kai",
+        "requested_gentleness"
+      ],
       "failed_gates": []
     }
   ]

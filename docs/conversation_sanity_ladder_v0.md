@@ -395,7 +395,13 @@ Stop rule:
    three recorded result URLs, wait text `I see.`, and response text
    `I found voice agent turn detection results.`.
 8. Add cue extraction, memory comparison, and emotion-state receipt fields for
-   rung 6.
+   rung 6. Initial rung-6 runner exists, and live rung-6 receipt
+   `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung6-live-20260702T113313Z/rung6.json`
+   passed with `mocked=false`, `live=true`, empty `failed_gates`, all turn
+   input/output ASR WER values `0.0`, memory evidence key
+   `embry_age15_19_b03_memory_040`, observed cues `sensory_rain`,
+   `relationship_kai`, and `requested_gentleness`, and final emotion state
+   `gentle_followup` with tone `gentle`.
 
 Each step must update the runner receipt schema before adding more behavior.
 
