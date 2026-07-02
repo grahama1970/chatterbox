@@ -387,7 +387,13 @@ Stop rule:
    `post_cancel_old_turn_audio_bytes_emitted=0`,
    `new_turn_audio_started_after_cancel=true`, and turn-control action order
    `[cancel, duck, stop]`.
-7. Add Brave Search/tool-latency adapter and rung 5 gates.
+7. Add Brave Search/tool-latency adapter and rung 5 gates. Initial rung-5
+   runner exists, and live rung-5 receipt
+   `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung5-live-20260702T112808Z/rung5.json`
+   passed with `mocked=false`, `live=true`, empty `failed_gates`, input ASR WER
+   `0.1667`, output ASR WER `0.1429`, Brave Search latency `1732.789 ms`,
+   three recorded result URLs, wait text `I see.`, and response text
+   `I found voice agent turn detection results.`.
 8. Add cue extraction, memory comparison, and emotion-state receipt fields for
    rung 6.
 

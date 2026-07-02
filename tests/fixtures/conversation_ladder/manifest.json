@@ -80,6 +80,22 @@
         "channels": 1,
         "duration_seconds": 1.218
       }
+    },
+    {
+      "id": "rung5_brave_search",
+      "path": "tests/fixtures/conversation_ladder/rung5_brave_search.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-5 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung5_brave_search.wav -s 145 -v en-us 'Search for voice agent turn detection.'",
+      "expected_transcript": "Search for voice agent turn detection.",
+      "last_observed": {
+        "bytes": 135190,
+        "sha256": "e264137f99b15f6f52ec4ba69fff8bf85e5f1ea38ea78a1f4e53c892d5fb9a6a",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 3.065
+      }
     }
   ],
   "live_receipts": [
@@ -145,6 +161,21 @@
         "duck",
         "stop"
       ],
+      "failed_gates": []
+    },
+    {
+      "rung": 5,
+      "path": "/tmp/chatterbox-fork-agent-out/conversation-ladder/rung5-live-20260702T112808Z/rung5.json",
+      "mocked": false,
+      "live": true,
+      "ok": true,
+      "input_wer": 0.1667,
+      "output_wer": 0.1429,
+      "tool_elapsed_ms": 1732.789,
+      "result_count": 3,
+      "first_result_url": "https://www.notch.cx/post/turn-detection-in-voice-ai",
+      "wait_text": "I see.",
+      "response_text": "I found voice agent turn detection results.",
       "failed_gates": []
     }
   ]

@@ -217,3 +217,72 @@ def test_rung4_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Pa
     assert "interrupt_audio_exists" in receipt["failed_gates"]
     assert "asr_backend_available" in receipt["failed_gates"]
     assert "chatterbox_health_ok" in receipt["failed_gates"]
+
+
+def test_rung5_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Path, monkeypatch) -> None:
+    mod = load_ladder_module()
+    monkeypatch.delenv("WHISPER_API_KEY", raising=False)
+    monkeypatch.setattr(
+        mod,
+        "run_brave_search",
+        lambda query, count, timeout_s: {
+            "ok": False,
+            "mocked": False,
+            "live": False,
+            "elapsed_ms": 1.0,
+            "result": None,
+            "failed_gates": ["unit_test_brave_unavailable"],
+        },
+    )
+    args = Namespace(
+        rung=5,
+        base_url="http://127.0.0.1:9",
+        memory_url="http://127.0.0.1:8601",
+        fixture=tmp_path / "missing-tool.wav",
+        turn1_fixture=None,
+        turn2_fixture=None,
+        fixture_provenance="unit_test_missing_fixture",
+        expected_transcript="Search for voice agent turn detection.",
+        expected_turn1_transcript=None,
+        expected_turn2_transcript=None,
+        response_text="Hello. I am listening.",
+        memory_question="unused",
+        memory_tag=["persona:embry"],
+        memory_k=5,
+        memory_timeout_s=1,
+        min_memory_confidence=0.3,
+        required_persona_id="embry",
+        question="unused",
+        first_answer=None,
+        new_answer=None,
+        variant_offset=4,
+        tool_query="voice agent turn detection interruption handling",
+        tool_count=3,
+        tool_timeout_s=1,
+        label=None,
+        run_id="unit-rung5",
+        session_id=None,
+        out=tmp_path / "rung5.json",
+        wait_health_s=0,
+        synthesis_timeout_s=1,
+        asr_openai_base_url="http://127.0.0.1:9000",
+        api_key_env="WHISPER_API_KEY",
+        asr_model="small.en",
+        asr_device="cpu",
+        asr_compute_type="int8",
+        max_input_wer=0.25,
+        max_output_wer=0.35,
+        path_map=[],
+    )
+
+    receipt = mod.run_rung5(args)
+
+    assert receipt["schema"] == mod.RUNG5_SCHEMA
+    assert receipt["mocked"] is False
+    assert receipt["live"] is False
+    assert receipt["ok"] is False
+    assert receipt["claims"]["proves"] == []
+    assert "input_audio_exists" in receipt["failed_gates"]
+    assert "asr_backend_available" in receipt["failed_gates"]
+    assert "chatterbox_health_ok" in receipt["failed_gates"]
+    assert "brave_search_ok" in receipt["failed_gates"]

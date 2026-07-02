@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -25,6 +26,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from chatterbox.agent.asr_acceptance import acceptance_result
+from chatterbox.agent.conversation import wait_decision_for_expected_delay
 from chatterbox.agent.conversation import run_interruption_scenario
 
 
@@ -32,7 +34,9 @@ RUNG1_SCHEMA = "chatterbox.conversation_ladder.rung1.v1"
 RUNG2_SCHEMA = "chatterbox.conversation_ladder.rung2.v1"
 RUNG3_SCHEMA = "chatterbox.conversation_ladder.rung3.v1"
 RUNG4_SCHEMA = "chatterbox.conversation_ladder.rung4.v1"
+RUNG5_SCHEMA = "chatterbox.conversation_ladder.rung5.v1"
 DEFAULT_RESPONSE_TEXT = "Hello. I am listening."
+BRAVE_SEARCH_RUNNER = "/home/graham/workspace/experiments/agent-skills/skills/brave-search/run.sh"
 RUNG4_FIRST_ANSWER = (
     "I want to be careful with that because saying only the letters can be hard to hear. "
     "The family is System and Information Integrity, and Embry should usually say the "
@@ -375,6 +379,33 @@ def exercise_turn_controls(base_url: str, old_turn_id: str, new_turn_id: str) ->
         "final_control": final_control,
         "action_order": action_order,
         "failed_gates": failed_gates,
+    }
+
+
+def run_brave_search(query: str, count: int, timeout_s: int) -> dict[str, Any]:
+    started = time.perf_counter()
+    cmd = [BRAVE_SEARCH_RUNNER, "web", query, "--count", str(count), "--json"]
+    result = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout_s)
+    elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+    parsed: dict[str, Any] | None = None
+    parse_error = None
+    if result.returncode == 0:
+        try:
+            json_start = result.stdout.find("{")
+            parsed = json.loads(result.stdout[json_start:] if json_start >= 0 else result.stdout)
+        except Exception as exc:  # noqa: BLE001
+            parse_error = f"{type(exc).__name__}: {exc}"
+    return {
+        "ok": result.returncode == 0 and parsed is not None,
+        "mocked": False,
+        "live": result.returncode == 0 and parsed is not None,
+        "cmd": cmd,
+        "elapsed_ms": elapsed_ms,
+        "returncode": result.returncode,
+        "stdout_tail": result.stdout[-4000:],
+        "stderr_tail": result.stderr[-4000:],
+        "parse_error": parse_error,
+        "result": parsed,
     }
 
 
@@ -1210,9 +1241,194 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_rung5(args: argparse.Namespace) -> dict[str, Any]:
+    started = time.perf_counter()
+    run_id = args.run_id or f"rung5-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    path_maps = parse_path_maps(args.path_map)
+    failed_gates: list[str] = []
+    events: list[dict[str, Any]] = []
+    services: dict[str, Any] = {}
+    artifacts: dict[str, Any] = {}
+    input_asr: dict[str, Any] | None = None
+    synthesis: dict[str, Any] | None = None
+    output_asr: dict[str, Any] | None = None
+
+    append_event(events, started, "rung.started", rung=5, run_id=run_id)
+    fixture = args.fixture.resolve()
+    if not fixture.exists():
+        failed_gates.append("input_audio_exists")
+    elif fixture.suffix.lower() != ".wav":
+        failed_gates.append("input_audio_is_wav")
+    else:
+        artifacts["input_audio"] = wav_metrics(fixture)
+        append_event(events, started, "listener.input_audio_ready", audio=str(fixture))
+
+    backend = build_asr_backend(args)
+    services["asr"] = asr_backend_receipt(backend)
+    if not backend.get("live"):
+        failed_gates.append("asr_backend_available")
+
+    base_url = args.base_url.rstrip("/")
+    services["chatterbox"] = {"base_url": base_url}
+    health: dict[str, Any] | None = None
+    try:
+        health = wait_for_health(base_url, args.wait_health_s)
+        services["chatterbox"]["health"] = health
+        append_event(events, started, "chatterbox.health_ok", model_loaded=health.get("model_loaded"))
+    except Exception as exc:  # noqa: BLE001
+        services["chatterbox"]["health_error"] = f"{type(exc).__name__}: {exc}"
+        failed_gates.append("chatterbox_health_ok")
+
+    if fixture.exists() and backend.get("live"):
+        try:
+            input_asr = transcript_gate(
+                backend=backend,
+                audio_path=fixture,
+                expected_text=args.expected_transcript,
+                max_wer=args.max_input_wer,
+            )
+            append_event(events, started, "asr.input_transcribed", ok=input_asr["gate"]["ok"], wer=input_asr["gate"]["wer"])
+            if not input_asr["gate"]["ok"]:
+                failed_gates.extend(f"input_asr_{gate}" for gate in input_asr["gate"]["failed_gates"])
+        except Exception as exc:  # noqa: BLE001
+            input_asr = {
+                "expected_text": args.expected_transcript,
+                "expected_text_sha256": sha256_text(args.expected_transcript),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            failed_gates.append("input_asr_transcribed")
+
+    append_event(events, started, "tool.brave_search_started", query=args.tool_query)
+    brave = run_brave_search(args.tool_query, args.tool_count, args.tool_timeout_s)
+    append_event(events, started, "tool.brave_search_finished", ok=brave["ok"], elapsed_ms=brave["elapsed_ms"])
+    if not brave["ok"]:
+        failed_gates.append("brave_search_ok")
+    results = ((brave.get("result") or {}).get("results") or []) if brave.get("result") else []
+    if not results:
+        failed_gates.append("brave_results_present")
+    first_result = results[0] if results else {}
+    if not first_result.get("url"):
+        failed_gates.append("brave_result_url_present")
+    if not first_result.get("title"):
+        failed_gates.append("brave_result_title_present")
+
+    wait_decision = wait_decision_for_expected_delay(
+        int(brave.get("elapsed_ms") or 0),
+        variant_offset=args.variant_offset,
+        conversation_tone="casual",
+        user_mood="neutral",
+    )
+    response_text = "I found voice agent turn detection results."
+    route = {
+        "name": "brave_search_tool_turn",
+        "requires_memory": False,
+        "requires_tools": True,
+        "tool_name": "brave-search",
+        "tool_query": args.tool_query,
+        "response_text": response_text,
+        "response_text_sha256": sha256_text(response_text),
+        "used_sources": [
+            {
+                "title": item.get("title"),
+                "url": item.get("url"),
+                "description": item.get("description"),
+            }
+            for item in results[: args.tool_count]
+        ],
+    }
+
+    output_audio_path: Path | None = None
+    if health and health.get("ok"):
+        append_event(events, started, "tts.request_submitted", route=route["name"])
+        try:
+            synthesis, output_audio_path, output_artifact = synthesize_live(
+                base_url=base_url,
+                text=response_text,
+                label=args.label or run_id,
+                path_maps=path_maps,
+                timeout_s=args.synthesis_timeout_s,
+            )
+            artifacts["output_audio"] = output_artifact
+            append_event(events, started, "tts.response_received", ok=synthesis.get("ok"))
+            if not synthesis.get("ok"):
+                failed_gates.append("tts_synthesis_ok")
+            if output_audio_path is None or not output_audio_path.exists():
+                failed_gates.append("output_audio_exists")
+        except Exception as exc:  # noqa: BLE001
+            synthesis = {"ok": False, "error_type": type(exc).__name__, "error": str(exc)}
+            failed_gates.append("tts_synthesis_response")
+
+    if output_audio_path and output_audio_path.exists() and backend.get("live"):
+        try:
+            output_asr = transcript_gate(
+                backend=backend,
+                audio_path=output_audio_path,
+                expected_text=response_text,
+                max_wer=args.max_output_wer,
+            )
+            append_event(events, started, "asr.output_transcribed", ok=output_asr["gate"]["ok"], wer=output_asr["gate"]["wer"])
+            if not output_asr["gate"]["ok"]:
+                failed_gates.extend(f"output_asr_{gate}" for gate in output_asr["gate"]["failed_gates"])
+        except Exception as exc:  # noqa: BLE001
+            output_asr = {
+                "expected_text": response_text,
+                "expected_text_sha256": sha256_text(response_text),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            failed_gates.append("output_asr_transcribed")
+
+    append_event(events, started, "rung.finished", ok=not failed_gates)
+    return {
+        "schema": RUNG5_SCHEMA,
+        "ok": not failed_gates,
+        "rung": 5,
+        "run_id": run_id,
+        "mocked": False,
+        "live": bool(health and health.get("ok") and backend.get("live") and brave.get("ok") and synthesis and synthesis.get("ok") and not failed_gates),
+        "started_at_utc": datetime.fromtimestamp(
+            time.time() - (time.perf_counter() - started),
+            timezone.utc,
+        ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "ended_at_utc": utc_now(),
+        "services": services,
+        "inputs": {
+            "fixture": str(fixture),
+            "expected_transcript": args.expected_transcript,
+            "expected_transcript_sha256": sha256_text(args.expected_transcript),
+            "fixture_provenance": args.fixture_provenance,
+        },
+        "route": route,
+        "events": events,
+        "artifacts": artifacts,
+        "input_asr": input_asr,
+        "tool": brave,
+        "wait_decision": wait_decision,
+        "synthesis": synthesis,
+        "output_asr": output_asr,
+        "path_maps": {source: str(target) for source, target in path_maps.items()},
+        "failed_gates": failed_gates,
+        "claims": {
+            "proves": [
+                "real_voice_turn_can_invoke_live_brave_search",
+                "tool_latency_and_wait_decision_are_receipt_backed",
+                "tool_grounded_response_audio_is_asr_verifiable",
+            ]
+            if not failed_gates
+            else [],
+            "does_not_prove": [
+                "search_result_factual_correctness_beyond_recorded_sources",
+                "long_running_multi_tool_orchestration",
+                "emotional_steering_beyond_wait_state_selection",
+            ],
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4], required=True)
+    parser.add_argument("--rung", type=int, choices=[1, 2, 3, 4, 5], required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8018")
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--fixture", type=Path)
@@ -1239,6 +1455,9 @@ def main() -> int:
     parser.add_argument("--first-answer", default=None)
     parser.add_argument("--new-answer", default=None)
     parser.add_argument("--variant-offset", default=4, type=int)
+    parser.add_argument("--tool-query", default="voice agent turn detection interruption handling")
+    parser.add_argument("--tool-count", default=3, type=int)
+    parser.add_argument("--tool-timeout-s", default=60, type=int)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--wait-health-s", default=240, type=int)
     parser.add_argument("--synthesis-timeout-s", default=300, type=int)
@@ -1271,10 +1490,14 @@ def main() -> int:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 3")
         receipt = run_rung3(args)
-    else:
+    elif args.rung == 4:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 4")
         receipt = run_rung4(args)
+    else:
+        if not args.fixture or not args.expected_transcript:
+            parser.error("--fixture and --expected-transcript are required for --rung 5")
+        receipt = run_rung5(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
