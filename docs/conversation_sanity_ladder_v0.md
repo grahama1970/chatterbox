@@ -437,9 +437,10 @@ Embry audio immediately instead of waiting for live Chatterbox generation.
 Required creation-time path:
 
 ```text
-QRA generated -> QRA reviewed/approved -> answer split to <=300 char chunks ->
-five Embry audio variants rendered -> chunk audio hashes recorded ->
-blessed QRA ledger updated
+QRA generated -> QRA reviewed/approved -> QRA creation event emitted ->
+qra_creation_audio_hook validates approved status and five-variant policy ->
+answer split to <=300 char chunks -> five Embry audio variants rendered ->
+chunk audio hashes recorded -> blessed QRA ledger updated
 ```
 
 Required runtime path:
@@ -460,6 +461,9 @@ Default gate:
   - `blessed_qra_memory_review_status` in `approved`, `blessed`, or `verified`.
 - `use_blessed_qra_cache=false` disables instant playback and forces normal
   rendering.
+- `scripts/qra_creation_audio_hook.py --disable-auto-generation` disables
+  creation-time audio generation for one QRA event. Runtime callers can still
+  disable playback with `use_blessed_qra_cache=false`.
 
 Variant policy:
 

@@ -192,39 +192,56 @@ def main() -> int:
         failed_gates.append("runtime_memory_answer_present")
 
     qra_id = memory_key or f"combined-qra-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-    bless_cmd = [
+    qra_event = {
+        "schema": "tau.qra_creation_event.v1",
+        "event_id": f"combined-qra-event-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
+        "qra": {
+            "qra_id": qra_id,
+            "memory_key": memory_key or qra_id,
+            "question": heard_text or memory_question or seed_question,
+            "answer": memory_answer or "No answer available.",
+            "review_status": "approved",
+            "audio": {
+                "auto_generate": True,
+                "variant_count": 5,
+                "variant_policy": "embry_five_arcs",
+            },
+        },
+    }
+    qra_event_path = out_dir / "qra-creation-event.json"
+    write_json(qra_event_path, qra_event)
+
+    hook_receipt_path = out_dir / "qra-creation-audio-hook.json"
+    hook_cmd = [
         py,
-        "scripts/bless_qra_audio_variants.py",
+        "scripts/qra_creation_audio_hook.py",
+        "--event",
+        str(qra_event_path),
+        "--receipt",
+        str(hook_receipt_path),
         "--base-url",
         args.base_url,
         "--ledger",
         str(args.ledger),
-        "--host-out-dir",
-        str(args.host_out_dir),
-        "--qra-id",
-        qra_id,
-        "--memory-key",
-        memory_key or qra_id,
-        "--question",
-        heard_text or memory_question or seed_question,
-        "--answer",
-        memory_answer or "No answer available.",
         "--label-prefix",
         "combined_listener_memory_tau",
+        "--host-out-dir",
+        str(args.host_out_dir),
     ]
-    bless = run_cmd(bless_cmd, timeout=args.timeout_s)
-    children["bless_qra_audio_variants"] = bless
-    bless_receipt = {}
+    hook = run_cmd(hook_cmd, timeout=args.timeout_s)
+    children["qra_creation_audio_hook"] = hook
+    hook_receipt = {}
     try:
-        json_start = bless["stdout_tail"].find("{")
-        bless_receipt = json.loads(bless["stdout_tail"][json_start:] if json_start >= 0 else bless["stdout_tail"])
+        hook_receipt = json.loads(hook_receipt_path.read_text(encoding="utf-8"))
     except Exception as exc:  # noqa: BLE001
-        bless_receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+        hook_receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if hook["returncode"] != 0 or not hook_receipt.get("ok"):
+        failed_gates.append("qra_creation_audio_hook_ok")
+
+    bless_receipt = hook_receipt.get("child_receipt") or {}
     write_json(out_dir / "bless-qra-audio-variants.json", bless_receipt)
-    if bless["returncode"] != 0 or not bless_receipt.get("ok"):
-        failed_gates.append("bless_qra_audio_variants_ok")
     if int(bless_receipt.get("variant_count") or 0) < 5:
-        failed_gates.append("bless_qra_variant_count_5")
+        failed_gates.append("qra_creation_audio_variant_count_5")
 
     tau_path = out_dir / "tau-voice-render.json"
     tau_cmd = [
@@ -291,6 +308,8 @@ def main() -> int:
             "seed_memory_recall": str(out_dir / "seed-memory-recall.json"),
             "rung7_receipt": str(rung7_path),
             "runtime_memory_recall": str(out_dir / "runtime-memory-recall.json"),
+            "qra_creation_event": str(qra_event_path),
+            "qra_creation_audio_hook_receipt": str(hook_receipt_path),
             "bless_qra_receipt": str(out_dir / "bless-qra-audio-variants.json"),
             "tau_voice_render_receipt": str(tau_path),
         },
@@ -301,6 +320,14 @@ def main() -> int:
             "failed_gates": rung7_receipt.get("failed_gates"),
             "transcript": ((rung7_receipt.get("heard_text_ledger") or [{}])[0]).get("final_text"),
             "wer": ((rung7_receipt.get("input_asr") or {}).get("gate") or {}).get("wer"),
+        },
+        "qra_creation_audio_hook": {
+            "ok": hook_receipt.get("ok"),
+            "live": hook_receipt.get("live"),
+            "failed_gates": hook_receipt.get("failed_gates"),
+            "review_status": hook_receipt.get("review_status"),
+            "auto_generate_audio": hook_receipt.get("auto_generate_audio"),
+            "variant_target_count": hook_receipt.get("variant_target_count"),
         },
         "bless_qra": bless_receipt,
         "tau_voice_render": {
@@ -316,7 +343,7 @@ def main() -> int:
         "claims": {
             "proves": [
                 "listener_heard_text_can_drive_live_memory_qra_recall",
-                "recalled_qra_can_be_blessed_into_five_embry_audio_variants",
+                "approved_qra_creation_event_can_generate_five_embry_audio_variants",
                 "tau_voice_render_can_play_blessed_qra_audio_for_the_same_memory_key",
             ]
             if not failed_gates

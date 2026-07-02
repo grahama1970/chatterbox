@@ -27,7 +27,7 @@ and emotional steering decisions belong to the coordinator and memory pipeline.
 | Turbo chunking | `src/chatterbox/agent/chunking.py` hard-clamps chunks to 300 characters, preserves word boundaries, records hashes, delivery stage, pause metadata, and interruptibility. |
 | Streaming | `/synthesize-batch-stream` streams signed 16-bit little-endian PCM chunks and honors `turn_id` cancellation/stop state before synthesis and before PCM block emission. |
 | Turn controls | Cancel, duck, and stop endpoints record live turn-control state; cancel/stop can terminate matching stream playback. |
-| Blessed QRA cache | Approved QRA answers can be pre-rendered into five Embry audio variants with `scripts/bless_qra_audio_variants.py`; runtime playback requires a near-exact memory/QRA gate by default. |
+| Blessed QRA cache | Approved QRA creation events can invoke `scripts/qra_creation_audio_hook.py`, which uses `scripts/bless_qra_audio_variants.py` to pre-render five Embry audio variants; runtime playback requires a near-exact memory/QRA gate by default. |
 | Conversation ladder | `scripts/smoke_conversation_ladder.py` and `docs/conversation_sanity_ladder_v0.md` define rungs 1-7 for file-backed listener input, state, memory, interruption, Brave Search latency, emotional steering, and listener-boundary receipts. |
 | Listener contract | Rung 7 has a live boundary runner: audio frames in, ASR/heard-text ledger out, coordinator turn events out, and a `tau.voice_render_request.v1` envelope. |
 
@@ -150,7 +150,22 @@ provide a memory/QRA gate from the coordinator:
   `verified`.
 - Set `use_blessed_qra_cache=false` to disable this fast path for a request.
 
-Create or refresh the five Embry audio variants for an approved QRA:
+At QRA creation/review time, pass an approved QRA event to the hook:
+
+```bash
+python scripts/qra_creation_audio_hook.py \
+  --event /path/to/qra-creation-event.json \
+  --receipt /tmp/chatterbox-fork-agent-out/qra-creation-audio-hook.json \
+  --base-url http://127.0.0.1:8018 \
+  --ledger /tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json \
+  --host-out-dir /tmp/chatterbox-fork-agent-out
+```
+
+The hook fails closed unless the event has `review_status` of `approved`,
+`blessed`, or `verified`, has question/answer/memory key fields, and requests
+five variants. Pass `--disable-auto-generation` to skip creation-time audio for
+that invocation. The lower-level renderer utility can still create or refresh
+the five Embry audio variants directly:
 
 ```bash
 python scripts/bless_qra_audio_variants.py \
@@ -244,7 +259,8 @@ The latest recorded proof artifacts are local files under
 | `tau-voice-render-20260702T134405Z.json` | Restarted server accepted `tau.voice_render_request.v1`, mapped it to batch rendering, selected the blessed QRA `gentle` variant, and wrote host WAV metrics with `mocked=false`, `live=true`, and empty `failed_gates`. |
 | `conversation-ladder/rung7-live-openai/rung7.json` | Rung 7 listener boundary with OpenAI-compatible Whisper: 137 audio frame events, final transcript WER `0.0`, heard-text ledger, coordinator events, and `tau.voice_render_request.v1`; `mocked=false`, `live=true`, empty `failed_gates`. |
 | `listener-memory-tau-qra-20260702T135037Z/listener-memory-tau-qra.json` | Full listener -> memory/QRA -> Tau render -> blessed cache chain: live heard text, live `sparta_qra` recall key `qra__run-recovery-verify__2085979782`, five generated Embry variants, Tau cache hit, memory gate passed, and host WAV metrics. |
-| `full-live-sanity-20260702T135416Z-tau-combined/full-live-sanity.json` | Augmented full bundle with ASR cache fill/hit, stream, stream cancel, interruption, turn controls, Tau ingress, and listener-memory-QRA-Tau chain all `mocked=false`, `live=true`, and empty `failed_gates`. |
+| `listener-memory-tau-qra-20260702T140108Z-creation-hook/listener-memory-tau-qra.json` | Same combined chain routed through `qra_creation_audio_hook.py`: approved QRA creation event, hook `live=true`, five generated variants over two chunks, Tau cache hit, memory gate passed, selected variant `gentle`, and host WAV `1198158` bytes / `24.96` seconds. |
+| `full-live-sanity-20260702T140317Z-creation-hook/full-live-sanity.json` | Augmented full bundle with ASR cache fill/hit, stream, stream cancel, interruption, turn controls, Tau ingress, and listener-memory-QRA creation-hook chain all `mocked=false`, `live=true`, and empty `failed_gates`. |
 
 These receipts do not prove live microphone capture, WebRTC/browser transport,
 production memory-agent admission review, subjective voice quality, noisy-room
