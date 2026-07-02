@@ -24,6 +24,24 @@ Observed result:
 - `manifest.json`: valid JSON.
 - `git diff --check`: exit 0.
 
+Latest stream-cancel follow-up checks:
+
+```bash
+python3 -m py_compile src/chatterbox/agent/server.py scripts/smoke_stream_turn_cancel.py scripts/smoke_full_live_sanity.py
+PYTHONPATH=src pytest tests/test_agent_server_primitives.py tests/test_conversation_ladder_smoke.py
+git diff --check
+python3 scripts/smoke_stream_turn_cancel.py --base-url http://127.0.0.1:8018 --out /tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json --label stream_cancel_patch_live
+```
+
+Observed result:
+
+- `py_compile`: exit 0.
+- `pytest`: 23 passed, 2 warnings.
+- `git diff --check`: exit 0.
+- `smoke_stream_turn_cancel.py`: `ok=true`, `mocked=false`, `live=true`,
+  `baseline_bytes=65536`, `old_turn_bytes_after_cancel=0`, and empty
+  `failed_gates`.
+
 ## Live Receipts
 
 All live receipts below are local artifacts under
@@ -39,6 +57,12 @@ All live receipts below are local artifacts under
 | 5 | `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung5-live-20260702T112808Z/rung5.json` | Live Brave Search; latency `1732.789 ms`; three result URLs; wait text `I see.`; output WER `0.1429`. |
 | 6 | `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung6-live-20260702T113313Z/rung6.json` | Three-turn emotional steering; cues `sensory_rain`, `relationship_kai`, `requested_gentleness`; memory key `embry_age15_19_b03_memory_040`; final state `gentle_followup`; all input/output WER values `0.0`. |
 
+Additional live stream-control receipt:
+
+| Receipt | Primary evidence |
+|---|---|
+| `/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json` | Patched server accepted `turn_id` on `/synthesize-batch-stream`; baseline stream emitted `65536` bytes; pre-cancelled old turn emitted `0` bytes after cancel. |
+
 ## Requirement Mapping
 
 | Requirement | Evidence | Status |
@@ -51,12 +75,16 @@ All live receipts below are local artifacts under
 | Brave Search/tool latency | Rung 5 records a live Brave Search call, result URLs, measured latency, wait decision, and TTS/ASR output. | Satisfied |
 | Dynamic emotional steering | Rung 6 records cue spans, memory evidence, emotion transition, utterance policy, and ASR-verified responses. | Satisfied |
 | Receipt-backed validation | All six rungs have local JSON receipts with `mocked=false`, `live=true`, `ok=true`, and empty `failed_gates`. | Satisfied |
+| Stream turn cancellation | `scripts/smoke_stream_turn_cancel.py` records live baseline stream bytes, cancel endpoint state, and zero old-turn stream bytes after cancel. | Satisfied for pre-cancelled turn stream suppression; mid-buffer audio-device flush remains out of scope. |
+| Listener rung 7 contract | `docs/conversation_sanity_ladder_v0.md` defines audio frames in, ASR transcript events out, coordinator turn events out, and listener non-ownership of memory/search/reasoning/rendering. | Defined, not implemented. |
 
 ## Boundaries
 
 The ladder still does not prove:
 
 - live microphone capture or WebRTC transport,
+- implemented rung 7 listener service,
+- mid-buffer audio-device flush after a cancel races with already-buffered PCM,
 - subjective voice preference,
 - noisy-room robustness,
 - globally correct memory salience ranking,

@@ -355,6 +355,76 @@ Stop rule:
   receipt-backed cue spans, memory evidence, emotion-state transition, utterance
   policy, response audio, and output ASR.
 
+## Rung 7: Listener Service Contract
+
+Purpose: define the first production listener boundary without folding memory,
+reasoning, or TTS rendering into the listener itself.
+
+Input:
+
+- A session id and turn id.
+- Real audio frames from one transport:
+  - `audio/pcm; rate=16000; channels=1`, or
+  - containerized chunks such as WAV/WebM only if the transport adapter records
+    exact codec, sample rate, channels, chunk sequence, and timestamp.
+- Optional endpointing metadata from a VAD adapter.
+
+Required live path:
+
+```text
+audio frames -> listener ingest -> VAD/endpoint events -> streaming ASR ->
+heard-text ledger -> coordinator turn events -> renderer request envelope
+```
+
+Required outputs:
+
+- `listener.audio_frame_received` events with sequence, byte count, timestamp,
+  sample rate, and session/turn ids.
+- `listener.speech_started`, `listener.speech_partial`,
+  `listener.speech_final`, and `listener.speech_ended` events where available.
+- A heard-text ledger containing final ASR text, partial transcript history,
+  timing, ASR backend identity, and confidence or unavailable reason.
+- Coordinator turn events:
+  - `turn.started`,
+  - `turn.user_text_final`,
+  - `turn.cancel_requested` when barge-in targets old audio,
+  - `turn.renderer_request_created`.
+- Renderer request envelope with `turn_id`, response text, delivery stage, and
+  the external evidence pointers used by the coordinator.
+
+Pass gates:
+
+- Audio frames are accepted from a real client/transport, not a direct function
+  call with synthetic transcript text.
+- Final ASR transcript is produced by the configured ASR backend and preserved
+  in the receipt.
+- A cancellation-intent utterance creates a coordinator cancel event tied to the
+  old turn id.
+- The listener does not call memory, search, or the Chatterbox model directly.
+  It only emits transcript and endpointing events.
+- The coordinator, not the listener, creates the renderer request envelope.
+
+Receipt schema: `chatterbox.conversation_ladder.rung7.listener_contract.v1`
+
+Claims this proves:
+
+- The listener boundary can turn real audio frames into auditable ASR and
+  coordinator events.
+- Chatterbox remains a renderer behind an explicit request envelope.
+
+Does not prove:
+
+- Production noise robustness.
+- Subjective interruption feel.
+- Browser/WebRTC readiness unless that exact transport is the tested adapter.
+- Memory salience, tool correctness, or final answer quality.
+
+Stop rule:
+
+- Do not add memory/tool/emotion logic inside the listener to make a demo pass.
+  Rung 7 passes only when the listener boundary emits auditable events and the
+  coordinator owns downstream decisions.
+
 ## Implementation Order
 
 1. Add `scripts/smoke_conversation_ladder.py` with `--rung 1` only. Initial
@@ -402,6 +472,10 @@ Stop rule:
    `embry_age15_19_b03_memory_040`, observed cues `sensory_rain`,
    `relationship_kai`, and `requested_gentleness`, and final emotion state
    `gentle_followup` with tone `gentle`.
+9. Add rung 7 as a listener service contract. The first implementation should
+   choose one transport, persist a heard-text ledger, emit coordinator turn
+   events, and prove that the listener does not own memory, search, reasoning,
+   or Chatterbox rendering.
 
 Each step must update the runner receipt schema before adding more behavior.
 

@@ -29,6 +29,7 @@ from chatterbox.agent.server import (
     save_accepted_audio_cache,
     stop_playback,
     cancel_turn,
+    stream_turn_should_stop,
     synthesize_to_file,
 )
 
@@ -126,6 +127,7 @@ def test_turn_control_records_cancel_duck_and_stop() -> None:
 def test_batch_request_exposes_optional_asr_verification_contract() -> None:
     request = SynthesisBatchRequest(answer_text="I found the answer.")
 
+    assert request.turn_id is None
     assert request.asr_verify is False
     assert not hasattr(request, "asr_openai_base_url")
     assert not hasattr(request, "asr_api_key_env")
@@ -134,6 +136,29 @@ def test_batch_request_exposes_optional_asr_verification_contract() -> None:
     assert request.asr_max_wer == 0.35
     assert request.asr_max_duration_ratio == 2.5
     assert request.asr_max_candidates == 3
+
+
+def test_batch_request_accepts_optional_turn_id_for_stream_controls() -> None:
+    request = SynthesisBatchRequest(answer_text="I found the answer.", turn_id="turn-stream-123")
+
+    assert request.turn_id == "turn-stream-123"
+
+
+def test_stream_turn_should_stop_only_for_cancel_or_stop() -> None:
+    server.turn_controls.clear()
+    turn_id = "turn-stream-stop-test"
+
+    assert stream_turn_should_stop(turn_id) is False
+
+    duck_playback(turn_id, TurnControlRequest(reason="lower volume"))
+    assert stream_turn_should_stop(turn_id) is False
+
+    cancel_turn(turn_id, TurnControlRequest(reason="barge-in"))
+    assert stream_turn_should_stop(turn_id) is True
+
+    server.turn_controls.clear()
+    stop_playback(turn_id, TurnControlRequest(reason="floor change"))
+    assert stream_turn_should_stop(turn_id) is True
 
 
 def test_candidate_variants_are_limited_and_start_with_stage_default() -> None:

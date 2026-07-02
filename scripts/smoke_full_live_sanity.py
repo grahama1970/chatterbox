@@ -125,6 +125,16 @@ def summarize_child(name: str, receipt_path: Path, command: dict[str, Any]) -> d
                 "wav_path": receipt.get("wav_path"),
             }
         )
+    elif name == "stream_cancel":
+        summary.update(
+            {
+                "proof_scope": receipt.get("proof_scope"),
+                "does_not_prove": receipt.get("does_not_prove"),
+                "turn_id": receipt.get("turn_id"),
+                "baseline_bytes": (receipt.get("baseline_stream") or {}).get("bytes"),
+                "old_turn_bytes_after_cancel": receipt.get("old_turn_bytes_after_cancel"),
+            }
+        )
     elif name == "interruption":
         summary.update(
             {
@@ -231,6 +241,23 @@ def main() -> int:
                 str(out_dir / "stream-endpoint.json"),
                 "--label",
                 "full_live_sanity_stream",
+            ],
+            420,
+        ),
+        (
+            "stream_cancel",
+            out_dir / "stream-cancel.json",
+            [
+                py,
+                "scripts/smoke_stream_turn_cancel.py",
+                "--base-url",
+                base_url,
+                "--wait-health-s",
+                str(args.wait_health_s),
+                "--out",
+                str(out_dir / "stream-cancel.json"),
+                "--label",
+                "full_live_sanity_stream_cancel",
             ],
             420,
         ),
