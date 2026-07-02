@@ -48,6 +48,22 @@
         "channels": 1,
         "duration_seconds": 2.327
       }
+    },
+    {
+      "id": "rung3_embry_memory",
+      "path": "tests/fixtures/conversation_ladder/rung3_embry_memory.wav",
+      "tracked_in_git": false,
+      "ignored_by": "**/*.wav",
+      "provenance": "Generated locally with espeak-ng before the live rung-3 run.",
+      "generation_command": "espeak-ng -w tests/fixtures/conversation_ladder/rung3_embry_memory.wav -s 140 -v en-us 'Tell me about rain and Kai.'",
+      "expected_transcript": "Tell me about rain and Kai.",
+      "last_observed": {
+        "bytes": 112204,
+        "sha256": "07fa5ad78ba8cd5774e97819e226fe29b2e0fa4a53a75c7c6c7d6af5f3e0e47b",
+        "sample_rate": 22050,
+        "channels": 1,
+        "duration_seconds": 2.543
+      }
     }
   ],
   "live_receipts": [
@@ -79,6 +95,23 @@
       "omitted_turn1_gate": {
         "proves_fail_closed_without_turn1_state": true
       },
+      "failed_gates": []
+    },
+    {
+      "rung": 3,
+      "path": "/tmp/chatterbox-fork-agent-out/conversation-ladder/rung3-live-20260702T112209Z/rung3.json",
+      "mocked": false,
+      "live": true,
+      "ok": true,
+      "input_wer": 0.1667,
+      "output_wer": 0.0,
+      "memory_found": true,
+      "memory_confidence": 124.598,
+      "memory_should_scan": false,
+      "top_memory_key": "embry_age15_19_b03_memory_040",
+      "top_persona_id": "embry",
+      "top_emotion": "grief, longing",
+      "response_text": "Rain links Kai with grief.",
       "failed_gates": []
     }
   ]

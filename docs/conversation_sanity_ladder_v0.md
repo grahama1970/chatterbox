@@ -371,7 +371,14 @@ Stop rule:
    passed with `mocked=false`, `live=true`, empty `failed_gates`, turn 1
    input/output ASR WER `0.0`, turn 2 input/output ASR WER `0.0`, final state
    `favorite_color=blue`, and omitted-turn-1 fail-closed proof.
-5. Add memory recall adapter and rung 3 gates.
+5. Add memory recall adapter and rung 3 gates. Initial rung-3 runner exists,
+   and live rung-3 receipt
+   `/tmp/chatterbox-fork-agent-out/conversation-ladder/rung3-live-20260702T112209Z/rung3.json`
+   passed with `mocked=false`, `live=true`, empty `failed_gates`, input ASR WER
+   `0.1667`, output ASR WER `0.0`, memory `found=true`, confidence `124.598`,
+   `should_scan=false`, top memory key `embry_age15_19_b03_memory_040`,
+   `persona_id=embry`, top emotion `grief, longing`, and response text
+   `Rain links Kai with grief.`.
 6. Reuse existing interruption and turn-control primitives for rung 4.
 7. Add Brave Search/tool-latency adapter and rung 5 gates.
 8. Add cue extraction, memory comparison, and emotion-state receipt fields for

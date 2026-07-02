@@ -28,6 +28,7 @@ from chatterbox.agent.asr_acceptance import acceptance_result
 
 RUNG1_SCHEMA = "chatterbox.conversation_ladder.rung1.v1"
 RUNG2_SCHEMA = "chatterbox.conversation_ladder.rung2.v1"
+RUNG3_SCHEMA = "chatterbox.conversation_ladder.rung3.v1"
 DEFAULT_RESPONSE_TEXT = "Hello. I am listening."
 
 
@@ -273,6 +274,51 @@ def route_turn2_from_state(state: dict[str, Any]) -> dict[str, Any]:
         "response_text": f"You said your favorite color is {color}.",
         "used_state": {"favorite_color": color},
     }
+
+
+def post_memory_recall(memory_url: str, payload: dict[str, Any], timeout_s: int) -> dict[str, Any]:
+    import httpx
+
+    response = httpx.post(f"{memory_url.rstrip('/')}/recall", json=payload, timeout=timeout_s)
+    response.raise_for_status()
+    data = response.json()
+    if "items" not in data:
+        raise RuntimeError("memory_recall_missing_items")
+    return data
+
+
+def summarize_memory_items(items: list[dict[str, Any]], limit: int = 5) -> list[dict[str, Any]]:
+    summarized = []
+    for item in items[:limit]:
+        summarized.append(
+            {
+                "_key": item.get("_key"),
+                "collection": item.get("_collection") or item.get("collection") or item.get("_source"),
+                "persona_id": item.get("persona_id"),
+                "tags": item.get("tags"),
+                "scores": item.get("scores"),
+                "retrieval_text": item.get("retrieval_text"),
+                "emotion": item.get("emotion"),
+                "stance": item.get("stance"),
+                "intensity": item.get("intensity"),
+                "emotional_intensity": item.get("emotional_intensity"),
+                "intensity_score": item.get("intensity_score"),
+            }
+        )
+    return summarized
+
+
+def memory_item_has_tag(item: dict[str, Any], required_tag: str) -> bool:
+    tags = item.get("tags")
+    return isinstance(tags, list) and required_tag in tags
+
+
+def response_from_embry_memory(item: dict[str, Any]) -> str:
+    tags = set(item.get("tags") or [])
+    emotion = str(item.get("emotion") or "grief")
+    if {"location:hawaii", "person:kai"} & tags and "grief" in emotion:
+        return "Rain links Kai with grief."
+    return "The memory links rain with grief."
 
 
 def run_rung1(args: argparse.Namespace) -> dict[str, Any]:
@@ -727,9 +773,229 @@ def run_rung2(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_rung3(args: argparse.Namespace) -> dict[str, Any]:
+    started = time.perf_counter()
+    run_id = args.run_id or f"rung3-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    path_maps = parse_path_maps(args.path_map)
+    failed_gates: list[str] = []
+    events: list[dict[str, Any]] = []
+    artifacts: dict[str, Any] = {}
+    services: dict[str, Any] = {}
+    input_asr: dict[str, Any] | None = None
+    memory_recall: dict[str, Any] | None = None
+    evidence_packet: dict[str, Any] | None = None
+    synthesis: dict[str, Any] | None = None
+    output_asr: dict[str, Any] | None = None
+
+    append_event(events, started, "rung.started", rung=3, run_id=run_id)
+    fixture = args.fixture.resolve()
+    if not fixture.exists():
+        failed_gates.append("input_audio_exists")
+    elif fixture.suffix.lower() != ".wav":
+        failed_gates.append("input_audio_is_wav")
+    else:
+        artifacts["input_audio"] = wav_metrics(fixture)
+        append_event(events, started, "listener.input_audio_ready", audio=str(fixture))
+
+    backend = build_asr_backend(args)
+    services["asr"] = asr_backend_receipt(backend)
+    if not backend.get("live"):
+        failed_gates.append("asr_backend_available")
+
+    base_url = args.base_url.rstrip("/")
+    services["chatterbox"] = {"base_url": base_url}
+    health: dict[str, Any] | None = None
+    try:
+        health = wait_for_health(base_url, args.wait_health_s)
+        services["chatterbox"]["health"] = health
+        append_event(events, started, "chatterbox.health_ok", model_loaded=health.get("model_loaded"))
+    except Exception as exc:  # noqa: BLE001
+        services["chatterbox"]["health_error"] = f"{type(exc).__name__}: {exc}"
+        failed_gates.append("chatterbox_health_ok")
+
+    if fixture.exists() and backend.get("live"):
+        try:
+            input_asr = transcript_gate(
+                backend=backend,
+                audio_path=fixture,
+                expected_text=args.expected_transcript,
+                max_wer=args.max_input_wer,
+            )
+            append_event(events, started, "asr.input_transcribed", ok=input_asr["gate"]["ok"], wer=input_asr["gate"]["wer"])
+            if not input_asr["gate"]["ok"]:
+                failed_gates.extend(f"input_asr_{gate}" for gate in input_asr["gate"]["failed_gates"])
+        except Exception as exc:  # noqa: BLE001
+            input_asr = {
+                "expected_text": args.expected_transcript,
+                "expected_text_sha256": sha256_text(args.expected_transcript),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            failed_gates.append("input_asr_transcribed")
+
+    memory_url = args.memory_url.rstrip("/")
+    services["memory"] = {"base_url": memory_url}
+    memory_tags = args.memory_tag or []
+    recall_payload = {
+        "q": args.memory_question,
+        "collections": ["persona_memory"],
+        "tags": memory_tags,
+        "k": args.memory_k,
+    }
+    try:
+        memory_recall = post_memory_recall(memory_url, recall_payload, timeout_s=args.memory_timeout_s)
+        append_event(
+            events,
+            started,
+            "memory.recall_finished",
+            found=memory_recall.get("found"),
+            confidence=memory_recall.get("confidence"),
+            item_count=len(memory_recall.get("items") or []),
+        )
+        if not memory_recall.get("found"):
+            failed_gates.append("memory_found")
+        if memory_recall.get("should_scan"):
+            failed_gates.append("memory_should_scan_false")
+        if float(memory_recall.get("confidence") or 0.0) < args.min_memory_confidence:
+            failed_gates.append("memory_confidence_minimum")
+        items = memory_recall.get("items") or []
+        if not items:
+            failed_gates.append("memory_items_present")
+        top = items[0] if items else {}
+        if top.get("persona_id") != args.required_persona_id:
+            failed_gates.append("memory_top_persona_scope")
+        required_tag = f"persona:{args.required_persona_id}"
+        if not memory_item_has_tag(top, required_tag):
+            failed_gates.append("memory_top_persona_tag")
+        evidence_packet = {
+            "question": args.memory_question,
+            "request": recall_payload,
+            "found": memory_recall.get("found"),
+            "confidence": memory_recall.get("confidence"),
+            "should_scan": memory_recall.get("should_scan"),
+            "meta": memory_recall.get("meta"),
+            "items": summarize_memory_items(items),
+        }
+    except Exception as exc:  # noqa: BLE001
+        services["memory"]["error"] = f"{type(exc).__name__}: {exc}"
+        failed_gates.append("memory_recall_ok")
+
+    top_item = ((evidence_packet or {}).get("items") or [{}])[0]
+    response_text = response_from_embry_memory(top_item)
+    route = {
+        "name": "memory_grounded_embry_turn",
+        "requires_memory": True,
+        "requires_tools": False,
+        "memory_question": args.memory_question,
+        "response_text": response_text,
+        "response_text_sha256": sha256_text(response_text),
+    }
+    if not (top_item.get("retrieval_text") or ""):
+        failed_gates.append("memory_retrieval_text_present")
+    response_terms = {
+        term
+        for term in re.findall(r"[a-z0-9]+", response_text.lower())
+        if term not in {"the", "a", "an", "with", "and", "or", "to", "of", "link", "links", "linked"}
+    }
+    evidence_text = str(top_item.get("retrieval_text") or "").lower()
+    missing_terms = sorted(term for term in response_terms if term not in evidence_text)
+    if missing_terms:
+        failed_gates.append("response_terms_grounded_in_memory")
+    route["grounding_terms"] = {
+        "required": sorted(response_terms),
+        "missing_from_top_evidence": missing_terms,
+    }
+
+    output_audio_path: Path | None = None
+    if health and health.get("ok"):
+        append_event(events, started, "tts.request_submitted", route=route["name"])
+        try:
+            synthesis, output_audio_path, output_artifact = synthesize_live(
+                base_url=base_url,
+                text=response_text,
+                label=args.label or run_id,
+                path_maps=path_maps,
+                timeout_s=args.synthesis_timeout_s,
+            )
+            artifacts["output_audio"] = output_artifact
+            append_event(events, started, "tts.response_received", ok=synthesis.get("ok"))
+            if not synthesis.get("ok"):
+                failed_gates.append("tts_synthesis_ok")
+            if output_audio_path is None or not output_audio_path.exists():
+                failed_gates.append("output_audio_exists")
+        except Exception as exc:  # noqa: BLE001
+            synthesis = {"ok": False, "error_type": type(exc).__name__, "error": str(exc)}
+            failed_gates.append("tts_synthesis_response")
+
+    if output_audio_path and output_audio_path.exists() and backend.get("live"):
+        try:
+            output_asr = transcript_gate(
+                backend=backend,
+                audio_path=output_audio_path,
+                expected_text=response_text,
+                max_wer=args.max_output_wer,
+            )
+            append_event(events, started, "asr.output_transcribed", ok=output_asr["gate"]["ok"], wer=output_asr["gate"]["wer"])
+            if not output_asr["gate"]["ok"]:
+                failed_gates.extend(f"output_asr_{gate}" for gate in output_asr["gate"]["failed_gates"])
+        except Exception as exc:  # noqa: BLE001
+            output_asr = {
+                "expected_text": response_text,
+                "expected_text_sha256": sha256_text(response_text),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            failed_gates.append("output_asr_transcribed")
+
+    append_event(events, started, "rung.finished", ok=not failed_gates)
+    return {
+        "schema": RUNG3_SCHEMA,
+        "ok": not failed_gates,
+        "rung": 3,
+        "run_id": run_id,
+        "mocked": False,
+        "live": bool(health and health.get("ok") and backend.get("live") and memory_recall and synthesis and synthesis.get("ok") and not failed_gates),
+        "started_at_utc": datetime.fromtimestamp(
+            time.time() - (time.perf_counter() - started),
+            timezone.utc,
+        ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "ended_at_utc": utc_now(),
+        "services": services,
+        "inputs": {
+            "fixture": str(fixture),
+            "expected_transcript": args.expected_transcript,
+            "expected_transcript_sha256": sha256_text(args.expected_transcript),
+            "fixture_provenance": args.fixture_provenance,
+        },
+        "route": route,
+        "events": events,
+        "artifacts": artifacts,
+        "input_asr": input_asr,
+        "memory_evidence": evidence_packet,
+        "synthesis": synthesis,
+        "output_asr": output_asr,
+        "path_maps": {source: str(target) for source, target in path_maps.items()},
+        "failed_gates": failed_gates,
+        "claims": {
+            "proves": [
+                "real_voice_turn_can_use_scoped_memory_recall_as_evidence",
+                "memory_evidence_is_visible_enough_to_audit",
+                "memory_grounded_response_audio_is_asr_verifiable",
+            ]
+            if not failed_gates
+            else [],
+            "does_not_prove": [
+                "memory_writes",
+                "full_theory_of_mind_graph_traversal",
+                "subjective_voice_performance",
+            ],
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rung", type=int, choices=[1, 2], required=True)
+    parser.add_argument("--rung", type=int, choices=[1, 2, 3], required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8018")
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--fixture", type=Path)
@@ -740,6 +1006,15 @@ def main() -> int:
     parser.add_argument("--expected-turn1-transcript")
     parser.add_argument("--expected-turn2-transcript")
     parser.add_argument("--response-text", default=DEFAULT_RESPONSE_TEXT)
+    parser.add_argument(
+        "--memory-question",
+        default="What memory explains why Embry Lawson reacts to Hawaii, surfing, Kai, and afternoon rain with grief?",
+    )
+    parser.add_argument("--memory-tag", action="append", default=["persona:embry"])
+    parser.add_argument("--memory-k", default=5, type=int)
+    parser.add_argument("--memory-timeout-s", default=10, type=int)
+    parser.add_argument("--min-memory-confidence", default=0.3, type=float)
+    parser.add_argument("--required-persona-id", default="embry")
     parser.add_argument("--label", default=None)
     parser.add_argument("--run-id", default=None)
     parser.add_argument("--session-id", default=None)
@@ -765,12 +1040,16 @@ def main() -> int:
         if not args.fixture or not args.expected_transcript:
             parser.error("--fixture and --expected-transcript are required for --rung 1")
         receipt = run_rung1(args)
-    else:
+    elif args.rung == 2:
         if not args.turn1_fixture or not args.turn2_fixture:
             parser.error("--turn1-fixture and --turn2-fixture are required for --rung 2")
         if not args.expected_turn1_transcript or not args.expected_turn2_transcript:
             parser.error("--expected-turn1-transcript and --expected-turn2-transcript are required for --rung 2")
         receipt = run_rung2(args)
+    else:
+        if not args.fixture or not args.expected_transcript:
+            parser.error("--fixture and --expected-transcript are required for --rung 3")
+        receipt = run_rung3(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(

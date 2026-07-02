@@ -114,3 +114,53 @@ def test_rung2_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Pa
     assert "turn_1_input_audio_exists" in receipt["failed_gates"]
     assert "turn_2_input_audio_exists" in receipt["failed_gates"]
     assert receipt["omitted_turn1_gate"]["proves_fail_closed_without_turn1_state"] is True
+
+
+def test_rung3_missing_live_dependencies_writes_fail_closed_receipt(tmp_path: Path, monkeypatch) -> None:
+    mod = load_ladder_module()
+    monkeypatch.delenv("WHISPER_API_KEY", raising=False)
+    args = Namespace(
+        rung=3,
+        base_url="http://127.0.0.1:9",
+        memory_url="http://127.0.0.1:9",
+        fixture=tmp_path / "missing.wav",
+        turn1_fixture=None,
+        turn2_fixture=None,
+        fixture_provenance="unit_test_missing_fixture",
+        expected_transcript="Why does Embry react to Hawaii and rain with grief?",
+        expected_turn1_transcript=None,
+        expected_turn2_transcript=None,
+        response_text="Hello. I am listening.",
+        memory_question="What memory explains why Embry Lawson reacts to Hawaii, surfing, Kai, and afternoon rain with grief?",
+        memory_tag=["persona:embry"],
+        memory_k=5,
+        memory_timeout_s=1,
+        min_memory_confidence=0.3,
+        required_persona_id="embry",
+        label=None,
+        run_id="unit-rung3",
+        session_id=None,
+        out=tmp_path / "rung3.json",
+        wait_health_s=0,
+        synthesis_timeout_s=1,
+        asr_openai_base_url="http://127.0.0.1:9000",
+        api_key_env="WHISPER_API_KEY",
+        asr_model="small.en",
+        asr_device="cpu",
+        asr_compute_type="int8",
+        max_input_wer=0.25,
+        max_output_wer=0.35,
+        path_map=[],
+    )
+
+    receipt = mod.run_rung3(args)
+
+    assert receipt["schema"] == mod.RUNG3_SCHEMA
+    assert receipt["mocked"] is False
+    assert receipt["live"] is False
+    assert receipt["ok"] is False
+    assert receipt["claims"]["proves"] == []
+    assert "input_audio_exists" in receipt["failed_gates"]
+    assert "asr_backend_available" in receipt["failed_gates"]
+    assert "chatterbox_health_ok" in receipt["failed_gates"]
+    assert "memory_recall_ok" in receipt["failed_gates"]
