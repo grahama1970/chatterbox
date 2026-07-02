@@ -283,6 +283,7 @@ The latest recorded proof artifacts are local files under
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/rung8-physical-mic-listener.json` | Rung 8 physical microphone capture: plays the Horus+factory+Embry stress WAV through Jabra speaker sink `64`, records Jabra microphone source `62`, feeds captured room audio through RealtimeSTT automatic VAD, then routes the captured WAV through rung 7 speaker-memory. Receipt has `mocked=false`, `live=true`, `failed_gates=[]`; captured WAV is `31.083s`, RMS `1955`; Horus similarity is `0.6589` at threshold `0.62`; memory resolves `speaker_id=horus_lupercal` and speaker-scoped recall finds `voice_fact_52102e4bc2ebc124f7e95e66`. |
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/speaker-segment-evidence.json` | Segment-level Horus-vs-Embry speaker evidence over the physical microphone capture. Receipt has `mocked=false`, `live=true`, `failed_gates=[]`; 24 voiced windows, 19 Horus-labeled, 1 Embry-labeled, 4 ambiguous, Horus ratio `0.7917`, mean primary margin `0.0794`. This is fixed-window speaker evidence, not pyannote/spectral-clustering diarization or overlap separation. |
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-preflight.json` | Pyannote diarization preflight for the same physical microphone capture. Receipt has `mocked=false`, `live=false`, `ok=false`, `failed_gates=["hf_token_or_local_model_available"]`; no `HF_TOKEN`, `HUGGINGFACE_TOKEN`, `HUGGING_FACE_HUB_TOKEN`, or local pyannote model path was available. This is a fail-closed model-access receipt, not a live diarization pass. |
+| `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-live-cpu.json` | Live pyannote diarization over the physical microphone capture using `pyannote/speaker-diarization-community-1` on CPU. Receipt has `mocked=false`, `live=true`, `ok=true`, `failed_gates=[]`; 2 diarization segments, 2 exclusive segments, 1 speaker label `SPEAKER_00`, and `overlap_seconds=0.0`. GPU auto mode hit a local NVIDIA driver/CUDA compatibility error, so this receipt proves local CPU pyannote execution only. |
 
 These receipts do not prove WebRTC/browser transport, production memory-agent
 admission review, subjective voice quality, noisy-room robustness beyond the
@@ -296,6 +297,7 @@ python -m pip install ".[diarization]"
 HF_TOKEN=<token> python scripts/smoke_pyannote_diarization.py \
   --audio /tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/loopback-captured.wav \
   --out /tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization.json \
+  --device cpu \
   --min-speakers 1
 ```
 
