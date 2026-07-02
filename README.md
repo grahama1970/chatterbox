@@ -285,11 +285,12 @@ The latest recorded proof artifacts are local files under
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-preflight.json` | Pyannote diarization preflight for the same physical microphone capture. Receipt has `mocked=false`, `live=false`, `ok=false`, `failed_gates=["hf_token_or_local_model_available"]`; no `HF_TOKEN`, `HUGGINGFACE_TOKEN`, `HUGGING_FACE_HUB_TOKEN`, or local pyannote model path was available. This is a fail-closed model-access receipt, not a live diarization pass. |
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-live-cpu.json` | Live pyannote diarization over the physical microphone capture using `pyannote/speaker-diarization-community-1` on CPU. Receipt has `mocked=false`, `live=true`, `ok=true`, `failed_gates=[]`; 2 diarization segments, 2 exclusive segments, 1 speaker label `SPEAKER_00`, and `overlap_seconds=0.0`. GPU auto mode hit a local NVIDIA driver/CUDA compatibility error, so this receipt proves local CPU pyannote execution only. |
 | `/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/pyannote-diarization-container-restart-cpu.json` | Same pyannote CPU smoke from the restarted Docker container. Receipt has `mocked=false`, `live=true`, `ok=true`, `failed_gates=[]`; 2 diarization segments, 1 speaker label `SPEAKER_00`, and `overlap_seconds=0.0`. The container keeps Chatterbox on global `torch 2.6.0` and runs pyannote from isolated `/opt/chatterbox-diarization-venv`. |
+| `/tmp/chatterbox-fork-agent-out/browser-webrtc-transport-20260702T222218Z.json` | Browser/WebRTC transport smoke: Headless Chromium called real `navigator.mediaDevices.getUserMedia` without fake media-device flags, captured the default microphone at 48 kHz, and streamed Float32 PCM frames over WebSocket to Python. Receipt has `mocked=false`, `live=true`, `ok=true`, `failed_gates=[]`; 58 chunks, 950272 binary bytes, 237568 samples, 4.949s duration, RMS `0.05119098`, nonzero ratio `0.991068`, and WAV sha256 `a5e37829cf0f72dd55fd06cf68356aa217c9aec824ec64538939e6c9365ae28d`. |
 
-These receipts do not prove WebRTC/browser transport, production memory-agent
-admission review, subjective voice quality, noisy-room robustness beyond the
-configured fixture, overlapping-speaker diarization, or mid-buffer audio-device
-flush after cancellation.
+These receipts do not prove remote peer-to-peer WebRTC across networks,
+production memory-agent admission review, subjective voice quality, noisy-room
+robustness beyond the configured fixture, perfect overlap separation, or
+mid-buffer audio-device flush after cancellation.
 
 Optional pyannote diarization can be installed separately:
 
