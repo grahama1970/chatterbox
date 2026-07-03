@@ -39,15 +39,27 @@ window.__webrtcSmoke = {
   chunksSent: 0,
   errors: [],
   metadata: null,
-  async start(wsUrl, captureMs) {
+  async start(wsUrl, captureMs, audioDeviceLabel, browserAudioOptions) {
     this.status = "starting";
     const devicesBefore = await navigator.mediaDevices.enumerateDevices();
+    browserAudioOptions = browserAudioOptions || {};
+    let audioConstraints = {
+        echoCancellation: Boolean(browserAudioOptions.echoCancellation),
+        noiseSuppression: Boolean(browserAudioOptions.noiseSuppression),
+        autoGainControl: Boolean(browserAudioOptions.autoGainControl)
+    };
+    let selectedDevice = null;
+    if (audioDeviceLabel) {
+      const matched = devicesBefore.find(d =>
+        d.kind === "audioinput" && d.label && d.label.toLowerCase().includes(audioDeviceLabel.toLowerCase())
+      );
+      if (matched && matched.deviceId) {
+        selectedDevice = {kind: matched.kind, label: matched.label, deviceIdPresent: true};
+        audioConstraints.deviceId = {exact: matched.deviceId};
+      }
+    }
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false
-      },
+      audio: audioConstraints,
       video: false
     });
     const devicesAfter = await navigator.mediaDevices.enumerateDevices();
@@ -68,6 +80,9 @@ window.__webrtcSmoke = {
       userAgent: navigator.userAgent,
       secureContext: window.isSecureContext,
       sampleRate: audioContext.sampleRate,
+      requestedAudioDeviceLabel: audioDeviceLabel || null,
+      selectedAudioDevice: selectedDevice,
+      requestedAudioProcessing: browserAudioOptions,
       trackSettings: settings,
       trackConstraints: constraints,
       devicesBefore: devicesBefore.map(d => ({kind: d.kind, label: d.label, deviceIdPresent: Boolean(d.deviceId)})),
@@ -139,6 +154,27 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def wav_metrics(path: Path) -> dict[str, Any]:
+    import wave
+
+    with wave.open(str(path), "rb") as handle:
+        frame_count = handle.getnframes()
+        sample_rate = handle.getframerate()
+        channels = handle.getnchannels()
+        sample_width = handle.getsampwidth()
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "bytes": path.stat().st_size,
+        "sha256": sha256_file(path),
+        "duration_seconds": round(frame_count / sample_rate, 3) if sample_rate else 0,
+        "sample_rate": sample_rate,
+        "channels": channels,
+        "sample_width": sample_width,
+        "frame_count": frame_count,
+    }
+
+
 class HandlerState:
     def __init__(self) -> None:
         self.metadata: dict[str, Any] | None = None
@@ -182,6 +218,7 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
     http_thread.start()
 
     browser_result: dict[str, Any] = {}
+    playback_result: dict[str, Any] | None = None
     launch_args = ["--autoplay-policy=no-user-gesture-required"]
     ws_server = await websockets.serve(ws_handler, "127.0.0.1", ws_port)
     try:
@@ -196,12 +233,49 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             await context.grant_permissions(["microphone"], origin=origin)
             page = await context.new_page()
             await page.goto(origin + "/index.html", wait_until="load")
+            playback_task = None
+            if args.play_audio:
+                play_audio = args.play_audio.resolve()
+
+                async def _play_fixture() -> dict[str, Any]:
+                    await asyncio.sleep(args.playback_delay_seconds)
+                    started_playback = time.perf_counter()
+                    cmd = [args.playback_cmd, *list(args.playback_arg or []), str(play_audio)]
+                    proc = await asyncio.create_subprocess_exec(
+                        *cmd,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                    )
+                    stdout, stderr = await proc.communicate()
+                    return {
+                        "cmd": cmd,
+                        "returncode": proc.returncode,
+                        "elapsed_ms": round((time.perf_counter() - started_playback) * 1000, 3),
+                        "stdout_tail": stdout.decode("utf-8", errors="replace")[-1000:],
+                        "stderr_tail": stderr.decode("utf-8", errors="replace")[-1000:],
+                    }
+
+                playback_task = asyncio.create_task(_play_fixture())
             try:
                 browser_result = await page.evaluate(
-                    "(args) => window.__webrtcSmoke.start(args.wsUrl, args.captureMs)",
-                    {"wsUrl": f"ws://127.0.0.1:{ws_port}", "captureMs": int(args.capture_seconds * 1000)},
+                    "(args) => window.__webrtcSmoke.start(args.wsUrl, args.captureMs, args.audioDeviceLabel, args.browserAudioOptions)",
+                    {
+                        "wsUrl": f"ws://127.0.0.1:{ws_port}",
+                        "captureMs": int(args.capture_seconds * 1000),
+                        "audioDeviceLabel": args.audio_device_label,
+                        "browserAudioOptions": {
+                            "echoCancellation": args.echo_cancellation,
+                            "noiseSuppression": args.noise_suppression,
+                            "autoGainControl": args.auto_gain_control,
+                        },
+                    },
                 )
             finally:
+                if playback_task is not None:
+                    try:
+                        playback_result = await asyncio.wait_for(playback_task, timeout=max(5.0, args.capture_seconds + 10.0))
+                    except Exception as exc:  # noqa: BLE001
+                        playback_result = {"error_type": type(exc).__name__, "error": str(exc)}
                 await context.close()
                 await browser.close()
     except Exception as exc:  # noqa: BLE001
@@ -227,6 +301,13 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
         failed_gates.append("no_fake_media_flags")
     if state.metadata is None:
         failed_gates.append("browser_metadata_received")
+    if args.play_audio:
+        if not args.play_audio.exists():
+            failed_gates.append("play_audio_exists")
+        if playback_result is None:
+            failed_gates.append("playback_result_present")
+        elif playback_result.get("returncode") != 0:
+            failed_gates.append("playback_command_ok")
     if len(state.chunks) < args.min_chunks:
         failed_gates.append("min_chunks_received")
     if duration < args.min_duration_seconds:
@@ -253,8 +334,17 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             "min_rms": args.min_rms,
             "min_nonzero_ratio": args.min_nonzero_ratio,
             "launch_args": launch_args,
+            "play_audio": str(args.play_audio.resolve()) if args.play_audio else None,
+            "playback_cmd": args.playback_cmd if args.play_audio else None,
+            "playback_arg": list(args.playback_arg or []) if args.play_audio else None,
+            "playback_delay_seconds": args.playback_delay_seconds if args.play_audio else None,
+            "audio_device_label": args.audio_device_label,
+            "echo_cancellation": args.echo_cancellation,
+            "noise_suppression": args.noise_suppression,
+            "auto_gain_control": args.auto_gain_control,
         },
         "browser": browser_result,
+        "playback": playback_result,
         "transport": {
             "http_origin": f"http://127.0.0.1:{http_port}",
             "websocket_url": f"ws://127.0.0.1:{ws_port}",
@@ -274,6 +364,7 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             "wav": str(wav_path) if wav_path.exists() else None,
             "wav_sha256": sha256_file(wav_path) if wav_path.exists() else None,
             "wav_bytes": wav_path.stat().st_size if wav_path.exists() else 0,
+            "play_audio": wav_metrics(args.play_audio.resolve()) if args.play_audio and args.play_audio.exists() else None,
         },
         "failed_gates": failed_gates,
         "claims": {
@@ -281,6 +372,7 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
                 "browser_getusermedia_captured_real_microphone_audio",
                 "browser_sent_pcm_audio_frames_over_websocket_transport",
                 "python_listener_received_auditable_pcm_frames_without_fake_media_flags",
+                *(["browser_microphone_capture_included_live_speaker_playback_fixture"] if args.play_audio else []),
             ]
             if not failed_gates
             else [],
@@ -306,6 +398,14 @@ def main() -> int:
     parser.add_argument("--min-rms", default=0.0001, type=float)
     parser.add_argument("--min-nonzero-ratio", default=0.05, type=float)
     parser.add_argument("--headed", action="store_true")
+    parser.add_argument("--play-audio", type=Path, default=None)
+    parser.add_argument("--playback-cmd", default="pw-play")
+    parser.add_argument("--playback-arg", action="append", default=[])
+    parser.add_argument("--playback-delay-seconds", default=0.4, type=float)
+    parser.add_argument("--audio-device-label", default=None)
+    parser.add_argument("--echo-cancellation", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--noise-suppression", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--auto-gain-control", action=argparse.BooleanOptionalAction, default=False)
     args = parser.parse_args()
     args.headless = not args.headed
     receipt = asyncio.run(run_smoke(args))

@@ -18,6 +18,7 @@ import tempfile
 import threading
 import time
 import wave
+import audioop
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -146,22 +147,42 @@ def feed_wav_to_recorder(
         frames_per_chunk = max(1, int(sample_rate * chunk_ms / 1000))
         sequence = 0
         total_bytes = 0
+        resample_state = None
         while True:
             data = handle.readframes(frames_per_chunk)
             if not data:
                 break
+            feed_data = data
+            feed_sample_rate = sample_rate
+            feed_channels = channels
+            if channels > 1:
+                feed_data = audioop.tomono(feed_data, sample_width, 0.5, 0.5)
+                feed_channels = 1
+            if sample_rate != 16000:
+                feed_data, resample_state = audioop.ratecv(
+                    feed_data,
+                    sample_width,
+                    feed_channels,
+                    sample_rate,
+                    16000,
+                    resample_state,
+                )
+                feed_sample_rate = 16000
             sequence += 1
-            total_bytes += len(data)
-            recorded_frames.append(data)
-            recorder.feed_audio(data, original_sample_rate=sample_rate)
+            total_bytes += len(feed_data)
+            recorded_frames.append(feed_data)
+            recorder.feed_audio(feed_data, original_sample_rate=feed_sample_rate)
             events.append(
                 {
                     "type": "realtimestt.feed_audio",
                     "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
                     "sequence": sequence,
-                    "byte_count": len(data),
-                    "sample_rate": sample_rate,
-                    "channels": channels,
+                    "byte_count": len(feed_data),
+                    "source_byte_count": len(data),
+                    "source_sample_rate": sample_rate,
+                    "sample_rate": feed_sample_rate,
+                    "channels": feed_channels,
+                    "source_channels": channels,
                     "sample_width": sample_width,
                     "chunk_ms": chunk_ms,
                 }

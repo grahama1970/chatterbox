@@ -172,7 +172,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     receipt["artifacts"]["audio"] = wav_metrics(audio)
     try:
         origin = str(model_path) if local_model else args.model
-        pipeline = Pipeline.from_pretrained(origin, token=token)
+        try:
+            pipeline = Pipeline.from_pretrained(origin, token=token)
+        except TypeError as exc:
+            if "token" not in str(exc):
+                raise
+            pipeline = Pipeline.from_pretrained(origin, use_auth_token=token)
         if args.device == "auto":
             device_name = "cuda" if torch.cuda.is_available() else "cpu"
         else:
