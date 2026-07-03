@@ -1,0 +1,62 @@
+{
+  "schema": "chatterbox.voice_chat_e2e.requirements.v1",
+  "status_date": "2026-07-03",
+  "readiness_rule": "ready only when every required row has a current non-mocked receipt with mocked=false, live=true, empty failed_gates, and inspectable artifact paths",
+  "baseline_receipts": [
+    "/tmp/chatterbox-fork-agent-out/continuous-voice-loop-20260703T193305Z-full-goal-probes/continuous-voice-loop.json",
+    "/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json",
+    "/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json",
+    "/tmp/chatterbox-fork-agent-out/listener-memory-tau-qra-20260702T140108Z-creation-hook/listener-memory-tau-qra.json",
+    "/tmp/chatterbox-fork-agent-out/tau-voice-render-20260702T134405Z.json"
+  ],
+  "requirements": [
+    {"id": "VC-01", "name": "turn ledger and renderer envelope", "status": "partial"},
+    {"id": "VC-02", "name": "browser microphone ASR quality", "status": "partial"},
+    {"id": "VC-03", "name": "pipewire or loopback transport", "status": "partial"},
+    {"id": "VC-04", "name": "listener event ledger", "status": "partial"},
+    {"id": "VC-05", "name": "speaker identity before personal memory", "status": "partial"},
+    {"id": "VC-06", "name": "Horus Lupercal primary speaker persona", "status": "partial"},
+    {"id": "VC-07", "name": "unknown speaker identity clarification", "status": "missing"},
+    {"id": "VC-08", "name": "ambiguous speaker fail closed", "status": "missing"},
+    {"id": "VC-09", "name": "two non-Embry speakers one-at-a-time boundary", "status": "proven_for_one_receipt"},
+    {"id": "VC-10", "name": "factory-floor background noise stress", "status": "missing"},
+    {"id": "VC-11", "name": "female distractor filtering", "status": "missing"},
+    {"id": "VC-12", "name": "barge-in cancels old speech", "status": "partial"},
+    {"id": "VC-13", "name": "zero old-turn bytes after cancel", "status": "proven_at_stream_boundary"},
+    {"id": "VC-14", "name": "memory intent routes tone", "status": "partial"},
+    {"id": "VC-15", "name": "Chatterbox receives tone controls", "status": "partial"},
+    {"id": "VC-16", "name": "near-exact QRA blessed audio fast path", "status": "proven_for_one_receipt"},
+    {"id": "VC-17", "name": "QRA cache disabled path", "status": "missing"},
+    {"id": "VC-18", "name": "five Embry QRA variants", "status": "partial"},
+    {"id": "VC-19", "name": "unknown speaker utterance bank", "status": "missing"},
+    {"id": "VC-20", "name": "speaker-scoped conversational memory", "status": "missing"},
+    {"id": "VC-21", "name": "memory miss no hallucination", "status": "missing"},
+    {"id": "VC-22", "name": "wait and holding utterances", "status": "partial"},
+    {"id": "VC-23", "name": "latency budgets at every boundary", "status": "partial"},
+    {"id": "VC-24", "name": "chat interface voice parity", "status": "missing"},
+    {"id": "VC-25", "name": "subjective voice quality review", "status": "pending_human_quality_review"}
+  ],
+  "scenarios": [
+    {"id": "S01", "name": "simple voice turn"},
+    {"id": "S02", "name": "known Horus memory"},
+    {"id": "S03", "name": "unknown speaker"},
+    {"id": "S04", "name": "ambiguous speaker"},
+    {"id": "S05", "name": "Horus plus female distractor"},
+    {"id": "S06", "name": "Horus plus factory noise"},
+    {"id": "S07", "name": "two non-Embry speakers overlap"},
+    {"id": "S08", "name": "barge-in"},
+    {"id": "S09", "name": "blessed QRA hit"},
+    {"id": "S10", "name": "blessed QRA disabled"},
+    {"id": "S11", "name": "memory miss"},
+    {"id": "S12", "name": "tone steering"},
+    {"id": "S13", "name": "chat UI voice path"}
+  ],
+  "next_implementation_order": [
+    "machine-readable scenario manifest",
+    "scripts/smoke_voice_chat_e2e.py index and child receipts",
+    "S01 S02 S08 S09 S12 using existing proof boundaries",
+    "S03 S04 S11 identity and memory miss fail-closed cases",
+    "S05 S06 S07 noisy and mixed-speaker cases",
+    "S13 browser chat UI with screenshot plus receipt agreement"
+  ]
+}
