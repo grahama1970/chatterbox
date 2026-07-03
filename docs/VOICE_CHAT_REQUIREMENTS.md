@@ -114,6 +114,10 @@ python3 scripts/smoke_voice_chat_e2e.py \
 
 Latest live runner receipts:
 
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T214538Z-audible-all-v2/index.json`
+  passed all currently implemented scenarios with `mocked=false`, `live=true`,
+  empty `failed_gates`, and audible playback ledgers for every scenario through
+  PipeWire sink `64`.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
   passed all currently implemented simple-to-advanced scenarios with
   `mocked=false`, `live=true`, empty `failed_gates`, source `67` acoustic

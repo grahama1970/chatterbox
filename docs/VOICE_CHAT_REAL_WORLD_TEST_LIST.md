@@ -10,11 +10,12 @@ acceptable proof.
 
 Latest full-suite receipt:
 
-`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T214538Z-audible-all-v2/index.json`
 
 That run reported `mocked=false`, `live=true`, `ok=true`, empty
-`failed_gates`, and passed eight implemented scenarios. It is still a sanity
-suite, not production certification.
+`failed_gates`, passed eight implemented scenarios, and played scenario WAV
+artifacts through PipeWire sink `64`. It is still a sanity suite, not
+production certification.
 
 ## Required Receipt Fields
 
@@ -27,6 +28,7 @@ Every scenario receipt must include:
 - service URLs or command invocations
 - transcript, speaker, memory, Tau, or Chatterbox evidence appropriate to the
   boundary
+- audible playback ledger when `--audible-playback` is used
 - `claims.proves`
 - `claims.does_not_prove`
 
@@ -56,8 +58,21 @@ python3 scripts/smoke_voice_chat_e2e.py \
   --scenario all \
   --factory-record-target 67 \
   --factory-sink-target 64 \
+  --playback-sink-target 64 \
+  --audible-playback \
   --timeout-s 1200
 ```
+
+Latest audible playback counts:
+
+- `S01_S02_S08_S09_S12`: 6 WAV artifacts played.
+- `S08`: 1 WAV artifact played.
+- `S10`: 2 WAV artifacts played.
+- `S03-unknown-speaker`: 2 WAV artifacts played.
+- `S04-ambiguous-speaker`: 2 WAV artifacts played.
+- `S05`: 4 WAV artifacts played.
+- `S06`: 4 WAV artifacts played.
+- `S13`: 2 WAV artifacts played.
 
 Source `67` was selected because live source probing showed non-silent capture:
 
@@ -76,6 +91,9 @@ These are not closed by the latest suite:
 - browser chat UI screenshot agreement against the same receipt/run id
 - physical playback buffer flush after cancel
 - subjective human voice quality review for Embry and Horus
+- stronger Embry personality arcs for boundary lines such as
+  `one_at_a_time_interrupt`; the current audio can be intelligible while still
+  lacking character
 - longer multi-turn memory conversations with memory miss, memory hit, and
   identity changes in the same session
 

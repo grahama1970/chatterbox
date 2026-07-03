@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -178,6 +179,100 @@ def scenario_result(
     }
 
 
+def collect_wav_artifacts(root: Path) -> list[Path]:
+    if not root.exists():
+        return []
+    wavs: list[Path] = []
+    for path in sorted(root.rglob("*.wav")):
+        if path.is_file() and path.stat().st_size > 44:
+            wavs.append(path)
+    return wavs
+
+
+def wav_paths_from_json(value: Any) -> list[Path]:
+    paths: list[Path] = []
+    if isinstance(value, dict):
+        for nested in value.values():
+            paths.extend(wav_paths_from_json(nested))
+    elif isinstance(value, list):
+        for nested in value:
+            paths.extend(wav_paths_from_json(nested))
+    elif isinstance(value, str) and value.endswith(".wav"):
+        path = Path(value)
+        if path.exists() and path.is_file() and path.stat().st_size > 44:
+            paths.append(path)
+    return paths
+
+
+def collect_scenario_wavs(scenario: dict[str, Any]) -> list[Path]:
+    receipt_path = Path(str(scenario.get("receipt") or ""))
+    root_wavs = collect_wav_artifacts(receipt_path.parent)
+    receipt_wavs = wav_paths_from_json(read_json(receipt_path))
+    seen: set[str] = set()
+    deduped: list[Path] = []
+    for wav in [*root_wavs, *receipt_wavs]:
+        key = str(wav.resolve())
+        if key not in seen:
+            seen.add(key)
+            deduped.append(wav)
+    return deduped
+
+
+def copy_tau_finished_audio(tau_receipt: dict[str, Any], dest: Path) -> str | None:
+    source = Path(str(((tau_receipt.get("artifacts") or {}).get("finished_response_audio_host")) or ""))
+    if not source.exists():
+        return None
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, dest)
+    return str(dest)
+
+
+def play_scenario_audio(
+    *,
+    scenario: dict[str, Any],
+    playback_cmd: str,
+    sink_target: str | None,
+    timeout_s: int,
+    env: dict[str, str],
+) -> dict[str, Any]:
+    wavs = collect_scenario_wavs(scenario)
+    plays: list[dict[str, Any]] = []
+    failed_gates: list[str] = []
+    if not wavs:
+        failed_gates.append("audible_playback_wav_artifact_present")
+    for wav in wavs:
+        cmd = [playback_cmd]
+        if sink_target:
+            cmd.extend(["--target", sink_target])
+        cmd.append(str(wav))
+        played = run_cmd(cmd, timeout=timeout_s, env=env)
+        played["wav"] = str(wav)
+        plays.append(played)
+        if played["returncode"] != 0:
+            failed_gates.append(f"audible_playback_ok:{wav.name}")
+    return {
+        "schema": "chatterbox.voice_chat_e2e.audible_playback.v1",
+        "requested": True,
+        "sink_target": sink_target,
+        "playback_cmd": playback_cmd,
+        "wav_count": len(wavs),
+        "wavs": [str(path) for path in wavs],
+        "plays": plays,
+        "failed_gates": failed_gates,
+        "claims": {
+            "proves": [
+                "scenario_wav_artifacts_were_played_through_configured_audio_sink",
+            ]
+            if not failed_gates
+            else [],
+            "does_not_prove": [
+                "human_subjective_acceptance",
+                "microphone_recapture_of_every_played_artifact",
+            ],
+        },
+    }
+
+
 def run_continuous_core(args: argparse.Namespace, out_dir: Path, py: str, env: dict[str, str]) -> dict[str, Any]:
     scenario_dir = out_dir / "S01-S02-S08-S09-S12-continuous-core"
     receipt_path = scenario_dir / "continuous-voice-loop.json"
@@ -219,7 +314,8 @@ def run_continuous_core(args: argparse.Namespace, out_dir: Path, py: str, env: d
 
 
 def run_stream_cancel(args: argparse.Namespace, out_dir: Path, py: str, env: dict[str, str]) -> dict[str, Any]:
-    receipt_path = out_dir / "S08-stream-cancel" / "stream-cancel.json"
+    scenario_dir = out_dir / "S08-stream-cancel"
+    receipt_path = scenario_dir / "stream-cancel.json"
     cmd = [
         py,
         "scripts/smoke_stream_turn_cancel.py",
@@ -235,12 +331,49 @@ def run_stream_cancel(args: argparse.Namespace, out_dir: Path, py: str, env: dic
     failed = list(receipt.get("failed_gates") or [])
     if receipt.get("old_turn_bytes_after_cancel") != 0:
         failed.append("old_turn_bytes_after_cancel_zero")
+    witness_path = scenario_dir / "stream-cancel-audible-witness.json"
+    witness_cmd = [
+        py,
+        "scripts/smoke_tau_voice_render.py",
+        "--base-url",
+        args.base_url,
+        "--out",
+        str(witness_path),
+        "--question",
+        "What did the stream cancellation smoke test?",
+        "--answer-text",
+        "Stream cancellation check. The old turn emitted zero bytes after cancel.",
+        "--blessed-qra-memory-key",
+        "voice-turn-control-stream-cancel",
+        "--blessed-qra-memory-similarity",
+        "1.0",
+        "--blessed-qra-memory-review-status",
+        "approved",
+        "--voice-delivery-json",
+        json.dumps({"tone": "firm_boundary", "delivery_stage": "status", "pause_after_ms": 0}),
+        "--no-use-blessed-qra-cache",
+        "--timeout-s",
+        str(args.timeout_s),
+    ]
+    witness_child = run_cmd(witness_cmd, timeout=args.timeout_s, env=env)
+    witness_receipt = read_json(witness_path)
+    witness_wav = copy_tau_finished_audio(witness_receipt, scenario_dir / "stream-cancel-audible-witness.wav")
+    if witness_child["returncode"] != 0 or not witness_receipt.get("ok"):
+        failed.append("stream_cancel_audible_witness_render_ok")
+    if not witness_wav:
+        failed.append("stream_cancel_audible_witness_wav")
+    receipt["audible_witness"] = {
+        "receipt": str(witness_path),
+        "wav": witness_wav,
+        "child": witness_child,
+    }
+    write_json(receipt_path, receipt)
     return scenario_result(
         scenario_id="S08",
         name="stream cancellation suppresses old-turn audio bytes",
         status="passed" if child["returncode"] == 0 and receipt.get("ok") and not failed else "failed",
         receipt_path=receipt_path,
-        child=child,
+        child={"stream_cancel": child, "audible_witness": witness_child},
         receipt=receipt,
         failed_gates=failed,
         proves=["cancelled turn stream emits zero old-turn bytes after cancel"],
@@ -277,6 +410,7 @@ def run_qra_disabled(args: argparse.Namespace, out_dir: Path, py: str, env: dict
     ]
     child = run_cmd(cmd, timeout=args.timeout_s, env=env)
     receipt = read_json(receipt_path)
+    copied = copy_tau_finished_audio(receipt, receipt_path.parent / "qra-disabled-render.wav")
     response = receipt.get("response") or {}
     cache = response.get("blessed_qra_cache") or {}
     failed = list(receipt.get("failed_gates") or [])
@@ -284,6 +418,10 @@ def run_qra_disabled(args: argparse.Namespace, out_dir: Path, py: str, env: dict
         failed.append("request_cache_disabled")
     if cache.get("hit"):
         failed.append("cache_hit_false_when_disabled")
+    if not copied:
+        failed.append("qra_disabled_render_wav_copied")
+    receipt["audible_wav"] = copied
+    write_json(receipt_path, receipt)
     return scenario_result(
         scenario_id="S10",
         name="blessed QRA cache disabled path forces normal render",
@@ -355,8 +493,11 @@ def speaker_resolution_scenario(
     ]
     child = run_cmd(cmd, timeout=args.timeout_s, env=env)
     tau = read_json(tau_path)
+    copied = copy_tau_finished_audio(tau, scenario_dir / "identity-clarification-render.wav")
     if child["returncode"] != 0 or not tau.get("ok"):
         failed.append("identity_clarification_render_ok")
+    if not copied:
+        failed.append("identity_clarification_render_wav_copied")
     tau_delivery = (tau.get("request") or {}).get("voice_delivery") or {}
     if tau_delivery.get("tone") != "identity_clarification":
         failed.append("tau_identity_clarification_tone")
@@ -373,6 +514,7 @@ def speaker_resolution_scenario(
             "failed_gates": tau.get("failed_gates"),
             "voice_delivery": tau_delivery,
             "finished_audio_metrics": (tau.get("artifacts") or {}).get("finished_response_audio_metrics"),
+            "audible_wav": copied,
         },
         "artifacts": {
             "speaker_resolution": str(resolution_path),
@@ -664,6 +806,10 @@ def main() -> int:
     parser.add_argument("--factory-record-label", default="Jabra")
     parser.add_argument("--factory-sink-target", default=None)
     parser.add_argument("--factory-record-target", default=None)
+    parser.add_argument("--audible-playback", action="store_true")
+    parser.add_argument("--playback-cmd", default="pw-play")
+    parser.add_argument("--playback-sink-target", default=None)
+    parser.add_argument("--playback-timeout-s", default=120, type=int)
     args = parser.parse_args()
 
     started = time.perf_counter()
@@ -695,6 +841,22 @@ def main() -> int:
     }
     for scenario_name in scenarios_to_run:
         result = runners[scenario_name](args, out_dir, py, env)
+        if args.audible_playback:
+            playback_sink = args.playback_sink_target or args.factory_sink_target
+            audible = play_scenario_audio(
+                scenario=result,
+                playback_cmd=args.playback_cmd,
+                sink_target=playback_sink,
+                timeout_s=args.playback_timeout_s,
+                env=env,
+            )
+            result["audible_playback"] = audible
+            if audible["failed_gates"]:
+                result["failed_gates"] = list(result.get("failed_gates") or []) + [
+                    f"audible:{gate}" for gate in audible["failed_gates"]
+                ]
+                result["ok"] = False
+                result["status"] = "failed"
         scenario_receipts.append(result)
         if not result["ok"]:
             failed_gates.append(f"{scenario_name}_ok")
@@ -729,6 +891,8 @@ def main() -> int:
             "input_wav_source": args.input_wav_source,
             "scenarios": scenarios_to_run,
             "pending_advanced_included": pending_requested,
+            "audible_playback": args.audible_playback,
+            "playback_sink_target": args.playback_sink_target or args.factory_sink_target,
         },
         "summary": {
             "scenario_count": len(scenario_receipts),
