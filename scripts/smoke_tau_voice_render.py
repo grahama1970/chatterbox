@@ -64,8 +64,37 @@ def wait_for_health(base_url: str, timeout_s: int) -> tuple[dict[str, Any] | Non
     return None, last_error or "health_timeout"
 
 
+def load_json_file(path_value: str | None) -> dict[str, Any]:
+    if not path_value:
+        return {}
+    try:
+        path = Path(path_value)
+        if not path.exists():
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def load_voice_delivery(args: argparse.Namespace) -> dict[str, Any]:
+    if args.voice_delivery_json:
+        try:
+            data = json.loads(args.voice_delivery_json)
+            if isinstance(data, dict):
+                return data
+        except json.JSONDecodeError:
+            return {}
+    receipt = load_json_file(args.voice_delivery_receipt)
+    voice_delivery = receipt.get("voice_delivery")
+    return voice_delivery if isinstance(voice_delivery, dict) else {}
+
+
 def build_payload(args: argparse.Namespace) -> dict[str, Any]:
     chunks = split_text_chunks(args.answer_text, max_chars=300)
+    voice_delivery = load_voice_delivery(args)
+    tone = voice_delivery.get("tone")
+    delivery_stage = voice_delivery.get("delivery_stage") or "neutral"
     return {
         "schema": "tau.voice_render_request.v1",
         "run_id": args.run_id,
@@ -82,19 +111,22 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
             "similarity": args.blessed_qra_memory_similarity,
             "review_status": args.blessed_qra_memory_review_status,
         },
+        "voice_delivery": voice_delivery,
         "speakable_chunks": [
             {
                 "chunk_id": f"{args.turn_id}-chunk-{index}",
                 "text": chunk_text,
                 "text_sha256": sha256_text(chunk_text),
-                "delivery_stage": "neutral",
+                "tone": tone,
+                "delivery_stage": delivery_stage,
                 "pause_after_ms": 0,
                 "interruptible": True,
                 "max_chars": 300,
             }
             for index, chunk_text in enumerate(chunks, start=1)
         ],
-        "delivery_stage": "neutral",
+        "tone": tone,
+        "delivery_stage": delivery_stage,
         "interruptible": True,
         "use_blessed_qra_cache": args.use_blessed_qra_cache,
         "blessed_qra_min_similarity": args.blessed_qra_min_similarity,
@@ -112,6 +144,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
         "external_evidence": {
             "memory_recall": args.memory_receipt,
             "listener": args.listener_receipt,
+            "voice_delivery": voice_delivery,
         },
         "receipt_root": str(args.out.resolve().parent),
         "label": args.label,
@@ -196,6 +229,8 @@ def main() -> int:
     parser.add_argument("--blessed-qra-memory-review-status", default="approved")
     parser.add_argument("--memory-receipt", default=None)
     parser.add_argument("--listener-receipt", default=None)
+    parser.add_argument("--voice-delivery-json", default=None)
+    parser.add_argument("--voice-delivery-receipt", default=None)
     parser.add_argument("--container-out-dir", default="/out")
     parser.add_argument("--host-out-dir", default="/tmp/chatterbox-fork-agent-out", type=Path)
     parser.add_argument("--expect-cache-hit", action="store_true")
@@ -263,6 +298,7 @@ def main() -> int:
             "blessed_qra_memory_key": payload["blessed_qra_memory_key"],
             "blessed_qra_memory_similarity": payload["blessed_qra_memory_similarity"],
             "blessed_qra_memory_review_status": payload["blessed_qra_memory_review_status"],
+            "voice_delivery": payload["voice_delivery"],
         },
         "status_code": status_code,
         "post_error": post_error,

@@ -5,6 +5,59 @@ from __future__ import annotations
 from typing import Any
 
 
+ALLOWED_TONES = {
+    "neutral_warm",
+    "calm_precise",
+    "careful_concerned",
+    "serious_low_energy",
+    "memory_confident",
+    "memory_uncertain",
+    "curious_searching",
+    "playful_light",
+    "relieved",
+    "firm_boundary",
+    "identity_clarification",
+    "one_at_a_time_interrupt",
+    "deflect_calm",
+    "grief_safe",
+    "wait_presence",
+}
+
+TONE_TO_DELIVERY_STAGE: dict[str, str] = {
+    "neutral_warm": "neutral",
+    "calm_precise": "neutral",
+    "careful_concerned": "slightly_concerned",
+    "serious_low_energy": "neutral",
+    "memory_confident": "satisfied",
+    "memory_uncertain": "slightly_concerned",
+    "curious_searching": "holding",
+    "playful_light": "positive",
+    "relieved": "satisfied",
+    "firm_boundary": "deflecting",
+    "identity_clarification": "clarifying",
+    "one_at_a_time_interrupt": "deflecting",
+    "deflect_calm": "deflecting",
+    "grief_safe": "slightly_concerned",
+    "wait_presence": "holding",
+}
+
+DELIVERY_STAGE_ALIASES: dict[str, str] = {
+    "setup": "neutral",
+    "slightly_concerned": "slightly_concerned",
+    "neutral": "neutral",
+    "positive": "positive",
+    "satisfied": "satisfied",
+    "clarify": "clarifying",
+    "clarifying": "clarifying",
+    "boundary": "deflecting",
+    "interrupted": "deflecting",
+    "deflect": "deflecting",
+    "deflecting": "deflecting",
+    "wait": "holding",
+    "holding": "holding",
+    "closing": "closing",
+}
+
 DEFAULT_GENERATION_PARAMS: dict[str, float | int | bool] = {
     "temperature": 0.8,
     "top_p": 0.95,
@@ -72,6 +125,32 @@ STAGE_PRESETS: dict[str, dict[str, float | int | bool]] = {
         "norm_loudness": True,
     },
 }
+
+
+def normalize_voice_token(value: str | None) -> str:
+    if not value:
+        return ""
+    return "".join(ch.lower() for ch in value.strip() if ch.isalnum() or ch in "_-")
+
+
+def normalize_tone(value: str | None) -> str:
+    requested = normalize_voice_token(value)
+    return requested if requested in ALLOWED_TONES else "neutral_warm"
+
+
+def normalize_delivery_stage(value: str | None) -> str | None:
+    requested = normalize_voice_token(value)
+    if not requested:
+        return None
+    return DELIVERY_STAGE_ALIASES.get(requested, "neutral")
+
+
+def delivery_stage_for_tone(tone: str | None) -> str:
+    return TONE_TO_DELIVERY_STAGE.get(normalize_tone(tone), "neutral")
+
+
+def effective_delivery_stage(*, tone: str | None, delivery_stage: str | None) -> str:
+    return normalize_delivery_stage(delivery_stage) or delivery_stage_for_tone(tone)
 
 
 TURBO_SUPPORTED_PARAMS = {

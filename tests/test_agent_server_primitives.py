@@ -152,6 +152,81 @@ def test_batch_request_accepts_optional_turn_id_for_stream_controls() -> None:
     assert request.turn_id == "turn-stream-123"
 
 
+def test_synthesis_request_maps_tone_to_effective_delivery_stage() -> None:
+    request = SynthesisRequest(text="Known answer.", tone="memory_confident")
+
+    delivery = server.voice_delivery_for_request(request)
+    params = server.generation_params(request)
+
+    assert delivery["tone"] == "memory_confident"
+    assert delivery["delivery_stage"] == "satisfied"
+    assert delivery["delivery_stage_source"] == "tone_mapping"
+    assert params == server.generation_params_for_stage("satisfied")
+
+
+def test_synthesis_request_explicit_delivery_stage_overrides_tone_mapping() -> None:
+    request = SynthesisRequest(
+        text="Careful answer.",
+        tone="playful_light",
+        delivery_stage="boundary",
+        pace="firm_short",
+        pause_strategy="boundary_stop_then_prompt",
+    )
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["tone"] == "playful_light"
+    assert delivery["delivery_stage"] == "deflecting"
+    assert delivery["delivery_stage_source"] == "request.delivery_stage"
+    assert delivery["pace"] == "firm_short"
+    assert delivery["pause_strategy"] == "boundary_stop_then_prompt"
+
+
+def test_synthesize_to_file_receipt_records_voice_delivery(tmp_path: Path, monkeypatch) -> None:
+    import torch
+
+    class FakeModel:
+        sr = 24000
+        conds = None
+
+        def prepare_conditionals(self, ref_audio: str, **_: object) -> None:
+            self.conds = ref_audio
+
+        def generate(self, _text: str, **_: object):
+            return torch.zeros((1, 2400), dtype=torch.float32)
+
+    root = tmp_path / "voices"
+    root.mkdir()
+    ref = root / "embry.wav"
+    ref.write_bytes(b"RIFF-ref")
+    monkeypatch.setattr(server, "model", FakeModel())
+    monkeypatch.setattr(server, "REFERENCE_AUDIO_ROOTS", [root])
+    monkeypatch.setattr(server, "voice_conditioning_cache", {})
+    monkeypatch.setitem(
+        sys.modules,
+        "torchaudio",
+        types.SimpleNamespace(save=lambda path, *_args, **_kwargs: write_tiny_wav(Path(path))),
+    )
+
+    result = synthesize_to_file(
+        SynthesisRequest(
+            text="Known answer.",
+            ref_audio=str(ref),
+            tone="memory_confident",
+            pace="measured",
+            pause_strategy="short_answer_no_filler",
+        ),
+        tmp_path / "known-answer.wav",
+    )
+
+    assert result["ok"] is True
+    assert result["tone"] == "memory_confident"
+    assert result["delivery_stage"] == "satisfied"
+    assert result["voice_delivery"]["pace"] == "measured"
+    assert result["voice_delivery"]["pause_strategy"] == "short_answer_no_filler"
+    assert result["generation_params"] == server.generation_params_for_stage("satisfied")
+
+
 def test_tau_voice_render_request_maps_to_batch_request() -> None:
     chunk_text = "Use system and communications protection."
     request = TauVoiceRenderRequest(
@@ -160,12 +235,19 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
         question_text="Which control family should I use when the answer says SI?",
         question_text_sha256=server.sha256_text("Which control family should I use when the answer says SI?"),
         memory_route_decision={"called": True, "source": "memory"},
+        voice_delivery={
+            "tone": "memory_confident",
+            "delivery_stage": "satisfied",
+            "pace": "measured",
+            "pause_strategy": "short_answer_no_filler",
+            "source": "memory_intent",
+            "confidence": 0.86,
+        },
         speakable_chunks=[
             {
                 "chunk_id": "turn-1-chunk-1",
                 "text": chunk_text,
                 "text_sha256": server.sha256_text(chunk_text),
-                "delivery_stage": "neutral",
                 "pause_after_ms": 0,
                 "max_chars": 300,
             }
@@ -186,8 +268,14 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
     assert batch.turn_id == "turn-1"
     assert batch.question_text == "Which control family should I use when the answer says SI?"
     assert batch.max_chars == 300
+    assert batch.tone == "memory_confident"
+    assert batch.pace == "measured"
+    assert batch.pause_strategy == "short_answer_no_filler"
     assert batch.use_blessed_qra_cache is True
     assert batch.blessed_qra_memory_key == "qra-si-answer"
+    assert receipt["voice_delivery"]["tone"] == "memory_confident"
+    assert receipt["mapped_batch"]["tone"] == "memory_confident"
+    assert receipt["mapped_batch"]["delivery_stage"] == "satisfied"
 
 
 def test_tau_voice_render_request_fails_closed_on_hash_mismatch() -> None:

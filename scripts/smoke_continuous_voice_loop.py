@@ -192,6 +192,34 @@ def overlap_assessment(
     }
 
 
+def listener_evidence_packet(
+    *,
+    listener_receipt: dict[str, Any],
+    pyannote_receipt: dict[str, Any],
+    speaker_receipt: dict[str, Any],
+    overlap: dict[str, Any],
+) -> dict[str, Any]:
+    transcript_text = ((listener_receipt.get("transcript") or {}).get("text") or "").strip()
+    speaker_summary = speaker_receipt.get("summary") or {}
+    pyannote_summary = pyannote_receipt.get("summary") or {}
+    return {
+        "schema": "chatterbox.listener_evidence.v1",
+        "source": "realtimestt_pyannote_segment_evidence",
+        "transcript_present": bool(transcript_text),
+        "transcript_length": len(transcript_text),
+        "speaker_count": pyannote_summary.get("speaker_count"),
+        "non_embry_speaker_count": overlap.get("anonymous_pyannote_speaker_count"),
+        "overlapping_speech": bool(overlap.get("non_embry_overlap_candidate")),
+        "overlap_detected": bool(overlap.get("non_embry_overlap_candidate")),
+        "speech_active": bool(transcript_text),
+        "pyannote_overlap_seconds": overlap.get("pyannote_overlap_seconds"),
+        "embry_segment_ratio": overlap.get("embry_segment_ratio"),
+        "horus_segment_ratio": speaker_summary.get("horus_segment_ratio"),
+        "mean_primary_margin": speaker_summary.get("mean_primary_margin"),
+        "voiced_segment_count": speaker_summary.get("voiced_segment_count"),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-dir", required=True, type=Path)
@@ -367,6 +395,14 @@ def main() -> int:
     )
     write_json(out_dir / "05-overlap-assessment.json", overlap)
     artifacts["overlap_assessment"] = str(out_dir / "05-overlap-assessment.json")
+    listener_evidence = listener_evidence_packet(
+        listener_receipt=listener_receipt,
+        pyannote_receipt=pyannote_receipt,
+        speaker_receipt=speaker_receipt,
+        overlap=overlap,
+    )
+    write_json(out_dir / "05-listener-evidence.json", listener_evidence)
+    artifacts["listener_evidence"] = str(out_dir / "05-listener-evidence.json")
 
     try:
         speaker_payload = speaker_resolve_payload(
@@ -390,6 +426,7 @@ def main() -> int:
             "scope": "voice_turn_control" if overlap["non_embry_overlap_candidate"] else "persona_memory",
             "fast": True,
             "speaker_resolution": speaker_resolution,
+            "listener_evidence": listener_evidence,
             "context": {
                 "listener_event": "multi_speaker_overlap" if overlap["non_embry_overlap_candidate"] else "single_primary_speaker",
                 "overlap_assessment": overlap,
@@ -397,6 +434,8 @@ def main() -> int:
         }
         memory_intent = post_json(f"{args.memory_url.rstrip('/')}/intent", intent_payload, 20)
         write_json(out_dir / "07-memory-intent.json", memory_intent)
+        if not isinstance(memory_intent.get("voice_delivery"), dict):
+            failed_gates.append("memory_intent_voice_delivery_present")
     except Exception as exc:  # noqa: BLE001
         memory_intent = {"error_type": type(exc).__name__, "error": str(exc)}
         write_json(out_dir / "07-memory-intent.json", memory_intent)
@@ -463,6 +502,8 @@ def main() -> int:
         str(out_dir / "08-memory-recall.json"),
         "--listener-receipt",
         str(listener_path),
+        "--voice-delivery-receipt",
+        str(out_dir / "07-memory-intent.json"),
         "--use-blessed-qra-cache",
     ]
     tau = run_cmd(tau_cmd, timeout=args.timeout_s, env=env)
@@ -470,6 +511,9 @@ def main() -> int:
     tau_receipt = read_json(tau_path)
     if tau["returncode"] != 0 or not tau_receipt.get("ok"):
         failed_gates.append("tau_voice_render_ok")
+    tau_voice_delivery = (tau_receipt.get("request") or {}).get("voice_delivery")
+    if not isinstance(tau_voice_delivery, dict) or not tau_voice_delivery.get("tone"):
+        failed_gates.append("tau_voice_delivery_passed")
     artifacts["tau_voice_render"] = str(tau_path)
 
     cancel_path = out_dir / "10-stream-turn-cancel.json"

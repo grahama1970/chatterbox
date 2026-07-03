@@ -23,10 +23,16 @@ from pydantic import BaseModel, Field
 from chatterbox.agent.asr_acceptance import acceptance_result
 from chatterbox.agent.chunking import build_render_plan
 from chatterbox.agent.presets import (
+    ALLOWED_TONES,
+    DELIVERY_STAGE_ALIASES,
     STAGE_PRESETS,
+    TONE_TO_DELIVERY_STAGE,
     TURBO_IGNORED_PARAMS,
     TURBO_SUPPORTED_PARAMS,
+    effective_delivery_stage,
     generation_params_for_stage,
+    normalize_delivery_stage,
+    normalize_tone,
 )
 
 
@@ -93,7 +99,10 @@ class SynthesisRequest(BaseModel):
     text: str = Field(min_length=1, max_length=1200)
     ref_audio: str | None = None
     label: str | None = None
+    tone: str | None = Field(default=None, max_length=80)
     delivery_stage: str | None = None
+    pace: str | None = Field(default=None, max_length=80)
+    pause_strategy: str | None = Field(default=None, max_length=120)
     temperature: float | None = Field(default=None, ge=0.05, le=5.0)
     top_p: float | None = Field(default=None, ge=0.0, le=1.0)
     top_k: int | None = Field(default=None, ge=1, le=5000)
@@ -114,6 +123,9 @@ class SynthesisBatchRequest(RenderPlanRequest):
     blessed_qra_memory_review_status: str | None = Field(default=None, max_length=80)
     ref_audio: str | None = None
     label: str | None = None
+    tone: str | None = Field(default=None, max_length=80)
+    pace: str | None = Field(default=None, max_length=80)
+    pause_strategy: str | None = Field(default=None, max_length=120)
     include_completion_cue: bool = True
     stream: bool = False
     crossfade_ms: int = Field(default=20, ge=0, le=250)
@@ -128,7 +140,10 @@ class TauVoiceChunk(BaseModel):
     chunk_id: str | None = Field(default=None, max_length=160)
     text: str = Field(min_length=1, max_length=1200)
     text_sha256: str | None = Field(default=None, max_length=128)
+    tone: str | None = Field(default=None, max_length=80)
     delivery_stage: str | None = Field(default=None, max_length=80)
+    pace: str | None = Field(default=None, max_length=80)
+    pause_strategy: str | None = Field(default=None, max_length=120)
     pause_after_ms: int | None = Field(default=None, ge=0, le=3000)
     interruptible: bool = True
     max_chars: int | None = Field(default=None, ge=80, le=300)
@@ -150,8 +165,12 @@ class TauVoiceRenderRequest(BaseModel):
     question_text: str | None = Field(default=None, max_length=12000)
     question_text_sha256: str | None = Field(default=None, max_length=128)
     memory_route_decision: dict[str, Any] = Field(default_factory=dict)
+    voice_delivery: dict[str, Any] = Field(default_factory=dict)
     speakable_chunks: list[TauVoiceChunk] = Field(min_length=1)
-    delivery_stage: str | None = Field(default="neutral", max_length=80)
+    tone: str | None = Field(default=None, max_length=80)
+    delivery_stage: str | None = Field(default=None, max_length=80)
+    pace: str | None = Field(default=None, max_length=80)
+    pause_strategy: str | None = Field(default=None, max_length=120)
     interruptible: bool = True
     use_blessed_qra_cache: bool = True
     blessed_qra_min_similarity: float = Field(default=0.99, ge=0.0, le=1.0)
@@ -587,6 +606,31 @@ def prepare_voice_conditioning(ref_audio: Path | None, params: dict[str, float |
     }
 
 
+def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest | TauVoiceRenderRequest) -> dict[str, Any]:
+    source_delivery = getattr(request, "voice_delivery", None)
+    if not isinstance(source_delivery, dict):
+        source_delivery = {}
+    requested_tone = getattr(request, "tone", None) or source_delivery.get("tone")
+    requested_stage = getattr(request, "delivery_stage", None) or source_delivery.get("delivery_stage")
+    tone = normalize_tone(requested_tone)
+    explicit_stage = normalize_delivery_stage(requested_stage)
+    stage = effective_delivery_stage(tone=tone, delivery_stage=requested_stage)
+    return {
+        "schema": "chatterbox.voice_delivery.v1",
+        "requested_tone": requested_tone,
+        "tone": tone,
+        "requested_delivery_stage": requested_stage,
+        "delivery_stage": stage,
+        "delivery_stage_source": "request.delivery_stage" if explicit_stage else "tone_mapping",
+        "pace": getattr(request, "pace", None) or source_delivery.get("pace"),
+        "pause_strategy": getattr(request, "pause_strategy", None) or source_delivery.get("pause_strategy"),
+        "wait_activity": source_delivery.get("wait_activity"),
+        "source": source_delivery.get("source"),
+        "confidence": source_delivery.get("confidence"),
+        "evidence": source_delivery.get("evidence"),
+    }
+
+
 def generation_params(request: SynthesisRequest) -> dict[str, float | int | bool]:
     overrides = {
         "temperature": request.temperature,
@@ -595,7 +639,7 @@ def generation_params(request: SynthesisRequest) -> dict[str, float | int | bool
         "repetition_penalty": request.repetition_penalty,
         "norm_loudness": request.norm_loudness,
     }
-    return generation_params_for_stage(request.delivery_stage, overrides=overrides)
+    return generation_params_for_stage(voice_delivery_for_request(request)["delivery_stage"], overrides=overrides)
 
 
 def candidate_variants(max_candidates: int) -> list[dict[str, Any]]:
@@ -619,6 +663,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         params = generation_params(request)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    voice_delivery = voice_delivery_for_request(request)
     latency_event(events, "generation_params_ready", started_total)
     started = time.perf_counter()
     try:
@@ -653,7 +698,11 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "reference_audio": str(ref_audio),
             "voice_conditioning": locals().get("conditioning"),
             "audio": str(out_path),
-            "delivery_stage": request.delivery_stage,
+            "tone": voice_delivery["tone"],
+            "requested_tone": voice_delivery["requested_tone"],
+            "delivery_stage": voice_delivery["delivery_stage"],
+            "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
+            "voice_delivery": voice_delivery,
             "generation_params": params,
             "generation_seconds": generation_seconds,
             "latency_events": events,
@@ -679,7 +728,11 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         "reference_audio": conditioning.get("reference_audio"),
         "voice_conditioning": conditioning,
         "audio": str(out_path),
-        "delivery_stage": request.delivery_stage,
+        "tone": voice_delivery["tone"],
+        "requested_tone": voice_delivery["requested_tone"],
+        "delivery_stage": voice_delivery["delivery_stage"],
+        "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
+        "voice_delivery": voice_delivery,
         "generation_params": params,
         "generation_seconds": generation_seconds,
         "latency_events": events,
@@ -795,7 +848,10 @@ def synthesis_request_with_overrides(
         text=base_request.text,
         ref_audio=base_request.ref_audio,
         label=label,
+        tone=base_request.tone,
         delivery_stage=base_request.delivery_stage,
+        pace=base_request.pace,
+        pause_strategy=base_request.pause_strategy,
         temperature=overrides.get("temperature", base_request.temperature),
         top_p=overrides.get("top_p", base_request.top_p),
         top_k=overrides.get("top_k", base_request.top_k),
@@ -813,6 +869,7 @@ def accepted_audio_cache_material(
     asr_max_candidates: int,
 ) -> dict[str, Any]:
     params = generation_params(base_request)
+    voice_delivery = voice_delivery_for_request(base_request)
     return {
         "cache_schema_version": CACHE_SCHEMA_VERSION,
         "engine": "chatterbox_turbo",
@@ -822,7 +879,11 @@ def accepted_audio_cache_material(
         "output_format": {"container": "wav", "sample_rate": 24000, "channels": 1},
         "text_sha256": hashlib.sha256(base_request.text.encode("utf-8")).hexdigest(),
         "text": base_request.text,
-        "delivery_stage": base_request.delivery_stage,
+        "tone": voice_delivery["tone"],
+        "requested_tone": voice_delivery["requested_tone"],
+        "delivery_stage": voice_delivery["delivery_stage"],
+        "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
+        "voice_delivery": voice_delivery,
         "generation_params": params,
         "reference_audio": reference_audio_fingerprint(ref_audio_path, params),
         "candidate_variants": candidate_variants(asr_max_candidates),
@@ -1116,6 +1177,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
 
     chunk_texts: list[str] = []
     delivery_stages: list[str] = []
+    tones: list[str] = []
     requested_max_chars: list[int] = []
     chunk_receipts: list[dict[str, Any]] = []
     for index, chunk in enumerate(request.speakable_chunks, start=1):
@@ -1128,6 +1190,8 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         chunk_texts.append(text)
         if chunk.delivery_stage:
             delivery_stages.append(chunk.delivery_stage)
+        if chunk.tone:
+            tones.append(chunk.tone)
         if chunk.max_chars:
             requested_max_chars.append(chunk.max_chars)
         chunk_receipts.append(
@@ -1136,7 +1200,11 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
                 "index": index,
                 "text_sha256": actual_sha,
                 "declared_text_sha256": chunk.text_sha256,
+                "tone": normalize_tone(chunk.tone or request.tone or request.voice_delivery.get("tone")),
+                "requested_tone": chunk.tone or request.tone or request.voice_delivery.get("tone"),
                 "delivery_stage": chunk.delivery_stage or request.delivery_stage or "neutral",
+                "pace": chunk.pace or request.pace or request.voice_delivery.get("pace"),
+                "pause_strategy": chunk.pause_strategy or request.pause_strategy or request.voice_delivery.get("pause_strategy"),
                 "pause_after_ms": chunk.pause_after_ms,
                 "interruptible": chunk.interruptible,
                 "char_len": len(text),
@@ -1151,7 +1219,9 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
     max_chars = max(80, min(max_chars, 300))
     pause_values = [chunk.pause_after_ms for chunk in request.speakable_chunks if chunk.pause_after_ms is not None]
     pause_after_ms = int(pause_values[0]) if pause_values else 250
-    delivery_stage = delivery_stages[0] if delivery_stages else request.delivery_stage
+    tau_voice_delivery = voice_delivery_for_request(request)
+    delivery_stage = delivery_stages[0] if delivery_stages else tau_voice_delivery["delivery_stage"]
+    tone = tones[0] if tones else tau_voice_delivery["tone"]
     label = request.label or f"tau_{safe_label(request.conversation_id)}_{safe_label(request.turn_id)}"
 
     batch_request = SynthesisBatchRequest(
@@ -1169,6 +1239,9 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         blessed_qra_memory_key=request.blessed_qra_memory_key,
         blessed_qra_memory_similarity=request.blessed_qra_memory_similarity,
         blessed_qra_memory_review_status=request.blessed_qra_memory_review_status,
+        tone=tone,
+        pace=tau_voice_delivery.get("pace"),
+        pause_strategy=tau_voice_delivery.get("pause_strategy"),
         label=label,
         include_completion_cue=request.include_completion_cue,
         crossfade_ms=request.crossfade_ms,
@@ -1187,6 +1260,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         "source_chunk_count": len(request.speakable_chunks),
         "source_chunks": chunk_receipts,
         "memory_route_decision": request.memory_route_decision,
+        "voice_delivery": tau_voice_delivery,
         "turn_control_policy": model_to_dict(request.turn_control_policy),
         "external_evidence": request.external_evidence,
         "receipt_root": request.receipt_root,
@@ -1194,6 +1268,10 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
             "answer_text_sha256": sha256_text(answer_text),
             "max_chars": batch_request.max_chars,
             "pause_after_ms": batch_request.pause_after_ms,
+            "tone": batch_request.tone,
+            "delivery_stage": delivery_stage,
+            "pace": batch_request.pace,
+            "pause_strategy": batch_request.pause_strategy,
             "turn_id": batch_request.turn_id,
             "use_blessed_qra_cache": batch_request.use_blessed_qra_cache,
             "blessed_qra_variant": batch_request.blessed_qra_variant,
@@ -1262,6 +1340,7 @@ def blessed_qra_batch_response(
     started_total: float,
     batch_events: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    voice_delivery = voice_delivery_for_request(request)
     plan = build_render_plan(
         match["answer_text"],
         max_chars=request.max_chars,
@@ -1285,7 +1364,15 @@ def blessed_qra_batch_response(
                 "audio": chunk["audio"],
                 "metrics": metrics,
                 "duration_seconds": float(metrics.get("duration_seconds") or 0.0),
+                "tone": voice_delivery["tone"],
+                "requested_tone": voice_delivery["requested_tone"],
                 "delivery_stage": chunk.get("delivery_stage") or "neutral",
+                "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
+                "voice_delivery": {
+                    **voice_delivery,
+                    "delivery_stage": chunk.get("delivery_stage") or voice_delivery["delivery_stage"],
+                    "delivery_stage_source": "blessed_qra_cache.chunk",
+                },
                 "chunk_index": index,
                 "chunk_total": len(match["chunks"]),
                 "pause_after_ms": pause_after_ms,
@@ -1318,6 +1405,11 @@ def blessed_qra_batch_response(
         "live": True,
         "engine": "chatterbox_turbo",
         "batch_label": batch_label,
+        "tone": voice_delivery["tone"],
+        "requested_tone": voice_delivery["requested_tone"],
+        "delivery_stage": voice_delivery["delivery_stage"],
+        "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
+        "voice_delivery": voice_delivery,
         "cache_key": f"blessed_qra:{match.get('entry_id')}",
         "cache_material": {
             "schema_version": BLESSED_QRA_SCHEMA_VERSION,
@@ -1359,9 +1451,11 @@ def cache_key_for_batch(
     *,
     ref_audio: str | None,
     asr_verify: bool = False,
+    voice_delivery: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
     material = {
         "engine": "chatterbox_turbo",
+        "voice_delivery": voice_delivery,
         "answer_text_sha256": plan["answer_text_sha256"],
         "completion_cue_sha256": plan.get("completion_cue_sha256"),
         "chunk_text_sha256": [chunk["text_sha256"] for chunk in plan["chunks"]],
@@ -1467,6 +1561,9 @@ def presets() -> dict[str, Any]:
         "engine": "chatterbox_turbo",
         "supported_params": sorted(TURBO_SUPPORTED_PARAMS),
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
+        "allowed_tones": sorted(ALLOWED_TONES),
+        "tone_to_delivery_stage": TONE_TO_DELIVERY_STAGE,
+        "delivery_stage_aliases": DELIVERY_STAGE_ALIASES,
         "stage_presets": STAGE_PRESETS,
     }
 
@@ -1497,6 +1594,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
     batch_label = safe_label(request.label or f"batch-{uuid4().hex[:8]}")
     batch_dir = OUT_DIR / batch_label
     batch_dir.mkdir(parents=True, exist_ok=True)
+    batch_voice_delivery = voice_delivery_for_request(request)
     latency_event(batch_events, "batch_dir_ready", started_total)
     blessed_qra_lookup = (
         apply_blessed_qra_memory_gate(
@@ -1536,7 +1634,12 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
     latency_event(batch_events, "render_plan_ready", started_total, chunk_count=plan["chunk_count"])
     ref_audio_path = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)
     ref_audio = str(ref_audio_path)
-    cache_key, cache_material = cache_key_for_batch(plan, ref_audio=ref_audio, asr_verify=request.asr_verify)
+    cache_key, cache_material = cache_key_for_batch(
+        plan,
+        ref_audio=ref_audio,
+        asr_verify=request.asr_verify,
+        voice_delivery=batch_voice_delivery,
+    )
     chunk_results: list[dict[str, Any]] = []
     failed_gates: list[str] = []
     asr_api_key = os.getenv(ASR_API_KEY_ENV) if request.asr_verify else None
@@ -1560,7 +1663,10 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             text=chunk["text"],
             ref_audio=request.ref_audio,
             label=f"{batch_label}_chunk_{chunk['index']:02d}",
+            tone=request.tone,
             delivery_stage=chunk["delivery_stage"],
+            pace=request.pace,
+            pause_strategy=request.pause_strategy,
         )
         base_filename = f"chunk_{chunk['index']:02d}_{chunk['delivery_stage']}"
         out_path = batch_dir / f"{base_filename}.wav"
@@ -1610,7 +1716,10 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             text=request.completion_cue,
             ref_audio=request.ref_audio,
             label=f"{batch_label}_response_complete",
+            tone=request.tone,
             delivery_stage="closing",
+            pace=request.pace,
+            pause_strategy=request.pause_strategy,
         )
         if request.asr_verify and asr_api_key:
             completion_result = synthesize_asr_accepted_to_file(
@@ -1663,6 +1772,11 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "live": True,
         "engine": "chatterbox_turbo",
         "batch_label": batch_label,
+        "tone": batch_voice_delivery["tone"],
+        "requested_tone": batch_voice_delivery["requested_tone"],
+        "delivery_stage": batch_voice_delivery["delivery_stage"],
+        "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
+        "voice_delivery": batch_voice_delivery,
         "cache_key": cache_key,
         "cache_material": cache_material,
         "answer_text_sha256": plan["answer_text_sha256"],
