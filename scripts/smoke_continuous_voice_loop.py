@@ -285,6 +285,12 @@ def main() -> int:
     parser.add_argument("--chatterbox-container", default="chatterbox-fork-agent-server")
     parser.add_argument("--skip-pyannote", action="store_true")
     parser.add_argument("--skip-interruption", action="store_true")
+    parser.add_argument("--include-qra-cache-probe", action="store_true")
+    parser.add_argument(
+        "--qra-cache-seed-query",
+        default="When should SI-7(8) be used in satellite operations?",
+    )
+    parser.add_argument("--qra-cache-variant", default="gentle")
     args = parser.parse_args()
 
     started = time.perf_counter()
@@ -580,6 +586,43 @@ def main() -> int:
     tau_cache = tau_response.get("blessed_qra_cache") or {}
     tau_audio_metrics = (tau_receipt.get("artifacts") or {}).get("finished_response_audio_metrics") or {}
 
+    qra_probe_receipt: dict[str, Any] = {"skipped": not args.include_qra_cache_probe}
+    qra_probe_path = out_dir / "11-qra-cache-probe" / "listener-memory-tau-qra.json"
+    if args.include_qra_cache_probe:
+        qra_probe_cmd = [
+            py,
+            "scripts/smoke_listener_memory_tau_qra.py",
+            "--base-url",
+            args.base_url,
+            "--memory-url",
+            args.memory_url,
+            "--asr-openai-base-url",
+            args.asr_openai_base_url,
+            "--api-key-env",
+            args.api_key_env,
+            "--out-dir",
+            str(qra_probe_path.parent),
+            "--seed-query",
+            args.qra_cache_seed_query,
+            "--variant",
+            args.qra_cache_variant,
+            "--timeout-s",
+            str(args.timeout_s),
+        ]
+        qra_probe = run_cmd(qra_probe_cmd, timeout=args.timeout_s, env=env)
+        children["qra_cache_probe"] = qra_probe
+        qra_probe_receipt = read_json(qra_probe_path)
+        qra_probe_tau = qra_probe_receipt.get("tau_voice_render") or {}
+        if qra_probe["returncode"] != 0 or not qra_probe_receipt.get("ok"):
+            failed_gates.append("qra_cache_probe_ok")
+        if not qra_probe_tau.get("cache_hit"):
+            failed_gates.append("qra_cache_probe_cache_hit")
+        if not qra_probe_tau.get("memory_gate_passed"):
+            failed_gates.append("qra_cache_probe_memory_gate_passed")
+    else:
+        children["qra_cache_probe"] = {"skipped": True}
+    artifacts["qra_cache_probe"] = str(qra_probe_path)
+
     cancel_path = out_dir / "10-stream-turn-cancel.json"
     if not args.skip_interruption:
         cancel_cmd = [
@@ -628,6 +671,16 @@ def main() -> int:
         "finished_audio_bytes": tau_audio_metrics.get("bytes"),
         "finished_audio_duration_seconds": tau_audio_metrics.get("duration_seconds"),
         "boundary": "cache_hit_false_means_live_render_or_cache_miss_path_was_used",
+        "probe": {
+            "included": args.include_qra_cache_probe,
+            "receipt": str(qra_probe_path),
+            "ok": qra_probe_receipt.get("ok"),
+            "cache_hit": ((qra_probe_receipt.get("tau_voice_render") or {}).get("cache_hit")),
+            "memory_gate_passed": ((qra_probe_receipt.get("tau_voice_render") or {}).get("memory_gate_passed")),
+            "variant_id": ((qra_probe_receipt.get("tau_voice_render") or {}).get("variant_id")),
+            "memory_key": ((qra_probe_receipt.get("memory_gate") or {}).get("key")),
+            "finished_audio_metrics": ((qra_probe_receipt.get("tau_voice_render") or {}).get("finished_audio_metrics")),
+        },
     }
     transport_claim = (
         "real_captured_input_wav_can_feed_realtimestt_external_audio_listener"
@@ -638,6 +691,11 @@ def main() -> int:
         "known_horus_identity_maps_through_enrollment_and_memory_speaker_resolution"
         if speaker_known_horus
         else "unknown_or_insufficient_physical_speaker_evidence_routes_to_clarification_without_personal_recall"
+    )
+    qra_cache_claims = (
+        ["blessed_qra_cache_hit_is_proven_by_child_listener_memory_tau_qra_probe"]
+        if args.include_qra_cache_probe
+        else []
     )
 
     receipt = {
@@ -704,6 +762,7 @@ def main() -> int:
                 "speaker_identity_mapping_uses_enrollment_and_memory_evidence_not_pyannote_label_assumption",
                 "memory_or_turn_control_route_can_drive_tau_voice_render_to_chatterbox_output",
                 identity_claim,
+                *qra_cache_claims,
                 "stream_cancel_child_receipt_records_zero_old_turn_bytes_after_cancel",
             ]
             if not failed_gates
