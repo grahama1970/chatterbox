@@ -113,6 +113,12 @@ def post_json(url: str, payload: dict[str, Any], timeout_s: int) -> dict[str, An
         return json.loads(response.read().decode("utf-8"))
 
 
+def timed_post_json(url: str, payload: dict[str, Any], timeout_s: int) -> tuple[dict[str, Any], float]:
+    started = time.perf_counter()
+    response = post_json(url, payload, timeout_s)
+    return response, round((time.perf_counter() - started) * 1000, 3)
+
+
 def first_event_ms(receipt: dict[str, Any], event_type: str) -> float | None:
     for event in receipt.get("events") or []:
         if event.get("type") == event_type:
@@ -185,6 +191,10 @@ def overlap_assessment(
         "anonymous_pyannote_speaker_count": speaker_count,
         "anonymous_pyannote_speakers": py_summary.get("speakers") or [],
         "pyannote_overlap_seconds": overlap_seconds,
+        "pyannote_overlap_candidate": overlap_seconds >= min_overlap_seconds and speaker_count >= 2,
+        "segment_embry_count": int(speaker_summary.get("embry_segment_count") or 0),
+        "segment_horus_count": int(speaker_summary.get("horus_segment_count") or 0),
+        "segment_voiced_count": int(speaker_summary.get("voiced_segment_count") or 0),
         "embry_segment_ratio": round(embry_ratio, 4),
         "non_embry_overlap_candidate": non_embry_overlap,
         "policy": "fail_closed_before_personal_recall_when_multiple_non_embry_speakers_overlap",
@@ -220,6 +230,33 @@ def listener_evidence_packet(
     }
 
 
+def transport_receipt_for_input_wav(audio_path: Path, *, source: str) -> dict[str, Any]:
+    return {
+        "schema": "chatterbox.audio_transport_input.v1",
+        "ok": audio_path.exists(),
+        "mocked": False,
+        "live": audio_path.exists(),
+        "source": source,
+        "proof_scope": "preexisting_real_audio_capture_wav_supplied_to_continuous_voice_loop",
+        "artifacts": {
+            "wav": str(audio_path),
+            "wav_bytes": audio_path.stat().st_size if audio_path.exists() else 0,
+        },
+        "failed_gates": [] if audio_path.exists() else ["input_wav_exists"],
+        "claims": {
+            "proves": [
+                "continuous_loop_consumed_real_captured_audio_file",
+            ]
+            if audio_path.exists()
+            else [],
+            "does_not_prove": [
+                "fresh_browser_getusermedia_capture_in_this_runner",
+                "fresh_pipewire_recording_in_this_runner",
+            ],
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-dir", required=True, type=Path)
@@ -229,6 +266,8 @@ def main() -> int:
     parser.add_argument("--api-key-env", default="WHISPER_API_KEY")
     parser.add_argument("--python", default=DEFAULT_PYTHON, type=Path)
     parser.add_argument("--browser-python", default=None, type=Path)
+    parser.add_argument("--input-wav", default=None, type=Path)
+    parser.add_argument("--input-wav-source", default="pipewire_or_physical_capture")
     parser.add_argument("--play-audio", default=DEFAULT_PLAY_AUDIO, type=Path)
     parser.add_argument("--playback-arg", action="append", default=[])
     parser.add_argument("--audio-device-label", default="Jabra")
@@ -258,37 +297,50 @@ def main() -> int:
     children: dict[str, Any] = {}
     artifacts: dict[str, Any] = {}
 
-    if not args.play_audio.exists():
+    if not args.input_wav and not args.play_audio.exists():
         failed_gates.append("play_audio_exists")
 
     browser_path = out_dir / "01-browser-webrtc.json"
-    browser_cmd = [
-        browser_py,
-        "scripts/smoke_browser_webrtc_transport.py",
-        "--out",
-        str(browser_path),
-        "--capture-seconds",
-        str(args.capture_seconds),
-        "--play-audio",
-        str(args.play_audio),
-        "--min-duration-seconds",
-        "2.0",
-        "--audio-device-label",
-        args.audio_device_label,
-    ]
-    for playback_arg in args.playback_arg or []:
-        browser_cmd.append(f"--playback-arg={playback_arg}")
-    if args.echo_cancellation:
-        browser_cmd.append("--echo-cancellation")
-    if args.noise_suppression:
-        browser_cmd.append("--noise-suppression")
-    if args.auto_gain_control:
-        browser_cmd.append("--auto-gain-control")
-    browser = run_cmd(browser_cmd, timeout=args.timeout_s, env=env)
-    children["browser_webrtc_transport"] = browser
-    browser_receipt = read_json(browser_path)
-    if browser["returncode"] != 0 or not browser_receipt.get("ok"):
-        failed_gates.append("browser_webrtc_transport_ok")
+    if args.input_wav:
+        input_wav = args.input_wav.resolve()
+        browser_receipt = transport_receipt_for_input_wav(input_wav, source=args.input_wav_source)
+        write_json(browser_path, browser_receipt)
+        browser = {
+            "cmd": ["input-wav", str(input_wav)],
+            "returncode": 0 if browser_receipt.get("ok") else 1,
+            "elapsed_ms": 0.0,
+            "stdout_tail": "",
+            "stderr_tail": "",
+        }
+        children["audio_transport_input"] = browser
+    else:
+        browser_cmd = [
+            browser_py,
+            "scripts/smoke_browser_webrtc_transport.py",
+            "--out",
+            str(browser_path),
+            "--capture-seconds",
+            str(args.capture_seconds),
+            "--play-audio",
+            str(args.play_audio),
+            "--min-duration-seconds",
+            "2.0",
+            "--audio-device-label",
+            args.audio_device_label,
+        ]
+        for playback_arg in args.playback_arg or []:
+            browser_cmd.append(f"--playback-arg={playback_arg}")
+        if args.echo_cancellation:
+            browser_cmd.append("--echo-cancellation")
+        if args.noise_suppression:
+            browser_cmd.append("--noise-suppression")
+        if args.auto_gain_control:
+            browser_cmd.append("--auto-gain-control")
+        browser = run_cmd(browser_cmd, timeout=args.timeout_s, env=env)
+        children["browser_webrtc_transport"] = browser
+        browser_receipt = read_json(browser_path)
+        if browser["returncode"] != 0 or not browser_receipt.get("ok"):
+            failed_gates.append("browser_webrtc_transport_ok")
     browser_wav = Path(((browser_receipt.get("artifacts") or {}).get("wav")) or "")
     if not browser_wav.exists():
         failed_gates.append("browser_wav_exists")
@@ -387,6 +439,7 @@ def main() -> int:
     speaker_resolution = {}
     memory_intent = {}
     memory_recall = {}
+    memory_timings: dict[str, float] = {}
     overlap = overlap_assessment(
         pyannote_receipt=pyannote_receipt,
         speaker_receipt=speaker_receipt,
@@ -412,7 +465,11 @@ def main() -> int:
             threshold=args.speaker_resolve_threshold,
             ambiguity_margin=args.speaker_ambiguity_margin,
         )
-        speaker_resolution = post_json(f"{args.memory_url.rstrip('/')}/speaker/resolve", speaker_payload, 20)
+        speaker_resolution, memory_timings["speaker_resolve_ms"] = timed_post_json(
+            f"{args.memory_url.rstrip('/')}/speaker/resolve",
+            speaker_payload,
+            20,
+        )
         write_json(out_dir / "06-speaker-resolution.json", speaker_resolution)
     except Exception as exc:  # noqa: BLE001
         speaker_resolution = {"error_type": type(exc).__name__, "error": str(exc)}
@@ -432,7 +489,11 @@ def main() -> int:
                 "overlap_assessment": overlap,
             },
         }
-        memory_intent = post_json(f"{args.memory_url.rstrip('/')}/intent", intent_payload, 20)
+        memory_intent, memory_timings["intent_ms"] = timed_post_json(
+            f"{args.memory_url.rstrip('/')}/intent",
+            intent_payload,
+            20,
+        )
         write_json(out_dir / "07-memory-intent.json", memory_intent)
         if not isinstance(memory_intent.get("voice_delivery"), dict):
             failed_gates.append("memory_intent_voice_delivery_present")
@@ -458,7 +519,7 @@ def main() -> int:
         memory_key = "voice-turn-control-identity-clarification"
     else:
         try:
-            memory_recall = post_json(
+            memory_recall, memory_timings["recall_ms"] = timed_post_json(
                 f"{args.memory_url.rstrip('/')}/recall",
                 {
                     "q": transcript,
@@ -515,6 +576,9 @@ def main() -> int:
     if not isinstance(tau_voice_delivery, dict) or not tau_voice_delivery.get("tone"):
         failed_gates.append("tau_voice_delivery_passed")
     artifacts["tau_voice_render"] = str(tau_path)
+    tau_response = tau_receipt.get("response") or {}
+    tau_cache = tau_response.get("blessed_qra_cache") or {}
+    tau_audio_metrics = (tau_receipt.get("artifacts") or {}).get("finished_response_audio_metrics") or {}
 
     cancel_path = out_dir / "10-stream-turn-cancel.json"
     if not args.skip_interruption:
@@ -545,12 +609,36 @@ def main() -> int:
         "vad_start_ms": first_event_ms(listener_receipt, "realtimestt.vad_start"),
         "vad_stop_ms": first_event_ms(listener_receipt, "realtimestt.vad_stop"),
         "asr_final_ms": first_event_ms(listener_receipt, "realtimestt.text_returned"),
-        "memory_recall_ms": None if overlap["non_embry_overlap_candidate"] else None,
+        "memory_speaker_resolve_ms": memory_timings.get("speaker_resolve_ms"),
+        "memory_intent_ms": memory_timings.get("intent_ms"),
+        "memory_recall_ms": memory_timings.get("recall_ms"),
         "tau_render_request_ms": round((time.perf_counter() - started) * 1000, 3),
         "first_audio_byte_ms": (((tau_receipt.get("response") or {}).get("stream") or {}).get("first_byte_ms")),
         "final_spoken_chunk_ms": tau_receipt.get("elapsed_ms"),
         "turn_cancel_old_turn_bytes_after_cancel": cancel_receipt.get("old_turn_bytes_after_cancel"),
     }
+    qra_fast_path = {
+        "schema": "chatterbox.continuous_voice_loop.qra_fast_path.v1",
+        "requested": True,
+        "memory_key": memory_key,
+        "cache_hit": bool(tau_cache.get("hit")),
+        "memory_gate_passed": bool((tau_cache.get("memory_gate") or {}).get("passed")),
+        "selected_variant": ((tau_response.get("cache_material") or {}).get("variant_id")),
+        "finished_audio_exists": bool(tau_audio_metrics.get("exists")),
+        "finished_audio_bytes": tau_audio_metrics.get("bytes"),
+        "finished_audio_duration_seconds": tau_audio_metrics.get("duration_seconds"),
+        "boundary": "cache_hit_false_means_live_render_or_cache_miss_path_was_used",
+    }
+    transport_claim = (
+        "real_captured_input_wav_can_feed_realtimestt_external_audio_listener"
+        if args.input_wav
+        else "browser_getusermedia_audio_can_feed_realtimestt_external_audio_listener"
+    )
+    identity_claim = (
+        "known_horus_identity_maps_through_enrollment_and_memory_speaker_resolution"
+        if speaker_known_horus
+        else "unknown_or_insufficient_physical_speaker_evidence_routes_to_clarification_without_personal_recall"
+    )
 
     receipt = {
         "schema": "chatterbox.continuous_voice_loop_receipt.v1",
@@ -571,6 +659,8 @@ def main() -> int:
             "asr_openai_base_url": args.asr_openai_base_url,
             "python": py,
             "browser_python": browser_py,
+            "input_wav": str(args.input_wav.resolve()) if args.input_wav else None,
+            "input_wav_source": args.input_wav_source if args.input_wav else None,
             "audio_device_label": args.audio_device_label,
             "playback_arg": list(args.playback_arg or []),
             "echo_cancellation": args.echo_cancellation,
@@ -592,6 +682,13 @@ def main() -> int:
         },
         "overlap_turn_control": overlap,
         "latency_budgets": latency_budgets,
+        "qra_fast_path": qra_fast_path,
+        "voice_delivery_proof": {
+            "memory_intent_voice_delivery": memory_intent.get("voice_delivery") if isinstance(memory_intent, dict) else None,
+            "tau_request_voice_delivery": tau_voice_delivery,
+            "tone_passed": bool(isinstance(tau_voice_delivery, dict) and tau_voice_delivery.get("tone")),
+            "delivery_stage": tau_voice_delivery.get("delivery_stage") if isinstance(tau_voice_delivery, dict) else None,
+        },
         "interruption_proof": {
             "receipt": str(cancel_path),
             "old_turn_bytes_after_cancel": cancel_receipt.get("old_turn_bytes_after_cancel"),
@@ -603,10 +700,10 @@ def main() -> int:
         "failed_gates": failed_gates,
         "claims": {
             "proves": [
-                "browser_getusermedia_audio_can_feed_realtimestt_external_audio_listener",
+                transport_claim,
                 "speaker_identity_mapping_uses_enrollment_and_memory_evidence_not_pyannote_label_assumption",
                 "memory_or_turn_control_route_can_drive_tau_voice_render_to_chatterbox_output",
-                "unknown_or_insufficient_physical_speaker_evidence_routes_to_clarification_without_personal_recall",
+                identity_claim,
                 "stream_cancel_child_receipt_records_zero_old_turn_bytes_after_cancel",
             ]
             if not failed_gates
