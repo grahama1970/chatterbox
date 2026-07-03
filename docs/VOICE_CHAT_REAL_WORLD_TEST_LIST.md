@@ -116,6 +116,25 @@ both returned an empty transcript. The direct Whisper receipt is:
 
 `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222548Z-browser-asr-audible/direct-whisper-browser-capture.json`
 
+Browser-ASR configuration matrix:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-asr-matrix-20260703T223244Z/browser-asr-matrix.json`
+
+Observed results:
+
+- `jabra_ns_agc`: browser captured audio, direct Whisper transcript was empty.
+- `jabra_ec_ns_agc`: browser captured louder audio and direct Whisper returned
+  only `You`, which is not sufficient for the listener path.
+- `jabra_raw`: browser captured audio, direct Whisper transcript was empty.
+- `default_ns_agc`: browser capture failed audio gates with zero RMS.
+
+Best browser config follow-up:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T223350Z-browser-asr-ec-ns-agc/continuous-voice-loop.json`
+
+That run still failed the full browser getUserMedia -> RealtimeSTT loop with
+`realtimestt_listener_ok` and `listener_transcript_present`.
+
 ## Tests Still Needed For Higher Confidence
 
 These are not closed by the latest suite:
@@ -127,7 +146,7 @@ These are not closed by the latest suite:
 - browser chat UI screenshot agreement against the same receipt/run id
 - browser microphone capture that is ASR-usable; current browser capture writes
   a real WAV but produced an empty transcript under RealtimeSTT and direct
-  Whisper
+  Whisper, except one browser config where direct Whisper returned only `You`
 - physical playback buffer flush after cancel
 - subjective human voice quality review for Embry and Horus
 - stronger Embry personality arcs for boundary lines such as

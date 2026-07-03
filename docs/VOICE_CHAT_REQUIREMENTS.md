@@ -128,6 +128,12 @@ Latest live runner receipts:
   failed the stricter browser getUserMedia -> RealtimeSTT/ASR loop with
   `realtimestt_listener_ok` and `listener_transcript_present`; direct Whisper
   on the browser WAV also returned an empty transcript.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-asr-matrix-20260703T223244Z/browser-asr-matrix.json`
+  tested browser audio processing variants; only `jabra_ec_ns_agc` produced any
+  direct Whisper text, and that transcript was only `You`.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T223350Z-browser-asr-ec-ns-agc/continuous-voice-loop.json`
+  reran the full continuous browser path with the best browser config and still
+  failed listener transcript gates.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
   passed all currently implemented simple-to-advanced scenarios with
   `mocked=false`, `live=true`, empty `failed_gates`, source `67` acoustic
