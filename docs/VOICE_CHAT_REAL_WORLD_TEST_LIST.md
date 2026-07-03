@@ -17,6 +17,22 @@ That run reported `mocked=false`, `live=true`, `ok=true`, empty
 artifacts through PipeWire sink `64`. It is still a sanity suite, not
 production certification.
 
+Latest repeat-stress receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/stress-20260703T221132Z-audible-repeat/stress-summary.json`
+
+That stress run executed the full audible suite three times. All three index
+receipts reported `mocked=false`, `live=true`, `ok=true`, and empty
+`failed_gates`.
+
+Latest personality audition receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json`
+
+That run rendered and audibly played five Embry one-at-a-time boundary variants
+through live Tau/Chatterbox. It proves the variants can render and play; it
+does not prove the human accepts the performance.
+
 ## Required Receipt Fields
 
 Every scenario receipt must include:
@@ -47,6 +63,7 @@ Every scenario receipt must include:
 | S10 | Blessed QRA disabled | Tau request with `use_blessed_qra_cache=false` | request bypasses cache and renders through normal Chatterbox path | Passed in latest full-suite receipt. |
 | S12 | Tone steering | `$memory /intent` voice delivery into Tau/Chatterbox | tone and delivery stage are present in Tau/Chatterbox receipt | Passed inside continuous core scenario. |
 | S13 | Browser getUserMedia transport | Real browser microphone capture with no fake media flags | browser sends PCM frames to Python listener and writes captured WAV | Passed in latest full-suite receipt; production chat UI screenshot agreement remains separate. |
+| P01 | Embry boundary personality audition | Five one-at-a-time boundary variants through live Tau/Chatterbox | each variant renders a WAV and plays through sink `64` | Passed in latest personality audition receipt; human acceptance remains open. |
 
 ## Current Command
 
@@ -80,6 +97,25 @@ Source `67` was selected because live source probing showed non-silent capture:
 - source `68`: RMS `236`
 - source `62` / Jabra mic: RMS `0`
 
+Follow-up source tests:
+
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212255Z-factory-acoustic-src67/index.json`
+  passed S06 with source `67`.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222756Z-factory-src68/index.json`
+  failed S06. It captured non-silent audio, RMS `227`, but RealtimeSTT/VAD and
+  Horus speaker resolution failed.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212038Z-factory-acoustic/index.json`
+  failed S06 with Jabra source `62` because captured RMS was `0`.
+
+Browser-ASR failure receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222548Z-browser-asr-audible/continuous-voice-loop.json`
+
+The browser transport captured a real WAV, but RealtimeSTT and direct Whisper
+both returned an empty transcript. The direct Whisper receipt is:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222548Z-browser-asr-audible/direct-whisper-browser-capture.json`
+
 ## Tests Still Needed For Higher Confidence
 
 These are not closed by the latest suite:
@@ -89,6 +125,9 @@ These are not closed by the latest suite:
 - Horus plus female distractor with identity reconciliation, not only overlap
   boundary behavior
 - browser chat UI screenshot agreement against the same receipt/run id
+- browser microphone capture that is ASR-usable; current browser capture writes
+  a real WAV but produced an empty transcript under RealtimeSTT and direct
+  Whisper
 - physical playback buffer flush after cancel
 - subjective human voice quality review for Embry and Horus
 - stronger Embry personality arcs for boundary lines such as

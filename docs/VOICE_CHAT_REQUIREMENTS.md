@@ -118,6 +118,16 @@ Latest live runner receipts:
   passed all currently implemented scenarios with `mocked=false`, `live=true`,
   empty `failed_gates`, and audible playback ledgers for every scenario through
   PipeWire sink `64`.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/stress-20260703T221132Z-audible-repeat/stress-summary.json`
+  repeated the full audible suite three times; all three repeat receipts passed
+  with `mocked=false`, `live=true`, and empty `failed_gates`.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json`
+  rendered and audibly played five Embry boundary/personality variants through
+  live Tau/Chatterbox.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222548Z-browser-asr-audible/continuous-voice-loop.json`
+  failed the stricter browser getUserMedia -> RealtimeSTT/ASR loop with
+  `realtimestt_listener_ok` and `listener_transcript_present`; direct Whisper
+  on the browser WAV also returned an empty transcript.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
   passed all currently implemented simple-to-advanced scenarios with
   `mocked=false`, `live=true`, empty `failed_gates`, source `67` acoustic
