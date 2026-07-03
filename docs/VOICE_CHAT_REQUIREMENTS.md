@@ -114,6 +114,10 @@ python3 scripts/smoke_voice_chat_e2e.py \
 
 Latest live runner receipts:
 
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
+  passed all currently implemented simple-to-advanced scenarios with
+  `mocked=false`, `live=true`, empty `failed_gates`, source `67` acoustic
+  factory capture, and browser getUserMedia transport.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T210510Z-core-services/index.json`
   passed `S08`, `S10`, `S03-unknown-speaker`, and
   `S04-ambiguous-speaker` with `mocked=false`, `live=true`, and empty

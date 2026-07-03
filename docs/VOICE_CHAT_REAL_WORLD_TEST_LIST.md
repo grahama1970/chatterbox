@@ -1,0 +1,87 @@
+# Voice Chat Real-World Non-Mocked Test List
+
+Status date: 2026-07-03
+
+This is the required sanity list for RealtimeSTT/listener plus Chatterbox voice
+chat. These tests must use real services and real audio/transport artifacts.
+Fixture audio is allowed as an input stimulus; mocked ASR, mocked TTS, mocked
+memory, fake browser media devices, and patched service responses are not
+acceptable proof.
+
+Latest full-suite receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
+
+That run reported `mocked=false`, `live=true`, `ok=true`, empty
+`failed_gates`, and passed eight implemented scenarios. It is still a sanity
+suite, not production certification.
+
+## Required Receipt Fields
+
+Every scenario receipt must include:
+
+- `mocked=false`
+- `live=true`
+- `failed_gates=[]`
+- audio artifact paths and hashes where audio is involved
+- service URLs or command invocations
+- transcript, speaker, memory, Tau, or Chatterbox evidence appropriate to the
+  boundary
+- `claims.proves`
+- `claims.does_not_prove`
+
+## Current Test List
+
+| ID | Test | Real-world stimulus | Required proof | Latest status |
+|---|---|---|---|---|
+| S01 | Simple voice turn | Real captured WAV into RealtimeSTT/listener | ASR final, Tau request, Chatterbox output audio | Passed in latest full-suite receipt. |
+| S02 | Known Horus memory | Horus stress WAV and speaker evidence | `$memory /speaker/resolve` maps to `horus_lupercal`, memory/Tau path proceeds | Passed in latest full-suite receipt. |
+| S03 | Unknown speaker | Live `$memory /speaker/resolve` with no candidates | personal memory disabled, identity clarification prompt selected, Chatterbox renders clarification | Passed in latest full-suite receipt. |
+| S04 | Ambiguous speaker | Live `$memory /speaker/resolve` with low/close candidates | personal memory disabled, clarification response rendered | Passed in latest full-suite receipt. |
+| S05 | Male plus female distractor / overlap | Generated male/female overlapping WAV through live pyannote, memory intent, Tau, Chatterbox | two anonymous speakers detected, turn-taking clarification, `one_at_a_time_interrupt` tone | Passed in latest full-suite receipt; does not prove word-level separation. |
+| S06 | Horus plus factory/noisy acoustic path | Horus factory-stress WAV played through speaker and captured by real source `67` | captured WAV RMS > gate, RealtimeSTT/rung7 speaker memory path, Horus speaker resolution | Passed in latest full-suite receipt with source `67`; Jabra source `62` was silent and failed earlier. |
+| S08 | Barge-in / stale turn cancellation | Live Chatterbox stream and turn cancel endpoint | old-turn stream emits zero bytes after cancel | Passed in latest full-suite receipt; physical speaker buffer flush remains separate. |
+| S09 | Blessed QRA hit | Listener-memory-Tau-QRA child smoke | near-exact memory gate, blessed cache hit, selected Embry variant | Passed inside continuous core scenario. |
+| S10 | Blessed QRA disabled | Tau request with `use_blessed_qra_cache=false` | request bypasses cache and renders through normal Chatterbox path | Passed in latest full-suite receipt. |
+| S12 | Tone steering | `$memory /intent` voice delivery into Tau/Chatterbox | tone and delivery stage are present in Tau/Chatterbox receipt | Passed inside continuous core scenario. |
+| S13 | Browser getUserMedia transport | Real browser microphone capture with no fake media flags | browser sends PCM frames to Python listener and writes captured WAV | Passed in latest full-suite receipt; production chat UI screenshot agreement remains separate. |
+
+## Current Command
+
+The current full run command is:
+
+```bash
+python3 scripts/smoke_voice_chat_e2e.py \
+  --out-dir /tmp/chatterbox-fork-agent-out/voice-chat-e2e/<run-id> \
+  --scenario all \
+  --factory-record-target 67 \
+  --factory-sink-target 64 \
+  --timeout-s 1200
+```
+
+Source `67` was selected because live source probing showed non-silent capture:
+
+- source `67`: RMS `517`
+- source `68`: RMS `236`
+- source `62` / Jabra mic: RMS `0`
+
+## Tests Still Needed For Higher Confidence
+
+These are not closed by the latest suite:
+
+- repeated factory-noise runs across multiple source positions and volume
+  levels
+- Horus plus female distractor with identity reconciliation, not only overlap
+  boundary behavior
+- browser chat UI screenshot agreement against the same receipt/run id
+- physical playback buffer flush after cancel
+- subjective human voice quality review for Embry and Horus
+- longer multi-turn memory conversations with memory miss, memory hit, and
+  identity changes in the same session
+
+## Failure Handling Rule
+
+Do not weaken gates to make this suite pass. If a real-world source is silent,
+as Jabra source `62` was for S06, preserve the failure receipt and either fix
+the routing or select a source that produces non-silent real capture with its
+source id recorded in the receipt.

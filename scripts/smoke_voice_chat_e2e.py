@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -32,12 +33,14 @@ SUPPORTED_SCENARIOS = [
     "qra_disabled",
     "unknown_speaker",
     "ambiguous_speaker",
+    "female_distractor",
+    "factory_noise_matrix",
+    "browser_chat_ui",
 ]
 
 PENDING_ADVANCED_SCENARIOS = {
-    "female_distractor": "requires a real mixed-speaker capture or generated multi-speaker fixture wired into speaker evidence gates",
-    "factory_noise_matrix": "requires reusable factory-noise fixtures with SNR metadata and pass/fail thresholds",
-    "browser_chat_ui": "requires chat UI getUserMedia/PipeWire bridge plus screenshot-to-receipt agreement",
+    "physical_room_microphone_matrix": "requires repeated live room captures across devices and positions",
+    "browser_chat_ui_screenshot_agreement": "requires production chat UI route plus screenshot-to-receipt agreement",
 }
 
 
@@ -55,6 +58,66 @@ def run_cmd(cmd: list[str], *, timeout: int, env: dict[str, str] | None = None) 
         "stdout_tail": result.stdout[-4000:],
         "stderr_tail": result.stderr[-4000:],
     }
+
+
+def load_export_like_assignment(path: Path, name: str) -> str | None:
+    if not path.exists():
+        return None
+    pattern = re.compile(rf"^\s*(?:export\s+)?{re.escape(name)}=(['\"]?)(.*?)\1\s*$")
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        match = pattern.match(line)
+        if match:
+            return match.group(2).strip()
+    return None
+
+
+def child_env(api_key_env: str) -> dict[str, str]:
+    env = os.environ.copy()
+    if not env.get("HF_TOKEN"):
+        hf_token = load_export_like_assignment(Path.home() / ".zshrc", "HF_TOKEN")
+        if hf_token:
+            env["HF_TOKEN"] = hf_token
+    if not env.get(api_key_env):
+        api_key = load_export_like_assignment(Path.home() / ".zshrc", api_key_env)
+        if api_key:
+            env[api_key_env] = api_key
+    if not env.get(api_key_env):
+        try:
+            result = subprocess.run(
+                ["docker", "exec", "whisper", "sh", "-lc", "cat /var/lib/whisper/.api_key"],
+                text=True,
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+            key = result.stdout.strip()
+            if result.returncode == 0 and key:
+                env[api_key_env] = key
+        except Exception:
+            pass
+    return env
+
+
+def pipewire_status_text() -> str:
+    result = run_cmd(["wpctl", "status"], timeout=5)
+    return str(result.get("stdout_tail") or "")
+
+
+def pipewire_id_by_label(status_text: str, section: str, label: str) -> str | None:
+    in_section = False
+    section_marker = f"├─ {section}:"
+    for raw_line in status_text.splitlines():
+        line = raw_line.rstrip()
+        if section_marker in line:
+            in_section = True
+            continue
+        if in_section and "├─" in line and section_marker not in line:
+            in_section = False
+        if in_section and label.lower() in line.lower():
+            match = re.search(r"(?:\*?\s*)(\d+)\.", line)
+            if match:
+                return match.group(1)
+    return None
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -404,6 +467,152 @@ def run_ambiguous_speaker(args: argparse.Namespace, out_dir: Path, py: str, env:
     )
 
 
+def run_female_distractor(args: argparse.Namespace, out_dir: Path, py: str, env: dict[str, str]) -> dict[str, Any]:
+    receipt_path = out_dir / "S05-female-distractor" / "overlap-turn-control.json"
+    cmd = [
+        py,
+        "scripts/smoke_overlap_turn_control.py",
+        "--base-url",
+        args.base_url,
+        "--memory-url",
+        args.memory_url,
+        "--out-dir",
+        str(receipt_path.parent),
+        "--timeout-s",
+        str(args.timeout_s),
+    ]
+    child = run_cmd(cmd, timeout=args.timeout_s, env=env)
+    receipt = read_json(receipt_path)
+    failed = list(receipt.get("failed_gates") or [])
+    py_summary = receipt.get("pyannote_summary") or {}
+    memory_intent = receipt.get("memory_intent") or {}
+    if int(py_summary.get("speaker_count") or 0) < 2:
+        failed.append("distractor_two_speakers_detected")
+    if memory_intent.get("clarify_kind") != "turn_taking":
+        failed.append("distractor_routes_to_turn_taking")
+    if ((memory_intent.get("voice_delivery") or {}).get("tone")) != "one_at_a_time_interrupt":
+        failed.append("distractor_one_at_a_time_tone")
+    return scenario_result(
+        scenario_id="S05",
+        name="male plus female distractor routes to turn-taking boundary instead of personal memory",
+        status="passed" if child["returncode"] == 0 and receipt.get("ok") and not failed else "failed",
+        receipt_path=receipt_path,
+        child=child,
+        receipt=receipt,
+        failed_gates=failed,
+        proves=[
+            "live pyannote detects two anonymous speakers in a male/female overlap fixture",
+            "memory intent routes the overlap to turn-taking clarification",
+            "Tau/Chatterbox renders the one-at-a-time boundary",
+        ],
+        does_not_prove=[
+            "Horus enrollment identity under a female distractor",
+            "real factory-room microphone capture",
+            "word-level speaker separation",
+        ],
+        requirements=["VC-11", "VC-09"],
+    )
+
+
+def run_factory_noise_matrix(args: argparse.Namespace, out_dir: Path, py: str, env: dict[str, str]) -> dict[str, Any]:
+    receipt_path = out_dir / "S06-factory-noise" / "rung8-loopback-listener.json"
+    pw_status = pipewire_status_text()
+    sink_target = args.factory_sink_target or pipewire_id_by_label(pw_status, "Sinks", args.factory_sink_label)
+    record_target = args.factory_record_target or pipewire_id_by_label(pw_status, "Sources", args.factory_record_label)
+    cmd = [
+        py,
+        "scripts/smoke_rung8_loopback_listener.py",
+        "--play-audio",
+        str(args.input_wav),
+        "--out-dir",
+        str(receipt_path.parent),
+        "--out",
+        str(receipt_path),
+        "--asr-openai-base-url",
+        args.asr_openai_base_url,
+        "--api-key-env",
+        args.api_key_env,
+        "--capture-kind",
+        args.factory_capture_kind,
+        "--realtimestt-timeout-s",
+        str(args.timeout_s),
+        "--rung7-timeout-s",
+        str(args.timeout_s),
+    ]
+    if sink_target:
+        cmd.extend(["--sink-target", sink_target])
+    if record_target:
+        cmd.extend(["--record-target", record_target])
+    child = run_cmd(cmd, timeout=args.timeout_s + 120, env=env)
+    receipt = read_json(receipt_path)
+    failed = list(receipt.get("failed_gates") or [])
+    capture = receipt.get("capture") or {}
+    if not capture.get("captured_audio"):
+        failed.append("factory_capture_audio_present")
+    return scenario_result(
+        scenario_id="S06",
+        name="Horus factory-stress audio through PipeWire loopback listener",
+        status="passed" if child["returncode"] == 0 and receipt.get("ok") and not failed else "failed",
+        receipt_path=receipt_path,
+        child={**child, "pipewire_target_selection": {"sink_target": sink_target, "record_target": record_target}},
+        receipt=receipt,
+        failed_gates=failed,
+        proves=[
+            "configured factory-stress audio can be captured through PipeWire and fed to RealtimeSTT/rung7",
+        ],
+        does_not_prove=[
+            "all factory floor noise conditions",
+            "physical microphone placement robustness",
+            "female distractor separation",
+        ],
+        requirements=["VC-10", "VC-23"],
+    )
+
+
+def run_browser_chat_ui(args: argparse.Namespace, out_dir: Path, py: str, env: dict[str, str]) -> dict[str, Any]:
+    receipt_path = out_dir / "S13-browser-transport" / "browser-webrtc.json"
+    cmd = [
+        py,
+        "scripts/smoke_browser_webrtc_transport.py",
+        "--out",
+        str(receipt_path),
+        "--capture-seconds",
+        str(args.browser_capture_seconds),
+        "--min-duration-seconds",
+        "1.0",
+        "--play-audio",
+        str(args.input_wav),
+        "--noise-suppression",
+        "--auto-gain-control",
+    ]
+    if args.browser_audio_device_label:
+        cmd.extend(["--audio-device-label", args.browser_audio_device_label])
+    child = run_cmd(cmd, timeout=args.timeout_s, env=env)
+    receipt = read_json(receipt_path)
+    failed = list(receipt.get("failed_gates") or [])
+    artifacts = receipt.get("artifacts") or {}
+    if not artifacts.get("wav"):
+        failed.append("browser_transport_wav_present")
+    return scenario_result(
+        scenario_id="S13",
+        name="browser getUserMedia transport captures audio for voice chat path",
+        status="passed" if child["returncode"] == 0 and receipt.get("ok") and not failed else "failed",
+        receipt_path=receipt_path,
+        child=child,
+        receipt=receipt,
+        failed_gates=failed,
+        proves=[
+            "browser getUserMedia captured real microphone audio and sent PCM frames to Python listener",
+        ],
+        does_not_prove=[
+            "production chat UI transcript/playback state",
+            "screenshot agreement",
+            "ASR accuracy",
+        ],
+        requirements=["VC-02", "VC-24"],
+    )
+
+
 def pending_scenario(scenario_id: str, name: str, reason: str, out_dir: Path) -> dict[str, Any]:
     receipt_path = out_dir / scenario_id / "pending.json"
     receipt = {
@@ -448,11 +657,18 @@ def main() -> int:
     parser.add_argument("--qra-question", default="Which control family should I use when the answer says SI?")
     parser.add_argument("--qra-answer", default="Use system and communications protection.")
     parser.add_argument("--qra-memory-key", default="qra-smoke-si")
+    parser.add_argument("--browser-capture-seconds", default=6.0, type=float)
+    parser.add_argument("--browser-audio-device-label", default="Jabra")
+    parser.add_argument("--factory-capture-kind", choices=["monitor_loopback", "physical_microphone"], default="physical_microphone")
+    parser.add_argument("--factory-sink-label", default="Jabra")
+    parser.add_argument("--factory-record-label", default="Jabra")
+    parser.add_argument("--factory-sink-target", default=None)
+    parser.add_argument("--factory-record-target", default=None)
     args = parser.parse_args()
 
     started = time.perf_counter()
     py = str(args.python) if args.python.exists() else sys.executable
-    env = os.environ.copy()
+    env = child_env(args.api_key_env)
     out_dir = args.out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -473,6 +689,9 @@ def main() -> int:
         "qra_disabled": run_qra_disabled,
         "unknown_speaker": run_unknown_speaker,
         "ambiguous_speaker": run_ambiguous_speaker,
+        "female_distractor": run_female_distractor,
+        "factory_noise_matrix": run_factory_noise_matrix,
+        "browser_chat_ui": run_browser_chat_ui,
     }
     for scenario_name in scenarios_to_run:
         result = runners[scenario_name](args, out_dir, py, env)
