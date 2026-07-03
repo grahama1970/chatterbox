@@ -100,6 +100,28 @@ python3 scripts/smoke_voice_chat_e2e.py \
   --out-dir /tmp/chatterbox-fork-agent-out/voice-chat-e2e/<run-id>
 ```
 
+Current runner:
+
+```bash
+python3 scripts/smoke_voice_chat_e2e.py \
+  --out-dir /tmp/chatterbox-fork-agent-out/voice-chat-e2e/<run-id> \
+  --scenario continuous_core \
+  --scenario stream_cancel \
+  --scenario qra_disabled \
+  --scenario unknown_speaker \
+  --scenario ambiguous_speaker
+```
+
+Latest live runner receipts:
+
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T210510Z-core-services/index.json`
+  passed `S08`, `S10`, `S03-unknown-speaker`, and
+  `S04-ambiguous-speaker` with `mocked=false`, `live=true`, and empty
+  `failed_gates`.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T210522Z-continuous-core/index.json`
+  passed `S01_S02_S08_S09_S12` with `mocked=false`, `live=true`, and empty
+  `failed_gates`.
+
 Required top-level fields:
 
 - `schema`: `chatterbox.voice_chat_e2e.index.v1`
