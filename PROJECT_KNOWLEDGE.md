@@ -1,6 +1,6 @@
 # Project Knowledge: chatterbox
 
-**Last updated:** 2026-07-03 08:26 by agent
+**Last updated:** 2026-07-04 00:00 by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -39,6 +39,10 @@
 - 2026-07-03: Continuous voice-loop runner now has optional `--include-qra-cache-probe`, which runs the existing live listener -> memory QRA -> QRA audio creation hook -> Tau/Chatterbox blessed-cache path as a child receipt and lifts its cache evidence into the top-level `qra_fast_path.probe`. Live receipt `/tmp/chatterbox-fork-agent-out/continuous-voice-loop-20260703T192242Z-physical-horus-qra-probe/continuous-voice-loop.json` has mocked=false, live=true, ok=true, failed_gates=[], consumes the same physical Horus/factory capture, maps Horus via memory speaker resolution, records memory speaker resolve 56.637 ms, intent 2028.633 ms, recall 974.469 ms, passes `memory_confident` tone into Tau, renders Chatterbox audio, proves stream cancel old-turn bytes after cancel = 0, and includes a QRA probe with `cache_hit=true`, `memory_gate_passed=true`, `variant_id=gentle`, memory key `qra__run-recovery-verify__2085979782`, and finished audio bytes 1244238. Remaining boundaries: this is a bundled child probe rather than the same physical utterance hitting QRA cache, browser acoustic capture still needs repair, and overlap diarization/one-at-a-time behavior still needs a live overlapping-speaker receipt.
 - 2026-07-03: Overlap turn-control proof added in `scripts/smoke_overlap_turn_control.py`. The smoke generates male/female overlapping speech, runs containerized pyannote diarization, sends listener overlap evidence to memory `/intent`, and renders the boundary through Tau/Chatterbox. Live receipt `/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json` has mocked=false, live=true, ok=true, failed_gates=[]: pyannote reports speaker_count=2, speakers `[SPEAKER_00, SPEAKER_01]`, overlap_seconds=4.725; memory returns action=CLARIFY, clarify_kind=turn_taking, classifier_source=listener_overlap, tone=`one_at_a_time_interrupt`; Tau/Chatterbox renders "Hey, one at a time?" with finished audio bytes 94158. Remaining boundaries: not real-time streaming overlap diarization, no word-level speaker attribution, no subjective boundary quality score, and not all factory-floor overlap conditions.
 - 2026-07-03: Full goal proof receipt now exists in one continuous runner artifact via `--include-qra-cache-probe --include-overlap-probe`. Receipt `/tmp/chatterbox-fork-agent-out/continuous-voice-loop-20260703T193305Z-full-goal-probes/continuous-voice-loop.json` has mocked=false, live=true, ok=true, failed_gates=[] and proves: real captured physical/PipeWire-style Horus+factory WAV feeds RealtimeSTT; memory maps speaker to `horus_lupercal` through enrollment/segment evidence, not pyannote label assumption; memory intent voice_delivery `memory_confident` reaches Tau/Chatterbox; Chatterbox renders final audio; stream cancel reports old_turn_bytes_after_cancel=0; child QRA probe has cache_hit=true, memory_gate_passed=true, variant_id=gentle; child overlap probe has pyannote speaker_count=2, overlap_seconds=4.725, memory clarify_kind=turn_taking, tone=`one_at_a_time_interrupt`, and Tau renders the one-at-a-time boundary. Remaining explicit boundaries: browser acoustic capture path still needs quality repair if browser mic is required instead of PipeWire/physical WAV input, overlap proof is generated two-speaker audio rather than live factory conversation, and subjective voice quality is not scored.
+- 2026-07-03/04: Voice chat E2E now has an explicit real-world, non-mocked, audible sanity suite in `scripts/smoke_voice_chat_e2e.py` and documented requirements in `docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md`. Latest full audible receipt `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T214538Z-audible-all-v2/index.json` has mocked=false, live=true, ok=true, failed_gates=[], and passed 8 scenarios: continuous core (`S01_S02_S08_S09_S12`), stream cancel `S08`, QRA disabled `S10`, unknown speaker `S03`, ambiguous speaker `S04`, female distractor/overlap `S05`, factory acoustic path `S06`, and browser getUserMedia transport `S13`. Each scenario has an audible playback ledger through PipeWire sink 64; WAV counts were 6, 1, 2, 2, 2, 4, 4, and 2 respectively. Three-repeat stress receipt `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/stress-20260703T221132Z-audible-repeat/stress-summary.json` has ok=true, run_count=3, failed_gates=[].
+- 2026-07-03/04: Factory/noisy acoustic testing is source-dependent and must not be generalized from one microphone. Source probe found Jabra source 62 captured silence (RMS 0) and failed S06; source 67 passed S06 with real acoustic capture through Jabra sink 64; source 68 captured non-silent audio (RMS 227) but failed RealtimeSTT/VAD and Horus speaker-resolution gates. Passing source-67 receipt: `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212255Z-factory-acoustic-src67/index.json`. Failing source-68 receipt: `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222756Z-factory-src68/index.json`. Failing Jabra-source-62 receipt: `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212038Z-factory-acoustic/index.json`.
+- 2026-07-03/04: Browser getUserMedia transport is proven, but browser microphone audio is not yet ASR-usable for the continuous listener path. Browser transport `S13` passes real browser PCM capture and audible playback, but stricter browser getUserMedia -> RealtimeSTT/ASR receipts fail with empty transcript. Failure receipt `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T223350Z-browser-asr-ec-ns-agc/continuous-voice-loop.json` has failed_gates `realtimestt_listener_ok` and `listener_transcript_present`. Browser-ASR matrix `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-asr-matrix-20260703T223244Z/browser-asr-matrix.json` shows: `jabra_ns_agc` empty transcript, `jabra_raw` empty transcript, `default_ns_agc` zero-RMS capture, and `jabra_ec_ns_agc` only direct-Whisper text `You`, which is not sufficient. Next architecture step is a PipeWire/browser bridge or better browser-visible input source that yields ASR-grade speech.
+- 2026-07-03/04: Embry personality is now a tested-but-not-accepted quality axis. `scripts/smoke_embry_personality_audition.py` renders and audibly plays five one-at-a-time boundary variants through live Tau/Chatterbox. Receipt `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json` has mocked=false, live=true, ok=true, variant_count=5, failed_gates=[]. It proves variants render and play; it does not prove human acceptance, final copy choice, or prosody quality. Human feedback: the intelligible "hey [laughter] one at a time" style still needs more Embry personality and character.
 
 ## Recent Decisions
 
@@ -46,18 +50,26 @@
 |------|----------|-----|
 | 2026-07-01 | Initialize project knowledge | Enable shared human/agent context |
 | 2026-07-01 | Use Chatterbox fork full-live-sanity receipt as the consolidation gate | The combined runner chains ASR cache fill, ASR cache hit, stream endpoint, and interruption smoke into one receipt with mocked=false/live=true and explicit does_not_prove boundaries. |
+| 2026-07-04 | Human-audible playback is required for voice sanity checks | Receipts alone are not enough for this initiative; `scripts/smoke_voice_chat_e2e.py --audible-playback` now fails scenarios that do not expose playable WAV artifacts and records `pw-play` ledgers. |
+| 2026-07-04 | Browser transport and browser ASR are separate gates | Browser getUserMedia PCM transport can pass while RealtimeSTT/Whisper transcript remains empty; ASR-usable browser capture remains a blocker. |
 
 ## Open Questions
 
 - [ ] What are the key architectural decisions?
 - [ ] What are the known issues?
 - [ ] Should the next Chatterbox fork patch prioritize P0 security/concurrency fixes before Embry subagent conversation testing?
+- [ ] Should browser voice input use a PipeWire monitor/virtual source bridge instead of acoustic browser microphone capture?
+- [ ] Which Embry one-at-a-time/personality variant should become the default, and what human-review rubric should gate voice personality?
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
 | PROJECT_KNOWLEDGE.md | Shared project knowledge |
+| scripts/smoke_voice_chat_e2e.py | Non-mocked simple-to-advanced voice chat E2E suite with optional audible playback gates |
+| scripts/smoke_embry_personality_audition.py | Live Tau/Chatterbox audition of Embry boundary/personality variants with audible playback |
+| docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md | Human-readable list of real-world non-mocked voice sanity tests, receipts, failures, and remaining gaps |
+| docs/VOICE_CHAT_REQUIREMENTS.md | Requirements matrix for Embry voice chat, listener, memory/Tau, Chatterbox, and browser/factory boundaries |
 
 ## Infrastructure State
 
