@@ -135,6 +135,30 @@ Best browser config follow-up:
 That run still failed the full browser getUserMedia -> RealtimeSTT loop with
 `realtimestt_listener_ok` and `listener_transcript_present`.
 
+Fresh browser capture quality follow-up:
+
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-20260705T132832Z/continuous-voice-loop.json`
+  selected `Jabra SPEAK 510 Mono` with echo cancellation, noise suppression, and
+  AGC enabled while playing the fixture through PipeWire sink `64`. Browser
+  transport passed and wrote a valid WAV, but RealtimeSTT and direct Whisper
+  returned an empty transcript.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-raw-20260705T133055Z/continuous-voice-loop.json`
+  selected `Jabra SPEAK 510 Mono` with browser audio processing disabled.
+  Browser transport passed with higher audio energy, but RealtimeSTT and direct
+  Whisper still returned an empty transcript.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-webcam-20260705T134007Z/continuous-voice-loop.json`
+  selected `HD Pro Webcam` with browser audio processing disabled and played
+  through Jabra sink `64`. This passed the full browser getUserMedia ->
+  RealtimeSTT -> diarization/speaker evidence -> memory/Tau -> Chatterbox loop
+  with `mocked=false`, `live=true`, empty `failed_gates`, and transcript:
+  `He saw tracked weapon carried, automated artillery, nests with more or even
+  eight automatic cannons shackled together on power path.`
+- `/tmp/embry-voice-browser-quality-webcam-ui-proof.json` submitted that
+  browser-ASR transcript to `http://localhost:3002/#embry-voice`; the shared
+  Chat UX rendered the user turn, memory/Tau response, and a fresh
+  `ux-lab-embry-live` Chatterbox WAV. Screenshot:
+  `/tmp/embry-voice-browser-quality-webcam-ui-proof.png`.
+
 ## Tests Still Needed For Higher Confidence
 
 These are not closed by the latest suite:
@@ -143,10 +167,11 @@ These are not closed by the latest suite:
   levels
 - Horus plus female distractor with identity reconciliation, not only overlap
   boundary behavior
-- browser chat UI screenshot agreement against the same receipt/run id
-- browser microphone capture that is ASR-usable; current browser capture writes
-  a real WAV but produced an empty transcript under RealtimeSTT and direct
-  Whisper, except one browser config where direct Whisper returned only `You`
+- browser chat UI screenshot agreement against the same receipt/run id for live
+  interruption and barge-in behavior
+- browser microphone device-selection policy: HD Pro Webcam capture is
+  ASR-usable in the latest run, while Jabra browser capture still writes real
+  WAVs that transcribe as empty text
 - physical playback buffer flush after cancel
 - subjective human voice quality review for Embry and Horus
 - stronger Embry personality arcs for boundary lines such as

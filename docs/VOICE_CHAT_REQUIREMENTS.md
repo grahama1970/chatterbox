@@ -38,7 +38,7 @@ Other relevant receipts:
 | ID | Requirement | Required non-mocked proof | Current status |
 |---|---|---|---|
 | VC-01 | Every voice turn has stable `session_id`, `turn_id`, event sequence, text hashes, and renderer request envelope. | Continuous receipt showing listener, coordinator, memory/Tau, and Chatterbox events for the same turn ids. | Partial: current full-loop receipt covers the proof-slice; chat UI path still needs the same ledger. |
-| VC-02 | Browser microphone capture can feed usable ASR text. | Browser `getUserMedia` receipt with actual captured audio artifact, ASR final text, WER/quality gate, and device/constraints metadata. | Partial: browser transport smoke exists, but acoustic browser capture quality remains a known boundary. |
+| VC-02 | Browser microphone capture can feed usable ASR text. | Browser `getUserMedia` receipt with actual captured audio artifact, ASR final text, WER/quality gate, and device/constraints metadata. | Proven for HD Pro Webcam capture through the full browser -> RealtimeSTT -> memory/Tau -> Chatterbox loop; still device-sensitive because Jabra browser captures produced real WAVs but empty ASR transcripts. |
 | VC-03 | PipeWire or loopback capture can be used as a reliable local transport when browser acoustic capture is weak. | Receipt with capture source, device/monitor name, input WAV, ASR transcript, and latency fields. | Partial: captured WAV full-loop path works; transport must be made selectable in the chat interface. |
 | VC-04 | Listener emits frame, VAD, partial transcript, final transcript, and heard-text ledger events. | RealtimeSTT/listener receipt with frame counts, speech start/stop, partials, final, ASR backend, and timing. | Partial: Rung 7 style receipts exist; browser UI event parity remains pending. |
 | VC-05 | Speaker identity is resolved before personal memory recall. | `/speaker/resolve` evidence using enrollment/memory evidence, not pyannote label assumption. | Partial/proven in proof-slice for Horus; unknown, ambiguous, and non-primary cases still need regression receipts. |
@@ -60,7 +60,7 @@ Other relevant receipts:
 | VC-21 | Embry does not hallucinate personal memory when `$memory` has no evidence. | Receipt with memory miss, no unsupported claim, and clarification question. | Missing. |
 | VC-22 | Wait/holding utterances prevent long dead air while memory, Tau, or tools run. | Latency receipt with wait decision, spoken/muted wait utterance, and first-audio budget. | Partial in ladder docs/receipts; full loop latency budgets need consolidation. |
 | VC-23 | Latency budgets are measured at every boundary. | Receipt fields for mic frame received, VAD start/stop, ASR final, speaker resolve, memory intent, memory recall, Tau request, first audio byte, final chunk. | Partial: proof-slice has several boundaries; browser and playback fields remain pending. |
-| VC-24 | Chat interface supports voice input as commonly as text input. | Browser/chat receipt with voice turn entry, transcript display, memory/Tau evidence pointer, Chatterbox playback, interruption, and visible state. | Missing. |
+| VC-24 | Chat interface supports voice input as commonly as text input. | Browser/chat receipt with voice turn entry, transcript display, memory/Tau evidence pointer, Chatterbox playback, interruption, and visible state. | Partial/proven for browser-derived transcript handoff into `#embry-voice`: shared Chat UX shows the ASR text, memory/Tau response, and fresh Chatterbox audio. Live interruption from the browser chat surface still needs a receipt. |
 | VC-25 | Subjective voice quality is acceptable for Embry and Horus testing. | Human quality review ledger with audio artifacts, target personas, defects, and accept/reject notes. | Pending human-quality review. |
 
 ## Required Non-Mocked E2E Scenario Set
@@ -134,6 +134,26 @@ Latest live runner receipts:
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T223350Z-browser-asr-ec-ns-agc/continuous-voice-loop.json`
   reran the full continuous browser path with the best browser config and still
   failed listener transcript gates.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-20260705T132832Z/continuous-voice-loop.json`
+  captured real browser audio from `Jabra SPEAK 510 Mono` with echo
+  cancellation, noise suppression, and AGC enabled while playing through
+  PipeWire sink `64`; browser transport passed, but RealtimeSTT and direct
+  Whisper returned an empty transcript.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-raw-20260705T133055Z/continuous-voice-loop.json`
+  captured real browser audio from `Jabra SPEAK 510 Mono` with browser audio
+  processing disabled; browser transport passed with higher audio energy, but
+  RealtimeSTT and direct Whisper still returned an empty transcript.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-webcam-20260705T134007Z/continuous-voice-loop.json`
+  passed the full browser getUserMedia -> RealtimeSTT -> diarization/speaker
+  evidence -> memory/Tau -> Chatterbox loop using `HD Pro Webcam` microphone
+  capture and Jabra sink `64` playback. It produced non-empty ASR text and
+  empty `failed_gates`.
+- `/tmp/embry-voice-browser-quality-webcam-ui-proof.json`
+  submitted the HD Pro Webcam browser-ASR transcript to
+  `http://localhost:3002/#embry-voice`; the shared Chat UX showed the transcript,
+  returned HTTP 200 from `/api/projects/embry-voice/live-turn`, and linked a
+  fresh `ux-lab-embry-live` Chatterbox WAV. Screenshot:
+  `/tmp/embry-voice-browser-quality-webcam-ui-proof.png`.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212337Z-all-realworld-src67/index.json`
   passed all currently implemented simple-to-advanced scenarios with
   `mocked=false`, `live=true`, empty `failed_gates`, source `67` acoustic
