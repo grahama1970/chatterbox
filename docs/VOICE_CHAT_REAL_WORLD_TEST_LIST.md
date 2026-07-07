@@ -33,6 +33,28 @@ That run rendered and audibly played five Embry one-at-a-time boundary variants
 through live Tau/Chatterbox. It proves the variants can render and play; it
 does not prove the human accepts the performance.
 
+Latest current stress run:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/index.json`
+
+That run reported `mocked=false`, `ok=false`, and failed `S06` with
+`factory_noise_matrix_ok`. It passed continuous core, stream cancel, QRA
+disabled, unknown speaker, ambiguous speaker, female distractor/overlap, and
+browser transport. The S06 failure was a real capture/source failure: source
+`67` captured RMS `7` while the played stress WAV had RMS `542`.
+
+Latest intelligence stress receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T233318Z/receipt.json`
+
+That run reported `mocked=false`, `live=true`, `ok=false`. It found answer
+relevance failures: a SPARTA QRA acceptability question returned an unrelated
+S0609/deprecated-control answer, Horus persona-memory returned a Horus TTS skill
+description instead of Cthonia, and a private-codeword memory miss returned an
+unrelated Embry config skill instead of clarifying. The three bad answers were
+rendered and audibly played through live Tau/Chatterbox in
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T233318Z/spoken-failures/spoken-failures.json`.
+
 ## Required Receipt Fields
 
 Every scenario receipt must include:
@@ -107,6 +129,19 @@ Follow-up source tests:
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T212038Z-factory-acoustic/index.json`
   failed S06 with Jabra source `62` because captured RMS was `0`.
 
+Current source matrix follow-up:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z`
+
+Observed current results:
+
+- source `34`: failed because the harness could not resolve a Pulse source.
+- source `62`: captured RMS `214`, but RealtimeSTT returned an empty transcript
+  and speaker resolution stayed unknown at confidence `0.5374` below threshold
+  `0.62`.
+- source `67`: failed capture RMS with RMS `6`.
+- source `68`: failed capture RMS with RMS `5`.
+
 Browser-ASR failure receipt:
 
 `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T222548Z-browser-asr-audible/continuous-voice-loop.json`
@@ -179,6 +214,9 @@ These are not closed by the latest suite:
   lacking character
 - longer multi-turn memory conversations with memory miss, memory hit, and
   identity changes in the same session
+- answerability gates before speech for SPARTA QRA and persona-memory questions,
+  because live `/answer` can return unrelated records that Tau/Chatterbox will
+  otherwise render audibly
 
 ## Failure Handling Rule
 
