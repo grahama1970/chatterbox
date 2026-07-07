@@ -94,6 +94,30 @@ def pipewire_status() -> dict[str, Any]:
     }
 
 
+def pipewire_node_name(target: str | None) -> str | None:
+    if not target:
+        return None
+    result = run_cmd(["pw-cli", "ls", "Node"], timeout=5)
+    if result["returncode"] != 0:
+        return None
+    current_id: str | None = None
+    current_name: str | None = None
+    for raw_line in (result.get("stdout_tail") or "").splitlines():
+        id_match = re.search(r"^\s*id\s+(\d+),", raw_line)
+        if id_match:
+            if current_id == str(target) and current_name:
+                return current_name
+            current_id = id_match.group(1)
+            current_name = None
+            continue
+        name_match = re.search(r'node\.name = "([^"]+)"', raw_line)
+        if name_match:
+            current_name = name_match.group(1)
+    if current_id == str(target) and current_name:
+        return current_name
+    return None
+
+
 def parse_default_sink_id(status_text: str) -> str | None:
     in_sinks = False
     for raw_line in status_text.splitlines():
@@ -124,10 +148,19 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
     pw = pipewire_status()
     sink_target = args.sink_target or pw.get("default_sink_id")
     record_target = args.record_target or sink_target
+    sink_node_name = pipewire_node_name(sink_target)
+    record_node_name = pipewire_node_name(record_target)
+    pulse_source = args.pulse_source
+    if not pulse_source and args.capture_kind == "monitor_loopback" and sink_node_name:
+        pulse_source = f"{sink_node_name}.monitor"
+    if not pulse_source and args.capture_kind == "physical_microphone" and record_node_name:
+        pulse_source = record_node_name
     if not sink_target:
         failed_gates.append("pipewire_default_sink_found")
     if not record_target:
         failed_gates.append("pipewire_record_target_found")
+    if args.capture_backend == "ffmpeg-pulse" and not pulse_source:
+        failed_gates.append("pulse_source_found")
 
     receipt: dict[str, Any] = {
         "schema": "chatterbox.rung8.loopback_capture.v1",
@@ -138,8 +171,12 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
         "captured_audio": None,
         "pipewire": {
             "capture_kind": args.capture_kind,
+            "capture_backend": args.capture_backend,
             "sink_target": sink_target,
             "record_target": record_target,
+            "sink_node_name": sink_node_name,
+            "record_node_name": record_node_name,
+            "pulse_source": pulse_source,
             "status": pw,
         },
         "commands": {},
@@ -148,20 +185,42 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
     if failed_gates:
         return receipt
 
-    raw_capture.unlink(missing_ok=True)
     captured_audio.unlink(missing_ok=True)
-    record_cmd = [
-        "pw-record",
-        "--target",
-        str(record_target),
-        "--rate",
-        str(args.raw_capture_rate),
-        "--channels",
-        str(args.raw_capture_channels),
-        "--format",
-        "s16",
-        str(raw_capture),
-    ]
+    raw_capture.unlink(missing_ok=True)
+    if args.capture_backend == "ffmpeg-pulse":
+        record_path = captured_audio
+        record_cmd = [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "pulse",
+            "-i",
+            str(pulse_source),
+            "-ac",
+            "1",
+            "-ar",
+            str(args.capture_rate),
+            "-sample_fmt",
+            "s16",
+            str(record_path),
+        ]
+    else:
+        record_path = raw_capture
+        record_cmd = [
+            "pw-record",
+            "--target",
+            str(record_target),
+            "--rate",
+            str(args.raw_capture_rate),
+            "--channels",
+            str(args.raw_capture_channels),
+            "--format",
+            "s16",
+            str(record_path),
+        ]
     play_cmd = ["pw-play", "--target", str(sink_target), str(play_audio)]
     record_started = time.perf_counter()
     recorder = subprocess.Popen(record_cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -186,9 +245,11 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
 
     if play["returncode"] != 0:
         failed_gates.append("pw_play_returncode_ok")
-    if not raw_capture.exists():
+    if args.capture_backend == "ffmpeg-pulse":
+        receipt["commands"] = {"record": record, "play": play}
+    if args.capture_backend != "ffmpeg-pulse" and not raw_capture.exists():
         failed_gates.append("raw_captured_audio_exists")
-    else:
+    elif args.capture_backend != "ffmpeg-pulse":
         try:
             raw_metrics = wav_metrics(raw_capture)
             receipt["raw_captured_audio"] = raw_metrics
@@ -196,7 +257,11 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
             failed_gates.append("raw_captured_audio_readable")
             receipt["raw_captured_audio_error"] = f"{type(exc).__name__}: {exc}"
 
-    if "raw_captured_audio_exists" not in failed_gates and "raw_captured_audio_readable" not in failed_gates:
+    if (
+        args.capture_backend != "ffmpeg-pulse"
+        and "raw_captured_audio_exists" not in failed_gates
+        and "raw_captured_audio_readable" not in failed_gates
+    ):
         convert_cmd = [
             "ffmpeg",
             "-y",
@@ -231,7 +296,11 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
         except Exception as exc:  # noqa: BLE001
             failed_gates.append("captured_audio_readable")
             receipt["captured_audio_error"] = f"{type(exc).__name__}: {exc}"
-    if record["returncode"] not in {0, 1, -2, 130}:
+    allowed_record_codes = {0, 1, -2, 130}
+    if args.capture_backend == "ffmpeg-pulse":
+        # ffmpeg exits 255 when interrupted after a successful indefinite Pulse capture.
+        allowed_record_codes.add(255)
+    if record["returncode"] not in allowed_record_codes:
         failed_gates.append("pw_record_returncode_ok")
     elif record["returncode"] == 1 and "raw_captured_audio_exists" in failed_gates:
         failed_gates.append("pw_record_returncode_ok")
@@ -394,6 +463,8 @@ def main() -> int:
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--sink-target", default=None)
     parser.add_argument("--record-target", default=None)
+    parser.add_argument("--capture-backend", choices=["ffmpeg-pulse", "pw-record"], default="ffmpeg-pulse")
+    parser.add_argument("--pulse-source", default=None)
     parser.add_argument("--capture-kind", choices=["monitor_loopback", "physical_microphone"], default="monitor_loopback")
     parser.add_argument("--raw-capture-rate", default=48000, type=int)
     parser.add_argument("--raw-capture-channels", default=2, type=int)
