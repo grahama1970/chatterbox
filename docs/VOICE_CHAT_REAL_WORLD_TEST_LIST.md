@@ -55,6 +55,28 @@ unrelated Embry config skill instead of clarifying. The three bad answers were
 rendered and audibly played through live Tau/Chatterbox in
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T233318Z/spoken-failures/spoken-failures.json`.
 
+Latest scripted intelligence stress receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T234201Z-scripted/receipt.json`
+
+Command:
+
+```bash
+python3 scripts/smoke_embry_intelligence_stress.py \
+  --out-dir /tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T234201Z-scripted \
+  --render-spoken-failures \
+  --playback-sink-target 64 \
+  --playback-timeout-s 20 \
+  --timeout-s 180
+```
+
+That run reported `mocked=false`, `live=true`, `ok=false`. It reproduced the
+same three answerability failures and passed the Brave Search pyannote route.
+It rendered all three bad answers to Chatterbox WAVs, but local playback through
+`pw-play --target 64` timed out, so the spoken-failure playback gates failed.
+The generated WAV files are valid 24 kHz mono artifacts; playback timeout is a
+local command/device failure to investigate separately.
+
 ## Required Receipt Fields
 
 Every scenario receipt must include:
@@ -86,6 +108,10 @@ Every scenario receipt must include:
 | S12 | Tone steering | `$memory /intent` voice delivery into Tau/Chatterbox | tone and delivery stage are present in Tau/Chatterbox receipt | Passed inside continuous core scenario. |
 | S13 | Browser getUserMedia transport | Real browser microphone capture with no fake media flags | browser sends PCM frames to Python listener and writes captured WAV | Passed in latest full-suite receipt; production chat UI screenshot agreement remains separate. |
 | P01 | Embry boundary personality audition | Five one-at-a-time boundary variants through live Tau/Chatterbox | each variant renders a WAV and plays through sink `64` | Passed in latest personality audition receipt; human acceptance remains open. |
+| I01 | SPARTA QRA answer relevance | Live `$memory /intent` and `/answer` for a SPARTA QRA acceptability question | answer must discuss acceptable QRA evidence, not an unrelated control-exclusion record | Failed in latest scripted intelligence stress receipt. |
+| I02 | Horus persona-memory recall relevance | Live `$memory /intent` and `/answer` for "Where did Horus Lupercal grow up?" | answer must include Cthonia or fail closed | Failed in latest scripted intelligence stress receipt. |
+| I03 | Persona-memory miss fail-closed | Live `$memory /intent` and `/answer` for an unsupported private codeword question | answer must clarify/no-answer, not return unrelated records | Failed in latest scripted intelligence stress receipt. |
+| I04 | External research route | `$brave-search` query for pyannote diarization/overlap support | search command returns relevant pyannote sources as source-bearing evidence | Passed in latest scripted intelligence stress receipt. |
 
 ## Current Command
 
@@ -100,6 +126,17 @@ python3 scripts/smoke_voice_chat_e2e.py \
   --playback-sink-target 64 \
   --audible-playback \
   --timeout-s 1200
+```
+
+The current intelligence stress command is:
+
+```bash
+python3 scripts/smoke_embry_intelligence_stress.py \
+  --out-dir /tmp/chatterbox-fork-agent-out/embry-intelligence-stress/<run-id> \
+  --render-spoken-failures \
+  --playback-sink-target 64 \
+  --playback-timeout-s 20 \
+  --timeout-s 180
 ```
 
 Latest audible playback counts:
