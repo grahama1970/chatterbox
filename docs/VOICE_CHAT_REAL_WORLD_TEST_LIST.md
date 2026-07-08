@@ -77,6 +77,41 @@ It rendered all three bad answers to Chatterbox WAVs, but local playback through
 The generated WAV files are valid 24 kHz mono artifacts; playback timeout is a
 local command/device failure to investigate separately.
 
+Latest 300-session stress matrix:
+
+`docs/EMBRY_STRESS_SESSION_MATRIX.json`
+
+Latest generated failure taxonomy:
+
+`docs/EMBRY_STRESS_FAILURE_TAXONOMY.json`
+
+The matrix now has 300 receipt-backed sessions: 49 passed, 251 failed, and
+0 not-run. The taxonomy converts those rows into subsystem repair blockers:
+
+- Memory answerability: 0 passed, 60 failed. SPARTA/persona-memory answers
+  still leak unrelated records or answer memory misses.
+- Tau and direct skill routing: 0 passed, 120 failed. The top failures are
+  missing `tau.agent_handoff.v1`, `tau.dag_receipt.v1`, and
+  `skill.call.receipt.v1`.
+- Shared Chat UX: 4 passed, 16 failed. Replay and inline trace basics pass,
+  but turn-id lineage and entity underline receipts are missing.
+- Interruption and turn control: 0 passed, 20 failed. Cancel/duck/stop
+  endpoint paths are exercised, but live interruption decisions, stale-audio
+  byte measurements, non-primary rejection, and natural-stop receipts are
+  missing.
+- RealtimeSTT audio ingress/factory capture: 0 passed, 20 failed. Current rows
+  show weak/silent capture, empty ASR, or unimplemented runner routes.
+- Tone and emotion intent: 5 passed, 15 failed. Frustrated de-escalation passes;
+  hostile, discouraged, and overlap tone-family expectations fail.
+- External research: 20 passed, 0 failed.
+- Speaker identity: 20 passed, 0 failed.
+
+The taxonomy is not a full-loop proof. It still does not prove reliable browser
+mic/WebRTC across devices, full live RealtimeSTT -> speaker/diarization ->
+memory/Tau -> Chatterbox -> Chat UX, Chatterbox generated from every live STT
+turn, orb/audio/chat synchronization from one event journal, event-sourced
+replay, or live barge-in with stale audio suppression.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
