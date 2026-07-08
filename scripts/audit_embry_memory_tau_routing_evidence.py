@@ -140,6 +140,11 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     external_research = _group_summary(matrix, EXTERNAL_RESEARCH_FOLDERS)
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     runtime_blocks = [candidate for candidate in proof_candidates if candidate["runtime_block_proven"]]
+    live_unmocked_candidates = [
+        candidate
+        for candidate in proof_candidates
+        if candidate.get("live") is True and candidate.get("mocked") is False
+    ]
 
     failed_gates: list[str] = []
     if memory["status_counts"]["failed"]:
@@ -166,7 +171,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "schema": "chatterbox.embry_memory_tau_routing_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
-        "live": False,
+        "live": bool(live_unmocked_candidates),
         "ok": ok,
         "status": "passed" if ok else "failed",
         "audited_session_count": len(relevant_sessions),
@@ -175,6 +180,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "tau_skill_routing": tau_skill,
         "external_research": external_research,
         "proof_candidate_count": len(proof_candidates),
+        "live_unmocked_candidate_count": len(live_unmocked_candidates),
         "runtime_block_candidate_count": len(runtime_blocks),
         "proof_candidates": proof_candidates,
         "failed_gates": sorted(set(failed_gates)),

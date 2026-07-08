@@ -84,6 +84,8 @@ def test_audit_fails_when_memory_and_tau_rows_fail(tmp_path: Path) -> None:
     audit = build_audit(matrix, [runtime_block])
 
     assert audit["ok"] is False
+    assert audit["live"] is True
+    assert audit["live_unmocked_candidate_count"] == 1
     assert audit["runtime_block_candidate_count"] == 1
     assert "blocked_memory_answerability_can_be_suppressed_before_chatterbox" in audit["claims"]["proves"]
     assert "memory_answerability_matrix_has_failures" in audit["failed_gates"]
@@ -115,6 +117,8 @@ def test_audit_passes_only_when_all_relevant_rows_and_runtime_block_pass(tmp_pat
     audit = build_audit(_passing_matrix(), [runtime_block])
 
     assert audit["ok"] is True
+    assert audit["live"] is True
+    assert audit["live_unmocked_candidate_count"] == 1
     assert audit["status"] == "passed"
     assert audit["failed_gates"] == []
     assert audit["audited_status_counts"] == {"passed": 10, "failed": 0, "not_run": 0}
@@ -133,6 +137,44 @@ def test_external_research_green_does_not_mask_memory_tau_failures(tmp_path: Pat
 
     assert audit["external_research"]["status_counts"] == {"passed": 1, "failed": 0, "not_run": 0}
     assert audit["ok"] is False
+    assert audit["live"] is False
+    assert audit["live_unmocked_candidate_count"] == 0
     assert "answerability_runtime_block_receipt_missing" in audit["failed_gates"]
     assert "memory_answerability_matrix_has_failures" in audit["failed_gates"]
     assert "tau_skill_routing_matrix_has_failures" in audit["failed_gates"]
+
+
+def test_live_memory_ledger_without_full_pass_is_reported_as_live_evidence(tmp_path: Path) -> None:
+    ledger = tmp_path / "memory-answerability-ledger.json"
+    ledger.write_text(
+        """
+{
+  "schema": "embry.proof.receipt.v1",
+  "proof_scope": "memory-answerability-ledger",
+  "ok": false,
+  "live": true,
+  "mocked": false,
+  "case_count": 12,
+  "failed_gates": ["sparta_qra_answer_missing_acceptance_terms"],
+  "claims": {
+    "proves": [
+      "memory_answerability_queries_and_failures_are_ledgered",
+      "unrelated_memory_answers_are_identified_before_tau_chatterbox_speech"
+    ]
+  }
+}
+"""
+    )
+
+    matrix = _passing_matrix()
+    matrix["sessions"].append(
+        _session("persona_memory_recall", "failed", ["persona_memory_answer_wrong_or_unrelated"])
+    )
+
+    audit = build_audit(matrix, [ledger])
+
+    assert audit["ok"] is False
+    assert audit["live"] is True
+    assert audit["live_unmocked_candidate_count"] == 1
+    assert audit["runtime_block_candidate_count"] == 0
+    assert "answerability_runtime_block_receipt_missing" in audit["failed_gates"]

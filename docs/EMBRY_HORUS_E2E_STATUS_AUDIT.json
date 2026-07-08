@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:36:56.952133+00:00",
+  "generated_at_utc": "2026-07-08T04:39:57.047933+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -194,7 +194,7 @@
             "tau_skill_gate:tau_dag_receipt_not_created",
             "tau_skill_routing_matrix_has_failures"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
@@ -522,7 +522,7 @@
             "tau_skill_gate:tau_dag_receipt_not_created",
             "tau_skill_routing_matrix_has_failures"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",

@@ -56,8 +56,9 @@
     "tau_skill_gate:tau_dag_receipt_not_created",
     "tau_skill_routing_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T03:20:47.593178+00:00",
-  "live": false,
+  "generated_at_utc": "2026-07-08T04:39:56.967051+00:00",
+  "live": true,
+  "live_unmocked_candidate_count": 5,
   "memory_answerability": {
     "by_folder": {
       "persona_memory_miss": {

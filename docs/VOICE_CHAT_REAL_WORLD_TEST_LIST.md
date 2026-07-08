@@ -195,8 +195,9 @@ Current memory/Tau routing evidence audit receipt:
 
 `docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, 200 audited sessions, 20 passed,
-and 180 failed. It separates the green path from the broken paths:
+That audit reported `mocked=false`, `live=true`, `ok=false`, 200 audited
+sessions, 20 passed, and 180 failed. It separates the live green/mitigated
+paths from the broken paths:
 
 - External research: 20 passed, 0 failed.
 - Memory answerability: 0 passed, 60 failed. Current failures are SPARTA QRA
@@ -207,7 +208,8 @@ and 180 failed. It separates the green path from the broken paths:
   `tau.agent_handoff.v1`, missing `tau.dag_receipt.v1`, and missing
   `skill.call.receipt.v1`.
 
-The audit also records one live mitigation receipt:
+The audit records 5 live unmocked proof candidates and one live mitigation
+receipt:
 `/tmp/chatterbox-fork-agent-out/embry-answerability-runtime-block/20260708T010111Z-answerability-runtime-block/receipt.json`.
 That mitigation proves blocked answerability decisions can stop before
 Chatterbox synthesis. It does not prove upstream memory answer quality, Tau
