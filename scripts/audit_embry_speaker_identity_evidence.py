@@ -24,6 +24,8 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json"),
     Path("/tmp/chatterbox-fork-agent-out/pyannote-overlap-strict/current/pyannote-overlap-strict.json"),
     Path("/tmp/embry-voice-control-endpoint-sanity/20260708T085504Z/endpoint_sanity_receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T090202Z-physical-horus-mic-resemblyzer/segment-evidence.json"),
+    Path("/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T090202Z-browser-horus-capture-resemblyzer/segment-evidence.json"),
 ]
 
 
