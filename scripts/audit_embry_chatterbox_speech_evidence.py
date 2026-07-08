@@ -28,6 +28,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/bless-qra-audio-variants.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json"),
     Path("/tmp/chatterbox-fork-agent-out/tau-tool-wait-natural-stop/latest/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/memory-intent-voice-tone/latest/receipt.json"),
 ]
 
 SPEECH_FOLDERS = {"tone_emotion", "interruption"}
@@ -161,12 +162,29 @@ def _tau_tool_wait_natural_stop_ok(receipt: dict[str, Any]) -> bool:
     )
 
 
+def _memory_intent_voice_tone_covered_gates(receipt: dict[str, Any]) -> list[str]:
+    if receipt.get("schema") != "chatterbox.memory_intent_voice_tone.v1":
+        return []
+    if receipt.get("live") is not True or receipt.get("mocked") is not False:
+        return []
+    covered = []
+    for case in receipt.get("cases") or []:
+        if not isinstance(case, dict) or case.get("ok") is not True:
+            continue
+        gate = case.get("covers_gate")
+        if gate:
+            covered.append(str(gate))
+    return sorted(set(covered))
+
+
 def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     schema = str(receipt.get("schema") or "")
     if schema == "chatterbox.tau_voice_render_smoke.v1":
         proof_type = "tau_voice_render"
     elif schema == "chatterbox.tau_tool_wait_natural_stop.v1":
         proof_type = "tau_tool_wait_natural_stop"
+    elif schema == "chatterbox.memory_intent_voice_tone.v1":
+        proof_type = "memory_intent_voice_tone"
     elif schema == "chatterbox.qra_creation_audio_hook.v1":
         proof_type = "qra_creation_audio_hook"
     elif schema == "chatterbox.embry_personality_audition.v1":
@@ -237,6 +255,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         and receipt.get("turn_controls") is None
     )
     tau_tool_wait_natural_stop_ok = _tau_tool_wait_natural_stop_ok(receipt)
+    memory_intent_voice_tone_covered_gates = _memory_intent_voice_tone_covered_gates(receipt)
 
     missing_delivery_fields: list[str] = []
     missing_chunk_delivery_fields: list[list[str]] = []
@@ -265,6 +284,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "blessed_qra_cached_response_ok": blessed_qra_cached_response_ok,
         "non_primary_interrupt_rejection_ok": non_primary_interrupt_rejection_ok,
         "tau_tool_wait_natural_stop_ok": tau_tool_wait_natural_stop_ok,
+        "memory_intent_voice_tone_covered_gates": memory_intent_voice_tone_covered_gates,
         "variant_count": receipt.get("variant_count") or _nested_get(receipt, "child_receipt.variant_count") or len(variants),
         "played_variant_count": len(played_variants),
         "voice_delivery_missing_fields": missing_delivery_fields,
@@ -463,6 +483,11 @@ def build_audit(
     tau_tool_wait_natural_stops = [
         candidate for candidate in proof_candidates if candidate["tau_tool_wait_natural_stop_ok"]
     ]
+    memory_intent_voice_tones = [
+        candidate for candidate in proof_candidates if candidate["proof_type"] == "memory_intent_voice_tone"
+    ]
+    for candidate in memory_intent_voice_tones:
+        tone_covered_gates.update(candidate["memory_intent_voice_tone_covered_gates"])
     personality = [
         candidate
         for candidate in proof_candidates
@@ -578,6 +603,7 @@ def build_audit(
         "blessed_qra_cached_response_candidate_count": len(qra_cached),
         "non_primary_interrupt_rejection_candidate_count": len(non_primary_interrupt_rejections),
         "tau_tool_wait_natural_stop_candidate_count": len(tau_tool_wait_natural_stops),
+        "memory_intent_voice_tone_candidate_count": len(memory_intent_voice_tones),
         "audible_personality_candidate_count": len(personality),
         "incomplete_delivery_envelope_count": len(incomplete_delivery),
         "complete_delivery_envelope_candidate_count": len(complete_delivery),

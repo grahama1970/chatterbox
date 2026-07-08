@@ -29,7 +29,7 @@
     "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T07:26:04.291086+00:00",
+  "generated_at_utc": "2026-07-08T07:32:38.717291+00:00",
   "incomplete_delivery_envelope_count": 4,
   "interruption_evidence_audit": {
     "best_candidate_paths": [
@@ -113,6 +113,7 @@
       }
     ]
   },
+  "memory_intent_voice_tone_candidate_count": 1,
   "memory_tau_routing_evidence_audit": {
     "blocking_gates": [
       "skill_call_receipt_missing",
@@ -161,7 +162,7 @@
   },
   "non_primary_interrupt_rejection_candidate_count": 1,
   "ok": false,
-  "proof_candidate_count": 11,
+  "proof_candidate_count": 12,
   "proof_candidates": [
     {
       "blessed_qra_cached_response_ok": false,
@@ -177,6 +178,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": true,
       "ok": true,
@@ -223,6 +225,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -260,6 +263,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -291,6 +295,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -326,6 +331,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -363,6 +369,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -406,6 +413,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -441,6 +449,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -463,6 +472,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -492,6 +502,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -526,6 +537,7 @@
       "exists": true,
       "failed_gates": [],
       "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
       "ok": true,
@@ -537,6 +549,37 @@
       "render_audio_ok": false,
       "schema": "chatterbox.tau_tool_wait_natural_stop.v1",
       "tau_tool_wait_natural_stop_ok": true,
+      "variant_count": 0,
+      "voice_delivery_missing_fields": []
+    },
+    {
+      "blessed_qra_cached_response_ok": false,
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [
+        "RealtimeSTT tone detection",
+        "Chatterbox audio rendering",
+        "Chat UX synchronization",
+        "subjective voice quality"
+      ],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [
+        "hostile_boundary:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
+        "discouraged_support:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved"
+      ],
+      "live": true,
+      "memory_intent_voice_tone_covered_gates": [],
+      "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
+      "ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/memory-intent-voice-tone/latest/receipt.json",
+      "played_variant_count": 0,
+      "proof_type": "memory_intent_voice_tone",
+      "qra_disabled_normal_render_ok": false,
+      "qra_variants_ok": false,
+      "render_audio_ok": false,
+      "schema": "chatterbox.memory_intent_voice_tone.v1",
+      "tau_tool_wait_natural_stop_ok": false,
       "variant_count": 0,
       "voice_delivery_missing_fields": []
     }
