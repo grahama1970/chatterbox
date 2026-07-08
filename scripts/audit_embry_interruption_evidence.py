@@ -11,6 +11,7 @@ from typing import Any
 
 
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json"),
     Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T061455Z-rung4-live-interrupt/rung4-live-interrupt.json"),
     Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json"),
     Path("/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json"),

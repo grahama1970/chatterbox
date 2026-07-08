@@ -913,6 +913,15 @@ def write_rung7_sidecar_artifacts(receipt: dict[str, Any], out_path: Path) -> No
     )
 
 
+def write_rung4_sidecar_artifacts(receipt: dict[str, Any], out_path: Path) -> None:
+    root = out_path.resolve().parent
+    root.mkdir(parents=True, exist_ok=True)
+    (root / f"{out_path.stem}-primary-speaker-verification.json").write_text(
+        json.dumps(receipt.get("primary_speaker_verification") or {}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def exercise_turn_controls(base_url: str, old_turn_id: str, new_turn_id: str) -> dict[str, Any]:
     failed_gates: list[str] = []
     requests = [
@@ -1665,6 +1674,8 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
     services: dict[str, Any] = {}
     artifacts: dict[str, Any] = {}
     input_asr: dict[str, Any] | None = None
+    primary_speaker_verification: dict[str, Any] | None = None
+    primary_speaker_gate_enabled = args.primary_speaker_enrollment is not None
 
     append_event(events, started, "rung.started", rung=4, run_id=run_id)
     fixture = args.fixture.resolve()
@@ -1680,6 +1691,38 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
     services["asr"] = asr_backend_receipt(backend)
     if not backend.get("live"):
         failed_gates.append("asr_backend_available")
+
+    if primary_speaker_gate_enabled and fixture.exists():
+        primary_speaker_verification = verify_primary_speaker(
+            enrollment_audio=args.primary_speaker_enrollment.resolve(),
+            candidate_audio=fixture,
+            engine=args.primary_speaker_engine,
+            threshold=args.primary_speaker_threshold,
+        )
+        services["primary_speaker_verifier"] = {
+            "kind": primary_speaker_verification.get("engine"),
+            "ok": primary_speaker_verification.get("ok"),
+            "threshold": primary_speaker_verification.get("threshold"),
+            "device": primary_speaker_verification.get("device"),
+            "error_type": primary_speaker_verification.get("error_type"),
+            "error": primary_speaker_verification.get("error"),
+        }
+        artifacts["primary_speaker_verification_path"] = str(args.out.parent / f"{args.out.stem}-primary-speaker-verification.json")
+        append_event(
+            events,
+            started,
+            "listener.primary_speaker_verified",
+            ok=primary_speaker_verification.get("ok"),
+            primary_speaker_match=primary_speaker_verification.get("primary_speaker_match"),
+            similarity=primary_speaker_verification.get("similarity"),
+            threshold=primary_speaker_verification.get("threshold"),
+        )
+        if not primary_speaker_verification.get("ok"):
+            failed_gates.append("primary_speaker_verifier_available")
+        if args.expected_primary_speaker and not primary_speaker_verification.get("primary_speaker_match"):
+            failed_gates.append("primary_speaker_expected_match")
+        if not args.expected_primary_speaker and primary_speaker_verification.get("primary_speaker_match"):
+            failed_gates.append("non_primary_speaker_suppressed")
 
     base_url = args.base_url.rstrip("/")
     services["chatterbox"] = {"base_url": base_url}
@@ -1795,6 +1838,22 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
             "scenario_events": str(scenario_out_dir / "task-events.jsonl"),
         },
         "input_asr": input_asr,
+        "primary_speaker_verification": primary_speaker_verification,
+        "listener_interruption": {
+            "detected": bool(input_asr and input_asr.get("gate", {}).get("ok") is True and input_asr.get("transcript")),
+            "text": input_asr.get("transcript") if isinstance(input_asr, dict) else None,
+            "asr_gate_ok": input_asr.get("gate", {}).get("ok") if isinstance(input_asr, dict) else None,
+            "speaker_id": args.speaker_id
+            if primary_speaker_verification and primary_speaker_verification.get("primary_speaker_match")
+            else None,
+            "primary_speaker_match": primary_speaker_verification.get("primary_speaker_match")
+            if primary_speaker_verification
+            else None,
+            "speaker_verification": primary_speaker_verification,
+            "source": "rung4_interrupt_audio_asr_and_primary_speaker_verification"
+            if primary_speaker_verification
+            else "rung4_interrupt_audio_asr",
+        },
         "interruption": interruption_receipt,
         "turn_controls": control_receipt,
         "path_maps": {source: str(target) for source, target in path_maps.items()},
@@ -3108,6 +3167,8 @@ def main() -> int:
             parser.error("--fixture or --stress-primary-audio is required for --rung 7")
         receipt = run_rung7(args)
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    if args.rung == 4:
+        write_rung4_sidecar_artifacts(receipt, args.out)
     if args.rung == 7:
         write_rung7_sidecar_artifacts(receipt, args.out)
     args.out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")

@@ -1,9 +1,36 @@
 {
   "best_candidate_paths": [
-    "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T061455Z-rung4-live-interrupt/rung4-live-interrupt.json"
+    "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json"
   ],
-  "candidate_count": 5,
+  "candidate_count": 6,
   "candidates": [
+    {
+      "chatterbox_turn_control_missing_fields": [],
+      "chatterbox_turn_control_ok": true,
+      "missing_field_count": 0,
+      "missing_fields": [],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [],
+        "listener_detected": true,
+        "listener_speaker_id": "horus_lupercal",
+        "live": true,
+        "mocked": false,
+        "new_turn_id": "turn-d1a2faf7",
+        "new_turn_wins": true,
+        "ok": true,
+        "old_turn_bytes_after_cancel": 0,
+        "old_turn_id": "turn-faddc426",
+        "playback_offset_ms_at_interrupt": 0,
+        "primary_speaker_match": true,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": true,
+        "turn_id": "turn-faddc426"
+      },
+      "ok": true,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+      "proof_scope": null
+    },
     {
       "chatterbox_turn_control_missing_fields": [],
       "chatterbox_turn_control_ok": true,
@@ -224,7 +251,7 @@
       "proof_scope": null
     }
   ],
-  "chatterbox_turn_control_candidate_count": 2,
+  "chatterbox_turn_control_candidate_count": 3,
   "claims": {
     "does_not_prove": [
       "RealtimeSTT transcription quality",
@@ -232,20 +259,16 @@
       "subjective interruption feel"
     ],
     "proves": [
-      "chatterbox_turn_control_interruption_stops_old_audio_and_starts_new_turn"
+      "at_least_one_receipt_proves_primary_speaker_barge_in_stops_old_audio_and_new_turn_wins"
     ]
   },
-  "failed_gates": [
-    "live_barge_in_receipt_present",
-    "missing:listener_interruption.primary_speaker_match",
-    "missing:listener_interruption.speaker_id"
-  ],
-  "generated_at_utc": "2026-07-08T06:16:18.925911+00:00",
+  "failed_gates": [],
+  "generated_at_utc": "2026-07-08T06:25:29.211493+00:00",
   "live": true,
   "mocked": false,
-  "ok": false,
-  "passing_candidate_count": 0,
-  "proof_count": 5,
+  "ok": true,
+  "passing_candidate_count": 1,
+  "proof_count": 6,
   "required_barge_in_fields": [
     "turn_id",
     "old_turn_id",
@@ -273,5 +296,5 @@
     "new_turn.response_started"
   ],
   "schema": "chatterbox.embry_interruption_evidence_audit.v1",
-  "status": "failed"
+  "status": "passed"
 }

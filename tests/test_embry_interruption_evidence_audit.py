@@ -217,6 +217,78 @@ def test_interruption_audit_lifts_rung4_asr_interrupt_but_keeps_speaker_gap(tmp_
     assert "listener_interruption.primary_speaker_match" in result["missing_fields"]
 
 
+def test_interruption_audit_accepts_rung4_asr_interrupt_with_primary_speaker(tmp_path: Path) -> None:
+    events = tmp_path / "task-events.jsonl"
+    events.write_text(
+        "\n".join(
+            [
+                '{"type":"speech.played","turn_id":"turn-old","artifact_path":"/out/old.wav","timestamp":"2026-07-08T03:47:55Z"}',
+                '{"type":"interruption.requested","turn_id":"turn-old","timestamp":"2026-07-08T03:47:56Z"}',
+                '{"type":"playback.stopped","turn_id":"turn-old"}',
+                '{"type":"speech.stale_skipped","turn_id":"turn-old"}',
+            ]
+        )
+        + "\n"
+    )
+    receipt = {
+        "schema": "chatterbox.conversation_ladder.rung4.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "input_asr": {
+            "transcript": "Wait, stop.",
+            "gate": {"ok": True, "failed_gates": [], "wer": 0.0},
+        },
+        "listener_interruption": {
+            "detected": True,
+            "text": "Wait, stop.",
+            "asr_gate_ok": True,
+            "speaker_id": "horus_lupercal",
+            "primary_speaker_match": True,
+            "speaker_verification": {
+                "schema": "chatterbox.listener.primary_speaker_verification.v1",
+                "ok": True,
+                "primary_speaker_match": True,
+                "similarity": 0.91,
+                "threshold": 0.82,
+            },
+            "source": "rung4_interrupt_audio_asr_and_primary_speaker_verification",
+        },
+        "interruption": {
+            "ok": True,
+            "live": True,
+            "mocked": False,
+            "events_path": str(events),
+            "old_turn_id": "turn-old",
+            "new_turn_id": "turn-new",
+            "stale_skipped_count": 2,
+            "interruption_timeline": {
+                "old_turn_id": "turn-old",
+                "new_turn_id": "turn-new",
+                "post_cancel_old_turn_audio_bytes_emitted": 0,
+                "new_turn_audio_started_after_cancel": True,
+            },
+        },
+        "turn_controls": {
+            "final_control": {
+                "cancelled": True,
+                "stopped": True,
+                "stale_chunks_should_skip": True,
+            }
+        },
+    }
+
+    result = audit_candidate(tmp_path / "rung4.json", receipt)
+
+    assert result["ok"] is True
+    assert result["missing_fields"] == []
+    assert result["observed"]["listener_detected"] is True
+    assert result["observed"]["listener_speaker_id"] == "horus_lupercal"
+    assert result["observed"]["primary_speaker_match"] is True
+    assert result["observed"]["old_turn_bytes_after_cancel"] == 0
+    assert result["observed"]["new_turn_wins"] is True
+
+
 def test_build_audit_passes_with_live_barge_in_candidate(tmp_path: Path) -> None:
     proof = tmp_path / "barge-in.json"
     proof.write_text(
