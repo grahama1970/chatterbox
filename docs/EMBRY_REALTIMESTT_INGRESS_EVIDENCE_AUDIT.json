@@ -730,9 +730,98 @@
     "factory_gate:speaker_memory_recall_found",
     "factory_gate:speaker_resolution_known_horus"
   ],
-  "generated_at_utc": "2026-07-08T08:41:17.486146+00:00",
-  "historical_candidate_count": 12,
+  "generated_at_utc": "2026-07-08T08:47:31.112477+00:00",
+  "historical_candidate_count": 14,
   "historical_candidates": [
+    {
+      "asr_executor_call_count": 0,
+      "captured_audio_exists": null,
+      "captured_audio_path": null,
+      "captured_audio_rms": null,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": false,
+      "live": null,
+      "mocked": null,
+      "ok": null,
+      "path": "/tmp/embry-realtimestt-ingress/20260708T084416Z/receipt.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": null,
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": null,
+      "source_identity_proven": false,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "unknown"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "audio_stats": {
+        "channels": 1,
+        "duration_seconds": 13.822,
+        "non_silent_frame_ratio_250_rms": 0.5896,
+        "non_silent_frame_ratio_5_rms": 0.9986,
+        "peak_abs": 29986,
+        "rms": 2278.773,
+        "rms_dbfs": -23.15,
+        "sample_rate": 16000
+      },
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/embry-realtimestt-ingress/20260708T084416Z/captured.wav",
+      "captured_audio_rms": 2278.773,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "browser_getusermedia_device_capture",
+        "physical_room_microphone_capture",
+        "speaker_identity_correctness",
+        "Tau_memory_routing_from_physical_voice",
+        "Chatterbox_output_from_live_STT"
+      ],
+      "claims_proves": [
+        "controlled_pcm_wav_can_feed_realtimestt_ws_transcribe"
+      ],
+      "events_by_type": {
+        "final": 1,
+        "hello": 1,
+        "ready": 1,
+        "realtime": 40,
+        "status": 11,
+        "timeline": 44
+      },
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "listener_state": "completed",
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T084527Z-cc96850e/listener-webrtc-realtimestt.json",
+      "pipewire_identity": {
+        "capture_backend": "browser_webrtc_pcm16_wav_loopback",
+        "capture_kind": "controlled_pcm_wav",
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "controlled_pcm_wav_over_realtimestt_ws_transcribe",
+      "source_identity_proven": true,
+      "transcript": "Hey guys, welcome to the new demo of my real-time transcription library design to showcase its lightning fast capabilities. As you'll see, speech is transparent.",
+      "transcript_present": true,
+      "transport": "realtimestt_websocket_pcm_wav"
+    },
     {
       "asr_executor_call_count": 0,
       "audio_stats": {
@@ -1273,11 +1362,11 @@
       "transport": "pipewire_physical_microphone"
     }
   ],
-  "historical_passing_candidate_count": 8,
+  "historical_passing_candidate_count": 9,
   "listener_websocket_ingress": {
     "blocking_summary": "controlled RealtimeSTT websocket ingress works for known-good speech, but the current Horus/browser capture artifacts do not produce final transcripts",
     "boundary": "controlled_pcm_wav_to_realtimestt_ws_transcribe",
-    "candidate_count": 3,
+    "candidate_count": 4,
     "failed_candidate_count": 2,
     "failed_candidates": [
       {
@@ -1325,8 +1414,31 @@
         "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083242Z-2ff99fda/listener-webrtc-realtimestt.json"
       }
     ],
-    "passing_candidate_count": 1,
+    "passing_candidate_count": 2,
     "passing_candidates": [
+      {
+        "audio_path": "/tmp/embry-realtimestt-ingress/20260708T084416Z/captured.wav",
+        "audio_stats": {
+          "channels": 1,
+          "duration_seconds": 13.822,
+          "non_silent_frame_ratio_250_rms": 0.5896,
+          "non_silent_frame_ratio_5_rms": 0.9986,
+          "peak_abs": 29986,
+          "rms": 2278.773,
+          "rms_dbfs": -23.15,
+          "sample_rate": 16000
+        },
+        "events_by_type": {
+          "final": 1,
+          "hello": 1,
+          "ready": 1,
+          "realtime": 40,
+          "status": 11,
+          "timeline": 44
+        },
+        "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T084527Z-cc96850e/listener-webrtc-realtimestt.json",
+        "transcript_prefix": "Hey guys, welcome to the new demo of my real-time transcription library design to showcase its lightning fast capabilities. As you'll see, speech is transparent."
+      },
       {
         "audio_path": "/home/graham/workspace/experiments/RealtimeSTT/tests/unit/audio/asr-reference.wav",
         "audio_stats": {

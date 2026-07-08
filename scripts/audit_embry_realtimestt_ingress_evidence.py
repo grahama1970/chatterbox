@@ -14,6 +14,8 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/embry-realtimestt-ingress/20260708T084416Z/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T084527Z-cc96850e/listener-webrtc-realtimestt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083833Z-90a050c0/listener-webrtc-realtimestt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T082957Z-bb8b5e79/listener-webrtc-realtimestt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083242Z-2ff99fda/listener-webrtc-realtimestt.json"),
