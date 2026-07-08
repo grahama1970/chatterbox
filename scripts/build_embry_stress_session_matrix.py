@@ -532,6 +532,51 @@ CURRENT_RESULTS: dict[str, dict[str, Any]] = {
     },
 }
 
+_MEDIUM_MEMORY_SEARCH_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T014152Z-matrix-medium-memory-search/receipt.json"
+)
+
+_MEDIUM_MEMORY_FAILURES = {
+    "sparta_qra_compliance-medium-01": [
+        "sparta_qra_answer_missing_acceptance_terms",
+        "sparta_qra_answer_overfit_to_unrelated_control_exclusion",
+    ],
+    "sparta_qra_compliance-medium-02": ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"],
+    "sparta_qra_compliance-medium-03": ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"],
+    "sparta_qra_compliance-medium-04": ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"],
+    "persona_memory_recall-medium-01": [
+        "persona_memory_answer_uses_unrelated_source_collection",
+        "persona_memory_answer_wrong_or_unrelated",
+    ],
+    "persona_memory_recall-medium-02": ["persona_memory_answer_uses_unrelated_source_collection"],
+    "persona_memory_recall-medium-03": ["persona_memory_answer_uses_unrelated_source_collection"],
+    "persona_memory_recall-medium-04": ["persona_memory_answer_uses_unrelated_source_collection"],
+    "persona_memory_miss-medium-01": ["memory_miss_should_not_answer_unrelated_record"],
+    "persona_memory_miss-medium-02": ["memory_miss_should_not_answer_unrelated_record"],
+    "persona_memory_miss-medium-03": ["memory_miss_should_not_answer_unrelated_record"],
+    "persona_memory_miss-medium-04": ["memory_miss_should_not_answer_unrelated_record"],
+}
+
+for _session_id, _failed_gates in _MEDIUM_MEMORY_FAILURES.items():
+    CURRENT_RESULTS[_session_id] = {
+        "status": "failed",
+        "latest_receipt": _MEDIUM_MEMORY_SEARCH_RECEIPT,
+        "failed_gates": _failed_gates,
+        "observed": (
+            "Live medium memory/search subset returned an answerability failure before speech; "
+            "see the receipt case for exact response text and sources."
+        ),
+    }
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"brave_research-medium-{_index:02d}"] = {
+        "status": "passed",
+        "latest_receipt": _MEDIUM_MEMORY_SEARCH_RECEIPT,
+        "failed_gates": [],
+        "observed": "Live Brave Search medium session returned relevant source results.",
+    }
+
 _SIMPLE_REST_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T000951Z-matrix-simple-rest/receipt.json"

@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 11, "failed": 49, "not_run": 240}
+    assert status_counts == {"passed": 15, "failed": 61, "not_run": 224}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -50,6 +50,25 @@ def test_matrix_memory_simple_failures_use_answerability_ledger_receipt() -> Non
     assert len(memory_sessions) == 12
     assert all(session["status"] == "failed" for session in memory_sessions)
     assert all("embry-memory-answerability-ledger" in session["latest_receipt"] for session in memory_sessions)
+    assert all(session["failed_gates"] for session in memory_sessions)
+
+
+def test_matrix_medium_memory_search_subset_has_live_receipt_results() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["difficulty"] == "medium"
+        and session["folder_id"]
+        in {"sparta_qra_compliance", "persona_memory_recall", "persona_memory_miss", "brave_research"}
+    ]
+
+    assert len(sessions) == 16
+    assert all("matrix-medium-memory-search" in session["latest_receipt"] for session in sessions)
+    assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
+    memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
+    assert len(memory_sessions) == 12
+    assert all(session["status"] == "failed" for session in memory_sessions)
     assert all(session["failed_gates"] for session in memory_sessions)
 
 

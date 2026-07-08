@@ -115,6 +115,19 @@ four SPARTA QRA sessions, all four persona-memory recall sessions, and all four
 persona-memory miss sessions. The failures show that Embry currently needs a
 stricter answerability gate before speaking memory answers.
 
+Latest matrix medium memory/search subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json`
+
+That run executed `16` medium sessions from the same matrix with `mocked=false`,
+`live=true`, and `ok=false`. The four Brave Search research sessions passed.
+All twelve medium SPARTA/persona-memory sessions failed answerability gates:
+SPARTA QRA prompts still leaked S0609/deprecated-control or missing-acceptance
+answers, persona-memory recall still used unrelated source collections, and
+persona-memory miss prompts still answered unrelated records instead of
+clarifying. These failures are now receipt-backed medium cases rather than
+`not_run`.
+
 Latest matrix simple-rest receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json`
@@ -234,7 +247,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`11` passed, `49` failed, and `240` are `not_run`. This is the intended source
+`15` passed, `61` failed, and `224` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.
