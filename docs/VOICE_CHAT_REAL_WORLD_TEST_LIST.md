@@ -102,6 +102,20 @@ with `24` completed case events. This is useful failure evidence: the Sessions
 matrix now distinguishes answerability failures from route families that do not
 yet have executable live sanity implementations.
 
+Latest speaker identity ledger receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json`
+
+That run migrated the four simple `memory.speaker.resolve` cases into the
+canonical event-journal shape. It reported `mocked=false`, `live=true`, and
+`ok=true` with `17` journal events: known Horus resolved to
+`horus_lupercal` with personal memory allowed, unknown speaker failed closed,
+ambiguous low-confidence failed closed, and Horus/female overlap returned
+`ambiguous` with no authoritative speaker. The proof scope is explicitly
+`live_memory_speaker_resolution_policy_not_audio_identity`, so it does not prove
+RealtimeSTT audio identity, diarization correctness, or raw voice embedding
+quality.
+
 Latest matrix tone/emotion receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T001850Z-matrix-tone-simple/receipt.json`
@@ -137,7 +151,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `200` labeled sessions across `10` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`5` passed, `35` failed, and `160` are `not_run`. This is the intended source
+`9` passed, `31` failed, and `160` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 ## Required Receipt Fields

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://embry.local/schemas/embry_event_v1.schema.json",
+  "title": "Embry Event",
+  "type": "object",
+  "required": [
+    "schema",
+    "event_id",
+    "session_id",
+    "sequence",
+    "trace_id",
+    "type",
+    "component",
+    "occurred_at",
+    "source",
+    "payload"
+  ],
+  "properties": {
+    "schema": { "const": "embry.event.v1" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "session_id": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "turn_id": { "type": ["string", "null"] },
+    "parent_event_id": { "type": ["string", "null"] },
+    "type": { "type": "string", "minLength": 1 },
+    "component": { "type": "string", "minLength": 1 },
+    "occurred_at": { "type": "string", "minLength": 1 },
+    "ingested_at": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["live", "mocked", "transport"],
+      "properties": {
+        "live": { "type": "boolean" },
+        "mocked": { "type": "boolean" },
+        "transport": { "type": "string", "minLength": 1 },
+        "fixture_from_live_audio": { "type": "boolean" },
+        "speaker_evidence_from_audio": { "type": "boolean" },
+        "device_id_hash": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "payload": { "type": "object" },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "provenance": { "type": "object" },
+    "receipt": { "type": "object" }
+  },
+  "additionalProperties": true
+}

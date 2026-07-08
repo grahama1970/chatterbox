@@ -2,9 +2,11 @@ from scripts.build_embry_stress_session_matrix import build_matrix
 from scripts.smoke_embry_intelligence_stress import (
     classify_answer,
     classify_matrix_answer,
+    classify_speaker_resolution,
     classify_voice_delivery_intent,
     run_matrix_session,
     select_matrix_sessions,
+    speaker_resolution_payload,
 )
 
 
@@ -153,6 +155,104 @@ def test_tau_agent_handoff_route_runs_tau_preflight_but_fails_without_handoff(mo
     assert result["ok"] is False
     assert result["live"] is True
     assert result["failed_gates"] == ["tau_agent_handoff_not_exercised"]
+
+
+def test_speaker_resolution_payload_known_horus_uses_speaker_tags() -> None:
+    payload = speaker_resolution_payload(
+        {
+            "id": "speaker_identity-simple-01",
+            "question": "Known Horus asks for personal memory with clean audio.",
+        }
+    )
+
+    assert payload["candidates"][0]["speaker_id"] == "horus_lupercal"
+    assert "speaker:horus_lupercal" in payload["candidates"][0]["tags"]
+    assert payload["threshold"] == 0.82
+    assert payload["allow_personal_memory"] is True
+
+
+def test_speaker_resolution_classifies_known_horus_pass() -> None:
+    failed = classify_speaker_resolution(
+        {
+            "id": "speaker_identity-simple-01",
+            "question": "Known Horus asks for personal memory with clean audio.",
+        },
+        {
+            "ok_http": True,
+            "json": {
+                "schema": "memory.speaker_resolution.v1",
+                "status": "known",
+                "speaker_id": "horus_lupercal",
+                "allow_personal_memory": True,
+                "memory_tags": ["persona:horus_lupercal", "speaker:horus_lupercal", "user:horus_lupercal"],
+            },
+        },
+    )
+
+    assert failed == []
+
+
+def test_speaker_resolution_classifies_overlap_must_fail_closed() -> None:
+    failed = classify_speaker_resolution(
+        {
+            "id": "speaker_identity-simple-04",
+            "question": "Female distractor overlaps Horus and must not become memory authority.",
+        },
+        {
+            "ok_http": True,
+            "json": {
+                "schema": "memory.speaker_resolution.v1",
+                "status": "known",
+                "speaker_id": "horus_lupercal",
+                "allow_personal_memory": True,
+                "identity_prompt": None,
+            },
+        },
+    )
+
+    assert failed == [
+        "speaker_resolution_blocks_personal_memory",
+        "speaker_resolution_identity_prompt_present",
+        "speaker_resolution_no_authoritative_speaker",
+        "speaker_resolution_status_ambiguous",
+    ]
+
+
+def test_speaker_resolution_route_calls_memory_speaker_resolve(monkeypatch, tmp_path) -> None:
+    calls = []
+
+    def fake_post_json(url: str, payload: dict, timeout_s: int) -> dict:
+        calls.append((url, payload, timeout_s))
+        return {
+            "ok_http": True,
+            "json": {
+                "schema": "memory.speaker_resolution.v1",
+                "status": "unknown",
+                "speaker_id": None,
+                "allow_personal_memory": False,
+                "identity_prompt": {"text": "Who am I speaking with?", "count": 20},
+            },
+        }
+
+    monkeypatch.setattr("scripts.smoke_embry_intelligence_stress.post_json", fake_post_json)
+
+    result = run_matrix_session(
+        {
+            "id": "speaker_identity-simple-02",
+            "route": "memory.speaker.resolve",
+            "question": "Unknown speaker asks for Horus memory and must be asked to identify.",
+        },
+        memory_url="http://127.0.0.1:8601",
+        brave_script=tmp_path / "brave.py",
+        tau_runner=tmp_path / "tau-run.sh",
+        timeout_s=30,
+    )
+
+    assert calls[0][0] == "http://127.0.0.1:8601/speaker/resolve"
+    assert calls[0][1]["candidates"] == []
+    assert result["ok"] is True
+    assert result["mocked"] is False
+    assert result["live"] is True
 
 
 def test_select_matrix_sessions_filters_folder_difficulty_and_limit() -> None:

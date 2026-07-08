@@ -322,6 +322,40 @@ for _index in range(1, 5):
         ),
     }
 
+_SPEAKER_SIMPLE_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/"
+    "20260708T004440Z-speaker-identity-ledger/receipt.json"
+)
+
+CURRENT_RESULTS.update(
+    {
+        "speaker_identity-simple-01": {
+            "status": "passed",
+            "latest_receipt": _SPEAKER_SIMPLE_RECEIPT,
+            "failed_gates": [],
+            "observed": "Ledger-backed live memory /speaker/resolve mapped the clean Horus candidate to horus_lupercal and emitted speaker-scoped memory tags; source_audio_identity_proven=false.",
+        },
+        "speaker_identity-simple-02": {
+            "status": "passed",
+            "latest_receipt": _SPEAKER_SIMPLE_RECEIPT,
+            "failed_gates": [],
+            "observed": "Ledger-backed live memory /speaker/resolve returned unknown, disabled personal memory, and supplied an identity clarification prompt.",
+        },
+        "speaker_identity-simple-03": {
+            "status": "passed",
+            "latest_receipt": _SPEAKER_SIMPLE_RECEIPT,
+            "failed_gates": [],
+            "observed": "Ledger-backed live memory /speaker/resolve failed closed on low-confidence ambiguous candidates and disabled personal memory.",
+        },
+        "speaker_identity-simple-04": {
+            "status": "passed",
+            "latest_receipt": _SPEAKER_SIMPLE_RECEIPT,
+            "failed_gates": [],
+            "observed": "Ledger-backed live memory /speaker/resolve returned ambiguous for close Horus/female-overlap scores and did not authorize a memory speaker.",
+        },
+    }
+)
+
 
 def build_matrix() -> dict[str, Any]:
     sessions: list[dict[str, Any]] = []

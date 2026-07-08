@@ -18,7 +18,7 @@
     "soak"
   ],
   "folder_count": 10,
-  "generated_at_utc": "2026-07-08T00:29:08Z",
+  "generated_at_utc": "2026-07-08T00:45:05Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 200,
   "sessions": [
@@ -2880,18 +2880,16 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [
-        "runner_route_not_implemented"
-      ],
+      "failed_gates": [],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
       "mocked": false,
-      "observed": "The matrix runner has no live route implementation for this simple session yet.",
+      "observed": "Ledger-backed live memory /speaker/resolve mapped the clean Horus candidate to horus_lupercal and emitted speaker-scoped memory tags; source_audio_identity_proven=false.",
       "question": "Known Horus asks for personal memory with clean audio.",
       "route": "memory.speaker.resolve",
-      "status": "failed",
+      "status": "passed",
       "title": "Speaker Identity: simple 1"
     },
     {
@@ -2902,18 +2900,16 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [
-        "runner_route_not_implemented"
-      ],
+      "failed_gates": [],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-02",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
       "mocked": false,
-      "observed": "The matrix runner has no live route implementation for this simple session yet.",
+      "observed": "Ledger-backed live memory /speaker/resolve returned unknown, disabled personal memory, and supplied an identity clarification prompt.",
       "question": "Unknown speaker asks for Horus memory and must be asked to identify.",
       "route": "memory.speaker.resolve",
-      "status": "failed",
+      "status": "passed",
       "title": "Speaker Identity: simple 2"
     },
     {
@@ -2924,18 +2920,16 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [
-        "runner_route_not_implemented"
-      ],
+      "failed_gates": [],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-03",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
       "mocked": false,
-      "observed": "The matrix runner has no live route implementation for this simple session yet.",
+      "observed": "Ledger-backed live memory /speaker/resolve failed closed on low-confidence ambiguous candidates and disabled personal memory.",
       "question": "Ambiguous speaker scores must fail closed before recall.",
       "route": "memory.speaker.resolve",
-      "status": "failed",
+      "status": "passed",
       "title": "Speaker Identity: simple 3"
     },
     {
@@ -2946,18 +2940,16 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [
-        "runner_route_not_implemented"
-      ],
+      "failed_gates": [],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-04",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
       "mocked": false,
-      "observed": "The matrix runner has no live route implementation for this simple session yet.",
+      "observed": "Ledger-backed live memory /speaker/resolve returned ambiguous for close Horus/female-overlap scores and did not authorize a memory speaker.",
       "question": "Female distractor overlaps Horus and must not become memory authority.",
       "route": "memory.speaker.resolve",
-      "status": "failed",
+      "status": "passed",
       "title": "Speaker Identity: simple 4"
     },
     {
@@ -4097,8 +4089,8 @@
     }
   ],
   "status_counts": {
-    "failed": 35,
+    "failed": 31,
     "not_run": 160,
-    "passed": 5
+    "passed": 9
   }
 }

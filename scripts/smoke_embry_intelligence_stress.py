@@ -22,6 +22,8 @@ from typing import Any
 
 DEFAULT_BRAVE = Path("/home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py")
 DEFAULT_TAU_RUNNER = Path("/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh")
+DEFAULT_SPEAKER_RESOLVE_THRESHOLD = 0.82
+DEFAULT_SPEAKER_AMBIGUITY_MARGIN = 0.04
 
 CASES: list[dict[str, Any]] = [
     {
@@ -219,6 +221,117 @@ def classify_voice_delivery_intent(session: dict[str, Any], intent: dict[str, An
     return sorted(set(failed))
 
 
+def speaker_resolution_payload(session: dict[str, Any]) -> dict[str, Any]:
+    question = normalize(str(session.get("question") or ""))
+    base = {
+        "speaker_evidence_id": f"embry-stress-matrix-{session['id']}",
+        "session_id": "embry-stress-matrix",
+        "turn_id": str(session["id"]),
+        "persona_id": "embry",
+        "threshold": DEFAULT_SPEAKER_RESOLVE_THRESHOLD,
+        "ambiguity_margin": DEFAULT_SPEAKER_AMBIGUITY_MARGIN,
+        "allow_personal_memory": True,
+    }
+    if "known horus" in question or "clean audio" in question:
+        base["candidates"] = [
+            {
+                "speaker_id": "horus_lupercal",
+                "display_name": "Horus Lupercal",
+                "confidence": 0.93,
+                "source": "embry_stress_matrix_clean_horus_probe",
+                "tags": ["persona:horus_lupercal", "speaker:horus_lupercal", "user:horus_lupercal"],
+            }
+        ]
+    elif "female distractor" in question or "overlaps horus" in question:
+        base["candidates"] = [
+            {
+                "speaker_id": "horus_lupercal",
+                "display_name": "Horus Lupercal",
+                "confidence": 0.88,
+                "source": "embry_stress_matrix_overlap_probe",
+                "tags": ["persona:horus_lupercal"],
+            },
+            {
+                "speaker_id": "female_distractor",
+                "display_name": "Female Distractor",
+                "confidence": 0.87,
+                "source": "embry_stress_matrix_overlap_probe",
+                "tags": ["speaker:female_distractor"],
+            },
+        ]
+    elif "ambiguous" in question:
+        base["candidates"] = [
+            {
+                "speaker_id": "horus_lupercal",
+                "display_name": "Horus Lupercal",
+                "confidence": 0.80,
+                "source": "embry_stress_matrix_low_confidence_probe",
+                "tags": ["persona:horus_lupercal"],
+            },
+            {
+                "speaker_id": "unknown_other",
+                "display_name": "Unknown Other",
+                "confidence": 0.78,
+                "source": "embry_stress_matrix_low_confidence_probe",
+                "tags": [],
+            },
+        ]
+    else:
+        base["candidates"] = []
+    return base
+
+
+def classify_speaker_resolution(session: dict[str, Any], resolution: dict[str, Any]) -> list[str]:
+    if not resolution.get("ok_http"):
+        return ["speaker_resolve_http_ok"]
+    payload = resolution.get("json") if isinstance(resolution.get("json"), dict) else {}
+    question = normalize(str(session.get("question") or ""))
+    failed: list[str] = []
+    if payload.get("schema") != "memory.speaker_resolution.v1":
+        failed.append("speaker_resolution_schema")
+
+    if "known horus" in question or "clean audio" in question:
+        if payload.get("status") != "known":
+            failed.append("speaker_resolution_status_known")
+        if payload.get("speaker_id") != "horus_lupercal":
+            failed.append("speaker_resolution_horus_lupercal")
+        if payload.get("allow_personal_memory") is not True:
+            failed.append("speaker_resolution_allows_personal_memory")
+        memory_tags = payload.get("memory_tags") if isinstance(payload.get("memory_tags"), list) else []
+        for tag in ["speaker:horus_lupercal", "user:horus_lupercal", "persona:horus_lupercal"]:
+            if tag not in memory_tags:
+                failed.append(f"speaker_resolution_memory_tag_{tag.replace(':', '_')}")
+    elif "female distractor" in question or "overlaps horus" in question:
+        if payload.get("status") != "ambiguous":
+            failed.append("speaker_resolution_status_ambiguous")
+        if payload.get("speaker_id") is not None:
+            failed.append("speaker_resolution_no_authoritative_speaker")
+        if payload.get("allow_personal_memory") is not False:
+            failed.append("speaker_resolution_blocks_personal_memory")
+        if not payload.get("identity_prompt"):
+            failed.append("speaker_resolution_identity_prompt_present")
+    elif "ambiguous" in question:
+        if payload.get("status") not in {"unknown", "ambiguous"}:
+            failed.append("speaker_resolution_status_unknown_or_ambiguous")
+        if payload.get("speaker_id") is not None:
+            failed.append("speaker_resolution_no_authoritative_speaker")
+        if payload.get("allow_personal_memory") is not False:
+            failed.append("speaker_resolution_blocks_personal_memory")
+        if not payload.get("identity_prompt"):
+            failed.append("speaker_resolution_identity_prompt_present")
+    else:
+        if payload.get("status") != "unknown":
+            failed.append("speaker_resolution_status_unknown")
+        if payload.get("allow_personal_memory") is not False:
+            failed.append("speaker_resolution_blocks_personal_memory")
+        identity_prompt = payload.get("identity_prompt") if isinstance(payload.get("identity_prompt"), dict) else {}
+        if not identity_prompt.get("text"):
+            failed.append("speaker_resolution_identity_prompt_text")
+        if int(identity_prompt.get("count") or 0) < 20:
+            failed.append("speaker_resolution_identity_prompt_bank_20")
+    return sorted(set(failed))
+
+
 def run_memory_case(case: dict[str, Any], *, memory_url: str, timeout_s: int) -> dict[str, Any]:
     intent = post_json(
         f"{memory_url.rstrip('/')}/intent",
@@ -303,6 +416,24 @@ def run_matrix_session(
 ) -> dict[str, Any]:
     route = str(session.get("route") or "")
     query = str(session.get("question") or "")
+    if route == "memory.speaker.resolve":
+        speaker_resolution = post_json(
+            f"{memory_url.rstrip('/')}/speaker/resolve",
+            speaker_resolution_payload(session),
+            timeout_s,
+        )
+        failed = classify_speaker_resolution(session, speaker_resolution)
+        return {
+            "id": session["id"],
+            "matrix_session": session,
+            "query": query,
+            "route": route,
+            "speaker_resolution": speaker_resolution,
+            "ok": not failed,
+            "mocked": False,
+            "live": bool(speaker_resolution.get("ok_http")),
+            "failed_gates": failed,
+        }
     if route == "tau.agent_handoff":
         doctor = run_cmd([str(tau_runner), "doctor"], timeout_s=timeout_s)
         failed: list[str] = []
