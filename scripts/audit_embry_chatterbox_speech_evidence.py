@@ -370,6 +370,40 @@ def _memory_intent_tone_summary(matrix: dict[str, Any], speech_matrix: dict[str,
     }
 
 
+def _natural_stop_summary(matrix: dict[str, Any], speech_matrix: dict[str, Any]) -> dict[str, Any]:
+    all_natural_stop_failures = [
+        session
+        for session in matrix["sessions"]
+        if session.get("folder_id") == "interruption"
+        and "natural_stop_phrase_not_observed" in (session.get("failed_gates") or [])
+    ]
+    sample_failures = [
+        failure
+        for failure in speech_matrix["by_folder"]["interruption"]["sample_failures"]
+        if "natural_stop_phrase_not_observed" in failure.get("failed_gates", [])
+    ]
+    receipt_paths = sorted(
+        {
+            str(failure.get("latest_receipt"))
+            for failure in all_natural_stop_failures
+            if failure.get("latest_receipt")
+        }
+    )
+    return {
+        "boundary": "tau_tool_wait_interruption_natural_stop",
+        "ready": not all_natural_stop_failures,
+        "failed_session_count": len(all_natural_stop_failures),
+        "latest_receipt_paths": receipt_paths,
+        "sample_failures": sample_failures,
+        "blocking_summary": (
+            "Tau tool-wait interruption still lacks a receipt showing Embry used a natural "
+            "stop or holding phrase instead of an abrupt stop"
+        )
+        if all_natural_stop_failures
+        else None,
+    }
+
+
 def build_audit(
     matrix: dict[str, Any],
     proof_paths: list[Path],
@@ -383,6 +417,7 @@ def build_audit(
     speaker_identity_audit = _speaker_identity_audit_summary(speaker_identity_audit_path)
     memory_tau_audit = _memory_tau_audit_summary(memory_tau_audit_path)
     memory_intent_tone = _memory_intent_tone_summary(matrix, speech_matrix)
+    natural_stop = _natural_stop_summary(matrix, speech_matrix)
     interruption_covered_gates = set(interruption_audit["covered_gates"])
     tone_covered_gates = set(speaker_identity_audit["covered_gates"])
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
@@ -491,6 +526,7 @@ def build_audit(
         "speaker_identity_evidence_audit": speaker_identity_audit,
         "memory_tau_routing_evidence_audit": memory_tau_audit,
         "memory_intent_tone_evidence": memory_intent_tone,
+        "natural_stop_evidence": natural_stop,
         "tone_emotion_matrix_remaining_failed_gates": sorted(
             gate
             for gate in speech_matrix["by_folder"]["tone_emotion"]["failed_gate_counts"]

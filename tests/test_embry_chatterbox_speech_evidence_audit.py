@@ -585,6 +585,59 @@ def test_audit_reports_memory_intent_tone_blockers(tmp_path: Path) -> None:
     assert "memory /intent voice_delivery tone routing" in tone_evidence["blocking_summary"]
 
 
+def test_audit_reports_natural_stop_blockers(tmp_path: Path) -> None:
+    render = tmp_path / "render.json"
+    render.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}},
+  "response": {"voice_delivery": {"tone": "memory_confident", "delivery_stage": "satisfied", "pace": "brief", "pause_strategy": "short_answer_no_filler", "source": "memory.intent"}}
+}
+"""
+    )
+    qra = tmp_path / "qra.json"
+    qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    personality = tmp_path / "personality.json"
+    personality.write_text(
+        """
+{
+  "schema": "chatterbox.embry_personality_audition.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "variants": [
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}}
+  ]
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            _session("tone_emotion", "passed"),
+            _session("interruption", "failed", ["natural_stop_phrase_not_observed"]),
+        ]
+    }
+
+    audit = build_audit(matrix, [render, qra, personality])
+
+    assert audit["ok"] is False
+    assert "speech_matrix_gate:natural_stop_phrase_not_observed" in audit["failed_gates"]
+    natural_stop = audit["natural_stop_evidence"]
+    assert natural_stop["boundary"] == "tau_tool_wait_interruption_natural_stop"
+    assert natural_stop["ready"] is False
+    assert natural_stop["failed_session_count"] == 1
+    assert natural_stop["latest_receipt_paths"] == ["/tmp/interruption-failed.json"]
+    assert "lacks a receipt" in natural_stop["blocking_summary"]
+
+
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(
