@@ -165,9 +165,128 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
     assert audit["factory_gate_blockers"]["ready"] is False
     assert audit["factory_gate_blockers"]["failed_session_count"] == 2
     assert audit["factory_gate_blockers"]["failed_gate_counts"] == {"capture_captured_audio_rms": 2}
+    assert audit["factory_capture_paths"]["boundary"] == "factory_capture_path_diagnostics"
+    assert audit["factory_capture_paths"]["failed_row_count"] == 2
+    assert audit["factory_capture_paths"]["low_rms_ratio_count"] == 0
     assert audit["source_identity_evidence"]["boundary"] == "captured_audio_source_identity"
     assert audit["source_identity_evidence"]["ready"] is True
     assert audit["source_identity_evidence"]["source_identity_candidate_count"] == 1
+
+
+def test_ingress_audit_reports_factory_capture_path_diagnostics(tmp_path: Path) -> None:
+    failing = tmp_path / "factory-failing.json"
+    failing.write_text(
+        """
+{
+  "ok": false,
+  "live": false,
+  "mocked": false,
+  "failed_gates": ["capture_captured_audio_rms"],
+  "capture": {
+    "captured_audio": {
+      "exists": true,
+      "path": "/tmp/captured.wav",
+      "rms": 6,
+      "sha256": "captured-sha"
+    },
+    "play_audio": {
+      "rms": 542,
+      "sha256": "source-sha"
+    },
+    "pipewire": {
+      "capture_backend": "ffmpeg-pulse",
+      "capture_kind": "physical_microphone",
+      "pulse_source": "alsa_input.bad_source",
+      "record_target": "67",
+      "sink_target": "64"
+    }
+  },
+  "claims": {"proves": []}
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            {
+                "id": "factory-low-rms",
+                "difficulty": "simple",
+                "folder_id": "factory_noise",
+                "status": "failed",
+                "latest_receipt": str(failing),
+                "failed_gates": ["capture_captured_audio_rms"],
+                "observed": "low rms",
+            }
+        ]
+    }
+
+    audit = build_audit(matrix, [failing])
+
+    diagnostics = audit["factory_capture_paths"]
+    assert diagnostics["boundary"] == "factory_capture_path_diagnostics"
+    assert diagnostics["failed_row_count"] == 1
+    assert diagnostics["missing_candidate_count"] == 0
+    assert diagnostics["low_rms_ratio_count"] == 1
+    assert diagnostics["capture_kind_counts"] == {"physical_microphone": 1}
+    assert diagnostics["pulse_source_counts"] == {"alsa_input.bad_source": 1}
+    assert diagnostics["failed_rows"][0]["captured_to_play_rms_ratio"] == 0.0111
+    assert diagnostics["failed_rows"][0]["record_target"] == "67"
+    assert diagnostics["failed_rows"][0]["sink_target"] == "64"
+
+
+def test_ingress_audit_loads_factory_matrix_latest_receipts(tmp_path: Path) -> None:
+    matrix_receipt = tmp_path / "matrix-linked-factory.json"
+    matrix_receipt.write_text(
+        """
+{
+  "ok": false,
+  "live": false,
+  "mocked": false,
+  "failed_gates": ["capture_captured_audio_rms"],
+  "capture": {
+    "captured_audio": {
+      "exists": true,
+      "path": "/tmp/captured.wav",
+      "rms": 5,
+      "sha256": "captured-sha"
+    },
+    "play_audio": {
+      "rms": 500,
+      "sha256": "source-sha"
+    },
+    "pipewire": {
+      "capture_backend": "ffmpeg-pulse",
+      "capture_kind": "physical_microphone",
+      "pulse_source": "alsa_input.matrix_source",
+      "record_target": "99",
+      "sink_target": "64"
+    }
+  },
+  "claims": {"proves": []}
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            {
+                "id": "factory-matrix-linked",
+                "difficulty": "simple",
+                "folder_id": "factory_noise",
+                "status": "failed",
+                "latest_receipt": str(matrix_receipt),
+                "failed_gates": ["capture_captured_audio_rms"],
+                "observed": "low rms",
+            }
+        ]
+    }
+
+    audit = build_audit(matrix, proof_paths=[])
+
+    diagnostics = audit["factory_capture_paths"]
+    assert diagnostics["missing_candidate_count"] == 0
+    assert diagnostics["low_rms_ratio_count"] == 1
+    assert diagnostics["pulse_source_counts"] == {"alsa_input.matrix_source": 1}
+    assert diagnostics["failed_rows"][0]["candidate_present"] is True
+    assert diagnostics["failed_rows"][0]["captured_to_play_rms_ratio"] == 0.01
 
 
 def test_current_factory_loopback_candidate_does_not_depend_on_timestamp() -> None:

@@ -124,6 +124,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     captured_audio_exists = nested_get(receipt, "capture.captured_audio.exists")
     captured_audio_sha256 = nested_get(receipt, "capture.captured_audio.sha256")
     captured_audio_path = nested_get(receipt, "capture.captured_audio.path")
+    play_audio_rms = nested_get(receipt, "capture.play_audio.rms")
     play_audio_sha256 = nested_get(receipt, "capture.play_audio.sha256")
     pipewire = nested_get(receipt, "capture.pipewire") or {}
     pipewire_identity = {
@@ -180,6 +181,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "captured_audio_rms": captured_rms,
         "captured_audio_path": captured_audio_path,
         "captured_audio_sha256": captured_audio_sha256,
+        "play_audio_rms": play_audio_rms,
         "play_audio_sha256": play_audio_sha256,
         "source_identity_proven": source_identity_proven,
         "pipewire_identity": pipewire_identity,
@@ -275,6 +277,77 @@ def factory_gate_blocker_summary(factory: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def factory_capture_diagnostics(factory: dict[str, Any], candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    by_path = {candidate["path"]: candidate for candidate in candidates}
+    failed_rows: list[dict[str, Any]] = []
+    capture_kind_counts: Counter[str] = Counter()
+    pulse_source_counts: Counter[str] = Counter()
+    low_rms_count = 0
+    missing_candidate_count = 0
+    for session in factory["failed_sessions"]:
+        path = str(session.get("latest_receipt") or "")
+        candidate = by_path.get(path)
+        if candidate is None:
+            missing_candidate_count += 1
+            failed_rows.append(
+                {
+                    "id": session["id"],
+                    "latest_receipt": path,
+                    "failed_gates": session.get("failed_gates") or [],
+                    "candidate_present": False,
+                }
+            )
+            continue
+        pipewire = candidate.get("pipewire_identity") or {}
+        capture_kind = str(pipewire.get("capture_kind") or "unknown")
+        pulse_source = str(pipewire.get("pulse_source") or pipewire.get("record_target") or "unknown")
+        capture_kind_counts[capture_kind] += 1
+        pulse_source_counts[pulse_source] += 1
+        captured_rms = candidate.get("captured_audio_rms")
+        play_rms = candidate.get("play_audio_rms")
+        rms_ratio = None
+        if isinstance(captured_rms, (int, float)) and isinstance(play_rms, (int, float)) and play_rms > 0:
+            rms_ratio = round(float(captured_rms) / float(play_rms), 4)
+            if rms_ratio < 0.1:
+                low_rms_count += 1
+        failed_rows.append(
+            {
+                "id": session["id"],
+                "latest_receipt": path,
+                "failed_gates": session.get("failed_gates") or [],
+                "candidate_present": True,
+                "transport": candidate.get("transport"),
+                "capture_kind": capture_kind,
+                "pulse_source": pulse_source,
+                "record_target": pipewire.get("record_target"),
+                "sink_target": pipewire.get("sink_target"),
+                "captured_audio_rms": captured_rms,
+                "play_audio_rms": play_rms,
+                "captured_to_play_rms_ratio": rms_ratio,
+                "transcript_present": candidate.get("transcript_present"),
+                "ingress_proven": candidate.get("ingress_proven"),
+                "source_identity_proven": candidate.get("source_identity_proven"),
+            }
+        )
+
+    return {
+        "boundary": "factory_capture_path_diagnostics",
+        "failed_row_count": len(factory["failed_sessions"]),
+        "missing_candidate_count": missing_candidate_count,
+        "low_rms_ratio_count": low_rms_count,
+        "capture_kind_counts": dict(sorted(capture_kind_counts.items())),
+        "pulse_source_counts": dict(sorted(pulse_source_counts.items())),
+        "failed_rows": failed_rows,
+        "blocking_summary": (
+            "factory failures are now receipt-backed by concrete audio paths: monitor-loopback "
+            "candidates pass, while physical microphone/source rows fail from low captured RMS "
+            "or downstream RealtimeSTT/rung7 speaker-memory gates"
+        )
+        if failed_rows
+        else None,
+    }
+
+
 def source_identity_summary(current_factory_loopback_candidates: list[dict[str, Any]]) -> dict[str, Any]:
     missing_identity = [
         candidate
@@ -357,7 +430,13 @@ def is_current_factory_loopback_candidate(candidate: dict[str, Any]) -> bool:
 
 
 def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, Any]:
-    candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
+    matrix_receipt_paths = [
+        Path(str(session.get("latest_receipt")))
+        for session in matrix.get("sessions", [])
+        if session.get("folder_id") == "factory_noise" and session.get("latest_receipt")
+    ]
+    candidate_paths = sorted({path for path in [*proof_paths, *matrix_receipt_paths] if path.exists()})
+    candidates = [classify_proof(path, read_json(path)) for path in candidate_paths]
     factory = factory_matrix_summary(matrix)
     passing_candidates = [candidate for candidate in candidates if candidate["ingress_proven"]]
     current_factory_loopback_candidates = [
@@ -375,6 +454,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     browser_device_ingress = browser_device_ingress_summary(browser_candidates)
     listener_websocket = listener_websocket_summary(candidates)
     factory_gate_blockers = factory_gate_blocker_summary(factory)
+    factory_capture_paths = factory_capture_diagnostics(factory, candidates)
     source_identity = source_identity_summary(current_factory_loopback_candidates)
 
     failed_gates: list[str] = []
@@ -405,6 +485,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "browser_device_ingress": browser_device_ingress,
         "listener_websocket_ingress": listener_websocket,
         "factory_gate_blockers": factory_gate_blockers,
+        "factory_capture_paths": factory_capture_paths,
         "source_identity_evidence": source_identity,
         "historical_candidates": candidates,
         "current_factory_matrix": factory,
