@@ -340,6 +340,33 @@ What it does not prove:
 - The playback offset at the exact barge-in moment was measured.
 - Subjective human interruption feel.
 
+Current QRA-disabled Chatterbox speech receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/index.json`
+
+Result: `mocked=false`, `live=true`, `ok=true`, scenario `S10` passed.
+
+Child receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/S10-qra-disabled/tau-qra-disabled.json`
+
+What it exercised:
+
+- Sent a Tau voice render request with `use_blessed_qra_cache=false`.
+- Confirmed `response.blessed_qra_cache.enabled=false`.
+- Confirmed `response.blessed_qra_cache.hit=false`.
+- Rendered a normal Chatterbox WAV instead of a blessed-QRA cache hit.
+- Copied the audible render to
+  `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/S10-qra-disabled/qra-disabled-render.wav`.
+
+What it does not prove:
+
+- listener ASR
+- production memory QRA ranking
+- subjective voice quality
+- complete voice-delivery metadata, because the receipt still lacks `pace`,
+  `pause_strategy`, and `source`
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

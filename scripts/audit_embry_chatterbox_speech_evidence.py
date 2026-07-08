@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/S10-qra-disabled/tau-qra-disabled.json"),
     Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-20260702T134405Z.json"),
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/qra-creation-audio-hook.json"),
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/bless-qra-audio-variants.json"),
@@ -145,6 +146,15 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         and receipt.get("mocked") is False
         and (receipt.get("variant_count") or _nested_get(receipt, "child_receipt.variant_count") or 0) >= 5
     )
+    qra_disabled_normal_render_ok = bool(
+        receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and _nested_get(receipt, "request.use_blessed_qra_cache") is False
+        and _nested_get(receipt, "response.blessed_qra_cache.enabled") is False
+        and _nested_get(receipt, "response.blessed_qra_cache.hit") is False
+        and _render_audio_ok(receipt)
+    )
 
     missing_delivery_fields: list[str] = []
     missing_chunk_delivery_fields: list[list[str]] = []
@@ -169,6 +179,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "mocked": receipt.get("mocked"),
         "render_audio_ok": _render_audio_ok(receipt),
         "qra_variants_ok": qra_variants_ok,
+        "qra_disabled_normal_render_ok": qra_disabled_normal_render_ok,
         "variant_count": receipt.get("variant_count") or _nested_get(receipt, "child_receipt.variant_count") or len(variants),
         "played_variant_count": len(played_variants),
         "voice_delivery_missing_fields": missing_delivery_fields,
@@ -184,6 +195,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     live_renders = [candidate for candidate in proof_candidates if candidate["render_audio_ok"]]
     qra_variants = [candidate for candidate in proof_candidates if candidate["qra_variants_ok"]]
+    qra_disabled = [candidate for candidate in proof_candidates if candidate["qra_disabled_normal_render_ok"]]
     personality = [
         candidate
         for candidate in proof_candidates
@@ -223,6 +235,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "proof_candidate_count": len(proof_candidates),
         "live_render_candidate_count": len(live_renders),
         "qra_variant_candidate_count": len(qra_variants),
+        "qra_disabled_normal_render_candidate_count": len(qra_disabled),
         "audible_personality_candidate_count": len(personality),
         "incomplete_delivery_envelope_count": len(incomplete_delivery),
         "proof_candidates": proof_candidates,

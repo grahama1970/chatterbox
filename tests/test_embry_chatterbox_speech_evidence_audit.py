@@ -52,6 +52,40 @@ def test_classify_tau_voice_render_audio_and_delivery_gap() -> None:
 
     assert candidate["proof_type"] == "tau_voice_render"
     assert candidate["render_audio_ok"] is True
+    assert candidate["qra_disabled_normal_render_ok"] is False
+    assert candidate["voice_delivery_missing_fields"] == ["pace", "pause_strategy", "source"]
+
+
+def test_classify_qra_disabled_normal_render_candidate() -> None:
+    receipt = {
+        "schema": "chatterbox.tau_voice_render_smoke.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "request": {"use_blessed_qra_cache": False},
+        "response": {
+            "blessed_qra_cache": {"enabled": False, "hit": False},
+            "voice_delivery": {
+                "tone": "memory_confident",
+                "delivery_stage": "satisfied",
+                "pace": None,
+                "pause_strategy": None,
+                "source": None,
+            },
+        },
+        "artifacts": {
+            "finished_response_audio_metrics": {
+                "exists": True,
+                "bytes": 10,
+                "duration_seconds": 1.0,
+            }
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/qra-disabled.json"), receipt)
+
+    assert candidate["render_audio_ok"] is True
+    assert candidate["qra_disabled_normal_render_ok"] is True
     assert candidate["voice_delivery_missing_fields"] == ["pace", "pause_strategy", "source"]
 
 
@@ -122,6 +156,7 @@ def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> N
     assert audit["ok"] is False
     assert audit["live_render_candidate_count"] == 1
     assert audit["qra_variant_candidate_count"] == 1
+    assert audit["qra_disabled_normal_render_candidate_count"] == 0
     assert audit["audible_personality_candidate_count"] == 1
     assert "tone_emotion_matrix_has_failures" in audit["failed_gates"]
     assert "interruption_matrix_has_failures" in audit["failed_gates"]
