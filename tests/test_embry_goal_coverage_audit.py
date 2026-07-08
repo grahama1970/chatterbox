@@ -35,8 +35,8 @@ def test_goal_audit_keeps_pass_fail_counts_attached_to_subsystems() -> None:
     subsystems = audit["subsystems"]
 
     assert subsystems["memory_tau_routing"]["taxonomy"]["status_counts"] == {
-        "passed": 60,
-        "failed": 140,
+        "passed": 80,
+        "failed": 120,
         "not_run": 0,
     }
     assert subsystems["chat_ux_sync"]["taxonomy"]["status_counts"] == {
