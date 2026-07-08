@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 44, "failed": 228, "not_run": 28}
+    assert status_counts == {"passed": 44, "failed": 244, "not_run": 12}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -280,6 +280,35 @@ def test_matrix_adversarial_routes_32_47_subset_records_mixed_preflight_failures
     assert len(sessions) == 16
     assert all(session["status"] == "failed" for session in sessions)
     assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in sessions)
+    by_folder = {}
+    for session in sessions:
+        by_folder.setdefault(session["folder_id"], []).append(session)
+
+    for folder in ["skill_sparta_validator", "voice_control_skill"]:
+        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
+        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
+        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
+
+    assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
+    assert all(
+        "interruption_detected_receipt_not_emitted" in session["failed_gates"]
+        for session in by_folder["interruption"]
+    )
+
+
+def test_matrix_soak_routes_32_47_subset_records_mixed_preflight_failures() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["difficulty"] == "soak"
+        and session["folder_id"]
+        in {"skill_sparta_validator", "chat_ux_sync", "voice_control_skill", "interruption"}
+    ]
+
+    assert len(sessions) == 16
+    assert all(session["status"] == "failed" for session in sessions)
+    assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)

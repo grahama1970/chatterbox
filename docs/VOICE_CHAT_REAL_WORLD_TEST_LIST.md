@@ -256,6 +256,20 @@ create-figure, and analytics confirmed the required skill files exist, but no
 Tau handoff, `tau.dag_receipt.v1`, or `skill.call.receipt.v1` was emitted. The
 matrix now records `44` passed, `228` failed, and `28` not-run sessions.
 
+Latest matrix soak route subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json`
+
+That run executed the next `16` soak sessions with `mocked=false` and
+`ok=false`. Overall `live=false` because the four soak Chat UX rows still hit
+`runner_route_not_implemented`. The SPARTA validator and Embry voice-control
+direct-skill cases reached Tau and found the required skill files but emitted
+no Tau handoff, DAG, or `skill.call.receipt.v1`. The interruption cases
+exercised live cancel/duck/stop endpoint paths but still lack
+interruption-detection, new-turn, stale-audio, non-primary rejection, and
+Tau-wait natural-stop receipts. The matrix now records `44` passed, `244`
+failed, and `12` not-run sessions.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
