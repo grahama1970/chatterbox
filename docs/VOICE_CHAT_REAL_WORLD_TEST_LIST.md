@@ -77,6 +77,20 @@ It rendered all three bad answers to Chatterbox WAVs, but local playback through
 The generated WAV files are valid 24 kHz mono artifacts; playback timeout is a
 local command/device failure to investigate separately.
 
+Latest memory answerability ledger receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
+
+That run migrated the twelve simple SPARTA/persona/memory-miss cases into the
+canonical event-journal shape. It reported `mocked=false`, `live=true`, and
+`ok=false` with `74` journal events and `14` failed gates. All twelve cases
+computed `block_before_speech`: SPARTA QRA questions still leaked unrelated
+S0609/deprecated-control answers, persona-memory recall still used unrelated
+source collections, and memory-miss prompts still answered unrelated records
+instead of clarifying or no-answer. The proof scope is
+`live_memory_answerability_gate_not_runtime_speech_block`, so it does not prove
+that Tau or Chatterbox are already suppressing failed answers at runtime.
+
 Latest matrix memory/search subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json`

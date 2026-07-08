@@ -38,6 +38,21 @@ def test_matrix_speaker_identity_simple_cases_use_ledger_receipt() -> None:
     assert all("embry-speaker-identity-ledger" in session["latest_receipt"] for session in speaker_sessions)
 
 
+def test_matrix_memory_simple_failures_use_answerability_ledger_receipt() -> None:
+    matrix = build_matrix()
+    memory_sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["folder_id"] in {"sparta_qra_compliance", "persona_memory_recall", "persona_memory_miss"}
+        and session["difficulty"] == "simple"
+    ]
+
+    assert len(memory_sessions) == 12
+    assert all(session["status"] == "failed" for session in memory_sessions)
+    assert all("embry-memory-answerability-ledger" in session["latest_receipt"] for session in memory_sessions)
+    assert all(session["failed_gates"] for session in memory_sessions)
+
+
 def test_matrix_includes_required_route_families() -> None:
     matrix = build_matrix()
     routes = {session["route"] for session in matrix["sessions"]}
