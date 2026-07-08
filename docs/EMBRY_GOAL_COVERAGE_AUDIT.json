@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T04:56:43.365147+00:00",
+  "generated_at_utc": "2026-07-08T05:04:32.090772+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "partial": 4
@@ -577,7 +577,7 @@
         {
           "id": "VC-07",
           "name": "unknown speaker identity clarification",
-          "status": "missing"
+          "status": "proven_for_current_receipt"
         },
         {
           "id": "VC-08",
@@ -592,7 +592,7 @@
         {
           "id": "VC-19",
           "name": "unknown speaker utterance bank",
-          "status": "missing"
+          "status": "proven_for_current_receipt"
         },
         {
           "id": "VC-20",

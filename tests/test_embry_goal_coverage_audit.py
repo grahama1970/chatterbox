@@ -112,6 +112,9 @@ def test_goal_audit_speaker_summary_reflects_pyannote_overlap_slice() -> None:
     audit = _audit()
 
     speaker = audit["subsystems"]["speaker_identity"]
+    statuses = {item["id"]: item["status"] for item in speaker["requirements"]}
 
     assert "strict pyannote overlap receipt detects two speakers" in speaker["summary"]
     assert "physical speaker-to-mic identity gating" in speaker["summary"]
+    assert statuses["VC-07"] == "proven_for_current_receipt"
+    assert statuses["VC-19"] == "proven_for_current_receipt"

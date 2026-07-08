@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T050157Z-speaker-unknown-current/S03-unknown-speaker/identity-resolution.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/primary-speaker-gate-20260702T150040Z/suite-summary.json"),
     Path("/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json"),
@@ -123,7 +124,10 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         proof_type = "fixture_primary_speaker_gate"
     elif schema == "chatterbox.conversation_ladder.rung7.listener_contract.v1" and _known_speaker_resolution_ok(receipt):
         proof_type = "known_horus_listener_memory"
-    elif schema == "chatterbox.conversation_ladder.rung7.listener_contract.v1" and _unknown_speaker_resolution_ok(receipt):
+    elif schema in {
+        "chatterbox.conversation_ladder.rung7.listener_contract.v1",
+        "chatterbox.voice_chat_e2e.identity_resolution.v1",
+    } and _unknown_speaker_resolution_ok(receipt):
         proof_type = "unknown_speaker_fail_closed"
     else:
         proof_type = "unknown"
@@ -192,6 +196,11 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     fixture_gates = [candidate for candidate in proof_candidates if candidate["fixture_primary_accepts_and_rejects_non_primary"]]
     known_horus = [candidate for candidate in proof_candidates if candidate["known_horus_resolution_ok"]]
     unknown_fail_closed = [candidate for candidate in proof_candidates if candidate["unknown_speaker_fail_closed_ok"]]
+    live_unknown_fail_closed = [
+        candidate
+        for candidate in unknown_fail_closed
+        if candidate["live"] is True and candidate["mocked"] is False and candidate["ok"] is True
+    ]
     overlap_diarization = [
         candidate for candidate in proof_candidates if candidate["overlap_diarization_turn_control_ok"]
     ]
@@ -222,6 +231,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         failed_gates.append("known_horus_resolution_receipt_missing")
     if not unknown_fail_closed:
         failed_gates.append("unknown_speaker_fail_closed_receipt_missing")
+    if not live_unknown_fail_closed:
+        failed_gates.append("live_unknown_speaker_fail_closed_receipt_missing")
     if not independent_enrollment:
         failed_gates.append("independent_horus_enrollment_receipt_missing")
     if not physical_identity_proven:
@@ -247,6 +258,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         partial_proves.append("known_horus_resolution_can_route_speaker_scoped_memory")
     if unknown_fail_closed:
         partial_proves.append("unknown_speaker_resolution_fails_closed_to_identity_prompt")
+    if live_unknown_fail_closed:
+        partial_proves.append("live_unknown_speaker_resolution_fails_closed_to_identity_prompt")
     if overlap_diarization:
         partial_proves.append("pyannote_overlap_detection_routes_to_one_at_a_time_turn_control")
     if pyannote_strict_two_speaker:
@@ -264,6 +277,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "fixture_gate_candidate_count": len(fixture_gates),
         "known_horus_candidate_count": len(known_horus),
         "unknown_fail_closed_candidate_count": len(unknown_fail_closed),
+        "live_unknown_fail_closed_candidate_count": len(live_unknown_fail_closed),
         "overlap_diarization_candidate_count": len(overlap_diarization),
         "pyannote_strict_two_speaker_candidate_count": len(pyannote_strict_two_speaker),
         "independent_enrollment_candidate_count": len(independent_enrollment),

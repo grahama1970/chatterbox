@@ -16,6 +16,7 @@
       "fixture_primary_speaker_gate_suppresses_non_primary_audio",
       "known_horus_resolution_can_route_speaker_scoped_memory",
       "unknown_speaker_resolution_fails_closed_to_identity_prompt",
+      "live_unknown_speaker_resolution_fails_closed_to_identity_prompt",
       "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control",
       "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio"
     ]
@@ -25,17 +26,55 @@
     "physical_speaker_to_microphone_identity_gating_not_proven"
   ],
   "fixture_gate_candidate_count": 1,
-  "generated_at_utc": "2026-07-08T04:45:42.881023+00:00",
+  "generated_at_utc": "2026-07-08T05:04:32.047697+00:00",
   "independent_enrollment_candidate_count": 1,
   "known_horus_candidate_count": 2,
   "live": true,
+  "live_unknown_fail_closed_candidate_count": 1,
   "mocked": false,
   "ok": false,
   "overlap_diarization_candidate_count": 1,
   "physical_identity_candidate_count": 0,
   "policy_ledger_candidate_count": 1,
-  "proof_candidate_count": 7,
+  "proof_candidate_count": 8,
   "proof_candidates": [
+    {
+      "candidate_audio": null,
+      "claims_does_not_prove": [
+        "raw_audio_identity_embedding_correctness",
+        "live_microphone_capture",
+        "speaker_diarization_correctness"
+      ],
+      "claims_proves": [
+        "live_memory_speaker_resolution_fails_closed_without_personal_memory",
+        "identity_clarification_prompt_bank_is_available",
+        "tau_chatterbox_renders_identity_clarification_tone"
+      ],
+      "enrollment_audio": null,
+      "enrollment_independent_from_candidate": false,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": false,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "overlap_diarization_turn_control_ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T050157Z-speaker-unknown-current/S03-unknown-speaker/identity-resolution.json",
+      "physical_identity_not_proven_by_claims": false,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": null,
+      "proof_type": "unknown_speaker_fail_closed",
+      "pyannote_exclusive_speaker_count": null,
+      "pyannote_overlap_seconds": null,
+      "pyannote_speaker_count": null,
+      "pyannote_strict_two_speaker_ok": false,
+      "schema": "chatterbox.voice_chat_e2e.identity_resolution.v1",
+      "similarity": null,
+      "source_audio_identity_proven": null,
+      "threshold": null,
+      "unknown_speaker_fail_closed_ok": true
+    },
     {
       "candidate_audio": null,
       "claims_does_not_prove": [
@@ -501,5 +540,5 @@
     }
   },
   "status": "failed",
-  "unknown_fail_closed_candidate_count": 1
+  "unknown_fail_closed_candidate_count": 2
 }

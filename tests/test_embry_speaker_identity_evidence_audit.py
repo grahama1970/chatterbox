@@ -92,6 +92,33 @@ def test_classify_overlap_diarization_turn_control_receipt() -> None:
     assert candidate["overlap_diarization_turn_control_ok"] is True
 
 
+def test_classify_live_voice_chat_unknown_speaker_receipt() -> None:
+    receipt = {
+        "schema": "chatterbox.voice_chat_e2e.identity_resolution.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "speaker_resolution": {
+            "status": "unknown",
+            "allow_personal_memory": False,
+            "identity_prompt": {
+                "count": 20,
+                "text": "Who is this?",
+            },
+        },
+        "tau_voice_render": {
+            "ok": True,
+            "voice_delivery": {"tone": "identity_clarification"},
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/identity-resolution.json"), receipt)
+
+    assert candidate["proof_type"] == "unknown_speaker_fail_closed"
+    assert candidate["unknown_speaker_fail_closed_ok"] is True
+    assert candidate["live"] is True
+
+
 def test_classify_strict_pyannote_two_speaker_receipt() -> None:
     receipt = {
         "schema": "chatterbox.pyannote_diarization_smoke.v1",
@@ -220,6 +247,8 @@ def test_audit_fails_when_matrix_passes_but_physical_identity_is_unproven(tmp_pa
     assert audit["fixture_gate_candidate_count"] == 1
     assert audit["known_horus_candidate_count"] == 1
     assert audit["unknown_fail_closed_candidate_count"] == 1
+    assert audit["live_unknown_fail_closed_candidate_count"] == 0
+    assert "live_unknown_speaker_fail_closed_receipt_missing" in audit["failed_gates"]
     assert "independent_horus_enrollment_receipt_missing" in audit["failed_gates"]
     assert "physical_speaker_to_microphone_identity_gating_not_proven" in audit["failed_gates"]
     assert "matrix_contains_source_audio_identity_unproven_rows" in audit["failed_gates"]
@@ -288,6 +317,9 @@ def test_audit_passes_only_with_physical_identity_and_overlap_evidence_removed_f
         """
 {
   "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
   "speaker_resolution": {
     "status": "unknown",
     "allow_personal_memory": false,
@@ -343,6 +375,7 @@ def test_audit_passes_only_with_physical_identity_and_overlap_evidence_removed_f
     assert audit["fixture_gate_candidate_count"] == 1
     assert audit["known_horus_candidate_count"] == 1
     assert audit["unknown_fail_closed_candidate_count"] == 1
+    assert audit["live_unknown_fail_closed_candidate_count"] == 1
     assert audit["overlap_diarization_candidate_count"] == 1
     assert audit["independent_enrollment_candidate_count"] == 1
     assert audit["physical_identity_candidate_count"] == 1
