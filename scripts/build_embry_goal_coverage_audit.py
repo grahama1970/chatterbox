@@ -63,7 +63,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["shared_chat_ux"],
         "evidence_artifacts": ["docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"],
         "status": "failing",
-        "summary": "Replay and inline trace basics pass, but turn-id lineage, chat render receipts, and entity underline receipts fail.",
+        "summary": "Browser replay audio now advances and inline trace basics pass, but live DOM turn-id lineage, chat render receipts, and entity underline spans fail.",
         "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
     },
     "orb_sync": {
@@ -83,8 +83,8 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["shared_chat_ux"],
         "evidence_artifacts": ["docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"],
         "status": "partial",
-        "summary": "Event-sourced replay from a live Chatterbox interruption journal now covers turn order, audio artifacts, and original timing offsets; browser/shared Chat UX replay from a full live listener session is still missing.",
-        "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
+        "summary": "Browser shared Chat UX replay starts media playback and audio time advances; event-sourced replay covers turn order and timing offsets, but replay from a full live listener/STT session is still missing.",
+        "next_proof": "Repeat replay from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, turn lineage, orb, and interruption events.",
     },
     "interruption": {
         "title": "Interruption",

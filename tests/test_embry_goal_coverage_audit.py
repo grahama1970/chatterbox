@@ -86,6 +86,8 @@ def test_goal_audit_names_current_hard_failures() -> None:
     }["VC-17"] == "proven_for_current_receipts"
     assert "QRA disabled" in audit["subsystems"]["chatterbox_speech"]["summary"]
     assert "QRA disabled generation" not in audit["subsystems"]["chatterbox_speech"]["next_proof"]
+    assert "Browser replay audio now advances" in audit["subsystems"]["chat_ux_sync"]["summary"]
+    assert "entity underline spans fail" in audit["subsystems"]["chat_ux_sync"]["summary"]
     assert audit["subsystems"]["orb_sync"]["status"] == "partial"
     assert audit["goal_subsystem_status_counts"] == {
         "failing": 4,
@@ -102,8 +104,9 @@ def test_goal_audit_points_to_next_receipt_needed_for_orb_and_replay() -> None:
     assert "one turn_id" in orb["next_proof"]
     assert "server-envelope" in orb["summary"]
     assert orb["evidence_artifacts"] == ["docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"]
-    assert "browser shared Chat UX" in replay["next_proof"]
-    assert "original timing" in replay["summary"]
+    assert "full listener/STT session" in replay["next_proof"]
+    assert "turn lineage" in replay["next_proof"]
+    assert "audio time advances" in replay["summary"]
     assert "still missing" in replay["summary"]
     assert replay["evidence_artifacts"] == ["docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"]
 

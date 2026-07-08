@@ -90,7 +90,7 @@
     "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "tau_memory_routing:subsystem_status_not_passed:failing"
   ],
-  "generated_at_utc": "2026-07-08T07:15:25.925312+00:00",
+  "generated_at_utc": "2026-07-08T07:17:34.645880+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -209,7 +209,7 @@
           "id": "chat_ux_sync",
           "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
           "status": "failing",
-          "summary": "Replay and inline trace basics pass, but turn-id lineage, chat render receipts, and entity underline receipts fail."
+          "summary": "Browser replay audio now advances and inline trace basics pass, but live DOM turn-id lineage, chat render receipts, and entity underline spans fail."
         }
       ],
       "title": "Chat UX Sync"
@@ -554,9 +554,9 @@
       "subsystems": [
         {
           "id": "replay",
-          "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
+          "next_proof": "Repeat replay from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, turn lineage, orb, and interruption events.",
           "status": "partial",
-          "summary": "Event-sourced replay from a live Chatterbox interruption journal now covers turn order, audio artifacts, and original timing offsets; browser/shared Chat UX replay from a full live listener session is still missing."
+          "summary": "Browser shared Chat UX replay starts media playback and audio time advances; event-sourced replay covers turn order and timing offsets, but replay from a full live listener/STT session is still missing."
         }
       ],
       "title": "Replay"
@@ -669,7 +669,7 @@
     {
       "current_failure": "Replay is partial: event-sourced Chatterbox interruption replay is proven, but browser shared Chat UX replay from a full live listener session is not proven.",
       "id": "replay",
-      "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
+      "next_proof": "Repeat replay from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, turn lineage, orb, and interruption events.",
       "title": "Replay"
     },
     {
