@@ -128,6 +128,17 @@ persona-memory miss prompts still answered unrelated records instead of
 clarifying. These failures are now receipt-backed medium cases rather than
 `not_run`.
 
+Latest matrix medium Tau/direct-skill subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
+
+That run executed `16` medium Tau/direct-skill sessions with `mocked=false`,
+`live=true`, and `ok=false`. The four medium Tau orchestration sessions reached
+the Tau wrapper but still produced no `tau.agent_handoff.v1` work order or DAG
+receipt. The twelve medium direct-skill sessions for create-evidence-case,
+create-figure, and analytics confirmed the required skill files exist, but no
+Tau handoff, `tau.dag_receipt.v1`, or `skill.call.receipt.v1` was emitted.
+
 Latest matrix simple-rest receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json`
@@ -247,7 +258,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`15` passed, `61` failed, and `224` are `not_run`. This is the intended source
+`15` passed, `77` failed, and `208` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.
