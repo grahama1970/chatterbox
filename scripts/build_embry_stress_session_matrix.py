@@ -731,6 +731,38 @@ for _folder_id in ["skill_create_evidence_case", "skill_create_figure", "skill_a
             ),
         }
 
+_ADVERSARIAL_TAU_SKILL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T022326Z-matrix-adversarial-routes-16-31/receipt.json"
+)
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"tau_tool_orchestration-adversarial-{_index:02d}"] = {
+        "status": "failed",
+        "latest_receipt": _ADVERSARIAL_TAU_SKILL_RECEIPT,
+        "failed_gates": ["tau_agent_handoff_not_exercised"],
+        "observed": (
+            "Live adversarial Tau preflight reached the Tau wrapper, but no tau.agent_handoff.v1 "
+            "work order or DAG receipt was created."
+        ),
+    }
+
+for _folder_id in ["skill_create_evidence_case", "skill_create_figure", "skill_analytics"]:
+    for _index in range(1, 5):
+        CURRENT_RESULTS[f"{_folder_id}-adversarial-{_index:02d}"] = {
+            "status": "failed",
+            "latest_receipt": _ADVERSARIAL_TAU_SKILL_RECEIPT,
+            "failed_gates": [
+                "tau_agent_handoff_not_exercised",
+                "skill_call_receipt_not_emitted",
+                "tau_dag_receipt_not_created",
+            ],
+            "observed": (
+                "Live adversarial direct-skill preflight reached Tau and found the required skill, "
+                "but no Tau handoff, DAG, or skill-call receipt was emitted."
+            ),
+        }
+
 _SIMPLE_REST_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T000951Z-matrix-simple-rest/receipt.json"
