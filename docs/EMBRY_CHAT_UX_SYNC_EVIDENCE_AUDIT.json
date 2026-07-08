@@ -77,88 +77,13 @@
   },
   "chat_gate_candidate_count": 1,
   "chat_matrix": {
-    "failed_gate_counts": {
-      "runner_route_not_implemented": 12
-    },
-    "sample_failures": [
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "adversarial",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-adversarial-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "adversarial",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-adversarial-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "adversarial",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-adversarial-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "adversarial",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-adversarial-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      }
-    ],
+    "failed_gate_counts": {},
+    "sample_failures": [],
     "session_count": 20,
     "status_counts": {
-      "failed": 12,
+      "failed": 0,
       "not_run": 0,
-      "passed": 8
+      "passed": 20
     }
   },
   "claims": {
@@ -198,16 +123,13 @@
     "ready": true,
     "sample_failures": []
   },
-  "failed_gates": [
-    "chat_matrix_gate:runner_route_not_implemented",
-    "chat_ux_matrix_has_failures"
-  ],
-  "generated_at_utc": "2026-07-08T09:50:05.786401+00:00",
+  "failed_gates": [],
+  "generated_at_utc": "2026-07-08T09:59:13.954644+00:00",
   "lineage_candidate_count": 1,
   "live": true,
   "live_unmocked_candidate_count": 2,
   "mocked": false,
-  "ok": false,
+  "ok": true,
   "proof_candidate_count": 4,
   "proof_candidates": [
     {
@@ -304,7 +226,7 @@
           "ended_or_played_to_expected_offset": true,
           "error_event_count": 0,
           "event_count": 39,
-          "max_current_time_seconds": 3.642,
+          "max_current_time_seconds": 3.622,
           "max_duration_seconds": 5.418,
           "play_event_count": 2,
           "playback_started": true,
@@ -380,56 +302,13 @@
     "sample_failures": []
   },
   "runner_route_evidence": {
-    "blocking_summary": "advanced, adversarial, or soak Chat UX sync scenarios still have no live runner route",
+    "blocking_summary": null,
     "boundary": "chat_ux_sync_runner_routes",
-    "failed_gate_counts": {
-      "runner_route_not_implemented": 12
-    },
-    "failed_session_count": 12,
-    "latest_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json"
-    ],
-    "ready": false,
-    "sample_failures": [
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "runner_route_not_implemented"
-        ],
-        "id": "chat_ux_sync-advanced-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
-      }
-    ]
+    "failed_gate_counts": {},
+    "failed_session_count": 0,
+    "latest_receipt_paths": [],
+    "ready": true,
+    "sample_failures": []
   },
   "schema": "chatterbox.embry_chat_ux_sync_evidence_audit.v1",
   "screenshot_marker_count": 16,
@@ -595,5 +474,5 @@
       "url": "http://localhost:3002/#embry-voice"
     }
   ],
-  "status": "failed"
+  "status": "passed"
 }

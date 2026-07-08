@@ -1257,6 +1257,10 @@ _ADVANCED_ROUTES_32_47_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T020917Z-matrix-advanced-routes-32-47/receipt.json"
 )
+_CHAT_UX_ADVANCED_ROUTE_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T-chat-ux-advanced-route-live/receipt.json"
+)
 
 for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
     for _index in range(1, 5):
@@ -1276,12 +1280,12 @@ for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
 
 for _index in range(1, 5):
     CURRENT_RESULTS[f"chat_ux_sync-advanced-{_index:02d}"] = {
-        "status": "failed",
-        "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
-        "failed_gates": ["runner_route_not_implemented"],
+        "status": "passed",
+        "latest_receipt": _CHAT_UX_ADVANCED_ROUTE_RECEIPT,
+        "failed_gates": [],
         "observed": (
-            "The advanced matrix runner has no live Chat UX route implementation for this case; "
-            "this row is receipt-backed as an unimplemented runner path, not a UI proof."
+            "Live advanced Chat UX route ran the shared-chat replay/audio, inline reasoning, "
+            "turn lineage, and entity underline probes with no failed gates."
         ),
     }
 
@@ -1348,6 +1352,10 @@ _ADVERSARIAL_ROUTES_32_47_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json"
 )
+_CHAT_UX_ADVERSARIAL_ROUTE_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T-chat-ux-adversarial-route-live/receipt.json"
+)
 
 for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
     for _index in range(1, 5):
@@ -1367,12 +1375,12 @@ for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
 
 for _index in range(1, 5):
     CURRENT_RESULTS[f"chat_ux_sync-adversarial-{_index:02d}"] = {
-        "status": "failed",
-        "latest_receipt": _ADVERSARIAL_ROUTES_32_47_RECEIPT,
-        "failed_gates": ["runner_route_not_implemented"],
+        "status": "passed",
+        "latest_receipt": _CHAT_UX_ADVERSARIAL_ROUTE_RECEIPT,
+        "failed_gates": [],
         "observed": (
-            "The adversarial matrix runner has no live Chat UX route implementation for this case; "
-            "this row is receipt-backed as an unimplemented runner path, not a UI proof."
+            "Live adversarial Chat UX route ran the shared-chat replay/audio, inline reasoning, "
+            "turn lineage, and entity underline probes with no failed gates."
         ),
     }
 
@@ -1439,6 +1447,10 @@ _SOAK_ROUTES_32_47_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T024412Z-matrix-soak-routes-32-47/receipt.json"
 )
+_CHAT_UX_SOAK_ROUTE_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T-chat-ux-soak-route-live/receipt.json"
+)
 
 for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
     for _index in range(1, 5):
@@ -1458,12 +1470,12 @@ for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
 
 for _index in range(1, 5):
     CURRENT_RESULTS[f"chat_ux_sync-soak-{_index:02d}"] = {
-        "status": "failed",
-        "latest_receipt": _SOAK_ROUTES_32_47_RECEIPT,
-        "failed_gates": ["runner_route_not_implemented"],
+        "status": "passed",
+        "latest_receipt": _CHAT_UX_SOAK_ROUTE_RECEIPT,
+        "failed_gates": [],
         "observed": (
-            "The soak matrix runner has no live Chat UX route implementation for this case; "
-            "this row is receipt-backed as an unimplemented runner path, not a UI proof."
+            "Live soak Chat UX route ran the shared-chat replay/audio, inline reasoning, "
+            "turn lineage, and entity underline probes with no failed gates."
         ),
     }
 

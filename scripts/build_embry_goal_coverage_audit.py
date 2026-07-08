@@ -62,9 +62,9 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "requirement_ids": ["VC-01", "VC-24"],
         "taxonomy_subsystems": ["shared_chat_ux"],
         "evidence_artifacts": ["docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"],
-        "status": "failing",
-        "summary": "Browser replay audio now advances and inline trace basics pass, but live DOM turn-id lineage, chat render receipts, and entity underline spans fail.",
-        "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
+        "status": "passed",
+        "summary": "Shared Chat UX replay audio, inline memory reasoning trace evidence, assistant/audio turn-id lineage, and entity underline spans now pass across all Chat UX matrix rows.",
+        "next_proof": "Tie the passed shared Chat UX contract to a full live RealtimeSTT -> memory/Tau -> Chatterbox turn ledger.",
     },
     "orb_sync": {
         "title": "Orb Sync",

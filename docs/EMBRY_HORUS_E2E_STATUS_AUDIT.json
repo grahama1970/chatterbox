@@ -13,10 +13,6 @@
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
     "browser_mic_webrtc:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "browser_mic_webrtc:subsystem_status_not_passed:failing",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:runner_route_not_implemented",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_ux_matrix_has_failures",
-    "chat_ux_sync:artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
-    "chat_ux_sync:subsystem_status_not_passed:failing",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:current_factory_matrix_has_failures",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_final_transcript_present",
@@ -31,7 +27,6 @@
     "chatterbox_from_live_stt:subsystem_status_not_passed:failing,partial",
     "interruption:subsystem_status_not_passed:partial",
     "item_failed:browser_mic_webrtc",
-    "item_failed:chat_ux_sync",
     "item_failed:chatterbox_from_live_stt",
     "item_failed:interruption",
     "item_failed:orb_sync",
@@ -46,7 +41,7 @@
     "replay:subsystem_status_not_passed:partial",
     "tau_memory_routing:subsystem_status_not_passed:partial"
   ],
-  "generated_at_utc": "2026-07-08T09:51:45.336042+00:00",
+  "generated_at_utc": "2026-07-08T10:00:02.029555+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -114,7 +109,7 @@
         "session replay emits an audible browser playback receipt that advances and is not cut off",
         "the shared Chat UX emits committed render receipts"
       ],
-      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage, entity underline receipts, and audible browser replay receipts are missing.",
+      "current_failure": null,
       "evidence_artifacts": [
         {
           "claims": {
@@ -132,31 +127,25 @@
             ]
           },
           "exists": true,
-          "failed_gates": [
-            "chat_matrix_gate:runner_route_not_implemented",
-            "chat_ux_matrix_has_failures"
-          ],
+          "failed_gates": [],
           "live": true,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         }
       ],
-      "failed_reasons": [
-        "subsystem_status_not_passed:failing",
-        "artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"
-      ],
+      "failed_reasons": [],
       "id": "chat_ux_sync",
       "live_required": true,
       "mocked": false,
-      "status": "fail",
+      "status": "pass",
       "subsystems": [
         {
           "id": "chat_ux_sync",
-          "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
-          "status": "failing",
-          "summary": "Browser replay audio now advances and inline trace basics pass, but live DOM turn-id lineage, chat render receipts, and entity underline spans fail."
+          "next_proof": "Tie the passed shared Chat UX contract to a full live RealtimeSTT -> memory/Tau -> Chatterbox turn ledger.",
+          "status": "passed",
+          "summary": "Shared Chat UX replay audio, inline memory reasoning trace evidence, assistant/audio turn-id lineage, and entity underline spans now pass across all Chat UX matrix rows."
         }
       ],
       "title": "Chat UX Sync"
@@ -558,12 +547,6 @@
       "title": "Chatterbox From Live STT"
     },
     {
-      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage, entity underline receipts, and audible browser replay receipts are missing.",
-      "id": "chat_ux_sync",
-      "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
-      "title": "Chat UX Sync"
-    },
-    {
       "current_failure": "Orb sync is partial: direct Chatterbox speech is linked to server-envelope orb samples, but the same receipt has not been emitted from a full shared Chat UX or live listener turn.",
       "id": "orb_sync",
       "next_proof": "Emit the same orb linkage receipt from a full shared Chat UX or live listener turn where RealtimeSTT, memory/Tau, Chatterbox playback, and orb state all share one turn_id.",
@@ -587,7 +570,7 @@
   "source_goal_audit": "docs/EMBRY_GOAL_COVERAGE_AUDIT.json",
   "status": "failed",
   "status_counts": {
-    "fail": 8,
-    "pass": 0
+    "fail": 7,
+    "pass": 1
   }
 }

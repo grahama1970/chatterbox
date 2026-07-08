@@ -20,18 +20,21 @@ def test_horus_status_audit_covers_exact_requested_items() -> None:
         "replay",
         "interruption",
     }
-    assert audit["status_counts"] == {"pass": 0, "fail": 8}
+    assert audit["status_counts"] == {"pass": 1, "fail": 7}
     assert audit["ok"] is False
     assert audit["status"] == "failed"
     assert audit["failed_gates"]
-    assert "item_failed:chat_ux_sync" in audit["failed_gates"]
     assert "item_failed:browser_mic_webrtc" in audit["failed_gates"]
 
 
 def test_horus_status_audit_rejects_partial_or_nonlive_receipts() -> None:
     audit = build_audit(_goal_audit())
 
-    for item in audit["items"].values():
+    for item_id, item in audit["items"].items():
+        if item_id == "chat_ux_sync":
+            assert item["status"] == "pass"
+            assert item["failed_reasons"] == []
+            continue
         assert item["status"] == "fail"
         assert item["mocked"] is False
         assert item["live_required"] is True
@@ -54,8 +57,8 @@ def test_horus_status_audit_names_concrete_next_failures() -> None:
     assert "browser" in failures["browser_mic_webrtc"]["current_failure"].lower()
     assert "RealtimeSTT" in failures["browser_mic_webrtc"]["title"]
     assert "same-turn" in audit["items"]["chatterbox_from_live_stt"]["current_failure"]
-    assert "turn-id lineage" in audit["items"]["chat_ux_sync"]["current_failure"]
-    assert "audible browser replay" in audit["items"]["chat_ux_sync"]["current_failure"]
+    assert audit["items"]["chat_ux_sync"]["status"] == "pass"
+    assert audit["items"]["chat_ux_sync"]["current_failure"] is None
     assert any("audible browser playback receipt" in item for item in audit["items"]["chat_ux_sync"]["acceptance"])
     assert "event-sourced" in audit["items"]["replay"]["current_failure"]
     assert "partial" in audit["items"]["orb_sync"]["current_failure"]
@@ -97,10 +100,7 @@ def test_horus_status_audit_surfaces_artifact_failed_gates() -> None:
         gate == "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:assistant_response_plan_to_chat_render_lineage_missing"
         for gate in audit["failed_gates"]
     )
-    assert (
-        "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:runner_route_not_implemented"
-        in audit["failed_gates"]
-    )
+    assert not any(gate.startswith("chat_ux_sync:") for gate in audit["failed_gates"])
     assert "tau_memory_routing:subsystem_status_not_passed:partial" in audit["failed_gates"]
     assert not any(
         gate.startswith("tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:")

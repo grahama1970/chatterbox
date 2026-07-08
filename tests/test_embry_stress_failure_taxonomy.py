@@ -10,7 +10,7 @@ def test_taxonomy_preserves_matrix_coverage_counts() -> None:
     taxonomy = _taxonomy()
 
     assert taxonomy["session_count"] == 300
-    assert taxonomy["matrix_status_counts"] == {"passed": 233, "failed": 67, "not_run": 0}
+    assert taxonomy["matrix_status_counts"] == {"passed": 245, "failed": 55, "not_run": 0}
     assert taxonomy["receipt_backed_count"] == 300
     assert taxonomy["missing_receipt_sessions"] == []
     assert taxonomy["not_run_sessions"] == []
@@ -36,8 +36,8 @@ def test_taxonomy_groups_failures_by_subsystem() -> None:
         "not_run": 0,
     }
     assert subsystems["shared_chat_ux"]["status_counts"] == {
-        "passed": 8,
-        "failed": 12,
+        "passed": 20,
+        "failed": 0,
         "not_run": 0,
     }
     assert subsystems["interruption_turn_control"]["status_counts"] == {
@@ -73,11 +73,11 @@ def test_taxonomy_exposes_top_repair_blockers() -> None:
     assert gates.get("voice_control_controlled_live_ready", 0) == 0
     assert gates.get("voice_control_case_text-turn_pass", 0) == 0
     assert gates.get("text_turn_memory_tau_chatterbox_authority", 0) == 0
-    assert gates["runner_route_not_implemented"] == 24
+    assert gates["runner_route_not_implemented"] == 12
     assert gates["interruption_detected_receipt_not_emitted"] == 20
     assert top_gates[:3] == [
-        {"gate": "runner_route_not_implemented", "count": 24},
         {"gate": "interruption_detected_receipt_not_emitted", "count": 20},
+        {"gate": "runner_route_not_implemented", "count": 12},
         {"gate": "capture_captured_audio_rms", "count": 6},
     ]
 

@@ -68,7 +68,7 @@ ITEMS: dict[str, dict[str, Any]] = {
             "session replay emits an audible browser playback receipt that advances and is not cut off",
             "the shared Chat UX emits committed render receipts",
         ],
-        "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage, entity underline receipts, and audible browser replay receipts are missing.",
+        "current_failure": "Chat UX sync passes as a shared UI contract; it is not yet tied to a full live RealtimeSTT -> memory/Tau -> Chatterbox turn ledger.",
     },
     "orb_sync": {
         "title": "Orb Sync",

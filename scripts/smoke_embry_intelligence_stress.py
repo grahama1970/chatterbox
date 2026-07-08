@@ -2971,6 +2971,89 @@ def run_brave_case(*, brave_script: Path, timeout_s: int) -> dict[str, Any]:
     )
 
 
+def run_shared_chat_ux_sync(session: dict[str, Any], *, timeout_s: int) -> dict[str, Any]:
+    case_id = re.sub(r"[^A-Za-z0-9_-]+", "-", str(session["id"])).strip("-")
+    run_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{case_id}"
+    lineage_cmd = run_cmd(
+        [
+            "python3",
+            "scripts/prove_embry_chat_ux_lineage.py",
+            "--run-id",
+            f"{run_id}-lineage",
+        ],
+        timeout_s=timeout_s,
+    )
+    replay_cmd = run_cmd(
+        [
+            "python3",
+            "scripts/prove_embry_chat_ux_replay_audio.py",
+            "--run-id",
+            f"{run_id}-replay-audio",
+            "--wait-ms",
+            "9000",
+            "--min-advanced-seconds",
+            "0.5",
+        ],
+        timeout_s=timeout_s,
+    )
+    audit_cmd = run_cmd(["python3", "scripts/audit_embry_chat_ux_sync_evidence.py"], timeout_s=timeout_s)
+    lineage_path = Path(f"/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/{run_id}-lineage/receipt.json")
+    replay_path = Path(f"/tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio/{run_id}-replay-audio/receipt.json")
+    audit_path = Path("docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json")
+
+    def read_receipt(path: Path) -> dict[str, Any]:
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": str(exc), "path": str(path)}
+
+    lineage = read_receipt(lineage_path)
+    replay = read_receipt(replay_path)
+    audit = read_receipt(audit_path)
+    question = normalize(str(session.get("question") or ""))
+    failed: list[str] = []
+    if lineage_cmd["returncode"] != 0 or not lineage.get("ok"):
+        failed.extend(str(gate) for gate in lineage.get("failed_gates") or ["chat_ux_lineage_probe_ok"])
+    if replay_cmd["returncode"] != 0 or not replay.get("ok"):
+        failed.extend(str(gate) for gate in replay.get("failed_gates") or ["chat_ux_replay_audio_probe_ok"])
+    if audit_cmd["returncode"] != 0 and not audit.get("dynamic_replay_candidate_count"):
+        failed.append("chat_ux_audit_dynamic_replay_candidate_present")
+
+    if "replay" in question and not replay.get("ok"):
+        failed.append("shared_chat_replay_audio_not_proven")
+    if "memory reasoning trace" in question and not audit.get("dynamic_replay_candidate_count"):
+        failed.append("inline_memory_reasoning_trace_not_proven")
+    if "same turn id" in question and not lineage.get("lineage_ready"):
+        failed.append("chat_turn_id_matches_response_plan_not_proven")
+    if "entity underlines" in question and not lineage.get("entity_underlines_ready"):
+        failed.append("spoken_transcript_entity_underlines_not_proven")
+
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": str(session.get("route") or ""),
+        "lineage_receipt": str(lineage_path),
+        "replay_audio_receipt": str(replay_path),
+        "chat_ux_audit": str(audit_path),
+        "commands": {
+            "lineage": lineage_cmd,
+            "replay_audio": replay_cmd,
+            "audit": audit_cmd,
+        },
+        "observed": {
+            "lineage_ready": lineage.get("lineage_ready"),
+            "entity_underlines_ready": lineage.get("entity_underlines_ready"),
+            "replay_audio_ok": replay.get("ok"),
+            "dynamic_replay_candidate_count": audit.get("dynamic_replay_candidate_count"),
+        },
+        "ok": not failed,
+        "mocked": False,
+        "live": bool(lineage.get("live") is True and replay.get("live") is True),
+        "failed_gates": sorted(set(failed)),
+    }
+
+
 def run_matrix_session(
     session: dict[str, Any],
     *,
@@ -3109,6 +3192,8 @@ def run_matrix_session(
         result["matrix_session"] = session
         result["route"] = route
         return result
+    if route == "ux-lab.shared_chat":
+        return run_shared_chat_ux_sync(session, timeout_s=timeout_s)
     return {
         "id": session["id"],
         "matrix_session": session,

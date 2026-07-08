@@ -1,14 +1,15 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T09:51:45.294076+00:00",
+  "generated_at_utc": "2026-07-08T10:00:01.985296+00:00",
   "goal_subsystem_status_counts": {
-    "failing": 2,
-    "partial": 6
+    "failing": 1,
+    "partial": 6,
+    "passed": 1
   },
   "matrix_status_counts": {
-    "failed": 67,
+    "failed": 55,
     "not_run": 0,
-    "passed": 233
+    "passed": 245
   },
   "objective": "Stress test Embry voice/chat system to identify concrete failures across RealtimeSTT ingress, speaker identity, memory/Tau routing, Chatterbox speech, Chat UX sync, orb sync, replay, and interruption.",
   "overall": {
@@ -26,7 +27,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
+      "next_proof": "Tie the passed shared Chat UX contract to a full live RealtimeSTT -> memory/Tau -> Chatterbox turn ledger.",
       "objective_phrase": "Chat UX sync",
       "requirement_ids": [
         "VC-01",
@@ -44,20 +45,15 @@
           "status": "missing"
         }
       ],
-      "status": "failing",
-      "summary": "Browser replay audio now advances and inline trace basics pass, but live DOM turn-id lineage, chat render receipts, and entity underline spans fail.",
+      "status": "passed",
+      "summary": "Shared Chat UX replay audio, inline memory reasoning trace evidence, assistant/audio turn-id lineage, and entity underline spans now pass across all Chat UX matrix rows.",
       "taxonomy": {
         "status_counts": {
-          "failed": 12,
+          "failed": 0,
           "not_run": 0,
-          "passed": 8
+          "passed": 20
         },
-        "top_failed_gates": [
-          {
-            "count": 12,
-            "gate": "runner_route_not_implemented"
-          }
-        ]
+        "top_failed_gates": []
       },
       "taxonomy_subsystems": [
         "shared_chat_ux"
@@ -451,16 +447,11 @@
       "summary": "Browser shared Chat UX replay starts media playback and audio time advances; event-sourced replay covers turn order and timing offsets, but replay from a full live listener/STT session is still missing.",
       "taxonomy": {
         "status_counts": {
-          "failed": 12,
+          "failed": 0,
           "not_run": 0,
-          "passed": 8
+          "passed": 20
         },
-        "top_failed_gates": [
-          {
-            "count": 12,
-            "gate": "runner_route_not_implemented"
-          }
-        ]
+        "top_failed_gates": []
       },
       "taxonomy_subsystems": [
         "shared_chat_ux"

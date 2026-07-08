@@ -40,8 +40,8 @@ def test_goal_audit_keeps_pass_fail_counts_attached_to_subsystems() -> None:
         "not_run": 0,
     }
     assert subsystems["chat_ux_sync"]["taxonomy"]["status_counts"] == {
-        "passed": 8,
-        "failed": 12,
+        "passed": 20,
+        "failed": 0,
         "not_run": 0,
     }
     assert subsystems["interruption"]["taxonomy"]["status_counts"] == {
@@ -66,7 +66,7 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert audit["subsystems"]["speaker_identity"]["evidence_artifacts"] == [
         "docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json"
     ]
-    assert audit["subsystems"]["chat_ux_sync"]["status"] == "failing"
+    assert audit["subsystems"]["chat_ux_sync"]["status"] == "passed"
     assert audit["subsystems"]["chat_ux_sync"]["evidence_artifacts"] == [
         "docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"
     ]
@@ -86,14 +86,15 @@ def test_goal_audit_names_current_hard_failures() -> None:
     }["VC-17"] == "proven_for_current_receipts"
     assert "QRA disabled" in audit["subsystems"]["chatterbox_speech"]["summary"]
     assert "QRA disabled generation" not in audit["subsystems"]["chatterbox_speech"]["next_proof"]
-    assert "Browser replay audio now advances" in audit["subsystems"]["chat_ux_sync"]["summary"]
-    assert "entity underline spans fail" in audit["subsystems"]["chat_ux_sync"]["summary"]
+    assert "Shared Chat UX replay audio" in audit["subsystems"]["chat_ux_sync"]["summary"]
+    assert "entity underline spans now pass" in audit["subsystems"]["chat_ux_sync"]["summary"]
     assert "live primary-speaker barge-in receipt" in audit["subsystems"]["interruption"]["summary"]
     assert "Tau wait natural-stop" in audit["subsystems"]["interruption"]["summary"]
     assert audit["subsystems"]["orb_sync"]["status"] == "partial"
     assert audit["goal_subsystem_status_counts"] == {
-        "failing": 2,
+        "failing": 1,
         "partial": 6,
+        "passed": 1,
     }
 
 
