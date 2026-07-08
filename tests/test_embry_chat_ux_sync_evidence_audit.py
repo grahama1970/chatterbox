@@ -65,6 +65,8 @@ def test_classify_lineage_and_entity_underline_receipt() -> None:
 
 def test_classify_audible_browser_session_replay_receipt() -> None:
     receipt = {
+        "live": True,
+        "mocked": False,
         "audible_playback_receipt": {
             "playback_started": True,
             "current_time_advanced": True,
@@ -75,6 +77,8 @@ def test_classify_audible_browser_session_replay_receipt() -> None:
     candidate = classify_proof(Path("/tmp/audible.json"), receipt)
 
     assert candidate["audible_session_replay"] is True
+    assert candidate["live"] is True
+    assert candidate["mocked"] is False
     assert candidate["observed"]["audible_playback_present"] is True
 
 

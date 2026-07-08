@@ -86,8 +86,12 @@ def test_horus_status_audit_attaches_receipt_paths_to_each_item() -> None:
 def test_horus_status_audit_surfaces_artifact_failed_gates() -> None:
     audit = build_audit(_goal_audit())
 
+    assert (
+        "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:audible_session_replay_receipt_missing"
+        not in audit["failed_gates"]
+    )
     assert any(
-        gate == "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:audible_session_replay_receipt_missing"
+        gate == "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:assistant_response_plan_to_chat_render_lineage_missing"
         for gate in audit["failed_gates"]
     )
     assert any(

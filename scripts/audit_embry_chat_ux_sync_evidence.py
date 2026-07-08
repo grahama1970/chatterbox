@@ -17,6 +17,7 @@ DEFAULT_OUT = Path("docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"),
     Path("/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio/latest/receipt.json"),
 ]
 DEFAULT_MARKER_GLOB = ".codex/ui-verification/*embry-voice*.latest.json"
 
@@ -194,6 +195,8 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "path": str(path),
         "exists": path.exists(),
         "schema": schema,
+        "live": receipt.get("live"),
+        "mocked": receipt.get("mocked"),
         "chat_gate_pass": chat_gate_pass,
         "dynamic_replay_basic": dynamic_replay_basic,
         "inline_reasoning_trace_basic": bool(assertions.get("liveReasoningTraceVisibleDuringReplay")),
@@ -223,6 +226,7 @@ def _audible_replay_evidence(proof_candidates: list[dict[str, Any]]) -> dict[str
         if (
             candidate.get("chat_gate_pass")
             or candidate.get("dynamic_replay_basic")
+            or candidate.get("audible_session_replay")
             or candidate["observed"].get("chat_gate_evidence")
         )
     ]
@@ -262,6 +266,11 @@ def _audible_replay_evidence(proof_candidates: list[dict[str, Any]]) -> dict[str
 def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: str = DEFAULT_MARKER_GLOB) -> dict[str, Any]:
     chat_matrix = _chat_matrix_summary(matrix)
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
+    live_unmocked_candidates = [
+        candidate
+        for candidate in proof_candidates
+        if candidate.get("live") is True and candidate.get("mocked") is False
+    ]
     markers = _marker_candidates(marker_glob)
     lineage_evidence = _session_blocker_summary(
         matrix,
@@ -327,11 +336,12 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
         "schema": "chatterbox.embry_chat_ux_sync_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
-        "live": False,
+        "live": bool(live_unmocked_candidates),
         "ok": ok,
         "status": "passed" if ok else "failed",
         "chat_matrix": chat_matrix,
         "proof_candidate_count": len(proof_candidates),
+        "live_unmocked_candidate_count": len(live_unmocked_candidates),
         "chat_gate_candidate_count": len(chat_gate_candidates),
         "dynamic_replay_candidate_count": len(replay_candidates),
         "lineage_candidate_count": len(lineage_candidates),
