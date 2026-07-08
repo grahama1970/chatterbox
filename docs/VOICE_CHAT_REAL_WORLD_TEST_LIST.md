@@ -153,6 +153,19 @@ UX medium rows are mapped to the deterministic Chat UX gate audit: replay and
 inline reasoning trace pass; turn-id lineage and `$extract-entities` underline
 rendering remain failed.
 
+Latest matrix medium speaker/factory/tone subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015351Z-matrix-medium-routes-48-63/receipt.json`
+
+That run selected the remaining `12` medium cases. Four speaker identity cases
+passed against live memory `/speaker/resolve` policy. Tone/emotion repeated the
+simple pattern: the warm/frustrated case passed, while hostile, discouraged, and
+two-speaker-overlap prompts still returned `memory_confident` instead of the
+required boundary/support/one-at-a-time tones. Factory-noise medium rows are
+mapped to concrete current capture receipts, not the runner's generic gap:
+current source 67 and webcam paths fail at RMS/capture, while source 62 fails
+RealtimeSTT/rung7 and Horus speaker-resolution/memory gates.
+
 Latest matrix simple-rest receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json`
@@ -272,7 +285,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`17` passed, `91` failed, and `192` are `not_run`. This is the intended source
+`22` passed, `98` failed, and `180` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.

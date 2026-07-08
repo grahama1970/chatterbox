@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 17, "failed": 91, "not_run": 192}
+    assert status_counts == {"passed": 22, "failed": 98, "not_run": 180}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -119,6 +119,29 @@ def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
     assert by_folder["chat_ux_sync"][2]["status"] == "failed"
     assert by_folder["chat_ux_sync"][3]["status"] == "failed"
     assert all("chat-ux-gate-audit" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
+
+
+def test_matrix_medium_routes_48_63_subset_has_receipt_backed_results() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["difficulty"] == "medium"
+        and session["folder_id"] in {"speaker_identity", "factory_noise", "tone_emotion"}
+    ]
+
+    assert len(sessions) == 12
+    by_folder = {}
+    for session in sessions:
+        by_folder.setdefault(session["folder_id"], []).append(session)
+
+    assert all(session["status"] == "passed" for session in by_folder["speaker_identity"])
+    assert all("matrix-medium-routes-48-63" in session["latest_receipt"] for session in by_folder["speaker_identity"])
+    assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
+    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
+    assert by_folder["tone_emotion"][0]["status"] == "passed"
+    assert all(session["status"] == "failed" for session in by_folder["tone_emotion"][1:])
+    assert all("matrix-medium-routes-48-63" in session["latest_receipt"] for session in by_folder["tone_emotion"])
 
 
 def test_matrix_includes_required_route_families() -> None:

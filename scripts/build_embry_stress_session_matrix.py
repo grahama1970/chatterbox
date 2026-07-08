@@ -947,6 +947,99 @@ CURRENT_RESULTS.update(
     }
 )
 
+_MEDIUM_ROUTES_48_63_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T015351Z-matrix-medium-routes-48-63/receipt.json"
+)
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"speaker_identity-medium-{_index:02d}"] = {
+        "status": "passed",
+        "latest_receipt": _MEDIUM_ROUTES_48_63_RECEIPT,
+        "failed_gates": [],
+        "observed": (
+            "Live medium speaker-resolution policy case passed through memory /speaker/resolve "
+            "using deterministic speaker evidence."
+        ),
+    }
+
+CURRENT_RESULTS.update(
+    {
+        "factory_noise-medium-01": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_CURRENT_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms", "asr_final_transcript_present"],
+            "observed": (
+                "Current factory-stress capture played the Horus/factory WAV through sink 64, "
+                "but captured RMS was 7, so the ASR path could not prove a QRA question over "
+                "factory-floor background noise."
+            ),
+        },
+        "factory_noise-medium-02": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
+            "failed_gates": [
+                "realtimestt_command_ok",
+                "realtimestt_receipt_ok",
+                "rung7_receipt_ok",
+                "speaker_resolution_known_horus",
+                "speaker_memory_recall_found",
+            ],
+            "observed": (
+                "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did "
+                "not resolve Horus or recover speaker-scoped memory."
+            ),
+        },
+        "factory_noise-medium-03": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_67_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "Current Jabra source 67 run captured RMS 6, so the compliance question through "
+                "the Jabra speaker/mic path failed at the audio capture boundary."
+            ),
+        },
+        "factory_noise-medium-04": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_WEBCAM_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio "
+                "played, so the research question through that microphone path failed at capture."
+            ),
+        },
+    }
+)
+
+CURRENT_RESULTS.update(
+    {
+        "tone_emotion-medium-01": {
+            "status": "passed",
+            "latest_receipt": _MEDIUM_ROUTES_48_63_RECEIPT,
+            "failed_gates": [],
+            "observed": "Memory /intent returned voice_delivery tone memory_confident for a frustrated/warm de-escalation prompt.",
+        },
+        "tone_emotion-medium-02": {
+            "status": "failed",
+            "latest_receipt": _MEDIUM_ROUTES_48_63_RECEIPT,
+            "failed_gates": ["voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"],
+            "observed": "Memory /intent returned memory_confident instead of a firm, deflecting, or playful boundary tone for hostile input.",
+        },
+        "tone_emotion-medium-03": {
+            "status": "failed",
+            "latest_receipt": _MEDIUM_ROUTES_48_63_RECEIPT,
+            "failed_gates": ["voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved"],
+            "observed": "Memory /intent returned memory_confident instead of a gentle/supportive tone for discouraged input.",
+        },
+        "tone_emotion-medium-04": {
+            "status": "failed",
+            "latest_receipt": _MEDIUM_ROUTES_48_63_RECEIPT,
+            "failed_gates": ["voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt"],
+            "observed": "Memory /intent returned memory_confident instead of one_at_a_time_interrupt or firm_boundary for speaker overlap.",
+        },
+    }
+)
+
 _TONE_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T001850Z-matrix-tone-simple/receipt.json"
