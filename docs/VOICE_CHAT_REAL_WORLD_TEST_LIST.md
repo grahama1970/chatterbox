@@ -91,6 +91,19 @@ instead of clarifying or no-answer. The proof scope is
 `live_memory_answerability_gate_not_runtime_speech_block`, so it does not prove
 that Tau or Chatterbox are already suppressing failed answers at runtime.
 
+Latest runtime answerability block receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-answerability-runtime-block/20260708T010111Z-answerability-runtime-block/receipt.json`
+
+That run replayed all twelve blocked answerability cases against the live
+`/tau/voice-render` endpoint. It reported `mocked=false`, `live=true`,
+`ok=true`, `case_count=12`, and `failed_gates=[]`. Each child response returned
+server `ok=false` with `answerability_blocks_speech` and
+`answerability_failed_gates_present`, and no child produced a
+`finished_response_audio` file. This proves the voice-render boundary now
+suppresses blocked memory answers before Chatterbox audio; it does not prove the
+memory service chose the right answer in the first place.
+
 Latest matrix memory/search subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json`
@@ -349,9 +362,9 @@ These are not closed by the latest suite:
   lacking character
 - longer multi-turn memory conversations with memory miss, memory hit, and
   identity changes in the same session
-- answerability gates before speech for SPARTA QRA and persona-memory questions,
-  because live `/answer` can return unrelated records that Tau/Chatterbox will
-  otherwise render audibly
+- upstream answerability quality for SPARTA QRA and persona-memory questions,
+  because live `/answer` can return unrelated records; the voice-render boundary
+  now blocks `block_before_speech` decisions before Chatterbox audio
 
 ## Failure Handling Rule
 

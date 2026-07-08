@@ -165,6 +165,7 @@ class TauVoiceRenderRequest(BaseModel):
     question_text: str | None = Field(default=None, max_length=12000)
     question_text_sha256: str | None = Field(default=None, max_length=128)
     memory_route_decision: dict[str, Any] = Field(default_factory=dict)
+    answerability_decision: dict[str, Any] = Field(default_factory=dict)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
     speakable_chunks: list[TauVoiceChunk] = Field(min_length=1)
     tone: str | None = Field(default=None, max_length=80)
@@ -1174,6 +1175,11 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         failed_gates.append("tau_voice_render_schema")
     if request.question_text and request.question_text_sha256 and sha256_text(request.question_text) != request.question_text_sha256:
         failed_gates.append("question_text_sha256_matches")
+    answerability_decision = request.answerability_decision or {}
+    if answerability_decision.get("decision") == "block_before_speech":
+        failed_gates.append("answerability_blocks_speech")
+    if answerability_decision.get("failed_gates") and answerability_decision.get("decision") != "answerable":
+        failed_gates.append("answerability_failed_gates_present")
 
     chunk_texts: list[str] = []
     delivery_stages: list[str] = []
@@ -1260,6 +1266,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         "source_chunk_count": len(request.speakable_chunks),
         "source_chunks": chunk_receipts,
         "memory_route_decision": request.memory_route_decision,
+        "answerability_decision": answerability_decision,
         "voice_delivery": tau_voice_delivery,
         "turn_control_policy": model_to_dict(request.turn_control_policy),
         "external_evidence": request.external_evidence,

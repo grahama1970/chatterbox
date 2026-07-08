@@ -299,6 +299,58 @@ def test_tau_voice_render_request_fails_closed_on_hash_mismatch() -> None:
     assert "chunk_1_text_sha256_matches" in receipt["failed_gates"]
 
 
+def test_tau_voice_render_request_blocks_failed_answerability() -> None:
+    request = TauVoiceRenderRequest(
+        conversation_id="conv-1",
+        turn_id="turn-blocked-answer",
+        question_text="What private code word did I tell Embry yesterday?",
+        question_text_sha256=server.sha256_text("What private code word did I tell Embry yesterday?"),
+        answerability_decision={
+            "decision": "block_before_speech",
+            "failed_gates": ["memory_miss_should_not_answer_unrelated_record"],
+        },
+        speakable_chunks=[
+            {
+                "text": "Read and explain Embry OS configuration from embry.yaml",
+                "text_sha256": server.sha256_text("Read and explain Embry OS configuration from embry.yaml"),
+            }
+        ],
+    )
+
+    _batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
+
+    assert receipt["ok"] is False
+    assert "answerability_blocks_speech" in receipt["failed_gates"]
+    assert "answerability_failed_gates_present" in receipt["failed_gates"]
+    assert receipt["answerability_decision"]["decision"] == "block_before_speech"
+
+
+def test_tau_voice_render_request_allows_answerable_answerability() -> None:
+    chunk_text = "Horus Lupercal grew up on Cthonia."
+    request = TauVoiceRenderRequest(
+        conversation_id="conv-1",
+        turn_id="turn-answerable",
+        question_text="Where did Horus Lupercal grow up?",
+        question_text_sha256=server.sha256_text("Where did Horus Lupercal grow up?"),
+        answerability_decision={
+            "decision": "answerable",
+            "failed_gates": [],
+        },
+        speakable_chunks=[
+            {
+                "text": chunk_text,
+                "text_sha256": server.sha256_text(chunk_text),
+            }
+        ],
+    )
+
+    batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
+
+    assert receipt["ok"] is True
+    assert receipt["failed_gates"] == []
+    assert batch.answer_text == chunk_text
+
+
 def test_stream_turn_should_stop_only_for_cancel_or_stop() -> None:
     server.turn_controls.clear()
     turn_id = "turn-stream-stop-test"

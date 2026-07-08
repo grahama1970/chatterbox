@@ -90,9 +90,21 @@ def load_voice_delivery(args: argparse.Namespace) -> dict[str, Any]:
     return voice_delivery if isinstance(voice_delivery, dict) else {}
 
 
+def load_answerability(args: argparse.Namespace) -> dict[str, Any]:
+    if args.answerability_json:
+        try:
+            data = json.loads(args.answerability_json)
+            if isinstance(data, dict):
+                return data
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
 def build_payload(args: argparse.Namespace) -> dict[str, Any]:
     chunks = split_text_chunks(args.answer_text, max_chars=300)
     voice_delivery = load_voice_delivery(args)
+    answerability_decision = load_answerability(args)
     tone = voice_delivery.get("tone")
     delivery_stage = voice_delivery.get("delivery_stage") or "neutral"
     return {
@@ -111,6 +123,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
             "similarity": args.blessed_qra_memory_similarity,
             "review_status": args.blessed_qra_memory_review_status,
         },
+        "answerability_decision": answerability_decision,
         "voice_delivery": voice_delivery,
         "speakable_chunks": [
             {
@@ -231,6 +244,8 @@ def main() -> int:
     parser.add_argument("--listener-receipt", default=None)
     parser.add_argument("--voice-delivery-json", default=None)
     parser.add_argument("--voice-delivery-receipt", default=None)
+    parser.add_argument("--answerability-json", default=None)
+    parser.add_argument("--expect-answerability-block", action="store_true")
     parser.add_argument("--container-out-dir", default="/out")
     parser.add_argument("--host-out-dir", default="/tmp/chatterbox-fork-agent-out", type=Path)
     parser.add_argument("--expect-cache-hit", action="store_true")
@@ -251,10 +266,19 @@ def main() -> int:
         status_code, response, post_error = post_json(f"{base_url}/tau/voice-render", payload, args.timeout_s)
         if status_code != 200:
             failed_gates.append("tau_voice_render_http_200")
-        if not response or not response.get("ok"):
+        if not args.expect_answerability_block and (not response or not response.get("ok")):
             failed_gates.append("tau_voice_render_response_ok")
         if response and (response.get("tau_voice_render_request") or {}).get("schema") != "tau.voice_render_request.v1":
             failed_gates.append("tau_voice_render_schema")
+        if args.expect_answerability_block:
+            response_failed = (response or {}).get("failed_gates") or []
+            tau_failed = ((response or {}).get("tau_voice_render_request") or {}).get("failed_gates") or []
+            if (response or {}).get("ok") is not False:
+                failed_gates.append("answerability_block_response_not_ok_false")
+            if not any("answerability_blocks_speech" in str(gate) for gate in [*response_failed, *tau_failed]):
+                failed_gates.append("answerability_block_gate_present")
+            if (response or {}).get("finished_response_audio"):
+                failed_gates.append("answerability_block_no_finished_audio")
         if args.expect_cache_hit:
             cache = (response or {}).get("blessed_qra_cache") or {}
             if not cache.get("hit"):
@@ -270,7 +294,7 @@ def main() -> int:
         args.host_out_dir,
     )
     finished_audio_metrics = wav_metrics(finished_audio_host_path)
-    if response and not finished_audio_metrics.get("exists"):
+    if response and not args.expect_answerability_block and not finished_audio_metrics.get("exists"):
         failed_gates.append("finished_audio_host_path_exists")
 
     receipt = {
@@ -299,6 +323,7 @@ def main() -> int:
             "blessed_qra_memory_similarity": payload["blessed_qra_memory_similarity"],
             "blessed_qra_memory_review_status": payload["blessed_qra_memory_review_status"],
             "voice_delivery": payload["voice_delivery"],
+            "answerability_decision": payload["answerability_decision"],
         },
         "status_code": status_code,
         "post_error": post_error,
@@ -310,11 +335,18 @@ def main() -> int:
         "response": response,
         "failed_gates": failed_gates,
         "claims": {
-            "proves": [
-                "running_server_accepts_tau_voice_render_request",
-                "tau_voice_render_maps_to_batch_renderer",
-                "blessed_qra_cache_can_be_selected_through_tau_ingress",
-            ]
+            "proves": (
+                [
+                    "running_server_rejects_blocked_answerability_before_chatterbox_audio",
+                    "answerability_block_prevents_finished_audio_artifact",
+                ]
+                if args.expect_answerability_block
+                else [
+                    "running_server_accepts_tau_voice_render_request",
+                    "tau_voice_render_maps_to_batch_renderer",
+                    "blessed_qra_cache_can_be_selected_through_tau_ingress",
+                ]
+            )
             if not failed_gates
             else [],
             "does_not_prove": [
