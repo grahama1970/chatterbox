@@ -246,6 +246,27 @@ This means speaker policy is usable for routing, but the goal-level speaker
 identity requirement remains partial until physical identity and overlap
 diarization receipts exist.
 
+Current Chat UX sync evidence audit receipt:
+
+`docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`. It separates basic visual/DOM
+evidence from the stronger synchronization receipts the shared Chat UX needs:
+
+- Basic shared Chat text/audio evidence exists: 1 candidate.
+- Dynamic replay / inline reasoning trace evidence exists: 2 candidates.
+- Screenshot/page-snapshot markers exist: 16 candidates, but they do not prove
+  turn lineage by themselves.
+- `assistant.response.plan.v1` -> `chat.render.receipt.v1` lineage candidates:
+  0.
+- `$extract-entities` underline-render candidates: 0.
+- Matrix status remains 4 passed / 16 failed.
+
+The missing proof is explicit: the same `turn_id` must link the assistant
+response plan, rendered chat text, Chatterbox audio artifact, memory reasoning
+trace, and entity underline rendering. Without that, the Chat UX can look
+plausible while still failing the shared voice/chat synchronization contract.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

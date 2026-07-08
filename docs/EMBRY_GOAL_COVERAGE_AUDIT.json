@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T03:31:45.907659+00:00",
+  "generated_at_utc": "2026-07-08T03:37:58.374358+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -23,7 +23,9 @@
   "source_taxonomy": "docs/EMBRY_STRESS_FAILURE_TAXONOMY.json",
   "subsystems": {
     "chat_ux_sync": {
-      "evidence_artifacts": [],
+      "evidence_artifacts": [
+        "docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
       "objective_phrase": "Chat UX sync",
       "requirement_ids": [

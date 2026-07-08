@@ -61,6 +61,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "Chat UX sync",
         "requirement_ids": ["VC-01", "VC-24"],
         "taxonomy_subsystems": ["shared_chat_ux"],
+        "evidence_artifacts": ["docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"],
         "status": "failing",
         "summary": "Replay and inline trace basics pass, but turn-id lineage, chat render receipts, and entity underline receipts fail.",
         "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
