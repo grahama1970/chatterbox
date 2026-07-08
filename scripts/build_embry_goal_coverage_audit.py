@@ -50,6 +50,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "Chatterbox speech",
         "requirement_ids": ["VC-12", "VC-13", "VC-15", "VC-16", "VC-17", "VC-18", "VC-25"],
         "taxonomy_subsystems": ["interruption_turn_control", "tone_emotion_intent"],
+        "evidence_artifacts": ["docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"],
         "status": "partial",
         "summary": "Chatterbox render and stream-cancel proof slices exist, but tone coverage, interruption behavior, QRA disabled regressions, and subjective voice quality remain open.",
         "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",

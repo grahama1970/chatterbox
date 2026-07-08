@@ -70,6 +70,9 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert audit["subsystems"]["interruption"]["evidence_artifacts"] == [
         "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"
     ]
+    assert audit["subsystems"]["chatterbox_speech"]["evidence_artifacts"] == [
+        "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
+    ]
     assert audit["subsystems"]["orb_sync"]["status"] == "insufficient_evidence"
     assert audit["goal_subsystem_status_counts"] == {
         "failing": 4,

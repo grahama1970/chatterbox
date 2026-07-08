@@ -198,6 +198,31 @@ Chatterbox synthesis. It does not prove upstream memory answer quality, Tau
 agent handoff, Tau DAG execution, direct skill execution, Chat UX sync, or live
 voice loop behavior.
 
+Current Chatterbox speech evidence audit receipt:
+
+`docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`, and separates Chatterbox render
+capability from speech-policy readiness:
+
+- Live Chatterbox render evidence exists: one `/tau/voice-render` candidate has
+  a finished WAV with nonzero bytes and duration.
+- Approved QRA audio generation evidence exists: two candidates show five
+  Embry audio variants for blessed/approved QRA paths.
+- Audible personality evidence exists: one five-variant Embry personality
+  audition rendered and played through `pw-play`.
+- Delivery envelope evidence is incomplete on the current Tau voice-render
+  receipt; required fields such as full delivery policy source, pace, or pause
+  strategy are not consistently present.
+- Tone/emotion matrix rows are 5 passed / 15 failed. Hostile, discouraged, and
+  speaker-overlap prompts still receive the wrong memory intent tone family.
+- Interruption matrix rows are 0 passed / 20 failed. Live Horus barge-in,
+  new-turn-wins, stale audio byte measurement, non-primary rejection linked to
+  turn control, and natural stop phrases remain missing.
+
+This means Chatterbox can speak, but Embry speech is not yet policy-complete for
+the active goal.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T03:20:47.637888+00:00",
+  "generated_at_utc": "2026-07-08T03:26:34.512043+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -87,7 +87,9 @@
       "title": "Chat UX Sync"
     },
     "chatterbox_speech": {
-      "evidence_artifacts": [],
+      "evidence_artifacts": [
+        "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
       "objective_phrase": "Chatterbox speech",
       "requirement_ids": [

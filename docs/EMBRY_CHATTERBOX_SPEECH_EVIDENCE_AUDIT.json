@@ -1,0 +1,403 @@
+{
+  "audible_personality_candidate_count": 1,
+  "claims": {
+    "does_not_prove": [
+      "RealtimeSTT audio ingress",
+      "speaker identity",
+      "memory/Tau answer correctness",
+      "Chat UX synchronization",
+      "orb synchronization",
+      "event-sourced replay",
+      "live barge-in interruption"
+    ],
+    "proves": [
+      "live_chatterbox_can_render_audio",
+      "approved_qra_can_generate_five_embry_audio_variants",
+      "personality_audition_variants_can_render_and_play"
+    ]
+  },
+  "failed_gates": [
+    "delivery_envelope_incomplete",
+    "interruption_matrix_has_failures",
+    "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
+    "speech_matrix_gate:interruption_detected_receipt_not_emitted",
+    "speech_matrix_gate:natural_stop_phrase_not_observed",
+    "speech_matrix_gate:new_horus_turn_not_exercised",
+    "speech_matrix_gate:new_turn_wins_receipt_not_emitted",
+    "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised",
+    "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control",
+    "speech_matrix_gate:stale_audio_stream_bytes_not_measured",
+    "speech_matrix_gate:tau_tool_wait_not_exercised",
+    "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
+    "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
+    "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
+    "tone_emotion_matrix_has_failures"
+  ],
+  "generated_at_utc": "2026-07-08T03:26:34.462122+00:00",
+  "incomplete_delivery_envelope_count": 1,
+  "live": false,
+  "live_render_candidate_count": 1,
+  "mocked": false,
+  "ok": false,
+  "proof_candidate_count": 4,
+  "proof_candidates": [
+    {
+      "chunk_voice_delivery_missing_fields": [
+        [
+          "delivery_stage",
+          "pace",
+          "pause_strategy",
+          "source",
+          "tone"
+        ]
+      ],
+      "claims_does_not_prove": [
+        "listener_asr_pass",
+        "production_memory_recall_correctness",
+        "subjective_voice_quality",
+        "fresh_model_generation_quality"
+      ],
+      "claims_proves": [
+        "running_server_accepts_tau_voice_render_request",
+        "tau_voice_render_maps_to_batch_renderer",
+        "blessed_qra_cache_can_be_selected_through_tau_ingress"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/tau-voice-render-20260702T134405Z.json",
+      "played_variant_count": 0,
+      "proof_type": "tau_voice_render",
+      "qra_variants_ok": false,
+      "render_audio_ok": true,
+      "schema": "chatterbox.tau_voice_render_smoke.v1",
+      "variant_count": 0,
+      "voice_delivery_missing_fields": [
+        "delivery_stage",
+        "pace",
+        "pause_strategy",
+        "source",
+        "tone"
+      ]
+    },
+    {
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [
+        "memory_pipeline_qra_ranking_is_globally_correct",
+        "review_policy_is_sufficient_for_all_domains",
+        "selected_emotional_variant_is_subjectively_best"
+      ],
+      "claims_proves": [
+        "approved_qra_creation_event_can_invoke_embry_audio_variant_generation",
+        "unapproved_or_disabled_qra_events_fail_closed_before_audio_generation"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/qra-creation-audio-hook.json",
+      "played_variant_count": 0,
+      "proof_type": "qra_creation_audio_hook",
+      "qra_variants_ok": true,
+      "render_audio_ok": false,
+      "schema": "chatterbox.qra_creation_audio_hook.v1",
+      "variant_count": 5,
+      "voice_delivery_missing_fields": []
+    },
+    {
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/bless-qra-audio-variants.json",
+      "played_variant_count": 0,
+      "proof_type": "blessed_qra_variant_generation",
+      "qra_variants_ok": true,
+      "render_audio_ok": false,
+      "schema": null,
+      "variant_count": 5,
+      "voice_delivery_missing_fields": []
+    },
+    {
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [
+        "human_acceptance_of_personality",
+        "automatic_prosody_quality_scoring",
+        "best_final_boundary_copy"
+      ],
+      "claims_proves": [
+        "Embry boundary variants render through live Tau/Chatterbox",
+        "Embry boundary variants are played audibly through the configured sink"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json",
+      "played_variant_count": 5,
+      "proof_type": "personality_audition",
+      "qra_variants_ok": false,
+      "render_audio_ok": false,
+      "schema": "chatterbox.embry_personality_audition.v1",
+      "variant_count": 5,
+      "voice_delivery_missing_fields": []
+    }
+  ],
+  "qra_variant_candidate_count": 2,
+  "schema": "chatterbox.embry_chatterbox_speech_evidence_audit.v1",
+  "speech_matrix": {
+    "by_folder": {
+      "interruption": {
+        "failed_gate_counts": {
+          "blessed_qra_cached_response_not_exercised": 5,
+          "interruption_detected_receipt_not_emitted": 20,
+          "natural_stop_phrase_not_observed": 5,
+          "new_horus_turn_not_exercised": 5,
+          "new_turn_wins_receipt_not_emitted": 5,
+          "non_primary_interrupt_rejection_not_exercised": 5,
+          "speaker_gate_receipt_not_linked_to_turn_control": 5,
+          "stale_audio_stream_bytes_not_measured": 5,
+          "tau_tool_wait_not_exercised": 5
+        },
+        "sample_failures": [
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "interruption_detected_receipt_not_emitted",
+              "new_horus_turn_not_exercised",
+              "new_turn_wins_receipt_not_emitted"
+            ],
+            "folder_id": "interruption",
+            "id": "interruption-simple-01",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+            "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted."
+          },
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "blessed_qra_cached_response_not_exercised",
+              "interruption_detected_receipt_not_emitted",
+              "stale_audio_stream_bytes_not_measured"
+            ],
+            "folder_id": "interruption",
+            "id": "interruption-simple-02",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+            "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case."
+          },
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "interruption_detected_receipt_not_emitted",
+              "non_primary_interrupt_rejection_not_exercised",
+              "speaker_gate_receipt_not_linked_to_turn_control"
+            ],
+            "folder_id": "interruption",
+            "id": "interruption-simple-03",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+            "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control."
+          },
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "interruption_detected_receipt_not_emitted",
+              "natural_stop_phrase_not_observed",
+              "tau_tool_wait_not_exercised"
+            ],
+            "folder_id": "interruption",
+            "id": "interruption-simple-04",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+            "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised."
+          }
+        ],
+        "session_count": 20,
+        "status_counts": {
+          "failed": 20,
+          "not_run": 0,
+          "passed": 0
+        }
+      },
+      "tone_emotion": {
+        "failed_gate_counts": {
+          "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved": 5,
+          "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light": 5,
+          "voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt": 5
+        },
+        "sample_failures": [
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"
+            ],
+            "folder_id": "tone_emotion",
+            "id": "tone_emotion-simple-02",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T001850Z-matrix-tone-simple/receipt.json",
+            "observed": "Memory /intent returned memory_confident instead of a firm, deflecting, or playful boundary tone for hostile input."
+          },
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved"
+            ],
+            "folder_id": "tone_emotion",
+            "id": "tone_emotion-simple-03",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T001850Z-matrix-tone-simple/receipt.json",
+            "observed": "Memory /intent returned memory_confident instead of a gentle/supportive tone for discouraged input."
+          },
+          {
+            "difficulty": "simple",
+            "failed_gates": [
+              "voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt"
+            ],
+            "folder_id": "tone_emotion",
+            "id": "tone_emotion-simple-04",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T001850Z-matrix-tone-simple/receipt.json",
+            "observed": "Memory /intent returned memory_confident instead of one_at_a_time_interrupt or firm_boundary for speaker overlap."
+          },
+          {
+            "difficulty": "medium",
+            "failed_gates": [
+              "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"
+            ],
+            "folder_id": "tone_emotion",
+            "id": "tone_emotion-medium-02",
+            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015351Z-matrix-medium-routes-48-63/receipt.json",
+            "observed": "Memory /intent returned memory_confident instead of a firm, deflecting, or playful boundary tone for hostile input."
+          }
+        ],
+        "session_count": 20,
+        "status_counts": {
+          "failed": 15,
+          "not_run": 0,
+          "passed": 5
+        }
+      }
+    },
+    "failed_gate_counts": {
+      "blessed_qra_cached_response_not_exercised": 5,
+      "interruption_detected_receipt_not_emitted": 20,
+      "natural_stop_phrase_not_observed": 5,
+      "new_horus_turn_not_exercised": 5,
+      "new_turn_wins_receipt_not_emitted": 5,
+      "non_primary_interrupt_rejection_not_exercised": 5,
+      "speaker_gate_receipt_not_linked_to_turn_control": 5,
+      "stale_audio_stream_bytes_not_measured": 5,
+      "tau_tool_wait_not_exercised": 5,
+      "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved": 5,
+      "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light": 5,
+      "voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt": 5
+    },
+    "sample_failures": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "interruption_detected_receipt_not_emitted",
+          "new_horus_turn_not_exercised",
+          "new_turn_wins_receipt_not_emitted"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-simple-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "blessed_qra_cached_response_not_exercised",
+          "interruption_detected_receipt_not_emitted",
+          "stale_audio_stream_bytes_not_measured"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-simple-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "interruption_detected_receipt_not_emitted",
+          "non_primary_interrupt_rejection_not_exercised",
+          "speaker_gate_receipt_not_linked_to_turn_control"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "interruption_detected_receipt_not_emitted",
+          "natural_stop_phrase_not_observed",
+          "tau_tool_wait_not_exercised"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "interruption_detected_receipt_not_emitted",
+          "new_horus_turn_not_exercised",
+          "new_turn_wins_receipt_not_emitted"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-medium-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "blessed_qra_cached_response_not_exercised",
+          "interruption_detected_receipt_not_emitted",
+          "stale_audio_stream_bytes_not_measured"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-medium-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "interruption_detected_receipt_not_emitted",
+          "non_primary_interrupt_rejection_not_exercised",
+          "speaker_gate_receipt_not_linked_to_turn_control"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-medium-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "interruption_detected_receipt_not_emitted",
+          "natural_stop_phrase_not_observed",
+          "tau_tool_wait_not_exercised"
+        ],
+        "folder_id": "interruption",
+        "id": "interruption-medium-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
+        "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised."
+      }
+    ],
+    "session_count": 40,
+    "status_counts": {
+      "failed": 35,
+      "not_run": 0,
+      "passed": 5
+    }
+  },
+  "status": "failed"
+}
