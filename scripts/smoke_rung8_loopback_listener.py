@@ -150,7 +150,8 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
     record_target = args.record_target or sink_target
     sink_node_name = pipewire_node_name(sink_target)
     record_node_name = pipewire_node_name(record_target)
-    pulse_source = args.pulse_source
+    capture_backend = getattr(args, "capture_backend", "ffmpeg-pulse")
+    pulse_source = getattr(args, "pulse_source", None)
     if not pulse_source and args.capture_kind == "monitor_loopback" and sink_node_name:
         pulse_source = f"{sink_node_name}.monitor"
     if not pulse_source and args.capture_kind == "physical_microphone" and record_node_name:
@@ -159,7 +160,7 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
         failed_gates.append("pipewire_default_sink_found")
     if not record_target:
         failed_gates.append("pipewire_record_target_found")
-    if args.capture_backend == "ffmpeg-pulse" and not pulse_source:
+    if capture_backend == "ffmpeg-pulse" and not pulse_source:
         failed_gates.append("pulse_source_found")
 
     receipt: dict[str, Any] = {
@@ -171,7 +172,7 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
         "captured_audio": None,
         "pipewire": {
             "capture_kind": args.capture_kind,
-            "capture_backend": args.capture_backend,
+            "capture_backend": capture_backend,
             "sink_target": sink_target,
             "record_target": record_target,
             "sink_node_name": sink_node_name,
@@ -187,7 +188,7 @@ def capture_loopback(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
 
     captured_audio.unlink(missing_ok=True)
     raw_capture.unlink(missing_ok=True)
-    if args.capture_backend == "ffmpeg-pulse":
+    if capture_backend == "ffmpeg-pulse":
         record_path = captured_audio
         record_cmd = [
             "ffmpeg",
