@@ -196,6 +196,85 @@ def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> N
     assert "interruption_matrix_has_failures" in audit["failed_gates"]
 
 
+def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_path: Path) -> None:
+    render = tmp_path / "render.json"
+    render.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}},
+  "response": {"voice_delivery": {"tone": "memory_confident", "delivery_stage": "satisfied", "pace": "brief", "pause_strategy": "short_answer_no_filler", "source": "memory.intent"}}
+}
+"""
+    )
+    qra = tmp_path / "qra.json"
+    qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    personality = tmp_path / "personality.json"
+    personality.write_text(
+        """
+{
+  "schema": "chatterbox.embry_personality_audition.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "variants": [
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}}
+  ]
+}
+"""
+    )
+    interruption_audit = tmp_path / "interruption-audit.json"
+    interruption_audit.write_text(
+        """
+{
+  "ok": true,
+  "status": "passed",
+  "live": true,
+  "mocked": false,
+  "passing_candidate_count": 1,
+  "best_candidate_paths": ["/tmp/live-horus-barge-in.json"]
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            _session("tone_emotion", "passed"),
+            _session(
+                "interruption",
+                "failed",
+                [
+                    "interruption_detected_receipt_not_emitted",
+                    "new_horus_turn_not_exercised",
+                    "new_turn_wins_receipt_not_emitted",
+                    "speaker_gate_receipt_not_linked_to_turn_control",
+                    "stale_audio_stream_bytes_not_measured",
+                    "natural_stop_phrase_not_observed",
+                ],
+            ),
+        ]
+    }
+
+    audit = build_audit(matrix, [render, qra, personality], interruption_audit_path=interruption_audit)
+
+    assert audit["ok"] is False
+    assert audit["interruption_evidence_audit"]["ok"] is True
+    assert "live_primary_speaker_interruption_barge_in_receipt_present" in audit["claims"]["proves"]
+    assert "speech_matrix_gate:interruption_detected_receipt_not_emitted" not in audit["failed_gates"]
+    assert "speech_matrix_gate:new_horus_turn_not_exercised" not in audit["failed_gates"]
+    assert "speech_matrix_gate:new_turn_wins_receipt_not_emitted" not in audit["failed_gates"]
+    assert "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control" not in audit["failed_gates"]
+    assert "speech_matrix_gate:stale_audio_stream_bytes_not_measured" not in audit["failed_gates"]
+    assert "speech_matrix_gate:natural_stop_phrase_not_observed" in audit["failed_gates"]
+    assert audit["interruption_matrix_remaining_failed_gates"] == ["natural_stop_phrase_not_observed"]
+
+
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(

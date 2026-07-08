@@ -13,6 +13,7 @@ from typing import Any
 
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json")
+DEFAULT_INTERRUPTION_AUDIT = Path("docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035831Z-voice-delivery-full-chunks-after-patch/tau-voice-render-full-delivery.json"),
     Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035428Z-voice-delivery-full-after-patch/tau-voice-render-full-delivery.json"),
@@ -24,6 +25,13 @@ DEFAULT_PROOFS = [
 ]
 
 SPEECH_FOLDERS = {"tone_emotion", "interruption"}
+INTERRUPTION_AUDIT_COVERED_GATES = {
+    "interruption_detected_receipt_not_emitted",
+    "new_horus_turn_not_exercised",
+    "new_turn_wins_receipt_not_emitted",
+    "speaker_gate_receipt_not_linked_to_turn_control",
+    "stale_audio_stream_bytes_not_measured",
+}
 REQUIRED_VOICE_DELIVERY_FIELDS = {
     "tone",
     "delivery_stage",
@@ -192,8 +200,39 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, Any]:
+def _interruption_audit_summary(path: Path | None) -> dict[str, Any]:
+    if path is None:
+        return {"path": None, "exists": False, "ok": False, "covered_gates": []}
+    receipt = read_json(path)
+    ok = bool(
+        path.exists()
+        and receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and receipt.get("passing_candidate_count", 0) > 0
+    )
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "ok": ok,
+        "status": receipt.get("status"),
+        "live": receipt.get("live"),
+        "mocked": receipt.get("mocked"),
+        "passing_candidate_count": receipt.get("passing_candidate_count"),
+        "best_candidate_paths": receipt.get("best_candidate_paths") or [],
+        "covered_gates": sorted(INTERRUPTION_AUDIT_COVERED_GATES) if ok else [],
+    }
+
+
+def build_audit(
+    matrix: dict[str, Any],
+    proof_paths: list[Path],
+    *,
+    interruption_audit_path: Path | None = None,
+) -> dict[str, Any]:
     speech_matrix = _group_summary(matrix, SPEECH_FOLDERS)
+    interruption_audit = _interruption_audit_summary(interruption_audit_path)
+    interruption_covered_gates = set(interruption_audit["covered_gates"])
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     live_renders = [candidate for candidate in proof_candidates if candidate["render_audio_ok"]]
     qra_variants = [candidate for candidate in proof_candidates if candidate["qra_variants_ok"]]
@@ -223,11 +262,18 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         failed_gates.append("audible_personality_audition_missing")
     if not complete_delivery:
         failed_gates.append("delivery_envelope_incomplete")
+    effective_interruption_failed_gates = {
+        gate
+        for gate in speech_matrix["by_folder"]["interruption"]["failed_gate_counts"]
+        if gate not in interruption_covered_gates
+    }
     if speech_matrix["by_folder"]["tone_emotion"]["status_counts"]["failed"]:
         failed_gates.append("tone_emotion_matrix_has_failures")
-    if speech_matrix["by_folder"]["interruption"]["status_counts"]["failed"]:
+    if effective_interruption_failed_gates:
         failed_gates.append("interruption_matrix_has_failures")
     for gate in sorted(speech_matrix["failed_gate_counts"]):
+        if gate in interruption_covered_gates:
+            continue
         failed_gates.append(f"speech_matrix_gate:{gate}")
 
     ok = not failed_gates
@@ -246,6 +292,18 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         partial_proves.append("personality_audition_variants_can_render_and_play")
     if complete_delivery:
         partial_proves.append("complete_voice_delivery_envelope_can_reach_chatterbox_chunks")
+    if interruption_audit["ok"]:
+        partial_proves.append("live_primary_speaker_interruption_barge_in_receipt_present")
+    does_not_prove = [
+        "RealtimeSTT audio ingress",
+        "general speaker identity outside the linked interruption receipt",
+        "memory/Tau answer correctness",
+        "Chat UX synchronization",
+        "orb synchronization",
+        "event-sourced replay",
+    ]
+    if not interruption_audit["ok"]:
+        does_not_prove.append("live primary-speaker barge-in interruption")
     return {
         "schema": "chatterbox.embry_chatterbox_speech_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -255,6 +313,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "status": "passed" if ok else "failed",
         "speech_matrix": speech_matrix,
         "proof_candidate_count": len(proof_candidates),
+        "interruption_evidence_audit": interruption_audit,
+        "interruption_matrix_remaining_failed_gates": sorted(effective_interruption_failed_gates),
         "live_render_candidate_count": len(live_renders),
         "qra_variant_candidate_count": len(qra_variants),
         "qra_disabled_normal_render_candidate_count": len(qra_disabled),
@@ -269,15 +329,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
             ]
             if ok
             else partial_proves,
-            "does_not_prove": [
-                "RealtimeSTT audio ingress",
-                "speaker identity",
-                "memory/Tau answer correctness",
-                "Chat UX synchronization",
-                "orb synchronization",
-                "event-sourced replay",
-                "live barge-in interruption",
-            ],
+            "does_not_prove": does_not_prove,
         },
     }
 
@@ -286,11 +338,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--matrix", type=Path, default=DEFAULT_MATRIX)
     parser.add_argument("--proof", action="append", type=Path, default=[])
+    parser.add_argument("--interruption-audit", type=Path, default=DEFAULT_INTERRUPTION_AUDIT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args()
 
     matrix = read_json(args.matrix)
-    audit = build_audit(matrix, [*DEFAULT_PROOFS, *args.proof])
+    audit = build_audit(matrix, [*DEFAULT_PROOFS, *args.proof], interruption_audit_path=args.interruption_audit)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n")
     print(args.out)

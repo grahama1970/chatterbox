@@ -3,40 +3,60 @@
   "claims": {
     "does_not_prove": [
       "RealtimeSTT audio ingress",
-      "speaker identity",
+      "general speaker identity outside the linked interruption receipt",
       "memory/Tau answer correctness",
       "Chat UX synchronization",
       "orb synchronization",
-      "event-sourced replay",
-      "live barge-in interruption"
+      "event-sourced replay"
     ],
     "proves": [
       "live_chatterbox_can_render_audio",
       "approved_qra_can_generate_five_embry_audio_variants",
       "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
       "personality_audition_variants_can_render_and_play",
-      "complete_voice_delivery_envelope_can_reach_chatterbox_chunks"
+      "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
+      "live_primary_speaker_interruption_barge_in_receipt_present"
     ]
   },
   "complete_delivery_envelope_candidate_count": 1,
   "failed_gates": [
     "interruption_matrix_has_failures",
     "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
-    "speech_matrix_gate:interruption_detected_receipt_not_emitted",
     "speech_matrix_gate:natural_stop_phrase_not_observed",
-    "speech_matrix_gate:new_horus_turn_not_exercised",
-    "speech_matrix_gate:new_turn_wins_receipt_not_emitted",
     "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised",
-    "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control",
-    "speech_matrix_gate:stale_audio_stream_bytes_not_measured",
     "speech_matrix_gate:tau_tool_wait_not_exercised",
     "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
     "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
     "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T06:16:41.664238+00:00",
+  "generated_at_utc": "2026-07-08T06:29:50.336994+00:00",
   "incomplete_delivery_envelope_count": 3,
+  "interruption_evidence_audit": {
+    "best_candidate_paths": [
+      "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json"
+    ],
+    "covered_gates": [
+      "interruption_detected_receipt_not_emitted",
+      "new_horus_turn_not_exercised",
+      "new_turn_wins_receipt_not_emitted",
+      "speaker_gate_receipt_not_linked_to_turn_control",
+      "stale_audio_stream_bytes_not_measured"
+    ],
+    "exists": true,
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "passing_candidate_count": 1,
+    "path": "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json",
+    "status": "passed"
+  },
+  "interruption_matrix_remaining_failed_gates": [
+    "blessed_qra_cached_response_not_exercised",
+    "natural_stop_phrase_not_observed",
+    "non_primary_interrupt_rejection_not_exercised",
+    "tau_tool_wait_not_exercised"
+  ],
   "live": true,
   "live_render_candidate_count": 4,
   "mocked": false,
