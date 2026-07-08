@@ -1,0 +1,250 @@
+{
+  "candidate_count": 4,
+  "candidates": [
+    {
+      "missing_fields": [
+        "event_journal.event_count",
+        "event_journal.path",
+        "event_journal.required_event_types",
+        "event_journal.sha256",
+        "replay.audio_artifact_ids",
+        "replay.audio_offsets_match",
+        "replay.chat_snapshots_match",
+        "replay.original_timing_offsets_ms",
+        "replay.rendered_timing_offsets_ms",
+        "replay.turn_ids",
+        "replay.turn_order_matches",
+        "session_id"
+      ],
+      "observed": {
+        "audio_artifact_ids": null,
+        "audio_offsets_match": null,
+        "chat_snapshots_match": null,
+        "event_count": null,
+        "event_journal_exists": false,
+        "event_journal_path": null,
+        "event_types": [],
+        "legacy_audio_count": 3,
+        "legacy_screenshot": "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/replay-thinking-open.png",
+        "legacy_ui_assertions": {
+          "audioArtifactsEmbeddedInSharedChat": true,
+          "dynamicReplayReducedToCurrentTurn": true,
+          "initialStaticTranscriptPresent": true,
+          "liveReasoningTraceVisibleDuringReplay": true,
+          "replayCompletesWithoutStaticReset": true
+        },
+        "loaded_event_count": 0,
+        "missing_event_types": [
+          "listener.audio_frame_received",
+          "stt.final",
+          "speaker_gate.accepted",
+          "memory.intent",
+          "tau.voice_render_request",
+          "chatterbox.audio_artifact",
+          "audio.playback_started",
+          "chat.turn_rendered"
+        ],
+        "original_timing_offsets_ms": null,
+        "rendered_timing_offsets_ms": null,
+        "session_id": null,
+        "turn_ids": null,
+        "turn_order_matches": null
+      },
+      "ok": false,
+      "proof_path": "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"
+    },
+    {
+      "missing_fields": [
+        "event_journal.event_count",
+        "event_journal.path",
+        "event_journal.required_event_types",
+        "event_journal.sha256",
+        "replay.audio_artifact_ids",
+        "replay.audio_offsets_match",
+        "replay.chat_snapshots_match",
+        "replay.original_timing_offsets_ms",
+        "replay.rendered_timing_offsets_ms",
+        "replay.turn_ids",
+        "replay.turn_order_matches",
+        "session_id"
+      ],
+      "observed": {
+        "audio_artifact_ids": null,
+        "audio_offsets_match": null,
+        "chat_snapshots_match": null,
+        "event_count": null,
+        "event_journal_exists": false,
+        "event_journal_path": null,
+        "event_types": [],
+        "legacy_audio_count": null,
+        "legacy_screenshot": null,
+        "legacy_ui_assertions": null,
+        "loaded_event_count": 0,
+        "missing_event_types": [
+          "listener.audio_frame_received",
+          "stt.final",
+          "speaker_gate.accepted",
+          "memory.intent",
+          "tau.voice_render_request",
+          "chatterbox.audio_artifact",
+          "audio.playback_started",
+          "chat.turn_rendered"
+        ],
+        "original_timing_offsets_ms": null,
+        "rendered_timing_offsets_ms": null,
+        "session_id": null,
+        "turn_ids": null,
+        "turn_order_matches": null
+      },
+      "ok": false,
+      "proof_path": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.read.json"
+    },
+    {
+      "missing_fields": [
+        "event_journal.event_count",
+        "event_journal.path",
+        "event_journal.required_event_types",
+        "event_journal.sha256",
+        "replay.audio_artifact_ids",
+        "replay.audio_offsets_match",
+        "replay.chat_snapshots_match",
+        "replay.original_timing_offsets_ms",
+        "replay.rendered_timing_offsets_ms",
+        "replay.turn_ids",
+        "replay.turn_order_matches",
+        "session_id"
+      ],
+      "observed": {
+        "audio_artifact_ids": null,
+        "audio_offsets_match": null,
+        "chat_snapshots_match": null,
+        "event_count": null,
+        "event_journal_exists": false,
+        "event_journal_path": null,
+        "event_types": [],
+        "legacy_audio_count": null,
+        "legacy_screenshot": null,
+        "legacy_ui_assertions": null,
+        "loaded_event_count": 0,
+        "missing_event_types": [
+          "listener.audio_frame_received",
+          "stt.final",
+          "speaker_gate.accepted",
+          "memory.intent",
+          "tau.voice_render_request",
+          "chatterbox.audio_artifact",
+          "audio.playback_started",
+          "chat.turn_rendered"
+        ],
+        "original_timing_offsets_ms": null,
+        "rendered_timing_offsets_ms": null,
+        "session_id": null,
+        "turn_ids": null,
+        "turn_order_matches": null
+      },
+      "ok": false,
+      "proof_path": "/tmp/codex-ui-verification/chatterbox/embry-voice-shared-chat-replay-final/20260706T164731Z.read.json"
+    },
+    {
+      "missing_fields": [
+        "event_journal.event_count",
+        "event_journal.path",
+        "event_journal.required_event_types",
+        "event_journal.sha256",
+        "replay.audio_artifact_ids",
+        "replay.audio_offsets_match",
+        "replay.chat_snapshots_match",
+        "replay.original_timing_offsets_ms",
+        "replay.rendered_timing_offsets_ms",
+        "replay.turn_ids",
+        "replay.turn_order_matches",
+        "session_id"
+      ],
+      "observed": {
+        "audio_artifact_ids": null,
+        "audio_offsets_match": null,
+        "chat_snapshots_match": null,
+        "event_count": null,
+        "event_journal_exists": false,
+        "event_journal_path": null,
+        "event_types": [],
+        "legacy_audio_count": null,
+        "legacy_screenshot": null,
+        "legacy_ui_assertions": null,
+        "loaded_event_count": 0,
+        "missing_event_types": [
+          "listener.audio_frame_received",
+          "stt.final",
+          "speaker_gate.accepted",
+          "memory.intent",
+          "tau.voice_render_request",
+          "chatterbox.audio_artifact",
+          "audio.playback_started",
+          "chat.turn_rendered"
+        ],
+        "original_timing_offsets_ms": null,
+        "rendered_timing_offsets_ms": null,
+        "session_id": null,
+        "turn_ids": null,
+        "turn_order_matches": null
+      },
+      "ok": false,
+      "proof_path": "/tmp/codex-ui-verification/chatterbox/embry-voice-shared-chat-replay/20260706T163742Z.read.json"
+    }
+  ],
+  "claims": {
+    "does_not_prove": [
+      "RealtimeSTT correctness",
+      "speaker identity correctness",
+      "Chatterbox synthesis quality",
+      "orb synchronization"
+    ],
+    "proves": []
+  },
+  "failed_gates": [
+    "event_sourced_replay_receipt_present",
+    "missing:event_journal.event_count",
+    "missing:event_journal.path",
+    "missing:event_journal.required_event_types",
+    "missing:event_journal.sha256",
+    "missing:replay.audio_artifact_ids",
+    "missing:replay.audio_offsets_match",
+    "missing:replay.chat_snapshots_match",
+    "missing:replay.original_timing_offsets_ms",
+    "missing:replay.rendered_timing_offsets_ms",
+    "missing:replay.turn_ids",
+    "missing:replay.turn_order_matches",
+    "missing:session_id"
+  ],
+  "generated_at_utc": "2026-07-08T03:06:23.461962+00:00",
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "passing_candidate_count": 0,
+  "proof_count": 4,
+  "required_event_types": [
+    "listener.audio_frame_received",
+    "stt.final",
+    "speaker_gate.accepted",
+    "memory.intent",
+    "tau.voice_render_request",
+    "chatterbox.audio_artifact",
+    "audio.playback_started",
+    "chat.turn_rendered"
+  ],
+  "required_replay_fields": [
+    "session_id",
+    "event_journal.path",
+    "event_journal.sha256",
+    "event_journal.event_count",
+    "replay.turn_ids",
+    "replay.audio_artifact_ids",
+    "replay.original_timing_offsets_ms",
+    "replay.rendered_timing_offsets_ms",
+    "replay.chat_snapshots_match",
+    "replay.audio_offsets_match",
+    "replay.turn_order_matches"
+  ],
+  "schema": "chatterbox.embry_replay_evidence_audit.v1",
+  "status": "failed"
+}

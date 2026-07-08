@@ -139,6 +139,18 @@ fields: `turn_id`, `audio_artifact_id`, `playback.started_at_epoch_ms`,
 `playback.audio_artifact_id`, `orb.authority`, `orb.envelope_frame_count`,
 `orb.max_level`, and `screenshot.path`.
 
+Current replay evidence audit receipt:
+
+`docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`, `proof_count=4`, and
+`passing_candidate_count=0`. The dynamic replay UI proof still has
+`audioCount=3`, but no candidate proves event-sourced replay because the
+required receipt fields are missing: `session_id`, event journal path, event
+journal SHA, event count, required event types, replay turn ids, audio artifact
+ids, original timing offsets, rendered timing offsets, chat snapshot match,
+audio offset match, and turn-order match.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T03:02:35.637764+00:00",
+  "generated_at_utc": "2026-07-08T03:06:23.553434+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -473,7 +473,9 @@
       "title": "RealtimeSTT Ingress"
     },
     "replay": {
-      "evidence_artifacts": [],
+      "evidence_artifacts": [
+        "docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
       "objective_phrase": "replay",
       "requirement_ids": [

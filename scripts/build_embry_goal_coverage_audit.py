@@ -76,6 +76,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "replay",
         "requirement_ids": ["VC-01", "VC-24"],
         "taxonomy_subsystems": ["shared_chat_ux"],
+        "evidence_artifacts": ["docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"],
         "status": "partial",
         "summary": "Basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal with original timing is not proven.",
         "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
