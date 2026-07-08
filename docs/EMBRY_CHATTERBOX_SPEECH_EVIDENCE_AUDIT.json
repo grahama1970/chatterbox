@@ -13,7 +13,9 @@
     "proves": [
       "live_chatterbox_can_render_audio",
       "approved_qra_can_generate_five_embry_audio_variants",
-      "personality_audition_variants_can_render_and_play"
+      "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
+      "personality_audition_variants_can_render_and_play",
+      "complete_voice_delivery_envelope_can_reach_chatterbox_chunks"
     ]
   },
   "complete_delivery_envelope_candidate_count": 1,
@@ -33,9 +35,9 @@
     "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T03:59:18.378504+00:00",
+  "generated_at_utc": "2026-07-08T04:33:35.174903+00:00",
   "incomplete_delivery_envelope_count": 3,
-  "live": false,
+  "live": true,
   "live_render_candidate_count": 4,
   "mocked": false,
   "ok": false,

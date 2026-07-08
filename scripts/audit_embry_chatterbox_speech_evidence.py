@@ -231,11 +231,26 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         failed_gates.append(f"speech_matrix_gate:{gate}")
 
     ok = not failed_gates
+    live_evidence_present = any(
+        candidate["live"] is True and candidate["mocked"] is False
+        for candidate in proof_candidates
+    )
+    partial_proves = []
+    if live_renders:
+        partial_proves.append("live_chatterbox_can_render_audio")
+    if qra_variants:
+        partial_proves.append("approved_qra_can_generate_five_embry_audio_variants")
+    if qra_disabled:
+        partial_proves.append("qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit")
+    if personality:
+        partial_proves.append("personality_audition_variants_can_render_and_play")
+    if complete_delivery:
+        partial_proves.append("complete_voice_delivery_envelope_can_reach_chatterbox_chunks")
     return {
         "schema": "chatterbox.embry_chatterbox_speech_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
-        "live": False,
+        "live": live_evidence_present,
         "ok": ok,
         "status": "passed" if ok else "failed",
         "speech_matrix": speech_matrix,
@@ -253,11 +268,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
                 "chatterbox_live_render_qra_variants_personality_tone_and_interruption_are_all_passing",
             ]
             if ok
-            else [
-                "live_chatterbox_can_render_audio",
-                "approved_qra_can_generate_five_embry_audio_variants",
-                "personality_audition_variants_can_render_and_play",
-            ],
+            else partial_proves,
             "does_not_prove": [
                 "RealtimeSTT audio ingress",
                 "speaker identity",

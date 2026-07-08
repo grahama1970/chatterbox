@@ -218,18 +218,21 @@ Current Chatterbox speech evidence audit receipt:
 
 `docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, and separates Chatterbox render
-capability from speech-policy readiness:
+That audit reports `mocked=false`, `live=true`, `ok=false`, and separates
+Chatterbox render capability from speech-policy readiness:
 
-- Live Chatterbox render evidence exists: one `/tau/voice-render` candidate has
-  a finished WAV with nonzero bytes and duration.
+- Live Chatterbox render evidence exists: four `/tau/voice-render` candidates
+  have finished WAVs with nonzero bytes and duration.
 - Approved QRA audio generation evidence exists: two candidates show five
   Embry audio variants for blessed/approved QRA paths.
+- QRA-disabled normal-render evidence exists: three candidates show disabled
+  blessed-QRA cache requests rendering normal Chatterbox audio without cache
+  hits.
 - Audible personality evidence exists: one five-variant Embry personality
   audition rendered and played through `pw-play`.
-- Delivery envelope evidence is incomplete on the current Tau voice-render
-  receipt; required fields such as full delivery policy source, pace, or pause
-  strategy are not consistently present.
+- Delivery envelope evidence exists for one current Tau voice-render receipt,
+  but three older/current speech candidates still have incomplete delivery
+  metadata.
 - Tone/emotion matrix rows are 5 passed / 15 failed. Hostile, discouraged, and
   speaker-overlap prompts still receive the wrong memory intent tone family.
 - Interruption matrix rows are 0 passed / 20 failed. Live Horus barge-in,

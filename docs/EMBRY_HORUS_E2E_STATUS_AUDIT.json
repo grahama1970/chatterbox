@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:30:38.770079+00:00",
+  "generated_at_utc": "2026-07-08T04:33:35.262543+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -214,7 +214,9 @@
             "proves": [
               "live_chatterbox_can_render_audio",
               "approved_qra_can_generate_five_embry_audio_variants",
-              "personality_audition_variants_can_render_and_play"
+              "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
+              "personality_audition_variants_can_render_and_play",
+              "complete_voice_delivery_envelope_can_reach_chatterbox_chunks"
             ]
           },
           "exists": true,
@@ -234,7 +236,7 @@
             "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
             "tone_emotion_matrix_has_failures"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json",

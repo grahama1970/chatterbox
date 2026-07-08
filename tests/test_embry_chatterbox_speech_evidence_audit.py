@@ -184,11 +184,14 @@ def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> N
     audit = build_audit(matrix, [render, qra, personality])
 
     assert audit["ok"] is False
+    assert audit["live"] is True
     assert audit["live_render_candidate_count"] == 1
     assert audit["qra_variant_candidate_count"] == 1
     assert audit["qra_disabled_normal_render_candidate_count"] == 0
     assert audit["audible_personality_candidate_count"] == 1
     assert audit["complete_delivery_envelope_candidate_count"] == 1
+    assert "live_chatterbox_can_render_audio" in audit["claims"]["proves"]
+    assert "complete_voice_delivery_envelope_can_reach_chatterbox_chunks" in audit["claims"]["proves"]
     assert "tone_emotion_matrix_has_failures" in audit["failed_gates"]
     assert "interruption_matrix_has_failures" in audit["failed_gates"]
 
@@ -231,6 +234,7 @@ def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Pa
     audit = build_audit(_passing_matrix(), [render, qra, personality])
 
     assert audit["ok"] is True
+    assert audit["live"] is True
     assert audit["failed_gates"] == []
     assert audit["speech_matrix"]["status_counts"] == {"passed": 2, "failed": 0, "not_run": 0}
     assert audit["complete_delivery_envelope_candidate_count"] == 1
