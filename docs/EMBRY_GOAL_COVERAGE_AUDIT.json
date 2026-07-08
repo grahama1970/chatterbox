@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T10:09:58.888633+00:00",
+  "generated_at_utc": "2026-07-08T10:14:25.090230+00:00",
   "goal_subsystem_status_counts": {
     "failing": 1,
     "partial": 6,
@@ -343,35 +343,31 @@
         },
         "top_failed_gates": [
           {
-            "count": 12,
-            "gate": "runner_route_not_implemented"
-          },
-          {
-            "count": 6,
+            "count": 15,
             "gate": "capture_captured_audio_rms"
           },
           {
-            "count": 2,
+            "count": 5,
             "gate": "asr_final_transcript_present"
           },
           {
-            "count": 2,
+            "count": 5,
             "gate": "realtimestt_command_ok"
           },
           {
-            "count": 2,
+            "count": 5,
             "gate": "realtimestt_receipt_ok"
           },
           {
-            "count": 2,
+            "count": 5,
             "gate": "rung7_receipt_ok"
           },
           {
-            "count": 2,
+            "count": 5,
             "gate": "speaker_memory_recall_found"
           },
           {
-            "count": 2,
+            "count": 5,
             "gate": "speaker_resolution_known_horus"
           }
         ]

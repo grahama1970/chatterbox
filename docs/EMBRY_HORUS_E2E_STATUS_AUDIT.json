@@ -8,7 +8,6 @@
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_command_ok",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_receipt_ok",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
-    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:runner_route_not_implemented",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
     "browser_mic_webrtc:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
@@ -20,7 +19,6 @@
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_command_ok",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_receipt_ok",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
-    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:runner_route_not_implemented",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
@@ -41,7 +39,7 @@
     "replay:subsystem_status_not_passed:partial",
     "tau_memory_routing:subsystem_status_not_passed:partial"
   ],
-  "generated_at_utc": "2026-07-08T10:09:58.931590+00:00",
+  "generated_at_utc": "2026-07-08T10:14:25.131424+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -73,7 +71,6 @@
             "factory_gate:realtimestt_command_ok",
             "factory_gate:realtimestt_receipt_ok",
             "factory_gate:rung7_receipt_ok",
-            "factory_gate:runner_route_not_implemented",
             "factory_gate:speaker_memory_recall_found",
             "factory_gate:speaker_resolution_known_horus"
           ],
@@ -180,7 +177,6 @@
             "factory_gate:realtimestt_command_ok",
             "factory_gate:realtimestt_receipt_ok",
             "factory_gate:rung7_receipt_ok",
-            "factory_gate:runner_route_not_implemented",
             "factory_gate:speaker_memory_recall_found",
             "factory_gate:speaker_resolution_known_horus"
           ],

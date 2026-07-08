@@ -450,16 +450,21 @@ def test_matrix_advanced_routes_48_63_subset_has_receipt_backed_results() -> Non
     ]
 
     assert len(sessions) == 12
-    assert all("matrix-advanced-routes-48-63" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
     assert all(session["status"] == "passed" for session in by_folder["speaker_identity"])
+    assert all("matrix-advanced-routes-48-63" in session["latest_receipt"] for session in by_folder["speaker_identity"])
     assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
-    assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["factory_noise"])
+    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
+    assert any("voice-chat-e2e-20260707T232441Z-stress-current" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-source-matrix-20260707T232938Z/source-62" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-source-matrix-20260707T232938Z/source-67" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("fresh-s06-webcam-20260707T143939Z" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert by_folder["tone_emotion"][0]["status"] == "passed"
     assert all(session["status"] == "failed" for session in by_folder["tone_emotion"][1:])
+    assert all("matrix-advanced-routes-48-63" in session["latest_receipt"] for session in by_folder["tone_emotion"])
     assert all("voice_delivery_tone_expected" in session["failed_gates"][0] for session in by_folder["tone_emotion"][1:])
 
 
@@ -473,16 +478,21 @@ def test_matrix_adversarial_routes_48_63_subset_has_receipt_backed_results() -> 
     ]
 
     assert len(sessions) == 12
-    assert all("matrix-adversarial-routes-48-63" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
     assert all(session["status"] == "passed" for session in by_folder["speaker_identity"])
+    assert all("matrix-adversarial-routes-48-63" in session["latest_receipt"] for session in by_folder["speaker_identity"])
     assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
-    assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["factory_noise"])
+    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
+    assert any("voice-chat-e2e-20260707T232441Z-stress-current" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-source-matrix-20260707T232938Z/source-62" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-source-matrix-20260707T232938Z/source-67" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("fresh-s06-webcam-20260707T143939Z" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert by_folder["tone_emotion"][0]["status"] == "passed"
     assert all(session["status"] == "failed" for session in by_folder["tone_emotion"][1:])
+    assert all("matrix-adversarial-routes-48-63" in session["latest_receipt"] for session in by_folder["tone_emotion"])
     assert all("voice_delivery_tone_expected" in session["failed_gates"][0] for session in by_folder["tone_emotion"][1:])
 
 
@@ -496,16 +506,21 @@ def test_matrix_soak_routes_48_63_subset_has_receipt_backed_results() -> None:
     ]
 
     assert len(sessions) == 12
-    assert all("matrix-soak-routes-48-63" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
     assert all(session["status"] == "passed" for session in by_folder["speaker_identity"])
+    assert all("matrix-soak-routes-48-63" in session["latest_receipt"] for session in by_folder["speaker_identity"])
     assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
-    assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["factory_noise"])
+    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
+    assert any("voice-chat-e2e-20260707T232441Z-stress-current" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-source-matrix-20260707T232938Z/source-62" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-source-matrix-20260707T232938Z/source-67" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("fresh-s06-webcam-20260707T143939Z" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert by_folder["tone_emotion"][0]["status"] == "passed"
     assert all(session["status"] == "failed" for session in by_folder["tone_emotion"][1:])
+    assert all("matrix-soak-routes-48-63" in session["latest_receipt"] for session in by_folder["tone_emotion"])
     assert all("voice_delivery_tone_expected" in session["failed_gates"][0] for session in by_folder["tone_emotion"][1:])
 
 

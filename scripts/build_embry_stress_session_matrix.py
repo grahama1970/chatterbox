@@ -1647,16 +1647,53 @@ for _index in range(1, 5):
         ),
     }
 
-for _index in range(1, 5):
-    CURRENT_RESULTS[f"factory_noise-advanced-{_index:02d}"] = {
-        "status": "failed",
-        "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
-        "failed_gates": ["runner_route_not_implemented"],
-        "observed": (
-            "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation "
-            "for this case; this is a receipt-backed runner gap, not an audio ingress proof."
-        ),
+CURRENT_RESULTS.update(
+    {
+        "factory_noise-advanced-01": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_CURRENT_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms", "asr_final_transcript_present"],
+            "observed": (
+                "Current factory-stress capture played the Horus/factory WAV through sink 64, "
+                "but captured RMS was 7, so the ASR path could not prove a QRA question over "
+                "factory-floor background noise."
+            ),
+        },
+        "factory_noise-advanced-02": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
+            "failed_gates": [
+                "realtimestt_command_ok",
+                "realtimestt_receipt_ok",
+                "rung7_receipt_ok",
+                "speaker_resolution_known_horus",
+                "speaker_memory_recall_found",
+            ],
+            "observed": (
+                "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did "
+                "not resolve Horus or recover speaker-scoped memory."
+            ),
+        },
+        "factory_noise-advanced-03": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_67_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "Current Jabra source 67 run captured RMS 6, so the compliance question through "
+                "the Jabra speaker/mic path failed at the audio capture boundary."
+            ),
+        },
+        "factory_noise-advanced-04": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_WEBCAM_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio "
+                "played, so the research question through that microphone path failed at capture."
+            ),
+        },
     }
+)
 
 CURRENT_RESULTS.update(
     {
@@ -1703,16 +1740,53 @@ for _index in range(1, 5):
         ),
     }
 
-for _index in range(1, 5):
-    CURRENT_RESULTS[f"factory_noise-adversarial-{_index:02d}"] = {
-        "status": "failed",
-        "latest_receipt": _ADVERSARIAL_ROUTES_48_63_RECEIPT,
-        "failed_gates": ["runner_route_not_implemented"],
-        "observed": (
-            "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation "
-            "for this case; this is a receipt-backed runner gap, not an audio ingress proof."
-        ),
+CURRENT_RESULTS.update(
+    {
+        "factory_noise-adversarial-01": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_CURRENT_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms", "asr_final_transcript_present"],
+            "observed": (
+                "Current factory-stress capture played the Horus/factory WAV through sink 64, "
+                "but captured RMS was 7, so the ASR path could not prove a QRA question over "
+                "factory-floor background noise."
+            ),
+        },
+        "factory_noise-adversarial-02": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
+            "failed_gates": [
+                "realtimestt_command_ok",
+                "realtimestt_receipt_ok",
+                "rung7_receipt_ok",
+                "speaker_resolution_known_horus",
+                "speaker_memory_recall_found",
+            ],
+            "observed": (
+                "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did "
+                "not resolve Horus or recover speaker-scoped memory."
+            ),
+        },
+        "factory_noise-adversarial-03": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_67_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "Current Jabra source 67 run captured RMS 6, so the compliance question through "
+                "the Jabra speaker/mic path failed at the audio capture boundary."
+            ),
+        },
+        "factory_noise-adversarial-04": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_WEBCAM_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio "
+                "played, so the research question through that microphone path failed at capture."
+            ),
+        },
     }
+)
 
 CURRENT_RESULTS.update(
     {
@@ -1759,16 +1833,53 @@ for _index in range(1, 5):
         ),
     }
 
-for _index in range(1, 5):
-    CURRENT_RESULTS[f"factory_noise-soak-{_index:02d}"] = {
-        "status": "failed",
-        "latest_receipt": _SOAK_ROUTES_48_63_RECEIPT,
-        "failed_gates": ["runner_route_not_implemented"],
-        "observed": (
-            "The soak matrix runner has no live RealtimeSTT factory-capture route implementation "
-            "for this case; this is a receipt-backed runner gap, not an audio ingress proof."
-        ),
+CURRENT_RESULTS.update(
+    {
+        "factory_noise-soak-01": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_CURRENT_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms", "asr_final_transcript_present"],
+            "observed": (
+                "Current factory-stress capture played the Horus/factory WAV through sink 64, "
+                "but captured RMS was 7, so the ASR path could not prove a QRA question over "
+                "factory-floor background noise."
+            ),
+        },
+        "factory_noise-soak-02": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
+            "failed_gates": [
+                "realtimestt_command_ok",
+                "realtimestt_receipt_ok",
+                "rung7_receipt_ok",
+                "speaker_resolution_known_horus",
+                "speaker_memory_recall_found",
+            ],
+            "observed": (
+                "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did "
+                "not resolve Horus or recover speaker-scoped memory."
+            ),
+        },
+        "factory_noise-soak-03": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_67_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "Current Jabra source 67 run captured RMS 6, so the compliance question through "
+                "the Jabra speaker/mic path failed at the audio capture boundary."
+            ),
+        },
+        "factory_noise-soak-04": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_WEBCAM_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio "
+                "played, so the research question through that microphone path failed at capture."
+            ),
+        },
     }
+)
 
 CURRENT_RESULTS.update(
     {

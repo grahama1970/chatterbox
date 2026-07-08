@@ -252,14 +252,13 @@
       }
     },
     "failed_gate_counts": {
-      "asr_final_transcript_present": 2,
-      "capture_captured_audio_rms": 6,
-      "realtimestt_command_ok": 2,
-      "realtimestt_receipt_ok": 2,
-      "rung7_receipt_ok": 2,
-      "runner_route_not_implemented": 12,
-      "speaker_memory_recall_found": 2,
-      "speaker_resolution_known_horus": 2
+      "asr_final_transcript_present": 5,
+      "capture_captured_audio_rms": 15,
+      "realtimestt_command_ok": 5,
+      "realtimestt_receipt_ok": 5,
+      "rung7_receipt_ok": 5,
+      "speaker_memory_recall_found": 5,
+      "speaker_resolution_known_horus": 5
     },
     "failed_sessions": [
       {
@@ -347,110 +346,125 @@
       {
         "difficulty": "advanced",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
         ],
         "id": "factory_noise-advanced-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
-        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
       },
       {
         "difficulty": "advanced",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
         ],
         "id": "factory_noise-advanced-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
-        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
         "difficulty": "advanced",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms"
         ],
         "id": "factory_noise-advanced-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
-        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current Jabra source 67 run captured RMS 6, so the compliance question through the Jabra speaker/mic path failed at the audio capture boundary."
       },
       {
         "difficulty": "advanced",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms"
         ],
         "id": "factory_noise-advanced-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
-        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio played, so the research question through that microphone path failed at capture."
       },
       {
         "difficulty": "adversarial",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
         ],
         "id": "factory_noise-adversarial-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
-        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
       },
       {
         "difficulty": "adversarial",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
         ],
         "id": "factory_noise-adversarial-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
-        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
         "difficulty": "adversarial",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms"
         ],
         "id": "factory_noise-adversarial-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
-        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current Jabra source 67 run captured RMS 6, so the compliance question through the Jabra speaker/mic path failed at the audio capture boundary."
       },
       {
         "difficulty": "adversarial",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms"
         ],
         "id": "factory_noise-adversarial-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
-        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio played, so the research question through that microphone path failed at capture."
       },
       {
         "difficulty": "soak",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
         ],
         "id": "factory_noise-soak-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
-        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
       },
       {
         "difficulty": "soak",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
         ],
         "id": "factory_noise-soak-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
-        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
         "difficulty": "soak",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms"
         ],
         "id": "factory_noise-soak-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
-        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current Jabra source 67 run captured RMS 6, so the compliance question through the Jabra speaker/mic path failed at the audio capture boundary."
       },
       {
         "difficulty": "soak",
         "failed_gates": [
-          "runner_route_not_implemented"
+          "capture_captured_audio_rms"
         ],
         "id": "factory_noise-soak-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
-        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio played, so the research question through that microphone path failed at capture."
       }
     ],
     "session_count": 20,
@@ -631,20 +645,16 @@
     "blocking_summary": "factory/noisy ingress scenarios still fail at capture, ASR transcript, rung7, speaker resolution, memory recall, or unimplemented runner-route gates",
     "boundary": "factory_noise_audio_capture_to_realtimestt_rung7",
     "failed_gate_counts": {
-      "asr_final_transcript_present": 2,
-      "capture_captured_audio_rms": 6,
-      "realtimestt_command_ok": 2,
-      "realtimestt_receipt_ok": 2,
-      "rung7_receipt_ok": 2,
-      "runner_route_not_implemented": 12,
-      "speaker_memory_recall_found": 2,
-      "speaker_resolution_known_horus": 2
+      "asr_final_transcript_present": 5,
+      "capture_captured_audio_rms": 15,
+      "realtimestt_command_ok": 5,
+      "realtimestt_receipt_ok": 5,
+      "rung7_receipt_ok": 5,
+      "speaker_memory_recall_found": 5,
+      "speaker_resolution_known_horus": 5
     },
     "failed_session_count": 20,
     "latest_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
       "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
       "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
       "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
@@ -726,11 +736,10 @@
     "factory_gate:realtimestt_command_ok",
     "factory_gate:realtimestt_receipt_ok",
     "factory_gate:rung7_receipt_ok",
-    "factory_gate:runner_route_not_implemented",
     "factory_gate:speaker_memory_recall_found",
     "factory_gate:speaker_resolution_known_horus"
   ],
-  "generated_at_utc": "2026-07-08T09:42:46.464698+00:00",
+  "generated_at_utc": "2026-07-08T10:14:09.776983+00:00",
   "historical_candidate_count": 14,
   "historical_candidates": [
     {

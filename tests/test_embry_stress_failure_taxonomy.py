@@ -73,15 +73,22 @@ def test_taxonomy_exposes_top_repair_blockers() -> None:
     assert gates.get("voice_control_controlled_live_ready", 0) == 0
     assert gates.get("voice_control_case_text-turn_pass", 0) == 0
     assert gates.get("text_turn_memory_tau_chatterbox_authority", 0) == 0
-    assert gates["runner_route_not_implemented"] == 12
+    assert gates.get("runner_route_not_implemented", 0) == 0
     assert "interruption_detected_receipt_not_emitted" not in gates
+    assert gates["capture_captured_audio_rms"] == 15
+    assert gates["asr_final_transcript_present"] == 5
+    assert gates["realtimestt_command_ok"] == 5
+    assert gates["realtimestt_receipt_ok"] == 5
+    assert gates["rung7_receipt_ok"] == 5
+    assert gates["speaker_resolution_known_horus"] == 5
+    assert gates["speaker_memory_recall_found"] == 5
     assert gates["blessed_qra_cached_response_not_exercised"] == 5
     assert gates["tau_tool_wait_not_exercised"] == 5
     assert gates["natural_stop_phrase_not_observed"] == 5
     assert top_gates[:3] == [
-        {"gate": "runner_route_not_implemented", "count": 12},
-        {"gate": "capture_captured_audio_rms", "count": 6},
+        {"gate": "capture_captured_audio_rms", "count": 15},
         {"gate": "blessed_qra_cached_response_not_exercised", "count": 5},
+        {"gate": "natural_stop_phrase_not_observed", "count": 5},
     ]
 
 
