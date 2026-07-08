@@ -66,6 +66,32 @@ def test_classify_known_horus_resolution_with_independent_enrollment() -> None:
     assert candidate["enrollment_independent_from_candidate"] is True
 
 
+def test_classify_overlap_diarization_turn_control_receipt() -> None:
+    receipt = {
+        "schema": "chatterbox.overlap_turn_control.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "claims": {
+            "proves": [
+                "pyannote_detected_two_anonymous_overlapping_speakers",
+                "memory_intent_maps_overlap_to_turn_taking_clarification",
+            ]
+        },
+        "memory_intent": {
+            "voice_delivery": {
+                "tone": "one_at_a_time_interrupt",
+            }
+        },
+        "tau_voice_render": {"ok": True},
+    }
+
+    candidate = classify_proof(Path("/tmp/overlap.json"), receipt)
+
+    assert candidate["proof_type"] == "overlap_diarization_turn_control"
+    assert candidate["overlap_diarization_turn_control_ok"] is True
+
+
 def test_audit_fails_when_matrix_passes_but_physical_identity_is_unproven(tmp_path: Path) -> None:
     policy = tmp_path / "policy.json"
     policy.write_text(
@@ -149,6 +175,7 @@ def test_audit_fails_when_matrix_passes_but_physical_identity_is_unproven(tmp_pa
 
     assert audit["ok"] is False
     assert audit["policy_ledger_candidate_count"] == 1
+    assert audit["live"] is True
     assert audit["fixture_gate_candidate_count"] == 1
     assert audit["known_horus_candidate_count"] == 1
     assert audit["unknown_fail_closed_candidate_count"] == 1
@@ -228,13 +255,35 @@ def test_audit_passes_only_with_physical_identity_and_overlap_evidence_removed_f
 }
 """
     )
+    overlap = tmp_path / "overlap.json"
+    overlap.write_text(
+        """
+{
+  "schema": "chatterbox.overlap_turn_control.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "claims": {
+    "proves": [
+      "pyannote_detected_two_anonymous_overlapping_speakers",
+      "memory_intent_maps_overlap_to_turn_taking_clarification"
+    ]
+  },
+  "memory_intent": {"voice_delivery": {"tone": "one_at_a_time_interrupt"}},
+  "tau_voice_render": {"ok": true}
+}
+"""
+    )
 
-    audit = build_audit({"sessions": [_session("passed")]}, [policy, fixture, known, unknown])
+    audit = build_audit({"sessions": [_session("passed")]}, [policy, fixture, known, unknown, overlap])
 
+    assert audit["ok"] is True
+    assert audit["live"] is True
     assert audit["policy_ledger_candidate_count"] == 1
     assert audit["fixture_gate_candidate_count"] == 1
     assert audit["known_horus_candidate_count"] == 1
     assert audit["unknown_fail_closed_candidate_count"] == 1
+    assert audit["overlap_diarization_candidate_count"] == 1
     assert audit["independent_enrollment_candidate_count"] == 1
     assert audit["physical_identity_candidate_count"] == 1
-    assert audit["failed_gates"] == ["overlap_diarization_not_proven"]
+    assert audit["failed_gates"] == []

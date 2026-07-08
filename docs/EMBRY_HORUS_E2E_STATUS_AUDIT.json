@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:33:35.262543+00:00",
+  "generated_at_utc": "2026-07-08T04:36:56.952133+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -390,8 +390,6 @@
             "does_not_prove": [
               "RealtimeSTT audio ingress",
               "real multi-sample Horus enrollment",
-              "physical speaker-to-microphone identity gating",
-              "overlapping-speaker diarization",
               "memory/Tau answer correctness",
               "Chatterbox speech quality",
               "Chat UX synchronization",
@@ -404,16 +402,16 @@
               "memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy",
               "fixture_primary_speaker_gate_suppresses_non_primary_audio",
               "known_horus_resolution_can_route_speaker_scoped_memory",
-              "unknown_speaker_resolution_fails_closed_to_identity_prompt"
+              "unknown_speaker_resolution_fails_closed_to_identity_prompt",
+              "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control"
             ]
           },
           "exists": true,
           "failed_gates": [
             "matrix_contains_source_audio_identity_unproven_rows",
-            "overlap_diarization_not_proven",
             "physical_speaker_to_microphone_identity_gating_not_proven"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json",

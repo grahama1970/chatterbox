@@ -19,6 +19,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json"),
     Path("/tmp/chatterbox-speaker-memory-rungs-20260702T1722Z/rung1_unknown_factory_identity.json"),
     Path("/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json"),
+    Path("/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json"),
 ]
 
 
@@ -108,10 +109,13 @@ def _unknown_speaker_resolution_ok(receipt: dict[str, Any]) -> bool:
 def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     schema = str(receipt.get("schema") or "")
     claims = receipt.get("claims") or {}
+    proves = claims.get("proves") or []
     does_not_prove = claims.get("does_not_prove") or []
 
     if receipt.get("proof_scope") == "live_memory_speaker_resolution_policy_not_audio_identity":
         proof_type = "memory_speaker_policy_ledger"
+    elif "pyannote_detected_two_anonymous_overlapping_speakers" in proves:
+        proof_type = "overlap_diarization_turn_control"
     elif schema == "chatterbox.primary_speaker_gate_suite.v1":
         proof_type = "fixture_primary_speaker_gate"
     elif schema == "chatterbox.conversation_ladder.rung7.listener_contract.v1" and _known_speaker_resolution_ok(receipt):
@@ -130,6 +134,14 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         or "physical speaker playback to microphone" in str(item)
         for item in does_not_prove
     )
+    overlap_diarization_ok = bool(
+        receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and "pyannote_detected_two_anonymous_overlapping_speakers" in proves
+        and _nested_get(receipt, "memory_intent.voice_delivery.tone") == "one_at_a_time_interrupt"
+        and _nested_get(receipt, "tau_voice_render.ok") is True
+    )
 
     return {
         "path": str(path),
@@ -142,6 +154,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "failed_gates": receipt.get("failed_gates") or [],
         "policy_cases_cover_known_unknown_ambiguous_overlap": _policy_cases_cover_required_statuses(receipt.get("cases")),
         "fixture_primary_accepts_and_rejects_non_primary": _fixture_gate_ok(receipt.get("cases")),
+        "overlap_diarization_turn_control_ok": overlap_diarization_ok,
         "known_horus_resolution_ok": _known_speaker_resolution_ok(receipt),
         "unknown_speaker_fail_closed_ok": _unknown_speaker_resolution_ok(receipt),
         "source_audio_identity_proven": receipt.get("source_audio_identity_proven"),
@@ -152,7 +165,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "similarity": _nested_get(receipt, "primary_speaker_verification.similarity"),
         "threshold": _nested_get(receipt, "primary_speaker_verification.threshold"),
         "physical_identity_not_proven_by_claims": physical_identity_not_proven,
-        "claims_proves": claims.get("proves") or [],
+        "claims_proves": proves,
         "claims_does_not_prove": does_not_prove,
     }
 
@@ -165,6 +178,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     fixture_gates = [candidate for candidate in proof_candidates if candidate["fixture_primary_accepts_and_rejects_non_primary"]]
     known_horus = [candidate for candidate in proof_candidates if candidate["known_horus_resolution_ok"]]
     unknown_fail_closed = [candidate for candidate in proof_candidates if candidate["unknown_speaker_fail_closed_ok"]]
+    overlap_diarization = [
+        candidate for candidate in proof_candidates if candidate["overlap_diarization_turn_control_ok"]
+    ]
     independent_enrollment = [
         candidate
         for candidate in proof_candidates
@@ -195,14 +211,32 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         failed_gates.append("physical_speaker_to_microphone_identity_gating_not_proven")
     if speaker_matrix["source_audio_identity_proven_false_count"]:
         failed_gates.append("matrix_contains_source_audio_identity_unproven_rows")
-    failed_gates.append("overlap_diarization_not_proven")
+    if not overlap_diarization:
+        failed_gates.append("overlap_diarization_not_proven")
 
     ok = not failed_gates
+    live_evidence_present = any(
+        candidate["live"] is True and candidate["mocked"] is False
+        for candidate in proof_candidates
+    )
+    partial_proves = []
+    if speaker_matrix["status_counts"]["failed"] == 0:
+        partial_proves.append("speaker_identity_matrix_policy_rows_are_passing")
+    if policy_ledgers:
+        partial_proves.append("memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy")
+    if fixture_gates:
+        partial_proves.append("fixture_primary_speaker_gate_suppresses_non_primary_audio")
+    if known_horus:
+        partial_proves.append("known_horus_resolution_can_route_speaker_scoped_memory")
+    if unknown_fail_closed:
+        partial_proves.append("unknown_speaker_resolution_fails_closed_to_identity_prompt")
+    if overlap_diarization:
+        partial_proves.append("pyannote_overlap_detection_routes_to_one_at_a_time_turn_control")
     return {
         "schema": "chatterbox.embry_speaker_identity_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
-        "live": False,
+        "live": live_evidence_present,
         "ok": ok,
         "status": "passed" if ok else "failed",
         "speaker_matrix": speaker_matrix,
@@ -211,6 +245,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "fixture_gate_candidate_count": len(fixture_gates),
         "known_horus_candidate_count": len(known_horus),
         "unknown_fail_closed_candidate_count": len(unknown_fail_closed),
+        "overlap_diarization_candidate_count": len(overlap_diarization),
         "independent_enrollment_candidate_count": len(independent_enrollment),
         "physical_identity_candidate_count": len(physical_identity_proven),
         "proof_candidates": proof_candidates,
@@ -222,12 +257,14 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
                 "fixture_primary_speaker_gate_suppresses_non_primary_audio",
                 "known_horus_resolution_can_route_speaker_scoped_memory",
                 "unknown_speaker_resolution_fails_closed_to_identity_prompt",
-            ],
+                "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control",
+                "physical_speaker_to_microphone_identity_gating",
+            ]
+            if ok
+            else partial_proves,
             "does_not_prove": [
                 "RealtimeSTT audio ingress",
                 "real multi-sample Horus enrollment",
-                "physical speaker-to-microphone identity gating",
-                "overlapping-speaker diarization",
                 "memory/Tau answer correctness",
                 "Chatterbox speech quality",
                 "Chat UX synchronization",

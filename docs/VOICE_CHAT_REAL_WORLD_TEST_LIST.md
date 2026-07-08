@@ -246,7 +246,7 @@ Current speaker identity evidence audit receipt:
 
 `docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, even though the speaker identity
+That audit reports `mocked=false`, `live=true`, `ok=false`, even though the speaker identity
 matrix itself is 20 passed / 0 failed. It separates memory policy from physical
 identity proof:
 
@@ -257,13 +257,15 @@ identity proof:
 - Known Horus speaker-scoped memory routing exists.
 - Unknown speaker fail-closed identity prompting exists.
 - One independent enrollment-vs-candidate receipt exists.
+- One live pyannote overlap/turn-control receipt exists; it detects two
+  anonymous overlapping speakers and routes to one-at-a-time turn control.
 - One matrix row still explicitly records `source_audio_identity_proven=false`.
 - No committed receipt proves physical speaker-to-microphone identity gating.
-- Overlap diarization remains unproven.
 
 This means speaker policy is usable for routing, but the goal-level speaker
-identity requirement remains partial until physical identity and overlap
-diarization receipts exist.
+identity requirement remains partial until physical speaker-to-microphone
+identity evidence exists and the matrix row no longer records
+`source_audio_identity_proven=false`.
 
 Current Chat UX sync evidence audit receipt:
 

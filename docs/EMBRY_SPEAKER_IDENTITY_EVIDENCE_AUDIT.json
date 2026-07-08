@@ -3,8 +3,6 @@
     "does_not_prove": [
       "RealtimeSTT audio ingress",
       "real multi-sample Horus enrollment",
-      "physical speaker-to-microphone identity gating",
-      "overlapping-speaker diarization",
       "memory/Tau answer correctness",
       "Chatterbox speech quality",
       "Chat UX synchronization",
@@ -17,24 +15,25 @@
       "memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy",
       "fixture_primary_speaker_gate_suppresses_non_primary_audio",
       "known_horus_resolution_can_route_speaker_scoped_memory",
-      "unknown_speaker_resolution_fails_closed_to_identity_prompt"
+      "unknown_speaker_resolution_fails_closed_to_identity_prompt",
+      "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control"
     ]
   },
   "failed_gates": [
     "matrix_contains_source_audio_identity_unproven_rows",
-    "overlap_diarization_not_proven",
     "physical_speaker_to_microphone_identity_gating_not_proven"
   ],
   "fixture_gate_candidate_count": 1,
-  "generated_at_utc": "2026-07-08T03:31:45.864935+00:00",
+  "generated_at_utc": "2026-07-08T04:36:56.870737+00:00",
   "independent_enrollment_candidate_count": 1,
   "known_horus_candidate_count": 2,
-  "live": false,
+  "live": true,
   "mocked": false,
   "ok": false,
+  "overlap_diarization_candidate_count": 1,
   "physical_identity_candidate_count": 0,
   "policy_ledger_candidate_count": 1,
-  "proof_candidate_count": 5,
+  "proof_candidate_count": 6,
   "proof_candidates": [
     {
       "candidate_audio": null,
@@ -63,6 +62,7 @@
       "live": true,
       "mocked": false,
       "ok": true,
+      "overlap_diarization_turn_control_ok": false,
       "path": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
       "physical_identity_not_proven_by_claims": false,
       "policy_cases_cover_known_unknown_ambiguous_overlap": true,
@@ -95,6 +95,7 @@
       "live": false,
       "mocked": false,
       "ok": null,
+      "overlap_diarization_turn_control_ok": false,
       "path": "/tmp/chatterbox-fork-agent-out/primary-speaker-gate-20260702T150040Z/suite-summary.json",
       "physical_identity_not_proven_by_claims": true,
       "policy_cases_cover_known_unknown_ambiguous_overlap": false,
@@ -136,6 +137,7 @@
       "live": true,
       "mocked": false,
       "ok": true,
+      "overlap_diarization_turn_control_ok": false,
       "path": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json",
       "physical_identity_not_proven_by_claims": true,
       "policy_cases_cover_known_unknown_ambiguous_overlap": false,
@@ -174,6 +176,7 @@
       "live": false,
       "mocked": false,
       "ok": true,
+      "overlap_diarization_turn_control_ok": false,
       "path": "/tmp/chatterbox-speaker-memory-rungs-20260702T1722Z/rung1_unknown_factory_identity.json",
       "physical_identity_not_proven_by_claims": true,
       "policy_cases_cover_known_unknown_ambiguous_overlap": false,
@@ -212,6 +215,7 @@
       "live": true,
       "mocked": false,
       "ok": true,
+      "overlap_diarization_turn_control_ok": false,
       "path": "/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json",
       "physical_identity_not_proven_by_claims": true,
       "policy_cases_cover_known_unknown_ambiguous_overlap": false,
@@ -221,6 +225,41 @@
       "similarity": 1.0,
       "source_audio_identity_proven": null,
       "threshold": 0.45,
+      "unknown_speaker_fail_closed_ok": false
+    },
+    {
+      "candidate_audio": null,
+      "claims_does_not_prove": [
+        "real_time_streaming_overlap_diarization",
+        "word_level_speaker_attribution",
+        "all_factory_floor_overlap_conditions",
+        "subjective_boundary_delivery_quality"
+      ],
+      "claims_proves": [
+        "pyannote_detected_two_anonymous_overlapping_speakers",
+        "memory_intent_maps_overlap_to_turn_taking_clarification",
+        "memory_intent_emits_one_at_a_time_interrupt_voice_delivery",
+        "tau_chatterbox_renders_overlap_boundary_with_memory_tone"
+      ],
+      "enrollment_audio": null,
+      "enrollment_independent_from_candidate": false,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": false,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "overlap_diarization_turn_control_ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json",
+      "physical_identity_not_proven_by_claims": false,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": null,
+      "proof_type": "overlap_diarization_turn_control",
+      "schema": "chatterbox.overlap_turn_control_smoke.v1",
+      "similarity": null,
+      "source_audio_identity_proven": null,
+      "threshold": null,
       "unknown_speaker_fail_closed_ok": false
     }
   ],
