@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 40, "failed": 200, "not_run": 60}
+    assert status_counts == {"passed": 44, "failed": 212, "not_run": 44}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -103,6 +103,25 @@ def test_matrix_adversarial_memory_search_subset_has_live_receipt_results() -> N
 
     assert len(sessions) == 16
     assert all("matrix-adversarial-memory-search" in session["latest_receipt"] for session in sessions)
+    assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
+    memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
+    assert len(memory_sessions) == 12
+    assert all(session["status"] == "failed" for session in memory_sessions)
+    assert all(session["failed_gates"] for session in memory_sessions)
+
+
+def test_matrix_soak_memory_search_subset_has_live_receipt_results() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["difficulty"] == "soak"
+        and session["folder_id"]
+        in {"sparta_qra_compliance", "persona_memory_recall", "persona_memory_miss", "brave_research"}
+    ]
+
+    assert len(sessions) == 16
+    assert all("matrix-soak-memory-search" in session["latest_receipt"] for session in sessions)
     assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
     memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
     assert len(memory_sessions) == 12

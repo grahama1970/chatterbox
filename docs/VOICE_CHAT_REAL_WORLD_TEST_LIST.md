@@ -231,6 +231,19 @@ their expected tone-family gates. All adversarial rows are now receipt-backed.
 The matrix now records `40` passed, `200` failed, and `60` not-run sessions;
 the remaining not-run rows are all soak.
 
+Latest matrix soak memory/search subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json`
+
+That run executed `16` soak memory/search sessions with `mocked=false`,
+`live=true`, and `ok=false`. The four Brave Search research sessions passed.
+All twelve soak SPARTA/persona-memory sessions failed answerability gates:
+SPARTA QRA prompts still leaked S0609/deprecated-control or missing-acceptance
+answers, persona-memory recall still used unrelated source collections, and
+persona-memory miss prompts still answered unrelated records instead of
+clarifying. The matrix now records `44` passed, `212` failed, and `44` not-run
+sessions.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
