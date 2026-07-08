@@ -100,12 +100,24 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
   "ok": true,
   "live": true,
   "mocked": false,
-  "capture": {
-    "captured_audio": {
-      "exists": true,
-      "rms": 512
-    }
-  },
+        "capture": {
+            "captured_audio": {
+                "exists": true,
+                "path": "/tmp/captured.wav",
+                "rms": 512,
+                "sha256": "captured-sha"
+            },
+            "play_audio": {
+                "sha256": "source-sha"
+            },
+            "pipewire": {
+                "capture_backend": "ffmpeg-pulse",
+                "capture_kind": "monitor_loopback",
+                "pulse_source": "alsa_output.jabra.monitor",
+                "record_target": "62",
+                "sink_target": "64"
+            }
+        },
   "claims": {
     "proves": [
       "pipewire_monitor_loopback_captures_played_stress_audio",
@@ -128,8 +140,12 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
     assert audit["ok"] is False
     assert audit["live"] is True
     assert audit["current_factory_loopback_passing_candidate_count"] == 1
+    assert audit["current_source_identity_candidate_count"] == 1
     assert audit["current_factory_loopback_passing_candidates"][0]["transcript_present"] is True
     assert audit["current_factory_loopback_passing_candidates"][0]["transcript"] == "current loopback transcript"
+    assert audit["current_source_identity_candidates"][0]["source_identity_proven"] is True
+    assert audit["current_source_identity_candidates"][0]["captured_audio_sha256"] == "captured-sha"
+    assert audit["current_source_identity_candidates"][0]["pipewire_identity"]["pulse_source"] == "alsa_output.jabra.monitor"
     assert "current_factory_matrix_has_failures" in audit["failed_gates"]
     assert "current_factory_matrix_has_no_passes" not in audit["failed_gates"]
     assert "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes" in audit["claims"]["proves"]

@@ -190,6 +190,12 @@ The current loopback candidate records `transcript_present=true`,
 The current factory-noise matrix still remains 0 passed / 20 failed, and
 browser device ingress remains inconsistent, so the subsystem is still failing
 despite that current loopback slice.
+The RealtimeSTT ingress audit now also records one current source-identity
+candidate for that loopback slice: Jabra sink target `64`, record target `62`,
+the Jabra Pulse monitor source, captured WAV SHA256
+`cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a`,
+captured RMS `512`, and the final RealtimeSTT transcript. This is still a
+PipeWire monitor-loopback proof, not browser/WebRTC or physical room-mic proof.
 
 Current memory/Tau routing evidence audit receipt:
 

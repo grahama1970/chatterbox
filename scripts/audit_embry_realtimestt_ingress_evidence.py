@@ -62,6 +62,19 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     transcript = extract_transcript(receipt)
     captured_rms = nested_get(receipt, "capture.captured_audio.rms")
     captured_audio_exists = nested_get(receipt, "capture.captured_audio.exists")
+    captured_audio_sha256 = nested_get(receipt, "capture.captured_audio.sha256")
+    captured_audio_path = nested_get(receipt, "capture.captured_audio.path")
+    play_audio_sha256 = nested_get(receipt, "capture.play_audio.sha256")
+    pipewire = nested_get(receipt, "capture.pipewire") or {}
+    pipewire_identity = {
+        "capture_backend": pipewire.get("capture_backend") if isinstance(pipewire, dict) else None,
+        "capture_kind": pipewire.get("capture_kind") if isinstance(pipewire, dict) else None,
+        "pulse_source": pipewire.get("pulse_source") if isinstance(pipewire, dict) else None,
+        "sink_target": pipewire.get("sink_target") if isinstance(pipewire, dict) else None,
+        "sink_node_name": pipewire.get("sink_node_name") if isinstance(pipewire, dict) else None,
+        "record_target": pipewire.get("record_target") if isinstance(pipewire, dict) else None,
+        "record_node_name": pipewire.get("record_node_name") if isinstance(pipewire, dict) else None,
+    }
     asr_executor_calls = nested_get(receipt, "children.realtimestt.receipt.asr_executor_calls") or []
 
     if "browser_getusermedia" in proof_scope:
@@ -79,6 +92,17 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         or "captured_loopback_audio_feeds_realtimestt_automatic_vad" in proves
         or "browser_getusermedia_audio_can_feed_realtimestt_external_audio_listener" in proves
     )
+    source_identity_proven = bool(
+        ingress_proven
+        and captured_audio_exists
+        and captured_audio_sha256
+        and pipewire_identity["capture_kind"]
+        and (
+            pipewire_identity["pulse_source"]
+            or pipewire_identity["record_target"]
+            or "browser_getusermedia_audio_can_feed_realtimestt_external_audio_listener" in proves
+        )
+    )
 
     return {
         "path": str(path),
@@ -94,6 +118,11 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "asr_executor_call_count": len(asr_executor_calls) if isinstance(asr_executor_calls, list) else 0,
         "captured_audio_exists": captured_audio_exists,
         "captured_audio_rms": captured_rms,
+        "captured_audio_path": captured_audio_path,
+        "captured_audio_sha256": captured_audio_sha256,
+        "play_audio_sha256": play_audio_sha256,
+        "source_identity_proven": source_identity_proven,
+        "pipewire_identity": pipewire_identity,
         "failed_gates": receipt.get("failed_gates") or [],
         "claims_proves": proves,
         "claims_does_not_prove": claims.get("does_not_prove") or [],
@@ -137,6 +166,11 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         if candidate["transport"] == "pipewire_monitor_loopback"
         and "20260708T034407Z-factory-current" in candidate["path"]
     ]
+    current_source_identity_candidates = [
+        candidate
+        for candidate in current_factory_loopback_candidates
+        if candidate["source_identity_proven"]
+    ]
     browser_candidates = [candidate for candidate in candidates if candidate["transport"] == "browser_getusermedia"]
     browser_failures = [candidate for candidate in browser_candidates if not candidate["ingress_proven"]]
 
@@ -162,7 +196,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "historical_candidate_count": len(candidates),
         "historical_passing_candidate_count": len(passing_candidates),
         "current_factory_loopback_passing_candidate_count": len(current_factory_loopback_candidates),
+        "current_source_identity_candidate_count": len(current_source_identity_candidates),
         "current_factory_loopback_passing_candidates": current_factory_loopback_candidates,
+        "current_source_identity_candidates": current_source_identity_candidates,
         "historical_candidates": candidates,
         "current_factory_matrix": factory,
         "failed_gates": sorted(set(failed_gates)),
