@@ -379,6 +379,84 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
     assert audit["blessed_qra_cached_response_candidate_count"] == 1
 
 
+def test_audit_uses_speaker_identity_audit_for_overlap_tone_gate(tmp_path: Path) -> None:
+    render = tmp_path / "render.json"
+    render.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}},
+  "response": {"voice_delivery": {"tone": "memory_confident", "delivery_stage": "satisfied", "pace": "brief", "pause_strategy": "short_answer_no_filler", "source": "memory.intent"}}
+}
+"""
+    )
+    qra = tmp_path / "qra.json"
+    qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    personality = tmp_path / "personality.json"
+    personality.write_text(
+        """
+{
+  "schema": "chatterbox.embry_personality_audition.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "variants": [
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}}
+  ]
+}
+"""
+    )
+    speaker_identity_audit = tmp_path / "speaker-identity-audit.json"
+    speaker_identity_audit.write_text(
+        """
+{
+  "ok": false,
+  "status": "failed",
+  "live": true,
+  "mocked": false,
+  "claims": {
+    "proves": ["pyannote_overlap_detection_routes_to_one_at_a_time_turn_control"]
+  }
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            _session(
+                "tone_emotion",
+                "failed",
+                [
+                    "voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
+                    "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
+                ],
+            ),
+            _session("interruption", "passed"),
+        ]
+    }
+
+    audit = build_audit(
+        matrix,
+        [render, qra, personality],
+        speaker_identity_audit_path=speaker_identity_audit,
+    )
+
+    assert audit["ok"] is False
+    assert audit["speaker_identity_evidence_audit"]["overlap_one_at_a_time_ok"] is True
+    assert "pyannote_overlap_routes_to_one_at_a_time_voice_delivery" in audit["claims"]["proves"]
+    assert "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt" not in audit["failed_gates"]
+    assert "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light" in audit["failed_gates"]
+    assert audit["tone_emotion_matrix_remaining_failed_gates"] == [
+        "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"
+    ]
+
+
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(

@@ -18,7 +18,8 @@
       "personality_audition_variants_can_render_and_play",
       "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
       "live_primary_speaker_interruption_barge_in_receipt_present",
-      "live_non_primary_interrupt_audio_is_suppressed_before_turn_control"
+      "live_non_primary_interrupt_audio_is_suppressed_before_turn_control",
+      "pyannote_overlap_routes_to_one_at_a_time_voice_delivery"
     ]
   },
   "complete_delivery_envelope_candidate_count": 1,
@@ -28,10 +29,9 @@
     "speech_matrix_gate:tau_tool_wait_not_exercised",
     "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
     "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
-    "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T06:35:32.833837+00:00",
+  "generated_at_utc": "2026-07-08T06:38:25.407106+00:00",
   "incomplete_delivery_envelope_count": 4,
   "interruption_evidence_audit": {
     "best_candidate_paths": [
@@ -400,6 +400,18 @@
   "qra_disabled_normal_render_candidate_count": 3,
   "qra_variant_candidate_count": 2,
   "schema": "chatterbox.embry_chatterbox_speech_evidence_audit.v1",
+  "speaker_identity_evidence_audit": {
+    "covered_gates": [
+      "voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt"
+    ],
+    "exists": true,
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "overlap_one_at_a_time_ok": true,
+    "path": "docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json",
+    "status": "failed"
+  },
   "speech_matrix": {
     "by_folder": {
       "interruption": {
@@ -646,5 +658,9 @@
       "passed": 5
     }
   },
-  "status": "failed"
+  "status": "failed",
+  "tone_emotion_matrix_remaining_failed_gates": [
+    "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
+    "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"
+  ]
 }

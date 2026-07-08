@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json")
 DEFAULT_INTERRUPTION_AUDIT = Path("docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json")
+DEFAULT_SPEAKER_IDENTITY_AUDIT = Path("docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T063142Z-rung4-live-nonprimary-suppressed/rung4-nonprimary-suppressed.json"),
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/tau-voice-render.json"),
@@ -265,15 +266,43 @@ def _interruption_audit_summary(path: Path | None) -> dict[str, Any]:
     }
 
 
+def _speaker_identity_audit_summary(path: Path | None) -> dict[str, Any]:
+    if path is None:
+        return {"path": None, "exists": False, "overlap_one_at_a_time_ok": False, "covered_gates": []}
+    receipt = read_json(path)
+    proves = set((receipt.get("claims") or {}).get("proves") or [])
+    overlap_one_at_a_time_ok = bool(
+        path.exists()
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control" in proves
+    )
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "ok": receipt.get("ok"),
+        "status": receipt.get("status"),
+        "live": receipt.get("live"),
+        "mocked": receipt.get("mocked"),
+        "overlap_one_at_a_time_ok": overlap_one_at_a_time_ok,
+        "covered_gates": ["voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt"]
+        if overlap_one_at_a_time_ok
+        else [],
+    }
+
+
 def build_audit(
     matrix: dict[str, Any],
     proof_paths: list[Path],
     *,
     interruption_audit_path: Path | None = None,
+    speaker_identity_audit_path: Path | None = None,
 ) -> dict[str, Any]:
     speech_matrix = _group_summary(matrix, SPEECH_FOLDERS)
     interruption_audit = _interruption_audit_summary(interruption_audit_path)
+    speaker_identity_audit = _speaker_identity_audit_summary(speaker_identity_audit_path)
     interruption_covered_gates = set(interruption_audit["covered_gates"])
+    tone_covered_gates = set(speaker_identity_audit["covered_gates"])
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     live_renders = [candidate for candidate in proof_candidates if candidate["render_audio_ok"]]
     qra_variants = [candidate for candidate in proof_candidates if candidate["qra_variants_ok"]]
@@ -318,11 +347,17 @@ def build_audit(
         if gate not in dynamic_covered_gates
     }
     if speech_matrix["by_folder"]["tone_emotion"]["status_counts"]["failed"]:
-        failed_gates.append("tone_emotion_matrix_has_failures")
+        tone_remaining_gates = {
+            gate
+            for gate in speech_matrix["by_folder"]["tone_emotion"]["failed_gate_counts"]
+            if gate not in tone_covered_gates
+        }
+        if tone_remaining_gates:
+            failed_gates.append("tone_emotion_matrix_has_failures")
     if effective_interruption_failed_gates:
         failed_gates.append("interruption_matrix_has_failures")
     for gate in sorted(speech_matrix["failed_gate_counts"]):
-        if gate in dynamic_covered_gates:
+        if gate in dynamic_covered_gates or gate in tone_covered_gates:
             continue
         failed_gates.append(f"speech_matrix_gate:{gate}")
 
@@ -348,6 +383,8 @@ def build_audit(
         partial_proves.append("live_primary_speaker_interruption_barge_in_receipt_present")
     if non_primary_interrupt_rejections:
         partial_proves.append("live_non_primary_interrupt_audio_is_suppressed_before_turn_control")
+    if speaker_identity_audit["overlap_one_at_a_time_ok"]:
+        partial_proves.append("pyannote_overlap_routes_to_one_at_a_time_voice_delivery")
     does_not_prove = [
         "RealtimeSTT audio ingress",
         "general speaker identity outside the linked interruption receipt",
@@ -369,6 +406,12 @@ def build_audit(
         "proof_candidate_count": len(proof_candidates),
         "interruption_evidence_audit": interruption_audit,
         "interruption_matrix_remaining_failed_gates": sorted(effective_interruption_failed_gates),
+        "speaker_identity_evidence_audit": speaker_identity_audit,
+        "tone_emotion_matrix_remaining_failed_gates": sorted(
+            gate
+            for gate in speech_matrix["by_folder"]["tone_emotion"]["failed_gate_counts"]
+            if gate not in tone_covered_gates
+        ),
         "live_render_candidate_count": len(live_renders),
         "qra_variant_candidate_count": len(qra_variants),
         "qra_disabled_normal_render_candidate_count": len(qra_disabled),
@@ -395,11 +438,17 @@ def main() -> int:
     parser.add_argument("--matrix", type=Path, default=DEFAULT_MATRIX)
     parser.add_argument("--proof", action="append", type=Path, default=[])
     parser.add_argument("--interruption-audit", type=Path, default=DEFAULT_INTERRUPTION_AUDIT)
+    parser.add_argument("--speaker-identity-audit", type=Path, default=DEFAULT_SPEAKER_IDENTITY_AUDIT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args()
 
     matrix = read_json(args.matrix)
-    audit = build_audit(matrix, [*DEFAULT_PROOFS, *args.proof], interruption_audit_path=args.interruption_audit)
+    audit = build_audit(
+        matrix,
+        [*DEFAULT_PROOFS, *args.proof],
+        interruption_audit_path=args.interruption_audit,
+        speaker_identity_audit_path=args.speaker_identity_audit,
+    )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n")
     print(args.out)
