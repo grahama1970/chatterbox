@@ -27,8 +27,10 @@
         "legacy_audio_count": null,
         "legacy_screenshot": null,
         "legacy_ui_assertions": null,
+        "live": true,
         "loaded_event_count": 10,
         "missing_event_types": [],
+        "mocked": false,
         "original_timing_offsets_ms": [
           0,
           700
@@ -53,6 +55,8 @@
         "event_journal.path",
         "event_journal.required_event_types",
         "event_journal.sha256",
+        "live_true",
+        "mocked_false",
         "replay.audio_artifact_ids",
         "replay.audio_offsets_match",
         "replay.chat_snapshots_match",
@@ -79,6 +83,7 @@
           "liveReasoningTraceVisibleDuringReplay": true,
           "replayCompletesWithoutStaticReset": true
         },
+        "live": null,
         "loaded_event_count": 0,
         "missing_event_types": [
           "listener.audio_frame_received",
@@ -90,6 +95,7 @@
           "audio.playback_started",
           "chat.turn_rendered"
         ],
+        "mocked": null,
         "original_timing_offsets_ms": null,
         "rendered_timing_offsets_ms": null,
         "session_id": null,
@@ -105,6 +111,8 @@
         "event_journal.path",
         "event_journal.required_event_types",
         "event_journal.sha256",
+        "live_true",
+        "mocked_false",
         "replay.audio_artifact_ids",
         "replay.audio_offsets_match",
         "replay.chat_snapshots_match",
@@ -125,6 +133,7 @@
         "legacy_audio_count": null,
         "legacy_screenshot": null,
         "legacy_ui_assertions": null,
+        "live": null,
         "loaded_event_count": 0,
         "missing_event_types": [
           "listener.audio_frame_received",
@@ -136,6 +145,7 @@
           "audio.playback_started",
           "chat.turn_rendered"
         ],
+        "mocked": null,
         "original_timing_offsets_ms": null,
         "rendered_timing_offsets_ms": null,
         "session_id": null,
@@ -151,6 +161,8 @@
         "event_journal.path",
         "event_journal.required_event_types",
         "event_journal.sha256",
+        "live_true",
+        "mocked_false",
         "replay.audio_artifact_ids",
         "replay.audio_offsets_match",
         "replay.chat_snapshots_match",
@@ -171,6 +183,7 @@
         "legacy_audio_count": null,
         "legacy_screenshot": null,
         "legacy_ui_assertions": null,
+        "live": null,
         "loaded_event_count": 0,
         "missing_event_types": [
           "listener.audio_frame_received",
@@ -182,6 +195,7 @@
           "audio.playback_started",
           "chat.turn_rendered"
         ],
+        "mocked": null,
         "original_timing_offsets_ms": null,
         "rendered_timing_offsets_ms": null,
         "session_id": null,
@@ -197,6 +211,8 @@
         "event_journal.path",
         "event_journal.required_event_types",
         "event_journal.sha256",
+        "live_true",
+        "mocked_false",
         "replay.audio_artifact_ids",
         "replay.audio_offsets_match",
         "replay.chat_snapshots_match",
@@ -217,6 +233,7 @@
         "legacy_audio_count": null,
         "legacy_screenshot": null,
         "legacy_ui_assertions": null,
+        "live": null,
         "loaded_event_count": 0,
         "missing_event_types": [
           "listener.audio_frame_received",
@@ -228,6 +245,7 @@
           "audio.playback_started",
           "chat.turn_rendered"
         ],
+        "mocked": null,
         "original_timing_offsets_ms": null,
         "rendered_timing_offsets_ms": null,
         "session_id": null,
@@ -250,8 +268,8 @@
     ]
   },
   "failed_gates": [],
-  "generated_at_utc": "2026-07-08T04:06:59.621182+00:00",
-  "live": false,
+  "generated_at_utc": "2026-07-08T04:17:44.519886+00:00",
+  "live": true,
   "mocked": false,
   "ok": true,
   "passing_candidate_count": 1,

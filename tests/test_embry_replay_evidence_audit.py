@@ -39,6 +39,8 @@ def test_replay_audit_accepts_event_sourced_replay_receipt(tmp_path: Path) -> No
     ]
     journal.write_text("\n".join(f'{{"type": "{event_type}"}}' for event_type in event_types) + "\n")
     receipt = {
+        "mocked": False,
+        "live": True,
         "session_id": "session-1",
         "event_journal": {
             "path": str(journal),
@@ -92,6 +94,8 @@ def test_build_audit_passes_with_event_sourced_candidate(tmp_path: Path) -> None
     proof_path.write_text(
         """
 {
+  "mocked": false,
+  "live": true,
   "session_id": "session-1",
   "event_journal": {
     "path": "%s",
@@ -116,6 +120,7 @@ def test_build_audit_passes_with_event_sourced_candidate(tmp_path: Path) -> None
 
     assert audit["ok"] is True
     assert audit["status"] == "passed"
+    assert audit["live"] is True
     assert audit["failed_gates"] == []
 
 
@@ -138,6 +143,8 @@ def test_build_audit_keeps_legacy_failures_visible_without_failing_current_recei
     proof_path.write_text(
         """
 {
+  "mocked": false,
+  "live": true,
   "session_id": "session-1",
   "event_journal": {
     "path": "%s",
@@ -162,6 +169,7 @@ def test_build_audit_keeps_legacy_failures_visible_without_failing_current_recei
 
     assert audit["ok"] is True
     assert audit["status"] == "passed"
+    assert audit["live"] is True
     assert audit["passing_candidate_count"] == 1
     assert audit["failed_gates"] == []
     assert audit["candidates"][0]["ok"] is False

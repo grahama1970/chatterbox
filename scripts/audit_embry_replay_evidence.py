@@ -105,6 +105,10 @@ def audit_candidate(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         for field in REQUIRED_REPLAY_FIELDS
         if is_missing(nested_get(receipt, field))
     ]
+    if receipt.get("mocked") is not False:
+        missing_fields.append("mocked_false")
+    if receipt.get("live") is not True:
+        missing_fields.append("live_true")
 
     journal_path = nested_get(receipt, "event_journal.path")
     events = load_journal_events(journal_path)
@@ -144,6 +148,8 @@ def audit_candidate(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
             "legacy_ui_assertions": receipt.get("assertions"),
             "legacy_audio_count": receipt.get("audioCount"),
             "legacy_screenshot": receipt.get("screenshot"),
+            "mocked": receipt.get("mocked"),
+            "live": receipt.get("live"),
         },
     }
 
@@ -164,7 +170,7 @@ def build_audit(proof_paths: list[Path]) -> dict[str, Any]:
         "schema": "chatterbox.embry_replay_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
-        "live": False,
+        "live": has_passing_candidate,
         "ok": not failed_gates,
         "status": "passed" if not failed_gates else "failed",
         "proof_count": len(proof_paths),

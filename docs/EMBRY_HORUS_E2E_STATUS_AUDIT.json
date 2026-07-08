@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:14:42.077825+00:00",
+  "generated_at_utc": "2026-07-08T04:17:44.600601+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -463,7 +463,7 @@
           },
           "exists": true,
           "failed_gates": [],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": true,
           "path": "docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json",
@@ -471,8 +471,7 @@
         }
       ],
       "failed_reasons": [
-        "subsystem_status_not_passed:partial",
-        "artifact_not_clean_live_pass:docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"
+        "subsystem_status_not_passed:partial"
       ],
       "id": "replay",
       "live_required": true,
