@@ -80,6 +80,12 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert audit["subsystems"]["chatterbox_speech"]["evidence_artifacts"] == [
         "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
     ]
+    assert {
+        item["id"]: item["status"]
+        for item in audit["subsystems"]["chatterbox_speech"]["requirements"]
+    }["VC-17"] == "proven_for_current_receipts"
+    assert "QRA disabled" in audit["subsystems"]["chatterbox_speech"]["summary"]
+    assert "QRA disabled generation" not in audit["subsystems"]["chatterbox_speech"]["next_proof"]
     assert audit["subsystems"]["orb_sync"]["status"] == "partial"
     assert audit["goal_subsystem_status_counts"] == {
         "failing": 4,
@@ -100,3 +106,12 @@ def test_goal_audit_points_to_next_receipt_needed_for_orb_and_replay() -> None:
     assert "original timing" in replay["summary"]
     assert "still missing" in replay["summary"]
     assert replay["evidence_artifacts"] == ["docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"]
+
+
+def test_goal_audit_speaker_summary_reflects_pyannote_overlap_slice() -> None:
+    audit = _audit()
+
+    speaker = audit["subsystems"]["speaker_identity"]
+
+    assert "strict pyannote overlap receipt detects two speakers" in speaker["summary"]
+    assert "physical speaker-to-mic identity gating" in speaker["summary"]

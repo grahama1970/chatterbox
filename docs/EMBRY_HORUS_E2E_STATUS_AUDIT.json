@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:51:37.545795+00:00",
+  "generated_at_utc": "2026-07-08T04:56:43.406507+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -268,9 +268,9 @@
         },
         {
           "id": "chatterbox_speech",
-          "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
+          "next_proof": "Run audible Chatterbox receipts for tone families and barge-in stale-byte behavior tied to a live turn id.",
           "status": "partial",
-          "summary": "Chatterbox render and stream-cancel proof slices exist, but tone coverage, interruption behavior, QRA disabled regressions, and subjective voice quality remain open."
+          "summary": "Chatterbox render, QRA disabled, QRA variant, and stream-cancel proof slices exist, but tone coverage, interruption behavior, and subjective voice quality remain open."
         }
       ],
       "title": "Chatterbox From Live STT"
@@ -380,7 +380,7 @@
         "female/distractor/non-primary speakers rejected",
         "speaker-scoped memory is unlocked only for resolved Horus"
       ],
-      "current_failure": "Speaker identity is only partial: fixture and policy rows exist, but real multi-sample Horus enrollment, physical speaker-to-mic identity gating, and overlap diarization are not proven.",
+      "current_failure": "Speaker identity is only partial: fixture/policy rows and one strict pyannote two-speaker overlap receipt exist, but real multi-sample Horus enrollment and physical speaker-to-mic identity gating are not proven.",
       "evidence_artifacts": [
         {
           "claims": {
@@ -429,7 +429,7 @@
           "id": "speaker_identity",
           "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
           "status": "partial",
-          "summary": "Matrix speaker-resolution rows pass, but full enrollment, unknown/ambiguous/live distractor identity, and speaker-scoped memory conversations remain incomplete."
+          "summary": "Matrix speaker-resolution rows pass and one strict pyannote overlap receipt detects two speakers, but real Horus enrollment, physical speaker-to-mic identity gating, and speaker-scoped memory conversations remain incomplete."
         }
       ],
       "title": "Real Horus Enrollment"
@@ -550,7 +550,7 @@
   "mocked": false,
   "next_failed_items": [
     {
-      "current_failure": "Speaker identity is only partial: fixture and policy rows exist, but real multi-sample Horus enrollment, physical speaker-to-mic identity gating, and overlap diarization are not proven.",
+      "current_failure": "Speaker identity is only partial: fixture/policy rows and one strict pyannote two-speaker overlap receipt exist, but real multi-sample Horus enrollment and physical speaker-to-mic identity gating are not proven.",
       "id": "real_horus_enrollment",
       "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
       "title": "Real Horus Enrollment"

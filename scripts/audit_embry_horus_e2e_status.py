@@ -24,7 +24,7 @@ ITEMS: dict[str, dict[str, Any]] = {
             "female/distractor/non-primary speakers rejected",
             "speaker-scoped memory is unlocked only for resolved Horus",
         ],
-        "current_failure": "Speaker identity is only partial: fixture and policy rows exist, but real multi-sample Horus enrollment, physical speaker-to-mic identity gating, and overlap diarization are not proven.",
+        "current_failure": "Speaker identity is only partial: fixture/policy rows and one strict pyannote two-speaker overlap receipt exist, but real multi-sample Horus enrollment and physical speaker-to-mic identity gating are not proven.",
     },
     "browser_mic_webrtc": {
         "title": "Browser Mic / WebRTC To RealtimeSTT",

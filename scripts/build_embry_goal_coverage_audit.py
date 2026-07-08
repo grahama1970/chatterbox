@@ -33,7 +33,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["speaker_identity"],
         "evidence_artifacts": ["docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json"],
         "status": "partial",
-        "summary": "Matrix speaker-resolution rows pass, but full enrollment, unknown/ambiguous/live distractor identity, and speaker-scoped memory conversations remain incomplete.",
+        "summary": "Matrix speaker-resolution rows pass and one strict pyannote overlap receipt detects two speakers, but real Horus enrollment, physical speaker-to-mic identity gating, and speaker-scoped memory conversations remain incomplete.",
         "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
     },
     "memory_tau_routing": {
@@ -53,8 +53,8 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["interruption_turn_control", "tone_emotion_intent"],
         "evidence_artifacts": ["docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"],
         "status": "partial",
-        "summary": "Chatterbox render and stream-cancel proof slices exist, but tone coverage, interruption behavior, QRA disabled regressions, and subjective voice quality remain open.",
-        "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
+        "summary": "Chatterbox render, QRA disabled, QRA variant, and stream-cancel proof slices exist, but tone coverage, interruption behavior, and subjective voice quality remain open.",
+        "next_proof": "Run audible Chatterbox receipts for tone families and barge-in stale-byte behavior tied to a live turn id.",
     },
     "chat_ux_sync": {
         "title": "Chat UX Sync",

@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T04:51:37.505751+00:00",
+  "generated_at_utc": "2026-07-08T04:56:43.365147+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "partial": 4
@@ -92,7 +92,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
+      "next_proof": "Run audible Chatterbox receipts for tone families and barge-in stale-byte behavior tied to a live turn id.",
       "objective_phrase": "Chatterbox speech",
       "requirement_ids": [
         "VC-12",
@@ -127,7 +127,7 @@
         {
           "id": "VC-17",
           "name": "QRA cache disabled path",
-          "status": "missing"
+          "status": "proven_for_current_receipts"
         },
         {
           "id": "VC-18",
@@ -141,7 +141,7 @@
         }
       ],
       "status": "partial",
-      "summary": "Chatterbox render and stream-cancel proof slices exist, but tone coverage, interruption behavior, QRA disabled regressions, and subjective voice quality remain open.",
+      "summary": "Chatterbox render, QRA disabled, QRA variant, and stream-cancel proof slices exist, but tone coverage, interruption behavior, and subjective voice quality remain open.",
       "taxonomy": {
         "status_counts": {
           "failed": 35,
@@ -300,7 +300,7 @@
         {
           "id": "VC-17",
           "name": "QRA cache disabled path",
-          "status": "missing"
+          "status": "proven_for_current_receipts"
         },
         {
           "id": "VC-18",
@@ -601,7 +601,7 @@
         }
       ],
       "status": "partial",
-      "summary": "Matrix speaker-resolution rows pass, but full enrollment, unknown/ambiguous/live distractor identity, and speaker-scoped memory conversations remain incomplete.",
+      "summary": "Matrix speaker-resolution rows pass and one strict pyannote overlap receipt detects two speakers, but real Horus enrollment, physical speaker-to-mic identity gating, and speaker-scoped memory conversations remain incomplete.",
       "taxonomy": {
         "status_counts": {
           "failed": 0,

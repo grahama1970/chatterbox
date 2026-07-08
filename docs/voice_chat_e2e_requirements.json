@@ -36,7 +36,7 @@
     {"id": "VC-14", "name": "memory intent routes tone", "status": "partial"},
     {"id": "VC-15", "name": "Chatterbox receives tone controls", "status": "partial"},
     {"id": "VC-16", "name": "near-exact QRA blessed audio fast path", "status": "proven_for_one_receipt"},
-    {"id": "VC-17", "name": "QRA cache disabled path", "status": "missing"},
+    {"id": "VC-17", "name": "QRA cache disabled path", "status": "proven_for_current_receipts"},
     {"id": "VC-18", "name": "five Embry QRA variants", "status": "partial"},
     {"id": "VC-19", "name": "unknown speaker utterance bank", "status": "missing"},
     {"id": "VC-20", "name": "speaker-scoped conversational memory", "status": "missing"},

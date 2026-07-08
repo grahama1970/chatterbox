@@ -54,6 +54,9 @@ def test_horus_status_audit_names_concrete_next_failures() -> None:
     assert "turn-id lineage" in audit["items"]["chat_ux_sync"]["current_failure"]
     assert "event-sourced" in audit["items"]["replay"]["current_failure"]
     assert "partial" in audit["items"]["orb_sync"]["current_failure"]
+    assert "strict pyannote two-speaker overlap receipt" in (
+        audit["items"]["real_horus_enrollment"]["current_failure"]
+    )
 
 
 def test_horus_status_audit_attaches_receipt_paths_to_each_item() -> None:
