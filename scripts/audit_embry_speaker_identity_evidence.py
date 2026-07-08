@@ -23,6 +23,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json"),
     Path("/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json"),
     Path("/tmp/chatterbox-fork-agent-out/pyannote-overlap-strict/current/pyannote-overlap-strict.json"),
+    Path("/tmp/embry-voice-control-endpoint-sanity/20260708T085504Z/endpoint_sanity_receipt.json"),
 ]
 
 
@@ -192,6 +193,8 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
 
     if schema == "chatterbox.pyannote_diarization_smoke.v1":
         proof_type = "pyannote_strict_two_speaker"
+    elif schema == "embry.voice_control_endpoint_sanity.v1":
+        proof_type = "speaker_identity_endpoint_sanity"
     elif schema == "chatterbox.speaker_segment_evidence.v1":
         proof_type = "speaker_segment_evidence"
     elif receipt.get("proof_scope") == "live_memory_speaker_resolution_policy_not_audio_identity":
@@ -249,6 +252,14 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "failed_gates": receipt.get("failed_gates") or [],
         "policy_cases_cover_known_unknown_ambiguous_overlap": _policy_cases_cover_required_statuses(receipt.get("cases")),
         "fixture_primary_accepts_and_rejects_non_primary": _fixture_gate_ok(receipt.get("cases")),
+        "speaker_identity_endpoint_sanity_ok": bool(
+            schema == "embry.voice_control_endpoint_sanity.v1"
+            and receipt.get("status") == "pass"
+            and receipt.get("used_ui") is False
+            and receipt.get("used_mock_transcript") is False
+            and receipt.get("used_typed_prompt") is False
+            and (receipt.get("check_count") or 0) >= 10
+        ),
         "overlap_diarization_turn_control_ok": overlap_diarization_ok,
         "pyannote_strict_two_speaker_ok": bool(
             schema == "chatterbox.pyannote_diarization_smoke.v1"
@@ -287,6 +298,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
 
     policy_ledgers = [candidate for candidate in proof_candidates if candidate["policy_cases_cover_known_unknown_ambiguous_overlap"]]
     fixture_gates = [candidate for candidate in proof_candidates if candidate["fixture_primary_accepts_and_rejects_non_primary"]]
+    endpoint_sanity = [candidate for candidate in proof_candidates if candidate["speaker_identity_endpoint_sanity_ok"]]
     known_horus = [candidate for candidate in proof_candidates if candidate["known_horus_resolution_ok"]]
     unknown_fail_closed = [candidate for candidate in proof_candidates if candidate["unknown_speaker_fail_closed_ok"]]
     live_unknown_fail_closed = [
@@ -352,6 +364,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         partial_proves.append("memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy")
     if fixture_gates:
         partial_proves.append("fixture_primary_speaker_gate_suppresses_non_primary_audio")
+    if endpoint_sanity:
+        partial_proves.append("speaker_identity_endpoint_sanity_checks_pass")
     if known_horus:
         partial_proves.append("known_horus_resolution_can_route_speaker_scoped_memory")
     if unknown_fail_closed:
@@ -375,6 +389,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "proof_candidate_count": len(proof_candidates),
         "policy_ledger_candidate_count": len(policy_ledgers),
         "fixture_gate_candidate_count": len(fixture_gates),
+        "speaker_identity_endpoint_sanity_candidate_count": len(endpoint_sanity),
         "known_horus_candidate_count": len(known_horus),
         "unknown_fail_closed_candidate_count": len(unknown_fail_closed),
         "live_unknown_fail_closed_candidate_count": len(live_unknown_fail_closed),
