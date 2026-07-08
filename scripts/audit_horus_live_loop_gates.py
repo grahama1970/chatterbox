@@ -10,6 +10,7 @@ fields needed for that gate.
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -19,13 +20,13 @@ from typing import Any
 
 DEFAULTS = {
     "horus_rung7": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json",
-    "browser_webrtc": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-webcam-20260705T134007Z/01-browser-webrtc.json",
-    "browser_realtimestt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-webcam-20260705T134007Z/02-realtimestt-listener.json",
-    "continuous_loop": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/continuous-voice-loop.json",
+    "browser_webrtc": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*/browser-webrtc.json",
+    "browser_realtimestt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/02-realtimestt-listener.json",
+    "continuous_loop": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/continuous-voice-loop.json",
     "listener_memory_tau_qra": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/11-qra-cache-probe/listener-memory-tau-qra.json",
-    "tau_voice_render": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/09-tau-voice-render.json",
-    "stream_cancel": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/10-stream-turn-cancel.json",
-    "overlap_control": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/12-overlap-turn-control/overlap-turn-control.json",
+    "tau_voice_render": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/09-tau-voice-render.json",
+    "stream_cancel": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/10-stream-turn-cancel.json",
+    "overlap_control": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/12-overlap-turn-control/overlap-turn-control.json",
     "chat_ux": "/tmp/embry-voice-controlled-loop-ui-proof-after-live-patch.json",
     "orb_sync": "/tmp/embry_voice_orb_connection_proof.json",
     "replay": "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json",
@@ -41,6 +42,15 @@ def load_json(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:  # noqa: BLE001
         return {"__load_error__": f"{type(exc).__name__}: {exc}"}
+
+
+def resolve_receipt_path(value: str) -> Path:
+    if any(ch in value for ch in "*?["):
+        matches = [Path(match) for match in glob.glob(value)]
+        matches = [match for match in matches if match.exists()]
+        if matches:
+            return max(matches, key=lambda path: path.stat().st_mtime)
+    return Path(value)
 
 
 def exists_file(path_value: Any) -> bool:
@@ -98,7 +108,7 @@ def repo_state(root: Path) -> dict[str, Any]:
 
 def audit(args: argparse.Namespace) -> dict[str, Any]:
     root = Path(__file__).resolve().parents[1]
-    paths = {key: Path(getattr(args, key) or value) for key, value in DEFAULTS.items()}
+    paths = {key: resolve_receipt_path(str(getattr(args, key) or value)) for key, value in DEFAULTS.items()}
     receipts = {key: load_json(path) if path.exists() else {"__missing__": True} for key, path in paths.items()}
 
     gates: list[dict[str, Any]] = []
@@ -306,8 +316,9 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     receipt = {
         "schema": "chatterbox.horus_live_loop_gate_audit.v1",
         "created_at_utc": utc_now(),
+        "ok": fail_count == 0,
         "mocked": False,
-        "live": False,
+        "live": fail_count == 0,
         "status": "PASS" if fail_count == 0 else "FAIL",
         "pass_count": pass_count,
         "fail_count": fail_count,

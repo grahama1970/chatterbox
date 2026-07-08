@@ -114,6 +114,22 @@ python3 scripts/smoke_voice_chat_e2e.py \
 
 Latest live runner receipts:
 
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142537Z/browser-webrtc.json`
+  freshly passed browser `getUserMedia` capture and WebSocket PCM transport with
+  `mocked=false`, `live=true`, and empty `failed_gates`; 69 chunks, 1,130,496
+  binary bytes, 5.888s duration, RMS `0.05190776`, and WAV sha256
+  `ea71abdeb59c42f7b66560cab0b23fd006705fba57cc5a7a2a6f8fdef3b52450`.
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/continuous-voice-loop.json`
+  freshly passed browser-captured WAV -> RealtimeSTT -> speaker evidence ->
+  memory/Tau -> Chatterbox -> stream cancel -> overlap boundary core loop with
+  `mocked=false`, `live=true`, and empty `failed_gates`. It consumed the fresh
+  browser WAV above, RealtimeSTT emitted final text, Tau rendered Chatterbox
+  audio, stream cancel passed, and overlap one-at-a-time behavior passed.
+- `/tmp/horus-live-loop-gates-current-after-patch.json`
+  audited the current receipts for real Horus enrollment, browser mic/WebRTC,
+  Tau/memory routing, Chatterbox from live STT, Chat UX sync, orb sync, replay,
+  and interruption. Result: `ok=true`, `live=true`, `mocked=false`, 8 PASS / 0
+  FAIL.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T214538Z-audible-all-v2/index.json`
   passed all currently implemented scenarios with `mocked=false`, `live=true`,
   empty `failed_gates`, and audible playback ledgers for every scenario through

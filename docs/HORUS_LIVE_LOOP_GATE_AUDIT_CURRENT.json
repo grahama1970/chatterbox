@@ -1,0 +1,159 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "A PASS in this audit does not create new live evidence; it validates existing receipts.",
+      "The strict Chatterbox-from-live-STT gate fails unless browser/WebRTC RealtimeSTT transcript and Chatterbox render both pass."
+    ],
+    "proves": [
+      "Each requested Horus/Embry live-loop item is deterministically classified PASS or FAIL from local receipt fields."
+    ]
+  },
+  "created_at_utc": "2026-07-08T14:30:29Z",
+  "fail_count": 0,
+  "gate_count": 8,
+  "gates": [
+    {
+      "evidence": {
+        "candidate_audio": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/horus-factory-embry-stress.wav",
+        "enrollment_audio": "/home/graham/workspace/experiments/agent-skills-loop2-shared/skills/persona-dream/voice_clone_candidates/horus_kling_clone_candidate.wav",
+        "similarity": 0.8253,
+        "speaker_id": "horus_lupercal",
+        "speaker_resolution_status": "known",
+        "threshold": 0.72
+      },
+      "failed_checks": [],
+      "name": "real Horus enrollment",
+      "receipt_paths": [
+        "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "audio_device_label": null,
+        "auto_gain_control": false,
+        "binary_bytes_received": 1130496,
+        "captured_wav": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142537Z/browser-webrtc.wav",
+        "chunks_received": 69,
+        "duration_seconds": 5.888,
+        "echo_cancellation": false,
+        "noise_suppression": false,
+        "realtimestt_transcript": "Form a smirk station, loop, bank check on the Z-sand, but..."
+      },
+      "failed_checks": [],
+      "name": "browser mic/WebRTC",
+      "receipt_paths": [
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142537Z/browser-webrtc.json",
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/02-realtimestt-listener.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "asr_text": "When should C7, 8 software, firmware, and information integrity auditing capability for significant events be used in satellite operations.",
+        "memory_gate_passed": true,
+        "rung7_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/11-qra-cache-probe/rung7/rung7.json",
+        "tau_request_schema": "tau.voice_render_request.v1"
+      },
+      "failed_checks": [],
+      "name": "Tau/memory routing",
+      "receipt_paths": [
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/11-qra-cache-probe/listener-memory-tau-qra.json",
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/11-qra-cache-probe/rung7/rung7.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "continuous_listener_ok": true,
+        "continuous_listener_transcript": "Form a smirk station, loop, bank check on the Z-sand, but...",
+        "continuous_loop_ok": true,
+        "finished_response_audio_host": "/tmp/chatterbox-fork-agent-out/tau_voice_render_smoke/finished_response.wav",
+        "lineage_rule": "PASS requires one continuous-loop receipt with live STT transcript plus Tau/Chatterbox render artifacts.",
+        "tau_voice_render_ok": true
+      },
+      "failed_checks": [],
+      "name": "Chatterbox from live STT",
+      "receipt_paths": [
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/continuous-voice-loop.json",
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/02-realtimestt-listener.json",
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/09-tau-voice-render.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "audio_count": 4,
+        "audio_src_count": 4,
+        "proof_type": "UI DOM/text/audio-src proof, not full browser microphone loop."
+      },
+      "failed_checks": [],
+      "name": "Chat UX sync",
+      "receipt_paths": [
+        "/tmp/embry-voice-controlled-loop-ui-proof-after-live-patch.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "canvas_hash_count": 14,
+        "nonzero_audio_sample_count": 14,
+        "sample_count": 14,
+        "speech_bound_sample_count": 14
+      },
+      "failed_checks": [],
+      "name": "orb sync",
+      "receipt_paths": [
+        "/tmp/embry_voice_orb_connection_proof.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "assertions": {
+          "audioArtifactsEmbeddedInSharedChat": true,
+          "dynamicReplayReducedToCurrentTurn": true,
+          "initialStaticTranscriptPresent": true,
+          "liveReasoningTraceVisibleDuringReplay": true,
+          "replayCompletesWithoutStaticReset": true
+        },
+        "audio_count": 3,
+        "final_phase": "complete",
+        "screenshot": "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/replay-thinking-open.png"
+      },
+      "failed_checks": [],
+      "name": "replay",
+      "receipt_paths": [
+        "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "evidence": {
+        "old_turn_bytes_after_cancel": 0,
+        "overlap_failed_gates": [],
+        "overlap_tau_voice_render": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/12-overlap-turn-control/tau-overlap-boundary.json",
+        "stream_cancel_failed_gates": []
+      },
+      "failed_checks": [],
+      "name": "interruption",
+      "receipt_paths": [
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/10-stream-turn-cancel.json",
+        "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-20260708T142747Z-continuous-core/12-overlap-turn-control/overlap-turn-control.json"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "pass_count": 8,
+  "repo": {
+    "branch": "main",
+    "head": "af9c920",
+    "path": "/home/graham/workspace/experiments/chatterbox",
+    "status_short": "M .codex/ui-verification/latest.json\n M docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json\n M docs/VOICE_CHAT_REQUIREMENTS.md\n M scripts/audit_horus_live_loop_gates.py\n?? .codex/embry-audio-architecture/\n?? .codex/ui-verification/chatterbox-webrtc-transport.latest.json\n?? .codex/ui-verification/embry-orb-waveform-tracking.latest.json\n?? .codex/ui-verification/embry-skill-backed-stress-harness.latest.json\n?? .codex/ui-verification/embry-voice-actual-route-update.latest.json\n?? .codex/ui-verification/embry-voice-actual-updates-vite.latest.json\n?? .codex/ui-verification/embry-voice-browser-listener-audible-route.latest.json\n?? .codex/ui-verification/embry-voice-browser-quality-webcam.latest.json\n?? .codex/ui-verification/embry-voice-controlled-loop.latest.json\n?? .codex/ui-verification/embry-voice-event-spine.latest.json\n?? .codex/ui-verification/embry-voice-orb-replay.latest.json\n?? .codex/ui-verification/embry-voice-shared-chat-receipts.latest.json\n?? .codex/ui-verification/embry-voice-shared-chat-replay-final.latest.json\n?? .codex/ui-verification/embry-voice-shared-chat-replay.latest.json\n?? .codex/ui-verification/embry-voice-stress-architecture.latest.json\n?? .codex/ui-verification/embry-voice-user-url-after-dist.latest.json\n?? .codex/ui-verification/embry-voice-vite-live-shared-chat.latest.json\n?? .codex/ui-verification/embry-voice-webgpt-punt-marker.latest.json\n?? .codex/ui-verification/embry-voice-working-interface.latest.json\n?? .codex/ui-verification/embry-voice.latest.json\n?? .codex/ui-verification/embry-workstation-voice-authority.latest.json\n?? .codex/ui-verification/embry_voice_native_turn_spine_200_plus_e2e_harness.latest.json\n?? .codex/ui-verification/embry_workstation_voice_authority_refined.latest.json\n?? .codex/webgpt-punts/\n?? HANDOFF.md\n?? local/\n?? tests/test_audit_horus_live_loop_gates.py"
+  },
+  "schema": "chatterbox.horus_live_loop_gate_audit.v1",
+  "status": "PASS"
+}
