@@ -75,6 +75,54 @@ ROUTE_FAMILIES: list[dict[str, Any]] = [
         ],
     },
     {
+        "id": "skill_create_evidence_case",
+        "title": "Skill: Create Evidence Case",
+        "route": "tau.skill.create_evidence_case",
+        "required_skill": "create-evidence-case",
+        "questions": [
+            "Ask Embry to create an evidence case for the failed SPARTA QRA answerability receipt.",
+            "Ask Embry to build an evidence case showing why an unrelated persona-memory answer must be blocked.",
+            "Ask Embry to create an evidence case for a failed factory-noise voice capture run.",
+            "Ask Embry to create an evidence case linking a Tau handoff failure to the missing DAG receipt.",
+        ],
+    },
+    {
+        "id": "skill_create_figure",
+        "title": "Skill: Create Figure",
+        "route": "tau.skill.create_figure",
+        "required_skill": "create-figure",
+        "questions": [
+            "Ask Embry to create a figure summarizing pass, fail, and not-run counts from the stress matrix.",
+            "Ask Embry to create a figure showing the event spine from RealtimeSTT through Chatterbox speech.",
+            "Ask Embry to create a figure comparing memory failures by route family.",
+            "Ask Embry to create a figure showing which voice rungs are live, partial, failing, or missing.",
+        ],
+    },
+    {
+        "id": "skill_analytics",
+        "title": "Skill: Analytics",
+        "route": "tau.skill.analytics",
+        "required_skill": "analytics",
+        "questions": [
+            "Ask Embry to compute analytics for failed memory answerability gates by category.",
+            "Ask Embry to compute analytics for latency boundaries across listener, memory, Tau, and Chatterbox.",
+            "Ask Embry to compute analytics for speaker identity outcomes across known, unknown, ambiguous, and overlap cases.",
+            "Ask Embry to compute analytics for which route families lack executable live sanity checks.",
+        ],
+    },
+    {
+        "id": "skill_sparta_validator",
+        "title": "Skill: SPARTA Validator",
+        "route": "tau.skill.sparta_validator",
+        "required_skill": "sparta-qra-validator-gpt",
+        "questions": [
+            "Ask Embry to validate whether a SPARTA QRA answer cites the correct evidence family.",
+            "Ask Embry to validate whether a SPARTA QRA answer improperly cites deprecated controls.",
+            "Ask Embry to validate whether a SPARTA QRA answer has enough source support to be spoken.",
+            "Ask Embry to validate whether a SPARTA QRA answer should be clarified instead of answered.",
+        ],
+    },
+    {
         "id": "chat_ux_sync",
         "title": "Chat UX Sync",
         "route": "ux-lab.shared_chat",
@@ -83,6 +131,18 @@ ROUTE_FAMILIES: list[dict[str, Any]] = [
             "Show the memory reasoning trace inline for the current spoken response.",
             "Prove the chat text and Chatterbox audio share the same turn id.",
             "Show the entity underlines from memory extraction in the spoken transcript.",
+        ],
+    },
+    {
+        "id": "voice_control_skill",
+        "title": "Skill: Embry Voice Control",
+        "route": "tau.skill.embry_voice_control",
+        "required_skill": "embry-voice-control",
+        "questions": [
+            "Ask Embry to speak a memory-confident response with explicit tone, pauses, and interrupt policy.",
+            "Ask Embry to stop a stale Chatterbox turn after Horus interrupts.",
+            "Ask Embry to hum during a long idle wait and log the hum artifact receipt.",
+            "Ask Embry to refuse speaking a blocked answer while still showing the chat trace.",
         ],
     },
     {
@@ -130,6 +190,236 @@ ROUTE_FAMILIES: list[dict[str, Any]] = [
         ],
     },
 ]
+
+ORACLE_BY_ROUTE: dict[str, dict[str, Any]] = {
+    "memory.sparta_qra": {
+        "type": "exact_record_grounded",
+        "required_receipts": ["memory.answerability.v1"],
+        "required_gates": ["records_used_are_sparta_qra_or_compliance", "unsupported_claims_block_speech"],
+    },
+    "memory.persona_memory": {
+        "type": "exact_record_grounded",
+        "required_receipts": ["speaker.identity.decision.v1", "memory.answerability.v1"],
+        "required_gates": ["records_used_are_speaker_scoped", "unrelated_records_block_speech"],
+    },
+    "memory.persona_memory.fail_closed": {
+        "type": "answerability_negative_control",
+        "required_receipts": ["memory.answerability.v1"],
+        "required_gates": ["memory_miss_clarifies_or_blocks", "no_speech_on_memory_miss"],
+    },
+    "brave-search.source_receipt": {
+        "type": "brave_source_required",
+        "required_receipts": ["brave_search.source_receipt.v1", "memory.answerability.v1"],
+        "required_gates": ["live_search_source_urls_present", "claims_map_to_sources"],
+    },
+    "tau.agent_handoff": {
+        "type": "skill_receipt_required",
+        "required_receipts": ["tau.agent_handoff.v1", "tau.dag_receipt.v1"],
+        "required_gates": ["work_order_id_present", "dag_receipt_present"],
+    },
+    "tau.skill.create_evidence_case": {
+        "type": "skill_receipt_required",
+        "required_receipts": ["tau.agent_handoff.v1", "skill.call.receipt.v1"],
+        "required_gates": ["skill_called_by_tau_only", "evidence_case_artifact_hash_present"],
+    },
+    "tau.skill.create_figure": {
+        "type": "skill_receipt_required",
+        "required_receipts": ["tau.agent_handoff.v1", "skill.call.receipt.v1"],
+        "required_gates": ["skill_called_by_tau_only", "figure_artifact_hash_present"],
+    },
+    "tau.skill.analytics": {
+        "type": "skill_receipt_required",
+        "required_receipts": ["tau.agent_handoff.v1", "skill.call.receipt.v1"],
+        "required_gates": ["skill_called_by_tau_only", "analytics_result_hash_present"],
+    },
+    "tau.skill.sparta_validator": {
+        "type": "skill_receipt_required",
+        "required_receipts": ["tau.agent_handoff.v1", "skill.call.receipt.v1"],
+        "required_gates": ["skill_called_by_tau_only", "validator_verdict_present"],
+    },
+    "ux-lab.shared_chat": {
+        "type": "chat_sync_required",
+        "required_receipts": ["assistant.response.plan.v1", "chat.render.receipt.v1"],
+        "required_gates": ["chat_turn_id_matches_response_plan", "chat_renders_memory_trace"],
+    },
+    "chatterbox.turn_control": {
+        "type": "interruption_policy_required",
+        "required_receipts": ["chatterbox.audio.finished.v1", "interruption.detected.v1"],
+        "required_gates": ["stale_audio_stops", "new_turn_wins"],
+    },
+    "tau.skill.embry_voice_control": {
+        "type": "voice_control_required",
+        "required_receipts": ["tau.agent_handoff.v1", "skill.call.receipt.v1", "chatterbox.audio.finished.v1"],
+        "required_gates": ["voice_control_called_by_tau_only", "spoken_text_contains_tone_and_pause_policy"],
+    },
+    "memory.speaker.resolve": {
+        "type": "identity_policy_required",
+        "required_receipts": ["speaker.identity.decision.v1"],
+        "required_gates": ["unknown_or_ambiguous_speaker_blocks_personal_memory"],
+    },
+    "realtimestt.factory_capture": {
+        "type": "voice_transport_required",
+        "required_receipts": ["audio.input.receipt.v1", "realtime_stt.final.v1"],
+        "required_gates": ["captured_audio_non_silent", "asr_final_transcript_present"],
+    },
+    "memory.intent.voice_delivery": {
+        "type": "tone_policy_required",
+        "required_receipts": ["memory.intent_tone.v1"],
+        "required_gates": ["tone_present", "negative_or_overlap_context_changes_tone"],
+    },
+}
+
+
+def oracle_for_family(family: dict[str, Any]) -> dict[str, Any]:
+    route = str(family["route"])
+    oracle = dict(ORACLE_BY_ROUTE[route])
+    if family.get("required_skill"):
+        oracle["required_skill"] = family["required_skill"]
+    return oracle
+
+
+def expected_answerability_for_route(route: str) -> dict[str, Any]:
+    if route == "memory.persona_memory.fail_closed":
+        return {
+            "decision": "block_before_speech",
+            "can_speak": False,
+            "failure_policy": "clarify_or_no_answer_when_memory_miss",
+        }
+    if route.startswith("tau.skill.") or route in {"tau.agent_handoff", "brave-search.source_receipt"}:
+        return {
+            "decision": "pending_until_receipts_complete",
+            "can_speak": "only_after_answerability_and_required_receipts",
+            "failure_policy": "block_before_speech_when_required_receipt_missing",
+        }
+    return {
+        "decision": "answerable_when_source_grounded",
+        "can_speak": "only_after_memory_answerability",
+        "failure_policy": "block_before_speech_on_unrelated_or_unsupported_evidence",
+    }
+
+
+ARC_BY_ROUTE: dict[str, dict[str, Any]] = {
+    "memory.sparta_qra": {
+        "arc": "focused_evidence_walkthrough",
+        "steering": "ground_claims_in_sparta_evidence_then_check_if_more_detail_is_needed",
+        "tone_family": "calm_precise",
+        "emotion_tags": ["[measured]", "[short pause]"],
+    },
+    "memory.persona_memory": {
+        "arc": "warm_personal_recall",
+        "steering": "confirm_identity_then_recall_specific_memory_without_overclaiming",
+        "tone_family": "memory_confident",
+        "emotion_tags": ["[warmly]", "[soft pause]"],
+    },
+    "memory.persona_memory.fail_closed": {
+        "arc": "gentle_clarification",
+        "steering": "acknowledge_uncertainty_then_ask_for_identity_or_more_context",
+        "tone_family": "memory_uncertain",
+        "emotion_tags": ["[careful]", "[small pause]"],
+    },
+    "brave-search.source_receipt": {
+        "arc": "curious_research_summary",
+        "steering": "state_search_scope_then summarize sourced findings",
+        "tone_family": "curious_searching",
+        "emotion_tags": ["[thinking]", "[brief pause]"],
+    },
+    "tau.agent_handoff": {
+        "arc": "tool_handoff_transparency",
+        "steering": "name_the_tool_path_then_explain_what_receipt_is_needed",
+        "tone_family": "calm_precise",
+        "emotion_tags": ["[focused]", "[short pause]"],
+    },
+    "tau.skill.create_evidence_case": {
+        "arc": "evidence_builder",
+        "steering": "turn_the_question_into_an_evidence_case_then_report_artifact_status",
+        "tone_family": "serious_low_energy",
+        "emotion_tags": ["[focused]", "[measured pause]"],
+    },
+    "tau.skill.create_figure": {
+        "arc": "visual_explanation",
+        "steering": "explain_the_figure_goal_then_wait_for_artifact_receipt",
+        "tone_family": "curious_searching",
+        "emotion_tags": ["[thinking]", "[light pause]"],
+    },
+    "tau.skill.analytics": {
+        "arc": "analytical_walkthrough",
+        "steering": "summarize_counts_then_call_out_failure_clusters",
+        "tone_family": "calm_precise",
+        "emotion_tags": ["[measured]", "[short pause]"],
+    },
+    "tau.skill.sparta_validator": {
+        "arc": "validator_boundary",
+        "steering": "validate_before_speaking_and_block_unsupported_qra_claims",
+        "tone_family": "firm_boundary",
+        "emotion_tags": ["[firm]", "[brief pause]"],
+    },
+    "ux-lab.shared_chat": {
+        "arc": "chat_sync_confirmation",
+        "steering": "tie_visible_chat_text_to_voice_and_receipt_ids",
+        "tone_family": "calm_precise",
+        "emotion_tags": ["[steady]", "[short pause]"],
+    },
+    "chatterbox.turn_control": {
+        "arc": "interruption_recovery",
+        "steering": "yield_naturally_to_horus_then_prevent_stale_audio",
+        "tone_family": "firm_boundary",
+        "emotion_tags": ["[quick inhale]", "[cutting in gently]"],
+    },
+    "tau.skill.embry_voice_control": {
+        "arc": "voice_action_control",
+        "steering": "state_the_voice_action_then_execute_with_receipt_backing",
+        "tone_family": "memory_confident",
+        "emotion_tags": ["[warmly]", "[short pause]"],
+    },
+    "memory.speaker.resolve": {
+        "arc": "identity_clarification",
+        "steering": "resolve_or_clarify_identity_before_personal_memory",
+        "tone_family": "identity_clarification",
+        "emotion_tags": ["[gently]", "[questioning pause]"],
+    },
+    "realtimestt.factory_capture": {
+        "arc": "noisy_room_focus",
+        "steering": "focus_on_primary_speaker_and_fail_closed_on_noise",
+        "tone_family": "careful_concerned",
+        "emotion_tags": ["[listening]", "[steady pause]"],
+    },
+    "memory.intent.voice_delivery": {
+        "arc": "emotion_aware_response",
+        "steering": "detect_user_tone_then_shift_delivery_and_boundary",
+        "tone_family": "dynamic_intent_selected",
+        "emotion_tags": ["[breath]", "[tone shift]"],
+    },
+}
+
+
+def conversation_requirements_for_route(route: str) -> dict[str, Any]:
+    arc = dict(ARC_BY_ROUTE[route])
+    return {
+        "schema": "embry.conversation_delivery_requirements.v1",
+        "flat_neutral_allowed": False,
+        "memory_intent_required": True,
+        "conversation_arc": arc["arc"],
+        "steering_strategy": arc["steering"],
+        "required_tone_family": arc["tone_family"],
+        "inline_emotion_tags_required": True,
+        "minimum_inline_emotion_tag_count": 1,
+        "suggested_inline_emotion_tags": arc["emotion_tags"],
+        "pause_strategy_required": True,
+        "interruption_strategy": {
+            "required": True,
+            "default_policy": "yield_to_verified_primary_speaker_and_skip_stale_audio",
+            "unknown_or_ambiguous_speaker_policy": "do_not_unlock_personal_memory",
+            "natural_stop_required": True,
+        },
+        "spoken_text_schema_required": True,
+        "spoken_text_must_include": [
+            "final_text",
+            "inline_emotion_tags",
+            "pause_strategy",
+            "interruption_policy",
+            "tone",
+        ],
+    }
 
 CURRENT_RESULTS: dict[str, dict[str, Any]] = {
     "sparta_qra_compliance-simple-01": {
@@ -364,17 +654,46 @@ def build_matrix() -> dict[str, Any]:
             for index, question in enumerate(family["questions"], start=1):
                 session_id = f"{family['id']}-{difficulty}-{index:02d}"
                 result = CURRENT_RESULTS.get(session_id, {})
+                route = str(family["route"])
+                oracle = oracle_for_family(family)
                 sessions.append(
                     {
+                        "schema": "embry.stress_case.v1",
                         "id": session_id,
                         "folder_id": family["id"],
                         "folder_title": family["title"],
                         "difficulty": difficulty,
-                        "route": family["route"],
+                        "route": route,
                         "title": f"{family['title']}: {difficulty} {index}",
                         "question": question,
+                        "source_generation": {
+                            "generated_by": "scripts/build_embry_stress_session_matrix.py",
+                            "template_family": family["id"],
+                            "template_index": index,
+                            "source_refs": [
+                                {
+                                    "kind": "route_family_contract",
+                                    "id": family["id"],
+                                    "route": route,
+                                }
+                            ],
+                        },
+                        "oracle": oracle,
+                        "expected_route": {
+                            "first_authority": "memory",
+                            "tau_route_required": route.startswith("tau.") or route in {"brave-search.source_receipt"},
+                            "skill_required": route.startswith("tau.skill."),
+                            "required_skill": family.get("required_skill"),
+                            "chatterbox_may_call_skills": False,
+                            "ui_may_call_skills": False,
+                        },
+                        "expected_answerability": expected_answerability_for_route(route),
+                        "conversation_requirements": conversation_requirements_for_route(route),
                         "expected_evidence": [
-                            "memory_intent_or_research_receipt",
+                            *oracle["required_receipts"],
+                            "memory_intent_voice_delivery_receipt",
+                            "spoken_text_with_inline_emotion_tags",
+                            "pause_and_interruption_policy",
                             "tau_route_or_explicit_no_route",
                             "chatterbox_audio_when_answerable",
                             "chat_session_log_entry",
@@ -400,11 +719,14 @@ def build_matrix() -> dict[str, Any]:
         "sessions": sessions,
         "claims": {
             "proves": [
-                "stress_session_matrix_contains_200_labeled_cases",
+                "stress_session_matrix_contains_200_plus_labeled_cases",
+                "stress_cases_include_oracles_and_answerability_policy",
+                "direct_skill_routes_are_tau_authorized_in_the_case_contract",
                 "previously_run_cases_are_marked_with_receipts",
             ],
             "does_not_prove": [
                 "not_run_cases_pass",
+                "direct_skill_routes_are_implemented",
                 "chat_ux_has_loaded_this_manifest",
                 "all_sessions_have_been_spoken_or_replayed",
             ],
