@@ -18,6 +18,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"),
     Path("/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio/latest/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"),
 ]
 DEFAULT_MARKER_GLOB = ".codex/ui-verification/*embry-voice*.latest.json"
 
@@ -153,6 +154,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     extract_entities = receipt.get("extract_entities_receipt") or receipt.get("extract_entities")
     underline_render = receipt.get("entity_underline_render_receipt") or receipt.get("entity_underlines")
     audible_playback = receipt.get("audible_playback_receipt") or receipt.get("browser_audio_playback") or {}
+    dom_lineage_probe = receipt.get("schema") == "chatterbox.embry_chat_ux_lineage_probe.v1"
 
     plan_turn_id = _nested_get(assistant_plan or {}, "turn_id")
     render_turn_id = _nested_get(chat_render or {}, "turn_id")
@@ -203,6 +205,9 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "response_plan_to_chat_render_lineage": text_audio_same_turn,
         "extract_entities_underlines": entities_underlined,
         "audible_session_replay": audible_session_replay,
+        "dom_lineage_probe": dom_lineage_probe,
+        "dom_lineage_ready": bool(receipt.get("lineage_ready")),
+        "dom_entity_underlines_ready": bool(receipt.get("entity_underlines_ready")),
         "observed": {
             "chat_gate_evidence": (chat_gate or {}).get("evidence"),
             "replay_assertions": assertions,
@@ -214,7 +219,51 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
             "underline_render_present": bool(underline_render),
             "audible_playback_present": bool(audible_playback),
             "audible_playback": audible_playback,
+            "dom_lineage_counts": {
+                "chat_message_count": receipt.get("chat_message_count"),
+                "assistant_message_count": receipt.get("assistant_message_count"),
+                "audio_artifact_count": receipt.get("audio_artifact_count"),
+                "assistant_with_audio_count": receipt.get("assistant_with_audio_count"),
+                "assistant_with_turn_id_count": receipt.get("assistant_with_turn_id_count"),
+                "audio_with_turn_id_count": receipt.get("audio_with_turn_id_count"),
+                "assistant_with_entity_span_count": receipt.get("assistant_with_entity_span_count"),
+            }
+            if dom_lineage_probe
+            else None,
         },
+    }
+
+
+def _dom_lineage_probe_evidence(proof_candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    probes = [candidate for candidate in proof_candidates if candidate.get("dom_lineage_probe")]
+    passing = [
+        candidate
+        for candidate in probes
+        if candidate.get("dom_lineage_ready") and candidate.get("dom_entity_underlines_ready")
+    ]
+    return {
+        "boundary": "live_dom_shared_chat_turn_audio_entity_lineage",
+        "ready": bool(passing),
+        "candidate_count": len(probes),
+        "passing_candidate_count": len(passing),
+        "failed_candidate_count": len(probes) - len(passing),
+        "candidate_paths": [candidate["path"] for candidate in probes],
+        "sample_failures": [
+            {
+                "path": candidate["path"],
+                "dom_lineage_ready": candidate.get("dom_lineage_ready"),
+                "dom_entity_underlines_ready": candidate.get("dom_entity_underlines_ready"),
+                "observed": candidate["observed"].get("dom_lineage_counts"),
+            }
+            for candidate in probes
+            if not (candidate.get("dom_lineage_ready") and candidate.get("dom_entity_underlines_ready"))
+        ][:4],
+        "blocking_summary": (
+            "live shared Chat DOM lacks turn-id linkage between assistant message/audio and/or "
+            "entity underline spans in the spoken transcript"
+        )
+        if probes and not passing
+        else None,
     }
 
 
@@ -312,6 +361,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
     lineage_candidates = [candidate for candidate in proof_candidates if candidate["response_plan_to_chat_render_lineage"]]
     underline_candidates = [candidate for candidate in proof_candidates if candidate["extract_entities_underlines"]]
     audible_replay = _audible_replay_evidence(proof_candidates)
+    dom_lineage_probe = _dom_lineage_probe_evidence(proof_candidates)
 
     failed_gates: list[str] = []
     if chat_matrix["status_counts"]["failed"]:
@@ -351,6 +401,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
         "entity_underline_evidence": entity_underline_evidence,
         "runner_route_evidence": runner_route_evidence,
         "audible_session_replay_evidence": audible_replay,
+        "dom_lineage_probe_evidence": dom_lineage_probe,
         "screenshot_marker_count": len(markers),
         "proof_candidates": proof_candidates,
         "screenshot_markers": markers,

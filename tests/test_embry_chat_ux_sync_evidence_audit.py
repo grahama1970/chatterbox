@@ -82,6 +82,30 @@ def test_classify_audible_browser_session_replay_receipt() -> None:
     assert candidate["observed"]["audible_playback_present"] is True
 
 
+def test_classify_live_dom_lineage_probe_receipt() -> None:
+    receipt = {
+        "schema": "chatterbox.embry_chat_ux_lineage_probe.v1",
+        "live": True,
+        "mocked": False,
+        "lineage_ready": False,
+        "entity_underlines_ready": False,
+        "chat_message_count": 1,
+        "assistant_message_count": 1,
+        "audio_artifact_count": 1,
+        "assistant_with_audio_count": 1,
+        "assistant_with_turn_id_count": 0,
+        "audio_with_turn_id_count": 0,
+        "assistant_with_entity_span_count": 0,
+    }
+
+    candidate = classify_proof(Path("/tmp/lineage.json"), receipt)
+
+    assert candidate["dom_lineage_probe"] is True
+    assert candidate["dom_lineage_ready"] is False
+    assert candidate["dom_entity_underlines_ready"] is False
+    assert candidate["observed"]["dom_lineage_counts"]["assistant_with_turn_id_count"] == 0
+
+
 def test_audit_fails_when_basic_ui_passes_but_lineage_and_entities_are_missing(tmp_path: Path) -> None:
     proof = tmp_path / "gate.json"
     proof.write_text(
@@ -141,6 +165,7 @@ def test_audit_fails_when_basic_ui_passes_but_lineage_and_entities_are_missing(t
         "audible_playback_receipt.ended_or_played_to_expected_offset",
         "audible_playback_receipt.cut_off_after_ms absent",
     ]
+    assert audit["dom_lineage_probe_evidence"]["candidate_count"] == 0
 
 
 def test_audit_reports_unimplemented_chat_ux_runner_routes(tmp_path: Path) -> None:

@@ -33,6 +33,7 @@
             "audio_src_count": 4,
             "proof_type": "UI DOM/text/audio-src proof, not full browser microphone loop."
           },
+          "dom_lineage_counts": null,
           "extract_entities_present": false,
           "plan_turn_id": null,
           "render_turn_id": null,
@@ -57,6 +58,7 @@
           "audio_artifact_id": null,
           "audio_artifact_ids": null,
           "chat_gate_evidence": null,
+          "dom_lineage_counts": null,
           "extract_entities_present": false,
           "plan_turn_id": null,
           "render_turn_id": null,
@@ -187,6 +189,33 @@
       "shared_chat_basic_audio_text_and_dynamic_replay_evidence_exists"
     ]
   },
+  "dom_lineage_probe_evidence": {
+    "blocking_summary": "live shared Chat DOM lacks turn-id linkage between assistant message/audio and/or entity underline spans in the spoken transcript",
+    "boundary": "live_dom_shared_chat_turn_audio_entity_lineage",
+    "candidate_count": 1,
+    "candidate_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"
+    ],
+    "failed_candidate_count": 1,
+    "passing_candidate_count": 0,
+    "ready": false,
+    "sample_failures": [
+      {
+        "dom_entity_underlines_ready": false,
+        "dom_lineage_ready": false,
+        "observed": {
+          "assistant_message_count": 1,
+          "assistant_with_audio_count": 1,
+          "assistant_with_entity_span_count": 0,
+          "assistant_with_turn_id_count": 0,
+          "audio_artifact_count": 2,
+          "audio_with_turn_id_count": 0,
+          "chat_message_count": 7
+        },
+        "path": "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"
+      }
+    ]
+  },
   "dynamic_replay_candidate_count": 2,
   "entity_underline_candidate_count": 0,
   "entity_underline_evidence": {
@@ -240,17 +269,20 @@
     "extract_entities_underline_render_receipt_missing",
     "screenshot_markers_do_not_prove_turn_lineage"
   ],
-  "generated_at_utc": "2026-07-08T07:11:02.531904+00:00",
+  "generated_at_utc": "2026-07-08T07:15:25.879933+00:00",
   "lineage_candidate_count": 0,
   "live": true,
-  "live_unmocked_candidate_count": 1,
+  "live_unmocked_candidate_count": 2,
   "mocked": false,
   "ok": false,
-  "proof_candidate_count": 3,
+  "proof_candidate_count": 4,
   "proof_candidates": [
     {
       "audible_session_replay": false,
       "chat_gate_pass": true,
+      "dom_entity_underlines_ready": false,
+      "dom_lineage_probe": false,
+      "dom_lineage_ready": false,
       "dynamic_replay_basic": true,
       "exists": true,
       "extract_entities_underlines": false,
@@ -267,6 +299,7 @@
           "audio_src_count": 4,
           "proof_type": "UI DOM/text/audio-src proof, not full browser microphone loop."
         },
+        "dom_lineage_counts": null,
         "extract_entities_present": false,
         "plan_turn_id": null,
         "render_turn_id": null,
@@ -286,6 +319,9 @@
     {
       "audible_session_replay": false,
       "chat_gate_pass": false,
+      "dom_entity_underlines_ready": false,
+      "dom_lineage_probe": false,
+      "dom_lineage_ready": false,
       "dynamic_replay_basic": true,
       "exists": true,
       "extract_entities_underlines": false,
@@ -298,6 +334,7 @@
         "audio_artifact_id": null,
         "audio_artifact_ids": null,
         "chat_gate_evidence": null,
+        "dom_lineage_counts": null,
         "extract_entities_present": false,
         "plan_turn_id": null,
         "render_turn_id": null,
@@ -317,6 +354,9 @@
     {
       "audible_session_replay": true,
       "chat_gate_pass": false,
+      "dom_entity_underlines_ready": false,
+      "dom_lineage_probe": false,
+      "dom_lineage_ready": false,
       "dynamic_replay_basic": false,
       "exists": true,
       "extract_entities_underlines": false,
@@ -348,6 +388,7 @@
         "audio_artifact_id": null,
         "audio_artifact_ids": null,
         "chat_gate_evidence": null,
+        "dom_lineage_counts": null,
         "extract_entities_present": false,
         "plan_turn_id": null,
         "render_turn_id": null,
@@ -357,6 +398,43 @@
       "path": "/tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio/latest/receipt.json",
       "response_plan_to_chat_render_lineage": false,
       "schema": "chatterbox.embry_chat_ux_replay_audio_receipt.v1"
+    },
+    {
+      "audible_session_replay": false,
+      "chat_gate_pass": false,
+      "dom_entity_underlines_ready": false,
+      "dom_lineage_probe": true,
+      "dom_lineage_ready": false,
+      "dynamic_replay_basic": false,
+      "exists": true,
+      "extract_entities_underlines": false,
+      "inline_reasoning_trace_basic": false,
+      "live": true,
+      "mocked": false,
+      "observed": {
+        "audible_playback": {},
+        "audible_playback_present": false,
+        "audio_artifact_id": null,
+        "audio_artifact_ids": null,
+        "chat_gate_evidence": null,
+        "dom_lineage_counts": {
+          "assistant_message_count": 1,
+          "assistant_with_audio_count": 1,
+          "assistant_with_entity_span_count": 0,
+          "assistant_with_turn_id_count": 0,
+          "audio_artifact_count": 2,
+          "audio_with_turn_id_count": 0,
+          "chat_message_count": 7
+        },
+        "extract_entities_present": false,
+        "plan_turn_id": null,
+        "render_turn_id": null,
+        "replay_assertions": {},
+        "underline_render_present": false
+      },
+      "path": "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json",
+      "response_plan_to_chat_render_lineage": false,
+      "schema": "chatterbox.embry_chat_ux_lineage_probe.v1"
     }
   ],
   "response_plan_lineage_evidence": {
