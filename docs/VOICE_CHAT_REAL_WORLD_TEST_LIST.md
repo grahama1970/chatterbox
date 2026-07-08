@@ -178,6 +178,19 @@ de-escalation case; hostile, discouraged, and speaker-overlap inputs failed
 their expected tone-family gates. The matrix now records `31` passed, `149`
 failed, and `120` not-run sessions.
 
+Latest matrix adversarial memory/search subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json`
+
+That run executed `16` adversarial memory/search sessions with `mocked=false`,
+`live=true`, and `ok=false`. The four Brave Search research sessions passed.
+All twelve adversarial SPARTA/persona-memory sessions failed answerability
+gates: SPARTA QRA prompts still leaked S0609/deprecated-control or
+missing-acceptance answers, persona-memory recall still used unrelated source
+collections, and persona-memory miss prompts still answered unrelated records
+instead of clarifying. The matrix now records `35` passed, `161` failed, and
+`104` not-run sessions.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
