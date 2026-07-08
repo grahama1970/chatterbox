@@ -166,14 +166,15 @@ Current interruption evidence audit receipt:
 
 `docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, `proof_count=3`, and
-`passing_candidate_count=0`. The stream-cancel receipt still proves
-`old_turn_bytes_after_cancel=0` for a pre-cancelled turn, but no current
-candidate proves live barge-in. The missing receipt fields are old/new turn ids,
-Embry playback audio artifact/start/interrupt offset, listener interruption
-detection, listener speaker id, primary speaker match, cancelled/stopped/stale
-control state, stale old-turn byte measurement, and new-turn response
-started/wins.
+That audit reports `mocked=false`, `live=true`, `ok=false`, `proof_count=4`,
+`passing_candidate_count=0`, and `chatterbox_turn_control_candidate_count=1`.
+The best candidate is
+`/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json`.
+It proves Chatterbox turn control stopped the old audio path, skipped stale old
+chunks, emitted zero old-turn bytes after cancel, and started the new turn. It
+still does not prove live Horus barge-in because the missing fields are Embry
+playback audio artifact/start/interrupt offset, listener interruption detection,
+listener speaker id, and primary speaker match.
 
 Current RealtimeSTT ingress evidence audit receipt:
 

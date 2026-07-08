@@ -1,17 +1,20 @@
 {
+  "best_candidate_paths": [
+    "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json"
+  ],
   "candidate_count": 4,
   "candidates": [
     {
+      "chatterbox_turn_control_missing_fields": [],
+      "chatterbox_turn_control_ok": true,
+      "missing_field_count": 6,
       "missing_fields": [
         "embry_playback.audio_artifact_id",
         "embry_playback.offset_ms_at_interrupt",
         "embry_playback.started_at_epoch_ms",
         "listener_interruption.detected",
         "listener_interruption.primary_speaker_match",
-        "listener_interruption.speaker_id",
-        "turn_control.cancelled",
-        "turn_control.stale_chunks_should_skip",
-        "turn_control.stopped"
+        "listener_interruption.speaker_id"
       ],
       "observed": {
         "action_order": null,
@@ -27,6 +30,8 @@
         "old_turn_id": "turn-ffd6d9e7",
         "playback_offset_ms_at_interrupt": null,
         "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": true,
         "turn_id": "turn-ffd6d9e7"
       },
       "ok": false,
@@ -34,6 +39,14 @@
       "proof_scope": null
     },
     {
+      "chatterbox_turn_control_missing_fields": [
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "turn_control.stopped"
+      ],
+      "chatterbox_turn_control_ok": false,
+      "missing_field_count": 10,
       "missing_fields": [
         "embry_playback.audio_artifact_id",
         "embry_playback.offset_ms_at_interrupt",
@@ -60,6 +73,8 @@
         "old_turn_id": "turn-cancel-44280d62822d",
         "playback_offset_ms_at_interrupt": null,
         "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": null,
         "turn_id": "turn-cancel-44280d62822d"
       },
       "ok": false,
@@ -67,6 +82,17 @@
       "proof_scope": "pre_cancelled_turn_stream_suppression"
     },
     {
+      "chatterbox_turn_control_missing_fields": [
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "old_turn_id",
+        "stale_audio.old_turn_bytes_after_cancel",
+        "turn_control.stale_chunks_should_skip",
+        "turn_control.stopped"
+      ],
+      "chatterbox_turn_control_ok": false,
+      "missing_field_count": 15,
       "missing_fields": [
         "embry_playback.audio_artifact_id",
         "embry_playback.offset_ms_at_interrupt",
@@ -98,6 +124,8 @@
         "old_turn_id": null,
         "playback_offset_ms_at_interrupt": null,
         "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": null,
+        "turn_control_stopped": null,
         "turn_id": null
       },
       "ok": false,
@@ -105,6 +133,17 @@
       "proof_scope": null
     },
     {
+      "chatterbox_turn_control_missing_fields": [
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "old_turn_id",
+        "stale_audio.old_turn_bytes_after_cancel",
+        "turn_control.stale_chunks_should_skip",
+        "turn_control.stopped"
+      ],
+      "chatterbox_turn_control_ok": false,
+      "missing_field_count": 15,
       "missing_fields": [
         "embry_playback.audio_artifact_id",
         "embry_playback.offset_ms_at_interrupt",
@@ -149,6 +188,8 @@
         "old_turn_id": null,
         "playback_offset_ms_at_interrupt": null,
         "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": null,
+        "turn_control_stopped": null,
         "turn_id": null
       },
       "ok": false,
@@ -156,13 +197,16 @@
       "proof_scope": null
     }
   ],
+  "chatterbox_turn_control_candidate_count": 1,
   "claims": {
     "does_not_prove": [
       "RealtimeSTT transcription quality",
       "speaker diarization quality",
       "subjective interruption feel"
     ],
-    "proves": []
+    "proves": [
+      "chatterbox_turn_control_interruption_stops_old_audio_and_starts_new_turn"
+    ]
   },
   "failed_gates": [
     "live_barge_in_receipt_present",
@@ -171,19 +215,10 @@
     "missing:embry_playback.started_at_epoch_ms",
     "missing:listener_interruption.detected",
     "missing:listener_interruption.primary_speaker_match",
-    "missing:listener_interruption.speaker_id",
-    "missing:new_turn.response_started",
-    "missing:new_turn.wins",
-    "missing:new_turn_id",
-    "missing:old_turn_id",
-    "missing:stale_audio.old_turn_bytes_after_cancel",
-    "missing:turn_control.cancelled",
-    "missing:turn_control.stale_chunks_should_skip",
-    "missing:turn_control.stopped",
-    "missing:turn_id"
+    "missing:listener_interruption.speaker_id"
   ],
-  "generated_at_utc": "2026-07-08T03:49:08.454992+00:00",
-  "live": false,
+  "generated_at_utc": "2026-07-08T04:27:57.728289+00:00",
+  "live": true,
   "mocked": false,
   "ok": false,
   "passing_candidate_count": 0,
@@ -199,6 +234,15 @@
     "listener_interruption.speaker_id",
     "listener_interruption.primary_speaker_match",
     "turn_control.cancelled",
+    "turn_control.stopped",
+    "turn_control.stale_chunks_should_skip",
+    "stale_audio.old_turn_bytes_after_cancel",
+    "new_turn.wins",
+    "new_turn.response_started"
+  ],
+  "required_chatterbox_turn_control_fields": [
+    "old_turn_id",
+    "new_turn_id",
     "turn_control.stopped",
     "turn_control.stale_chunks_should_skip",
     "stale_audio.old_turn_bytes_after_cancel",

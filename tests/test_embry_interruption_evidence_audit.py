@@ -66,15 +66,29 @@ def test_build_audit_fails_without_live_barge_in_candidate(tmp_path: Path) -> No
 
     assert audit["ok"] is False
     assert audit["status"] == "failed"
+    assert audit["live"] is False
     assert audit["passing_candidate_count"] == 0
     assert "live_barge_in_receipt_present" in audit["failed_gates"]
 
 
 def test_interruption_audit_normalizes_legacy_timeline_but_keeps_listener_gap(tmp_path: Path) -> None:
+    events = tmp_path / "task-events.jsonl"
+    events.write_text(
+        "\n".join(
+            [
+                '{"type":"interruption.requested"}',
+                '{"type":"playback.stopped"}',
+                '{"type":"speech.stale_skipped"}',
+            ]
+        )
+        + "\n"
+    )
     receipt = {
         "ok": True,
         "live": True,
         "mocked": False,
+        "events_path": str(events),
+        "stale_skipped_count": 2,
         "interruption_timeline": {
             "old_turn_id": "turn-old",
             "new_turn_id": "turn-new",
@@ -90,8 +104,53 @@ def test_interruption_audit_normalizes_legacy_timeline_but_keeps_listener_gap(tm
     assert result["observed"]["new_turn_id"] == "turn-new"
     assert result["observed"]["old_turn_bytes_after_cancel"] == 0
     assert result["observed"]["new_turn_wins"] is True
+    assert result["observed"]["turn_control_stopped"] is True
+    assert result["observed"]["turn_control_stale_chunks_should_skip"] is True
+    assert result["chatterbox_turn_control_ok"] is True
     assert "listener_interruption.detected" in result["missing_fields"]
     assert "listener_interruption.speaker_id" in result["missing_fields"]
+
+
+def test_build_audit_counts_chatterbox_turn_control_without_live_listener_barge_in(tmp_path: Path) -> None:
+    events = tmp_path / "task-events.jsonl"
+    events.write_text(
+        "\n".join(
+            [
+                '{"type":"interruption.requested"}',
+                '{"type":"playback.stopped"}',
+                '{"type":"speech.stale_skipped"}',
+            ]
+        )
+        + "\n"
+    )
+    proof = tmp_path / "final-response.json"
+    proof.write_text(
+        f"""
+{{
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "events_path": "{events}",
+  "stale_skipped_count": 2,
+  "interruption_timeline": {{
+    "old_turn_id": "turn-old",
+    "new_turn_id": "turn-new",
+    "post_cancel_old_turn_audio_bytes_emitted": 0,
+    "new_turn_audio_started_after_cancel": true
+  }}
+}}
+"""
+    )
+
+    audit = build_audit([proof])
+
+    assert audit["ok"] is False
+    assert audit["live"] is True
+    assert audit["chatterbox_turn_control_candidate_count"] == 1
+    assert audit["best_candidate_paths"] == [str(proof)]
+    assert "live_barge_in_receipt_present" in audit["failed_gates"]
+    assert "chatterbox_turn_control_interruption_receipt_present" not in audit["failed_gates"]
+    assert "chatterbox_turn_control_interruption_stops_old_audio_and_starts_new_turn" in audit["claims"]["proves"]
 
 
 def test_build_audit_passes_with_live_barge_in_candidate(tmp_path: Path) -> None:
@@ -126,5 +185,6 @@ def test_build_audit_passes_with_live_barge_in_candidate(tmp_path: Path) -> None
     audit = build_audit([proof])
 
     assert audit["ok"] is True
+    assert audit["live"] is False
     assert audit["status"] == "passed"
     assert audit["failed_gates"] == []

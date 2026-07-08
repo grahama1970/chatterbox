@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:23:00.800258+00:00",
+  "generated_at_utc": "2026-07-08T04:27:57.809599+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -289,7 +289,9 @@
               "speaker diarization quality",
               "subjective interruption feel"
             ],
-            "proves": []
+            "proves": [
+              "chatterbox_turn_control_interruption_stops_old_audio_and_starts_new_turn"
+            ]
           },
           "exists": true,
           "failed_gates": [
@@ -299,18 +301,9 @@
             "missing:embry_playback.started_at_epoch_ms",
             "missing:listener_interruption.detected",
             "missing:listener_interruption.primary_speaker_match",
-            "missing:listener_interruption.speaker_id",
-            "missing:new_turn.response_started",
-            "missing:new_turn.wins",
-            "missing:new_turn_id",
-            "missing:old_turn_id",
-            "missing:stale_audio.old_turn_bytes_after_cancel",
-            "missing:turn_control.cancelled",
-            "missing:turn_control.stale_chunks_should_skip",
-            "missing:turn_control.stopped",
-            "missing:turn_id"
+            "missing:listener_interruption.speaker_id"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json",
