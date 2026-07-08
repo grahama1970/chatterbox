@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T03:06:23.553434+00:00",
+  "generated_at_utc": "2026-07-08T03:09:54.606560+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -194,7 +194,9 @@
       "title": "Chatterbox Speech"
     },
     "interruption": {
-      "evidence_artifacts": [],
+      "evidence_artifacts": [
+        "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
       "objective_phrase": "interruption",
       "requirement_ids": [

@@ -86,6 +86,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "interruption",
         "requirement_ids": ["VC-12", "VC-13"],
         "taxonomy_subsystems": ["interruption_turn_control"],
+        "evidence_artifacts": ["docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"],
         "status": "failing",
         "summary": "All 20 matrix interruption rows fail; cancel/duck/stop endpoints are exercised, but live detection and new-turn/stale-audio receipts are missing.",
         "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
