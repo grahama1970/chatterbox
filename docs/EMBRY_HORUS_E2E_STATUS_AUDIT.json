@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T03:46:45.711148+00:00",
+  "generated_at_utc": "2026-07-08T03:49:08.536829+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [

@@ -11,6 +11,7 @@ from typing import Any
 
 
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json"),
     Path("/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json"),
     Path("/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json"),
@@ -64,11 +65,24 @@ def normalize_known_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
         normalized.setdefault("stale_audio", {})["old_turn_bytes_after_cancel"] = receipt.get(
             "old_turn_bytes_after_cancel"
         )
+    timeline = receipt.get("interruption_timeline") or {}
+    if "post_cancel_old_turn_audio_bytes_emitted" in timeline:
+        normalized.setdefault("stale_audio", {})["old_turn_bytes_after_cancel"] = timeline.get(
+            "post_cancel_old_turn_audio_bytes_emitted"
+        )
     if "turn_id" in receipt:
         normalized.setdefault("turn_id", receipt.get("turn_id"))
         normalized.setdefault("old_turn_id", receipt.get("turn_id"))
+    if "old_turn_id" in timeline:
+        normalized.setdefault("turn_id", timeline.get("old_turn_id"))
+        normalized.setdefault("old_turn_id", timeline.get("old_turn_id"))
     if "new_turn_id" in receipt:
         normalized.setdefault("new_turn_id", receipt.get("new_turn_id"))
+    if "new_turn_id" in timeline:
+        normalized.setdefault("new_turn_id", timeline.get("new_turn_id"))
+    if timeline.get("new_turn_audio_started_after_cancel") is True:
+        normalized.setdefault("new_turn", {})["wins"] = True
+        normalized.setdefault("new_turn", {})["response_started"] = True
     final_control = receipt.get("final_control") or {}
     cancel = receipt.get("cancel") or {}
     control = final_control or (cancel.get("control") or {})

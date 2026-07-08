@@ -70,6 +70,30 @@ def test_build_audit_fails_without_live_barge_in_candidate(tmp_path: Path) -> No
     assert "live_barge_in_receipt_present" in audit["failed_gates"]
 
 
+def test_interruption_audit_normalizes_legacy_timeline_but_keeps_listener_gap(tmp_path: Path) -> None:
+    receipt = {
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "interruption_timeline": {
+            "old_turn_id": "turn-old",
+            "new_turn_id": "turn-new",
+            "post_cancel_old_turn_audio_bytes_emitted": 0,
+            "new_turn_audio_started_after_cancel": True,
+        },
+    }
+
+    result = audit_candidate(tmp_path / "final-response.json", receipt)
+
+    assert result["ok"] is False
+    assert result["observed"]["old_turn_id"] == "turn-old"
+    assert result["observed"]["new_turn_id"] == "turn-new"
+    assert result["observed"]["old_turn_bytes_after_cancel"] == 0
+    assert result["observed"]["new_turn_wins"] is True
+    assert "listener_interruption.detected" in result["missing_fields"]
+    assert "listener_interruption.speaker_id" in result["missing_fields"]
+
+
 def test_build_audit_passes_with_live_barge_in_candidate(tmp_path: Path) -> None:
     proof = tmp_path / "barge-in.json"
     proof.write_text(

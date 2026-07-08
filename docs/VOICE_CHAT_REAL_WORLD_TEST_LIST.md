@@ -317,6 +317,29 @@ What it does not prove:
 - subjective voice quality
 - generalized factory robustness beyond the configured stress WAV and sink
 
+Current Chatterbox interruption sequencing receipt:
+
+`/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json`
+
+Result: `mocked=false`, `live=true`, `ok=true`.
+
+What it exercised:
+
+- Rendered the first old-turn Chatterbox chunk.
+- Issued an interruption request with a new turn id.
+- Stopped old playback in the turn event timeline.
+- Skipped two stale queued old-turn chunks.
+- Recorded `post_cancel_old_turn_audio_bytes_emitted=0`.
+- Started new-turn acknowledgement and answer audio after cancel.
+
+What it does not prove:
+
+- RealtimeSTT heard the interrupting user.
+- The interrupting speaker was Horus.
+- The speaker gate accepted Horus and rejected non-primary speech.
+- The playback offset at the exact barge-in moment was measured.
+- Subjective human interruption feel.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
