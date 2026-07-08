@@ -35,7 +35,7 @@
     "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T04:33:35.174903+00:00",
+  "generated_at_utc": "2026-07-08T06:16:41.664238+00:00",
   "incomplete_delivery_envelope_count": 3,
   "live": true,
   "live_render_candidate_count": 4,

@@ -11,6 +11,7 @@ from typing import Any
 
 
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T061455Z-rung4-live-interrupt/rung4-live-interrupt.json"),
     Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json"),
     Path("/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json"),
     Path("/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json"),
@@ -98,13 +99,31 @@ def normalize_known_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
     """Lift known legacy smoke fields into the stricter audit namespace."""
 
     normalized = dict(receipt)
-    events_path = receipt.get("events_path")
+    if receipt.get("schema") == "chatterbox.conversation_ladder.rung4.v1":
+        interruption = receipt.get("interruption") if isinstance(receipt.get("interruption"), dict) else {}
+        turn_controls = receipt.get("turn_controls") if isinstance(receipt.get("turn_controls"), dict) else {}
+        input_asr = receipt.get("input_asr") if isinstance(receipt.get("input_asr"), dict) else {}
+        normalized.update({key: value for key, value in interruption.items() if key not in normalized})
+        if input_asr.get("gate", {}).get("ok") is True and input_asr.get("transcript"):
+            listener = normalized.setdefault("listener_interruption", {})
+            listener.setdefault("detected", True)
+            listener.setdefault("text", input_asr.get("transcript"))
+            listener.setdefault("asr_gate_ok", True)
+            listener.setdefault("source", "rung4_interrupt_audio_asr")
+        final_control = turn_controls.get("final_control")
+        if isinstance(final_control, dict):
+            normalized.setdefault("turn_control", {})
+            for key in ["cancelled", "stopped", "stale_chunks_should_skip", "ducked"]:
+                if key in final_control:
+                    normalized["turn_control"][key] = final_control.get(key)
+
+    events_path = normalized.get("events_path")
     events = read_jsonl(Path(events_path)) if isinstance(events_path, str) else []
     if "old_turn_bytes_after_cancel" in receipt:
         normalized.setdefault("stale_audio", {})["old_turn_bytes_after_cancel"] = receipt.get(
             "old_turn_bytes_after_cancel"
         )
-    timeline = receipt.get("interruption_timeline") or {}
+    timeline = normalized.get("interruption_timeline") or {}
     if "post_cancel_old_turn_audio_bytes_emitted" in timeline:
         normalized.setdefault("stale_audio", {})["old_turn_bytes_after_cancel"] = timeline.get(
             "post_cancel_old_turn_audio_bytes_emitted"
@@ -150,8 +169,8 @@ def normalize_known_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
                 0,
                 interrupted_ms - started_ms,
             )
-    final_control = receipt.get("final_control") or {}
-    cancel = receipt.get("cancel") or {}
+    final_control = normalized.get("final_control") or {}
+    cancel = normalized.get("cancel") or {}
     control = final_control or (cancel.get("control") or {})
     if control:
         normalized.setdefault("turn_control", {})

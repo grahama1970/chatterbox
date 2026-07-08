@@ -159,6 +159,64 @@ def test_build_audit_counts_chatterbox_turn_control_without_live_listener_barge_
     assert "chatterbox_turn_control_interruption_stops_old_audio_and_starts_new_turn" in audit["claims"]["proves"]
 
 
+def test_interruption_audit_lifts_rung4_asr_interrupt_but_keeps_speaker_gap(tmp_path: Path) -> None:
+    events = tmp_path / "task-events.jsonl"
+    events.write_text(
+        "\n".join(
+            [
+                '{"type":"speech.played","turn_id":"turn-old","artifact_path":"/out/old.wav","timestamp":"2026-07-08T03:47:55Z"}',
+                '{"type":"interruption.requested","turn_id":"turn-old","timestamp":"2026-07-08T03:47:56Z"}',
+                '{"type":"playback.stopped","turn_id":"turn-old"}',
+                '{"type":"speech.stale_skipped","turn_id":"turn-old"}',
+            ]
+        )
+        + "\n"
+    )
+    receipt = {
+        "schema": "chatterbox.conversation_ladder.rung4.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "input_asr": {
+            "transcript": "Wait, stop.",
+            "gate": {"ok": True, "failed_gates": [], "wer": 0.0},
+        },
+        "interruption": {
+            "ok": True,
+            "live": True,
+            "mocked": False,
+            "events_path": str(events),
+            "old_turn_id": "turn-old",
+            "new_turn_id": "turn-new",
+            "stale_skipped_count": 2,
+            "interruption_timeline": {
+                "old_turn_id": "turn-old",
+                "new_turn_id": "turn-new",
+                "post_cancel_old_turn_audio_bytes_emitted": 0,
+                "new_turn_audio_started_after_cancel": True,
+            },
+        },
+        "turn_controls": {
+            "final_control": {
+                "cancelled": True,
+                "stopped": True,
+                "stale_chunks_should_skip": True,
+            }
+        },
+    }
+
+    result = audit_candidate(tmp_path / "rung4.json", receipt)
+
+    assert result["ok"] is False
+    assert result["observed"]["listener_detected"] is True
+    assert result["observed"]["old_turn_bytes_after_cancel"] == 0
+    assert result["observed"]["new_turn_wins"] is True
+    assert result["chatterbox_turn_control_ok"] is True
+    assert "listener_interruption.detected" not in result["missing_fields"]
+    assert "listener_interruption.speaker_id" in result["missing_fields"]
+    assert "listener_interruption.primary_speaker_match" in result["missing_fields"]
+
+
 def test_build_audit_passes_with_live_barge_in_candidate(tmp_path: Path) -> None:
     proof = tmp_path / "barge-in.json"
     proof.write_text(
