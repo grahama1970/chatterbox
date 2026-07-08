@@ -139,6 +139,20 @@ receipt. The twelve medium direct-skill sessions for create-evidence-case,
 create-figure, and analytics confirmed the required skill files exist, but no
 Tau handoff, `tau.dag_receipt.v1`, or `skill.call.receipt.v1` was emitted.
 
+Latest matrix medium route subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json`
+
+That run executed the next `16` medium sessions with `mocked=false` and
+`ok=false`. The SPARTA validator and Embry voice-control direct-skill cases
+reached Tau and found the required skill files but emitted no Tau handoff, DAG,
+or `skill.call.receipt.v1`. The interruption cases exercised live
+cancel/duck/stop endpoints but still lack interruption-detection, new-turn,
+non-primary rejection, stale-audio, and Tau-wait natural-stop receipts. The Chat
+UX medium rows are mapped to the deterministic Chat UX gate audit: replay and
+inline reasoning trace pass; turn-id lineage and `$extract-entities` underline
+rendering remain failed.
+
 Latest matrix simple-rest receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json`
@@ -258,7 +272,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`15` passed, `77` failed, and `208` are `not_run`. This is the intended source
+`17` passed, `91` failed, and `192` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.

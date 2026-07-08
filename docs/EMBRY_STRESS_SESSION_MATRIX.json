@@ -21,7 +21,7 @@
     "soak"
   ],
   "folder_count": 15,
-  "generated_at_utc": "2026-07-08T01:49:08Z",
+  "generated_at_utc": "2026-07-08T01:52:11Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 300,
   "sessions": [
@@ -15003,13 +15003,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-medium-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -15037,7 +15041,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: medium 1"
     },
     {
@@ -15094,13 +15098,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-medium-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -15128,7 +15136,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: medium 2"
     },
     {
@@ -15185,13 +15193,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-medium-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -15219,7 +15231,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: medium 3"
     },
     {
@@ -15276,13 +15288,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-medium-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -15310,7 +15326,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: medium 4"
     },
     {
@@ -16831,9 +16847,9 @@
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-medium-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Deterministic gate audit found dynamic replay evidence in the shared Chat UX.",
       "oracle": {
         "required_gates": [
           "chat_turn_id_matches_response_plan",
@@ -16860,7 +16876,7 @@
         "template_family": "chat_ux_sync",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "passed",
       "title": "Chat UX Sync: medium 1"
     },
     {
@@ -16921,9 +16937,9 @@
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-medium-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Deterministic gate audit found inline reasoning trace evidence during replay.",
       "oracle": {
         "required_gates": [
           "chat_turn_id_matches_response_plan",
@@ -16950,7 +16966,7 @@
         "template_family": "chat_ux_sync",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "passed",
       "title": "Chat UX Sync: medium 2"
     },
     {
@@ -17007,13 +17023,17 @@
         "tau_route_required": false,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "assistant_response_plan_v1_not_linked",
+        "chat_render_receipt_v1_not_emitted",
+        "chat_turn_id_matches_response_plan_not_proven"
+      ],
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-medium-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
       "mocked": false,
-      "observed": null,
+      "observed": "UI proof shows shared chat text and audio sources, but no response-plan to chat-render lineage receipt proves the same turn id.",
       "oracle": {
         "required_gates": [
           "chat_turn_id_matches_response_plan",
@@ -17040,7 +17060,7 @@
         "template_family": "chat_ux_sync",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Chat UX Sync: medium 3"
     },
     {
@@ -17097,13 +17117,17 @@
         "tau_route_required": false,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "extract_entities_receipt_not_linked",
+        "entity_underline_render_receipt_not_emitted",
+        "spoken_transcript_entity_underlines_not_proven"
+      ],
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-medium-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
       "mocked": false,
-      "observed": null,
+      "observed": "No linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript.",
       "oracle": {
         "required_gates": [
           "chat_turn_id_matches_response_plan",
@@ -17130,7 +17154,7 @@
         "template_family": "chat_ux_sync",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Chat UX Sync: medium 4"
     },
     {
@@ -18656,13 +18680,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-medium-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18691,7 +18719,7 @@
         "template_family": "voice_control_skill",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: medium 1"
     },
     {
@@ -18749,13 +18777,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-medium-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18784,7 +18816,7 @@
         "template_family": "voice_control_skill",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: medium 2"
     },
     {
@@ -18842,13 +18874,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-medium-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18877,7 +18913,7 @@
         "template_family": "voice_control_skill",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: medium 3"
     },
     {
@@ -18935,13 +18971,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-medium-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18970,7 +19010,7 @@
         "template_family": "voice_control_skill",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: medium 4"
     },
     {
@@ -20519,13 +20559,17 @@
         "tau_route_required": false,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "interruption_detected_receipt_not_emitted",
+        "new_horus_turn_not_exercised",
+        "new_turn_wins_receipt_not_emitted"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-medium-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted.",
       "oracle": {
         "required_gates": [
           "stale_audio_stops",
@@ -20552,7 +20596,7 @@
         "template_family": "interruption",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: medium 1"
     },
     {
@@ -20609,13 +20653,17 @@
         "tau_route_required": false,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "blessed_qra_cached_response_not_exercised",
+        "interruption_detected_receipt_not_emitted",
+        "stale_audio_stream_bytes_not_measured"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-medium-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case.",
       "oracle": {
         "required_gates": [
           "stale_audio_stops",
@@ -20642,7 +20690,7 @@
         "template_family": "interruption",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: medium 2"
     },
     {
@@ -20699,13 +20747,17 @@
         "tau_route_required": false,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "interruption_detected_receipt_not_emitted",
+        "non_primary_interrupt_rejection_not_exercised",
+        "speaker_gate_receipt_not_linked_to_turn_control"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-medium-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control.",
       "oracle": {
         "required_gates": [
           "stale_audio_stops",
@@ -20732,7 +20784,7 @@
         "template_family": "interruption",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: medium 3"
     },
     {
@@ -20789,13 +20841,17 @@
         "tau_route_required": false,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "interruption_detected_receipt_not_emitted",
+        "natural_stop_phrase_not_observed",
+        "tau_tool_wait_not_exercised"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-medium-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised.",
       "oracle": {
         "required_gates": [
           "stale_audio_stops",
@@ -20822,7 +20878,7 @@
         "template_family": "interruption",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: medium 4"
     },
     {
@@ -27226,8 +27282,8 @@
     }
   ],
   "status_counts": {
-    "failed": 77,
-    "not_run": 208,
-    "passed": 15
+    "failed": 91,
+    "not_run": 192,
+    "passed": 17
   }
 }
