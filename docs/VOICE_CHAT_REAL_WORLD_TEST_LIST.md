@@ -270,6 +270,20 @@ interruption-detection, new-turn, stale-audio, non-primary rejection, and
 Tau-wait natural-stop receipts. The matrix now records `44` passed, `244`
 failed, and `12` not-run sessions.
 
+Latest matrix soak speaker/factory/tone subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json`
+
+That run selected the final `12` soak sessions with `mocked=false` and
+`ok=false`. Overall `live=false` because the four factory-noise rows still hit
+`runner_route_not_implemented`. Four speaker-identity rows passed live
+`memory.speaker.resolve` policy checks. Tone/emotion passed only the frustrated
+de-escalation case; hostile, discouraged, and speaker-overlap inputs failed
+their expected tone-family gates. All `300` matrix sessions are now
+receipt-backed: `49` passed, `251` failed, and `0` not-run. This proves matrix
+coverage, not the full live RealtimeSTT -> memory/Tau -> Chatterbox -> Chat UX
+loop.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
