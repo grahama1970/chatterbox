@@ -140,6 +140,35 @@ def test_classify_personality_audition_played_variants() -> None:
     assert candidate["played_variant_count"] == 5
 
 
+def test_classify_non_primary_interruption_suppression_receipt() -> None:
+    receipt = {
+        "schema": "chatterbox.conversation_ladder.rung4.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "speaker_gate": {
+            "enabled": True,
+            "expected_primary_speaker": False,
+            "suppressed": True,
+            "reason": "non_primary_speaker",
+        },
+        "listener_interruption": {
+            "speech_detected": True,
+            "detected": False,
+            "suppressed": True,
+            "suppression_reason": "non_primary_speaker",
+            "primary_speaker_match": False,
+        },
+        "interruption": None,
+        "turn_controls": None,
+    }
+
+    candidate = classify_proof(Path("/tmp/rung4-nonprimary.json"), receipt)
+
+    assert candidate["proof_type"] == "conversation_ladder_rung4"
+    assert candidate["non_primary_interrupt_rejection_ok"] is True
+
+
 def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(
@@ -243,6 +272,21 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
 }
 """
     )
+    non_primary = tmp_path / "non-primary.json"
+    non_primary.write_text(
+        """
+{
+  "schema": "chatterbox.conversation_ladder.rung4.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "speaker_gate": {"enabled": true, "expected_primary_speaker": false, "suppressed": true},
+  "listener_interruption": {"speech_detected": true, "detected": false, "suppressed": true},
+  "interruption": null,
+  "turn_controls": null
+}
+"""
+    )
     matrix = {
         "sessions": [
             _session("tone_emotion", "passed"),
@@ -255,13 +299,14 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
                     "new_turn_wins_receipt_not_emitted",
                     "speaker_gate_receipt_not_linked_to_turn_control",
                     "stale_audio_stream_bytes_not_measured",
+                    "non_primary_interrupt_rejection_not_exercised",
                     "natural_stop_phrase_not_observed",
                 ],
             ),
         ]
     }
 
-    audit = build_audit(matrix, [render, qra, personality], interruption_audit_path=interruption_audit)
+    audit = build_audit(matrix, [render, qra, personality, non_primary], interruption_audit_path=interruption_audit)
 
     assert audit["ok"] is False
     assert audit["interruption_evidence_audit"]["ok"] is True
@@ -271,8 +316,10 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
     assert "speech_matrix_gate:new_turn_wins_receipt_not_emitted" not in audit["failed_gates"]
     assert "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control" not in audit["failed_gates"]
     assert "speech_matrix_gate:stale_audio_stream_bytes_not_measured" not in audit["failed_gates"]
+    assert "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised" not in audit["failed_gates"]
     assert "speech_matrix_gate:natural_stop_phrase_not_observed" in audit["failed_gates"]
     assert audit["interruption_matrix_remaining_failed_gates"] == ["natural_stop_phrase_not_observed"]
+    assert audit["non_primary_interrupt_rejection_candidate_count"] == 1
 
 
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:

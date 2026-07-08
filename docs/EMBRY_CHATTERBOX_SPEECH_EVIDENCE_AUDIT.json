@@ -15,7 +15,8 @@
       "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
       "personality_audition_variants_can_render_and_play",
       "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
-      "live_primary_speaker_interruption_barge_in_receipt_present"
+      "live_primary_speaker_interruption_barge_in_receipt_present",
+      "live_non_primary_interrupt_audio_is_suppressed_before_turn_control"
     ]
   },
   "complete_delivery_envelope_candidate_count": 1,
@@ -23,14 +24,13 @@
     "interruption_matrix_has_failures",
     "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
     "speech_matrix_gate:natural_stop_phrase_not_observed",
-    "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised",
     "speech_matrix_gate:tau_tool_wait_not_exercised",
     "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
     "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
     "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T06:29:50.336994+00:00",
+  "generated_at_utc": "2026-07-08T06:33:01.400931+00:00",
   "incomplete_delivery_envelope_count": 3,
   "interruption_evidence_audit": {
     "best_candidate_paths": [
@@ -54,15 +54,41 @@
   "interruption_matrix_remaining_failed_gates": [
     "blessed_qra_cached_response_not_exercised",
     "natural_stop_phrase_not_observed",
-    "non_primary_interrupt_rejection_not_exercised",
     "tau_tool_wait_not_exercised"
   ],
   "live": true,
   "live_render_candidate_count": 4,
   "mocked": false,
+  "non_primary_interrupt_rejection_candidate_count": 1,
   "ok": false,
-  "proof_candidate_count": 7,
+  "proof_candidate_count": 8,
   "proof_candidates": [
+    {
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [
+        "robust_noisy_room_interruption_handling",
+        "adaptive_false_interruption_recovery",
+        "physical_speaker_playback_stop_latency"
+      ],
+      "claims_proves": [
+        "non_primary_interrupt_audio_is_suppressed_before_chatterbox_turn_control"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "non_primary_interrupt_rejection_ok": true,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T063142Z-rung4-live-nonprimary-suppressed/rung4-nonprimary-suppressed.json",
+      "played_variant_count": 0,
+      "proof_type": "conversation_ladder_rung4",
+      "qra_disabled_normal_render_ok": false,
+      "qra_variants_ok": false,
+      "render_audio_ok": false,
+      "schema": "chatterbox.conversation_ladder.rung4.v1",
+      "variant_count": 0,
+      "voice_delivery_missing_fields": []
+    },
     {
       "chunk_voice_delivery_missing_fields": [],
       "claims_does_not_prove": [
@@ -80,6 +106,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035831Z-voice-delivery-full-chunks-after-patch/tau-voice-render-full-delivery.json",
       "played_variant_count": 0,
@@ -112,6 +139,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035428Z-voice-delivery-full-after-patch/tau-voice-render-full-delivery.json",
       "played_variant_count": 0,
@@ -146,6 +174,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/S10-qra-disabled/tau-qra-disabled.json",
       "played_variant_count": 0,
@@ -186,6 +215,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/tau-voice-render-20260702T134405Z.json",
       "played_variant_count": 0,
@@ -218,6 +248,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/qra-creation-audio-hook.json",
       "played_variant_count": 0,
@@ -237,6 +268,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/bless-qra-audio-variants.json",
       "played_variant_count": 0,
@@ -263,6 +295,7 @@
       "failed_gates": [],
       "live": true,
       "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json",
       "played_variant_count": 5,

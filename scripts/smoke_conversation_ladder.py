@@ -1675,7 +1675,13 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
     artifacts: dict[str, Any] = {}
     input_asr: dict[str, Any] | None = None
     primary_speaker_verification: dict[str, Any] | None = None
-    primary_speaker_gate_enabled = args.primary_speaker_enrollment is not None
+    primary_speaker_enrollment = getattr(args, "primary_speaker_enrollment", None)
+    primary_speaker_engine = getattr(args, "primary_speaker_engine", "resemblyzer")
+    primary_speaker_threshold = getattr(args, "primary_speaker_threshold", 0.82)
+    expected_primary_speaker = getattr(args, "expected_primary_speaker", True)
+    speaker_id = getattr(args, "speaker_id", "horus_lupercal")
+    primary_speaker_gate_enabled = primary_speaker_enrollment is not None
+    speaker_gate_suppressed = False
 
     append_event(events, started, "rung.started", rung=4, run_id=run_id)
     fixture = args.fixture.resolve()
@@ -1694,10 +1700,10 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
 
     if primary_speaker_gate_enabled and fixture.exists():
         primary_speaker_verification = verify_primary_speaker(
-            enrollment_audio=args.primary_speaker_enrollment.resolve(),
+            enrollment_audio=primary_speaker_enrollment.resolve(),
             candidate_audio=fixture,
-            engine=args.primary_speaker_engine,
-            threshold=args.primary_speaker_threshold,
+            engine=primary_speaker_engine,
+            threshold=primary_speaker_threshold,
         )
         services["primary_speaker_verifier"] = {
             "kind": primary_speaker_verification.get("engine"),
@@ -1719,9 +1725,11 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
         )
         if not primary_speaker_verification.get("ok"):
             failed_gates.append("primary_speaker_verifier_available")
-        if args.expected_primary_speaker and not primary_speaker_verification.get("primary_speaker_match"):
+        speaker_match = bool(primary_speaker_verification.get("primary_speaker_match"))
+        speaker_gate_suppressed = not speaker_match
+        if expected_primary_speaker and not speaker_match:
             failed_gates.append("primary_speaker_expected_match")
-        if not args.expected_primary_speaker and primary_speaker_verification.get("primary_speaker_match"):
+        if not expected_primary_speaker and speaker_match:
             failed_gates.append("non_primary_speaker_suppressed")
 
     base_url = args.base_url.rstrip("/")
@@ -1759,7 +1767,12 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
 
     scenario_out_dir = args.out.parent / f"{args.out.stem}-scenario"
     interruption_receipt: dict[str, Any] | None = None
-    if health and health.get("ok") and not any(gate.startswith("interrupt_asr_") for gate in failed_gates):
+    if (
+        health
+        and health.get("ok")
+        and not speaker_gate_suppressed
+        and not any(gate.startswith("interrupt_asr_") for gate in failed_gates)
+    ):
         try:
             interruption_receipt = asyncio.run(
                 run_interruption_scenario(
@@ -1816,7 +1829,30 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
         "rung": 4,
         "run_id": run_id,
         "mocked": False,
-        "live": bool(health and health.get("ok") and backend.get("live") and interruption_receipt and interruption_receipt.get("ok") and control_receipt and control_receipt.get("ok") and not failed_gates),
+        "live": bool(
+            (
+                health
+                and health.get("ok")
+                and backend.get("live")
+                and interruption_receipt
+                and interruption_receipt.get("ok")
+                and control_receipt
+                and control_receipt.get("ok")
+                and not failed_gates
+            )
+            or (
+                health
+                and health.get("ok")
+                and backend.get("live")
+                and speaker_gate_suppressed
+                and not expected_primary_speaker
+                and primary_speaker_verification
+                and primary_speaker_verification.get("ok")
+                and input_asr
+                and input_asr.get("gate", {}).get("ok") is True
+                and not failed_gates
+            )
+        ),
         "started_at_utc": datetime.fromtimestamp(
             time.time() - (time.perf_counter() - started),
             timezone.utc,
@@ -1839,11 +1875,25 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
         },
         "input_asr": input_asr,
         "primary_speaker_verification": primary_speaker_verification,
+        "speaker_gate": {
+            "enabled": primary_speaker_gate_enabled,
+            "expected_primary_speaker": expected_primary_speaker,
+            "suppressed": speaker_gate_suppressed,
+            "reason": "non_primary_speaker" if speaker_gate_suppressed else None,
+        },
         "listener_interruption": {
-            "detected": bool(input_asr and input_asr.get("gate", {}).get("ok") is True and input_asr.get("transcript")),
+            "detected": bool(
+                input_asr
+                and input_asr.get("gate", {}).get("ok") is True
+                and input_asr.get("transcript")
+                and not speaker_gate_suppressed
+            ),
+            "speech_detected": bool(input_asr and input_asr.get("gate", {}).get("ok") is True and input_asr.get("transcript")),
+            "suppressed": speaker_gate_suppressed,
+            "suppression_reason": "non_primary_speaker" if speaker_gate_suppressed else None,
             "text": input_asr.get("transcript") if isinstance(input_asr, dict) else None,
             "asr_gate_ok": input_asr.get("gate", {}).get("ok") if isinstance(input_asr, dict) else None,
-            "speaker_id": args.speaker_id
+            "speaker_id": speaker_id
             if primary_speaker_verification and primary_speaker_verification.get("primary_speaker_match")
             else None,
             "primary_speaker_match": primary_speaker_verification.get("primary_speaker_match")
@@ -1864,7 +1914,11 @@ def run_rung4(args: argparse.Namespace) -> dict[str, Any]:
                 "stale_old_turn_chunks_are_skipped_after_cancel",
                 "turn_control_endpoints_record_cancel_duck_stop_state",
             ]
-            if not failed_gates
+            if not failed_gates and not speaker_gate_suppressed
+            else [
+                "non_primary_interrupt_audio_is_suppressed_before_chatterbox_turn_control",
+            ]
+            if not failed_gates and speaker_gate_suppressed and not expected_primary_speaker
             else [],
             "does_not_prove": [
                 "robust_noisy_room_interruption_handling",
