@@ -114,6 +114,17 @@ of the expected conversational tones. This converts the prior generic
 `runner_route_not_implemented` tone failures into concrete `$memory` intent
 tone-selection failures.
 
+Latest matrix Tau preflight receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T002830Z-matrix-tau-simple/receipt.json`
+
+That run re-executed the four simple `tau.agent_handoff` sessions with a live
+read-only Tau doctor preflight. It reported `mocked=false`, `live=true`, and
+`ok=false`: Tau itself was reachable (`doctor` return code `0` for each case),
+but no `tau.agent_handoff.v1` work order or DAG receipt was created for the
+Embry session prompts. These are now concrete missing-handoff failures, not
+generic runner gaps.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`

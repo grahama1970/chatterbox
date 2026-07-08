@@ -306,6 +306,22 @@ CURRENT_RESULTS.update(
     }
 )
 
+_TAU_SIMPLE_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T002830Z-matrix-tau-simple/receipt.json"
+)
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"tau_tool_orchestration-simple-{_index:02d}"] = {
+        "status": "failed",
+        "latest_receipt": _TAU_SIMPLE_RECEIPT,
+        "failed_gates": ["tau_agent_handoff_not_exercised"],
+        "observed": (
+            "Tau wrapper doctor returned live successfully, but no tau.agent_handoff.v1 "
+            "work order or DAG receipt was created for this Embry session."
+        ),
+    }
+
 
 def build_matrix() -> dict[str, Any]:
     sessions: list[dict[str, Any]] = []

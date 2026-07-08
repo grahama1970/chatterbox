@@ -21,6 +21,7 @@ from typing import Any
 
 
 DEFAULT_BRAVE = Path("/home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py")
+DEFAULT_TAU_RUNNER = Path("/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh")
 
 CASES: list[dict[str, Any]] = [
     {
@@ -297,10 +298,29 @@ def run_matrix_session(
     *,
     memory_url: str,
     brave_script: Path,
+    tau_runner: Path,
     timeout_s: int,
 ) -> dict[str, Any]:
     route = str(session.get("route") or "")
     query = str(session.get("question") or "")
+    if route == "tau.agent_handoff":
+        doctor = run_cmd([str(tau_runner), "doctor"], timeout_s=timeout_s)
+        failed: list[str] = []
+        if doctor["returncode"] != 0:
+            failed.append("tau_doctor_command_ok")
+        failed.append("tau_agent_handoff_not_exercised")
+        return {
+            "id": session["id"],
+            "matrix_session": session,
+            "query": query,
+            "route": route,
+            "tau_doctor": doctor,
+            "ok": False,
+            "mocked": False,
+            "live": doctor["returncode"] == 0,
+            "failed_gates": failed,
+            "observed": "Tau wrapper doctor ran, but no tau.agent_handoff.v1 work order or DAG receipt was created for this session.",
+        }
     if route == "memory.intent.voice_delivery":
         intent = post_json(
             f"{memory_url.rstrip('/')}/intent",
@@ -478,6 +498,7 @@ def main() -> int:
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--brave-script", default=DEFAULT_BRAVE, type=Path)
+    parser.add_argument("--tau-runner", default=DEFAULT_TAU_RUNNER, type=Path)
     parser.add_argument("--timeout-s", default=120, type=int)
     parser.add_argument("--render-spoken-failures", action="store_true")
     parser.add_argument("--playback-sink-target", default="64")
@@ -510,6 +531,7 @@ def main() -> int:
                 session,
                 memory_url=args.memory_url,
                 brave_script=args.brave_script,
+                tau_runner=args.tau_runner,
                 timeout_s=args.timeout_s,
             )
             case["sequence"] = sequence

@@ -3,6 +3,7 @@ from scripts.smoke_embry_intelligence_stress import (
     classify_answer,
     classify_matrix_answer,
     classify_voice_delivery_intent,
+    run_matrix_session,
     select_matrix_sessions,
 )
 
@@ -123,6 +124,35 @@ def test_voice_delivery_intent_accepts_one_at_a_time_overlap_tone() -> None:
     )
 
     assert failed == []
+
+
+def test_tau_agent_handoff_route_runs_tau_preflight_but_fails_without_handoff(monkeypatch, tmp_path) -> None:
+    calls = []
+
+    def fake_run_cmd(cmd: list[str], *, timeout_s: int) -> dict:
+        calls.append((cmd, timeout_s))
+        return {
+            "cmd": cmd,
+            "returncode": 0,
+            "elapsed_ms": 1.0,
+            "stdout_tail": '{"ok": true}',
+            "stderr_tail": "",
+        }
+
+    monkeypatch.setattr("scripts.smoke_embry_intelligence_stress.run_cmd", fake_run_cmd)
+
+    result = run_matrix_session(
+        {"id": "tau_tool_orchestration-simple-01", "route": "tau.agent_handoff", "question": "Ask Tau to create an evidence-case."},
+        memory_url="http://127.0.0.1:8601",
+        brave_script=tmp_path / "brave.py",
+        tau_runner=tmp_path / "tau-run.sh",
+        timeout_s=30,
+    )
+
+    assert calls == [([str(tmp_path / "tau-run.sh"), "doctor"], 30)]
+    assert result["ok"] is False
+    assert result["live"] is True
+    assert result["failed_gates"] == ["tau_agent_handoff_not_exercised"]
 
 
 def test_select_matrix_sessions_filters_folder_difficulty_and_limit() -> None:
