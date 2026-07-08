@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T02:58:51.033844+00:00",
+  "generated_at_utc": "2026-07-08T03:02:35.637764+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -23,6 +23,7 @@
   "source_taxonomy": "docs/EMBRY_STRESS_FAILURE_TAXONOMY.json",
   "subsystems": {
     "chat_ux_sync": {
+      "evidence_artifacts": [],
       "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
       "objective_phrase": "Chat UX sync",
       "requirement_ids": [
@@ -86,6 +87,7 @@
       "title": "Chat UX Sync"
     },
     "chatterbox_speech": {
+      "evidence_artifacts": [],
       "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
       "objective_phrase": "Chatterbox speech",
       "requirement_ids": [
@@ -192,6 +194,7 @@
       "title": "Chatterbox Speech"
     },
     "interruption": {
+      "evidence_artifacts": [],
       "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
       "objective_phrase": "interruption",
       "requirement_ids": [
@@ -263,6 +266,7 @@
       "title": "Interruption"
     },
     "memory_tau_routing": {
+      "evidence_artifacts": [],
       "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
       "objective_phrase": "memory/Tau routing",
       "requirement_ids": [
@@ -362,6 +366,9 @@
       "title": "Memory And Tau Routing"
     },
     "orb_sync": {
+      "evidence_artifacts": [
+        "docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
       "objective_phrase": "orb sync",
       "requirement_ids": [],
@@ -380,6 +387,7 @@
       "title": "Orb Sync"
     },
     "realtimestt_ingress": {
+      "evidence_artifacts": [],
       "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
       "objective_phrase": "RealtimeSTT ingress",
       "requirement_ids": [
@@ -465,6 +473,7 @@
       "title": "RealtimeSTT Ingress"
     },
     "replay": {
+      "evidence_artifacts": [],
       "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
       "objective_phrase": "replay",
       "requirement_ids": [
@@ -528,6 +537,7 @@
       "title": "Replay"
     },
     "speaker_identity": {
+      "evidence_artifacts": [],
       "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
       "objective_phrase": "speaker identity",
       "requirement_ids": [

@@ -66,6 +66,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "orb sync",
         "requirement_ids": [],
         "taxonomy_subsystems": [],
+        "evidence_artifacts": ["docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"],
         "status": "insufficient_evidence",
         "summary": "Local UI screenshot markers show the orb route was inspected, but there is no committed receipt proving orb envelope samples are synchronized to the same live Chatterbox turn.",
         "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
@@ -130,6 +131,7 @@ def build_audit(requirements: dict[str, Any], taxonomy: dict[str, Any]) -> dict[
             "requirements": requirement_rows,
             "taxonomy_subsystems": spec["taxonomy_subsystems"],
             "taxonomy": taxonomy_rows,
+            "evidence_artifacts": spec.get("evidence_artifacts", []),
         }
 
     status_counts: dict[str, int] = {}

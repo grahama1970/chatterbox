@@ -1,0 +1,109 @@
+{
+  "candidate_count": 2,
+  "candidates": [
+    {
+      "linked_receipt_path": null,
+      "marker": {
+        "marker_path": ".codex/ui-verification/embry-orb-waveform-tracking.latest.json",
+        "name": "embry-orb-waveform-tracking",
+        "read_json": "/tmp/codex-ui-verification/chatterbox/embry-orb-waveform-tracking/20260705T181512Z.read.json",
+        "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-orb-waveform-tracking/20260705T181512Z.png",
+        "screenshot_exists": true,
+        "url": "http://127.0.0.1:3002/#embry-voice",
+        "verified_at": "2026-07-05T18:15:47.126065+00:00"
+      },
+      "missing_fields": [
+        "audio_artifact_id",
+        "orb.authority",
+        "orb.envelope_frame_count",
+        "orb.max_level",
+        "playback.audio_artifact_id",
+        "playback.started_at_epoch_ms",
+        "screenshot.path",
+        "turn_id"
+      ],
+      "observed": {
+        "audio_artifact_id": null,
+        "orb_authority": null,
+        "orb_envelope_frame_count": null,
+        "orb_max_level": null,
+        "playback_audio_artifact_id": null,
+        "screenshot_exists": true,
+        "screenshot_path": "/tmp/codex-ui-verification/chatterbox/embry-orb-waveform-tracking/20260705T181512Z.png",
+        "turn_id": null
+      },
+      "ok": false
+    },
+    {
+      "linked_receipt_path": null,
+      "marker": {
+        "marker_path": ".codex/ui-verification/embry-voice-orb-replay.latest.json",
+        "name": "embry-voice-orb-replay",
+        "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.read.json",
+        "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.png",
+        "screenshot_exists": true,
+        "url": "http://127.0.0.1:3002/#embry-voice",
+        "verified_at": "2026-07-05T17:27:34.314597+00:00"
+      },
+      "missing_fields": [
+        "audio_artifact_id",
+        "orb.authority",
+        "orb.envelope_frame_count",
+        "orb.max_level",
+        "playback.audio_artifact_id",
+        "playback.started_at_epoch_ms",
+        "screenshot.path",
+        "turn_id"
+      ],
+      "observed": {
+        "audio_artifact_id": null,
+        "orb_authority": null,
+        "orb_envelope_frame_count": null,
+        "orb_max_level": null,
+        "playback_audio_artifact_id": null,
+        "screenshot_exists": true,
+        "screenshot_path": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.png",
+        "turn_id": null
+      },
+      "ok": false
+    }
+  ],
+  "claims": {
+    "does_not_prove": [
+      "RealtimeSTT ingress",
+      "memory/Tau routing",
+      "Chatterbox generation correctness",
+      "human subjective orb quality"
+    ],
+    "proves": []
+  },
+  "failed_gates": [
+    "missing:audio_artifact_id",
+    "missing:orb.authority",
+    "missing:orb.envelope_frame_count",
+    "missing:orb.max_level",
+    "missing:playback.audio_artifact_id",
+    "missing:playback.started_at_epoch_ms",
+    "missing:screenshot.path",
+    "missing:turn_id",
+    "orb_sync_turn_audio_envelope_receipt_present"
+  ],
+  "generated_at_utc": "2026-07-08T03:02:35.551300+00:00",
+  "live": false,
+  "marker_count": 2,
+  "mocked": false,
+  "ok": false,
+  "passing_candidate_count": 0,
+  "required_linkage_fields": [
+    "turn_id",
+    "audio_artifact_id",
+    "playback.started_at_epoch_ms",
+    "playback.audio_artifact_id",
+    "orb.authority",
+    "orb.envelope_frame_count",
+    "orb.max_level",
+    "screenshot.path"
+  ],
+  "schema": "chatterbox.embry_orb_sync_evidence_audit.v1",
+  "status": "failed"
+}

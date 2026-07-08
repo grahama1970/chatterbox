@@ -128,6 +128,17 @@ be a receipt linking the same `turn_id`, Chatterbox audio artifact id, playback
 timestamps, orb authority, envelope frame count, and screenshot path for one
 live or replayed turn.
 
+Current orb-sync audit receipt:
+
+`docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`, `marker_count=2`, and
+`passing_candidate_count=0`. Both current orb UI verification markers have
+existing screenshots, but neither marker has the required synchronization
+fields: `turn_id`, `audio_artifact_id`, `playback.started_at_epoch_ms`,
+`playback.audio_artifact_id`, `orb.authority`, `orb.envelope_frame_count`,
+`orb.max_level`, and `screenshot.path`.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
