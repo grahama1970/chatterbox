@@ -31,6 +31,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "speaker identity",
         "requirement_ids": ["VC-05", "VC-06", "VC-07", "VC-08", "VC-11", "VC-19", "VC-20"],
         "taxonomy_subsystems": ["speaker_identity"],
+        "evidence_artifacts": ["docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json"],
         "status": "partial",
         "summary": "Matrix speaker-resolution rows pass, but full enrollment, unknown/ambiguous/live distractor identity, and speaker-scoped memory conversations remain incomplete.",
         "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",

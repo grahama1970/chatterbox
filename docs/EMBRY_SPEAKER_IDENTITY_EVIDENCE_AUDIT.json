@@ -1,0 +1,402 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "RealtimeSTT audio ingress",
+      "real multi-sample Horus enrollment",
+      "physical speaker-to-microphone identity gating",
+      "overlapping-speaker diarization",
+      "memory/Tau answer correctness",
+      "Chatterbox speech quality",
+      "Chat UX synchronization",
+      "orb synchronization",
+      "replay",
+      "interruption"
+    ],
+    "proves": [
+      "speaker_identity_matrix_policy_rows_are_passing",
+      "memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy",
+      "fixture_primary_speaker_gate_suppresses_non_primary_audio",
+      "known_horus_resolution_can_route_speaker_scoped_memory",
+      "unknown_speaker_resolution_fails_closed_to_identity_prompt"
+    ]
+  },
+  "failed_gates": [
+    "matrix_contains_source_audio_identity_unproven_rows",
+    "overlap_diarization_not_proven",
+    "physical_speaker_to_microphone_identity_gating_not_proven"
+  ],
+  "fixture_gate_candidate_count": 1,
+  "generated_at_utc": "2026-07-08T03:31:45.864935+00:00",
+  "independent_enrollment_candidate_count": 1,
+  "known_horus_candidate_count": 2,
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "physical_identity_candidate_count": 0,
+  "policy_ledger_candidate_count": 1,
+  "proof_candidate_count": 5,
+  "proof_candidates": [
+    {
+      "candidate_audio": null,
+      "claims_does_not_prove": [
+        "RealtimeSTT_audio_ingress",
+        "voice_embedding_correctness",
+        "speaker_diarization_correctness",
+        "raw_audio_identity_matching",
+        "Tau_memory_routing",
+        "Chatterbox_speech",
+        "Chat_UX_sync",
+        "orb_sync",
+        "replay",
+        "interruption"
+      ],
+      "claims_proves": [
+        "live_memory_speaker_resolution_known_unknown_ambiguous_overlap_policy_is_ledgered",
+        "speaker_identity_decisions_emit_turn_gate_decisions_with_personal_memory_policy"
+      ],
+      "enrollment_audio": null,
+      "enrollment_independent_from_candidate": false,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": false,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
+      "physical_identity_not_proven_by_claims": false,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": true,
+      "primary_speaker_match": null,
+      "proof_type": "memory_speaker_policy_ledger",
+      "schema": "embry.proof.receipt.v1",
+      "similarity": null,
+      "source_audio_identity_proven": false,
+      "threshold": null,
+      "unknown_speaker_fail_closed_ok": false
+    },
+    {
+      "candidate_audio": null,
+      "claims_does_not_prove": [
+        "physical speaker playback to microphone",
+        "real user enrollment",
+        "room background noise",
+        "overlapping diarization",
+        "GPU latency"
+      ],
+      "claims_proves": [
+        "fixture-level primary speaker gate accepts generated primary voice and suppresses generated alternate voices/noise before ASR/rendering"
+      ],
+      "enrollment_audio": null,
+      "enrollment_independent_from_candidate": false,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": true,
+      "known_horus_resolution_ok": false,
+      "live": false,
+      "mocked": false,
+      "ok": null,
+      "path": "/tmp/chatterbox-fork-agent-out/primary-speaker-gate-20260702T150040Z/suite-summary.json",
+      "physical_identity_not_proven_by_claims": true,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": null,
+      "proof_type": "fixture_primary_speaker_gate",
+      "schema": "chatterbox.primary_speaker_gate_suite.v1",
+      "similarity": null,
+      "source_audio_identity_proven": null,
+      "threshold": null,
+      "unknown_speaker_fail_closed_ok": false
+    },
+    {
+      "candidate_audio": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/horus-factory-embry-stress.wav",
+      "claims_does_not_prove": [
+        "generalized_production_noise_robustness_beyond_the_configured_fixture",
+        "browser_webrtc_readiness",
+        "memory_salience_or_qra_correctness",
+        "subjective_interruption_feel",
+        "chatterbox_tts_output_quality",
+        "physical_speaker_to_microphone_identity_gating",
+        "overlapping_speaker_diarization"
+      ],
+      "claims_proves": [
+        "listener_boundary_accepts_real_wav_audio_frames",
+        "primary_speaker_gate_makes_auditable_accept_or_suppress_decision",
+        "stress_fixture_mixes_primary_speaker_with_background_or_competing_audio",
+        "configured_stress_fixture_audio_is_the_listener_input",
+        "listener_speaker_evidence_roundtrips_through_memory_speaker_resolve_and_intent",
+        "known_speaker_identity_routes_recall_through_speaker_scoped_memory_tags",
+        "configured_asr_backend_produces_auditable_final_text",
+        "coordinator_creates_tau_voice_render_request_without_listener_owning_memory_or_tts"
+      ],
+      "enrollment_audio": "/home/graham/workspace/experiments/agent-skills-loop2-shared/skills/persona-dream/voice_clone_candidates/horus_kling_clone_candidate.wav",
+      "enrollment_independent_from_candidate": true,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json",
+      "physical_identity_not_proven_by_claims": true,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": true,
+      "proof_type": "known_horus_listener_memory",
+      "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
+      "similarity": 0.8253,
+      "source_audio_identity_proven": null,
+      "threshold": 0.72,
+      "unknown_speaker_fail_closed_ok": false
+    },
+    {
+      "candidate_audio": "/tmp/chatterbox-physical-listen-male-20260702T150827Z/mic_recorded_factory_noise_youtube.wav",
+      "claims_does_not_prove": [
+        "production_noise_robustness",
+        "browser_webrtc_readiness",
+        "memory_salience_or_qra_correctness",
+        "subjective_interruption_feel",
+        "chatterbox_tts_output_quality",
+        "physical_speaker_to_microphone_identity_gating",
+        "overlapping_speaker_diarization"
+      ],
+      "claims_proves": [
+        "listener_boundary_accepts_real_wav_audio_frames",
+        "primary_speaker_gate_makes_auditable_accept_or_suppress_decision",
+        "listener_speaker_evidence_roundtrips_through_memory_speaker_resolve_and_intent",
+        "primary_speaker_gate_suppresses_non_primary_audio_before_asr_or_rendering",
+        "unknown_or_non_primary_speaker_routes_to_identity_clarification_without_personal_recall"
+      ],
+      "enrollment_audio": "/tmp/chatterbox-physical-listen-male-20260702T150827Z/mic_recorded_horus_male.wav",
+      "enrollment_independent_from_candidate": true,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": false,
+      "live": false,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-speaker-memory-rungs-20260702T1722Z/rung1_unknown_factory_identity.json",
+      "physical_identity_not_proven_by_claims": true,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": false,
+      "proof_type": "unknown_speaker_fail_closed",
+      "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
+      "similarity": 0.0607,
+      "source_audio_identity_proven": null,
+      "threshold": 0.45,
+      "unknown_speaker_fail_closed_ok": true
+    },
+    {
+      "candidate_audio": "/tmp/chatterbox-physical-listen-male-20260702T150827Z/mic_recorded_horus_male.wav",
+      "claims_does_not_prove": [
+        "production_noise_robustness",
+        "browser_webrtc_readiness",
+        "memory_salience_or_qra_correctness",
+        "subjective_interruption_feel",
+        "chatterbox_tts_output_quality",
+        "physical_speaker_to_microphone_identity_gating",
+        "overlapping_speaker_diarization"
+      ],
+      "claims_proves": [
+        "listener_boundary_accepts_real_wav_audio_frames",
+        "primary_speaker_gate_makes_auditable_accept_or_suppress_decision",
+        "listener_speaker_evidence_roundtrips_through_memory_speaker_resolve_and_intent",
+        "known_speaker_identity_routes_recall_through_speaker_scoped_memory_tags",
+        "speaker_memory_only_mode_skips_asr_and_tau_without_claiming_transcription_or_rendering"
+      ],
+      "enrollment_audio": "/tmp/chatterbox-physical-listen-male-20260702T150827Z/mic_recorded_horus_male.wav",
+      "enrollment_independent_from_candidate": false,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json",
+      "physical_identity_not_proven_by_claims": true,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": true,
+      "proof_type": "known_horus_listener_memory",
+      "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
+      "similarity": 1.0,
+      "source_audio_identity_proven": null,
+      "threshold": 0.45,
+      "unknown_speaker_fail_closed_ok": false
+    }
+  ],
+  "schema": "chatterbox.embry_speaker_identity_evidence_audit.v1",
+  "speaker_matrix": {
+    "failed_gate_counts": {},
+    "session_count": 20,
+    "sessions": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [],
+        "id": "speaker_identity-simple-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
+        "observed": "Ledger-backed live memory /speaker/resolve mapped the clean Horus candidate to horus_lupercal and emitted speaker-scoped memory tags; source_audio_identity_proven=false.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [],
+        "id": "speaker_identity-simple-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
+        "observed": "Ledger-backed live memory /speaker/resolve returned unknown, disabled personal memory, and supplied an identity clarification prompt.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [],
+        "id": "speaker_identity-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
+        "observed": "Ledger-backed live memory /speaker/resolve failed closed on low-confidence ambiguous candidates and disabled personal memory.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [],
+        "id": "speaker_identity-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
+        "observed": "Ledger-backed live memory /speaker/resolve returned ambiguous for close Horus/female-overlap scores and did not authorize a memory speaker.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [],
+        "id": "speaker_identity-medium-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015351Z-matrix-medium-routes-48-63/receipt.json",
+        "observed": "Live medium speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [],
+        "id": "speaker_identity-medium-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015351Z-matrix-medium-routes-48-63/receipt.json",
+        "observed": "Live medium speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [],
+        "id": "speaker_identity-medium-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015351Z-matrix-medium-routes-48-63/receipt.json",
+        "observed": "Live medium speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [],
+        "id": "speaker_identity-medium-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015351Z-matrix-medium-routes-48-63/receipt.json",
+        "observed": "Live medium speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [],
+        "id": "speaker_identity-advanced-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "Live advanced speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [],
+        "id": "speaker_identity-advanced-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "Live advanced speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [],
+        "id": "speaker_identity-advanced-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "Live advanced speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [],
+        "id": "speaker_identity-advanced-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "Live advanced speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [],
+        "id": "speaker_identity-adversarial-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "Live adversarial speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [],
+        "id": "speaker_identity-adversarial-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "Live adversarial speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [],
+        "id": "speaker_identity-adversarial-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "Live adversarial speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [],
+        "id": "speaker_identity-adversarial-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "Live adversarial speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [],
+        "id": "speaker_identity-soak-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "Live soak speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [],
+        "id": "speaker_identity-soak-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "Live soak speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [],
+        "id": "speaker_identity-soak-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "Live soak speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [],
+        "id": "speaker_identity-soak-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "Live soak speaker-resolution policy case passed through memory /speaker/resolve using deterministic speaker evidence.",
+        "status": "passed"
+      }
+    ],
+    "source_audio_identity_proven_false_count": 1,
+    "status_counts": {
+      "failed": 0,
+      "not_run": 0,
+      "passed": 20
+    }
+  },
+  "status": "failed",
+  "unknown_fail_closed_candidate_count": 1
+}

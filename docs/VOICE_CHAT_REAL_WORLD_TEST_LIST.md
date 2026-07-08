@@ -223,6 +223,29 @@ capability from speech-policy readiness:
 This means Chatterbox can speak, but Embry speech is not yet policy-complete for
 the active goal.
 
+Current speaker identity evidence audit receipt:
+
+`docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`, even though the speaker identity
+matrix itself is 20 passed / 0 failed. It separates memory policy from physical
+identity proof:
+
+- Live memory `/speaker/resolve` policy coverage exists for known, unknown,
+  ambiguous, and overlap-like speaker decisions.
+- Fixture primary-speaker gating exists: primary voice accepted, female/other
+  male/background noise rejected.
+- Known Horus speaker-scoped memory routing exists.
+- Unknown speaker fail-closed identity prompting exists.
+- One independent enrollment-vs-candidate receipt exists.
+- One matrix row still explicitly records `source_audio_identity_proven=false`.
+- No committed receipt proves physical speaker-to-microphone identity gating.
+- Overlap diarization remains unproven.
+
+This means speaker policy is usable for routing, but the goal-level speaker
+identity requirement remains partial until physical identity and overlap
+diarization receipts exist.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
