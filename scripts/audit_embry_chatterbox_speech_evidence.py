@@ -16,6 +16,8 @@ DEFAULT_OUT = Path("docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json")
 DEFAULT_INTERRUPTION_AUDIT = Path("docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T063142Z-rung4-live-nonprimary-suppressed/rung4-nonprimary-suppressed.json"),
+    Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/tau-voice-render.json"),
+    Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/listener-memory-tau-qra.json"),
     Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035831Z-voice-delivery-full-chunks-after-patch/tau-voice-render-full-delivery.json"),
     Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035428Z-voice-delivery-full-after-patch/tau-voice-render-full-delivery.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/S10-qra-disabled/tau-qra-disabled.json"),
@@ -168,6 +170,27 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         and _nested_get(receipt, "response.blessed_qra_cache.hit") is False
         and _render_audio_ok(receipt)
     )
+    blessed_qra_cached_response_ok = bool(
+        receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and (
+            (
+                _nested_get(receipt, "request.use_blessed_qra_cache") is True
+                and _nested_get(receipt, "response.blessed_qra_cache.hit") is True
+                and _nested_get(receipt, "response.blessed_qra_cache.memory_gate.passed") is True
+                and _render_audio_ok(receipt)
+            )
+            or (
+                schema == "chatterbox.listener_memory_tau_qra_smoke.v1"
+                and _nested_get(receipt, "tau_voice_render.cache_hit") is True
+                and _nested_get(receipt, "tau_voice_render.memory_gate_passed") is True
+                and isinstance(_nested_get(receipt, "tau_voice_render.finished_audio_metrics"), dict)
+                and _nested_get(receipt, "tau_voice_render.finished_audio_metrics.exists") is True
+                and _nested_get(receipt, "tau_voice_render.finished_audio_metrics.bytes") > 0
+            )
+        )
+    )
     non_primary_interrupt_rejection_ok = bool(
         schema == "chatterbox.conversation_ladder.rung4.v1"
         and receipt.get("ok") is True
@@ -206,6 +229,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "render_audio_ok": _render_audio_ok(receipt),
         "qra_variants_ok": qra_variants_ok,
         "qra_disabled_normal_render_ok": qra_disabled_normal_render_ok,
+        "blessed_qra_cached_response_ok": blessed_qra_cached_response_ok,
         "non_primary_interrupt_rejection_ok": non_primary_interrupt_rejection_ok,
         "variant_count": receipt.get("variant_count") or _nested_get(receipt, "child_receipt.variant_count") or len(variants),
         "played_variant_count": len(played_variants),
@@ -254,6 +278,7 @@ def build_audit(
     live_renders = [candidate for candidate in proof_candidates if candidate["render_audio_ok"]]
     qra_variants = [candidate for candidate in proof_candidates if candidate["qra_variants_ok"]]
     qra_disabled = [candidate for candidate in proof_candidates if candidate["qra_disabled_normal_render_ok"]]
+    qra_cached = [candidate for candidate in proof_candidates if candidate["blessed_qra_cached_response_ok"]]
     non_primary_interrupt_rejections = [
         candidate for candidate in proof_candidates if candidate["non_primary_interrupt_rejection_ok"]
     ]
@@ -285,6 +310,8 @@ def build_audit(
     dynamic_covered_gates = set(interruption_covered_gates)
     if non_primary_interrupt_rejections:
         dynamic_covered_gates.add("non_primary_interrupt_rejection_not_exercised")
+    if qra_cached:
+        dynamic_covered_gates.add("blessed_qra_cached_response_not_exercised")
     effective_interruption_failed_gates = {
         gate
         for gate in speech_matrix["by_folder"]["interruption"]["failed_gate_counts"]
@@ -311,6 +338,8 @@ def build_audit(
         partial_proves.append("approved_qra_can_generate_five_embry_audio_variants")
     if qra_disabled:
         partial_proves.append("qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit")
+    if qra_cached:
+        partial_proves.append("blessed_qra_cached_response_can_render_preapproved_audio")
     if personality:
         partial_proves.append("personality_audition_variants_can_render_and_play")
     if complete_delivery:
@@ -343,6 +372,7 @@ def build_audit(
         "live_render_candidate_count": len(live_renders),
         "qra_variant_candidate_count": len(qra_variants),
         "qra_disabled_normal_render_candidate_count": len(qra_disabled),
+        "blessed_qra_cached_response_candidate_count": len(qra_cached),
         "non_primary_interrupt_rejection_candidate_count": len(non_primary_interrupt_rejections),
         "audible_personality_candidate_count": len(personality),
         "incomplete_delivery_envelope_count": len(incomplete_delivery),

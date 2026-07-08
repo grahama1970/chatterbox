@@ -1,5 +1,6 @@
 {
   "audible_personality_candidate_count": 1,
+  "blessed_qra_cached_response_candidate_count": 3,
   "claims": {
     "does_not_prove": [
       "RealtimeSTT audio ingress",
@@ -13,6 +14,7 @@
       "live_chatterbox_can_render_audio",
       "approved_qra_can_generate_five_embry_audio_variants",
       "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
+      "blessed_qra_cached_response_can_render_preapproved_audio",
       "personality_audition_variants_can_render_and_play",
       "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
       "live_primary_speaker_interruption_barge_in_receipt_present",
@@ -22,7 +24,6 @@
   "complete_delivery_envelope_candidate_count": 1,
   "failed_gates": [
     "interruption_matrix_has_failures",
-    "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
     "speech_matrix_gate:natural_stop_phrase_not_observed",
     "speech_matrix_gate:tau_tool_wait_not_exercised",
     "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
@@ -30,8 +31,8 @@
     "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T06:33:01.400931+00:00",
-  "incomplete_delivery_envelope_count": 3,
+  "generated_at_utc": "2026-07-08T06:35:32.833837+00:00",
+  "incomplete_delivery_envelope_count": 4,
   "interruption_evidence_audit": {
     "best_candidate_paths": [
       "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json"
@@ -52,18 +53,18 @@
     "status": "passed"
   },
   "interruption_matrix_remaining_failed_gates": [
-    "blessed_qra_cached_response_not_exercised",
     "natural_stop_phrase_not_observed",
     "tau_tool_wait_not_exercised"
   ],
   "live": true,
-  "live_render_candidate_count": 4,
+  "live_render_candidate_count": 5,
   "mocked": false,
   "non_primary_interrupt_rejection_candidate_count": 1,
   "ok": false,
-  "proof_candidate_count": 8,
+  "proof_candidate_count": 10,
   "proof_candidates": [
     {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [],
       "claims_does_not_prove": [
         "robust_noisy_room_interruption_handling",
@@ -90,6 +91,88 @@
       "voice_delivery_missing_fields": []
     },
     {
+      "blessed_qra_cached_response_ok": true,
+      "chunk_voice_delivery_missing_fields": [
+        [
+          "delivery_stage",
+          "pace",
+          "pause_strategy",
+          "source",
+          "tone"
+        ],
+        [
+          "delivery_stage",
+          "pace",
+          "pause_strategy",
+          "source",
+          "tone"
+        ]
+      ],
+      "claims_does_not_prove": [
+        "listener_asr_pass",
+        "production_memory_recall_correctness",
+        "subjective_voice_quality",
+        "fresh_model_generation_quality"
+      ],
+      "claims_proves": [
+        "running_server_accepts_tau_voice_render_request",
+        "tau_voice_render_maps_to_batch_renderer",
+        "blessed_qra_cache_can_be_selected_through_tau_ingress"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/tau-voice-render.json",
+      "played_variant_count": 0,
+      "proof_type": "tau_voice_render",
+      "qra_disabled_normal_render_ok": false,
+      "qra_variants_ok": false,
+      "render_audio_ok": true,
+      "schema": "chatterbox.tau_voice_render_smoke.v1",
+      "variant_count": 0,
+      "voice_delivery_missing_fields": [
+        "delivery_stage",
+        "pace",
+        "pause_strategy",
+        "source",
+        "tone"
+      ]
+    },
+    {
+      "blessed_qra_cached_response_ok": true,
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [
+        "production_memory_gpt_review_policy",
+        "subjective_voice_quality",
+        "live_microphone_or_webrtc_transport",
+        "globally_correct_qra_ranking"
+      ],
+      "claims_proves": [
+        "listener_heard_text_can_drive_live_memory_qra_recall",
+        "approved_qra_creation_event_can_generate_five_embry_audio_variants",
+        "tau_voice_render_can_play_blessed_qra_audio_for_the_same_memory_key"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "non_primary_interrupt_rejection_ok": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/listener-memory-tau-qra.json",
+      "played_variant_count": 0,
+      "proof_type": "unknown",
+      "qra_disabled_normal_render_ok": false,
+      "qra_variants_ok": false,
+      "render_audio_ok": false,
+      "schema": "chatterbox.listener_memory_tau_qra_smoke.v1",
+      "variant_count": 0,
+      "voice_delivery_missing_fields": []
+    },
+    {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [],
       "claims_does_not_prove": [
         "listener_asr_pass",
@@ -119,6 +202,7 @@
       "voice_delivery_missing_fields": []
     },
     {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [
         [
           "source"
@@ -152,6 +236,7 @@
       "voice_delivery_missing_fields": []
     },
     {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [
         [
           "pace",
@@ -191,6 +276,7 @@
       ]
     },
     {
+      "blessed_qra_cached_response_ok": true,
       "chunk_voice_delivery_missing_fields": [
         [
           "delivery_stage",
@@ -234,6 +320,7 @@
       ]
     },
     {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [],
       "claims_does_not_prove": [
         "memory_pipeline_qra_ranking_is_globally_correct",
@@ -261,6 +348,7 @@
       "voice_delivery_missing_fields": []
     },
     {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [],
       "claims_does_not_prove": [],
       "claims_proves": [],
@@ -281,6 +369,7 @@
       "voice_delivery_missing_fields": []
     },
     {
+      "blessed_qra_cached_response_ok": false,
       "chunk_voice_delivery_missing_fields": [],
       "claims_does_not_prove": [
         "human_acceptance_of_personality",

@@ -89,6 +89,33 @@ def test_classify_qra_disabled_normal_render_candidate() -> None:
     assert candidate["voice_delivery_missing_fields"] == ["pace", "pause_strategy", "source"]
 
 
+def test_classify_blessed_qra_cached_response_candidate() -> None:
+    receipt = {
+        "schema": "chatterbox.tau_voice_render_smoke.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "request": {"use_blessed_qra_cache": True},
+        "response": {
+            "blessed_qra_cache": {
+                "hit": True,
+                "memory_gate": {"passed": True},
+            },
+        },
+        "artifacts": {
+            "finished_response_audio_metrics": {
+                "exists": True,
+                "bytes": 10,
+                "duration_seconds": 1.0,
+            }
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/qra-cache-hit.json"), receipt)
+
+    assert candidate["blessed_qra_cached_response_ok"] is True
+
+
 def test_classify_full_voice_delivery_envelope_is_complete() -> None:
     receipt = {
         "schema": "chatterbox.tau_voice_render_smoke.v1",
@@ -185,6 +212,20 @@ def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> N
     )
     qra = tmp_path / "qra.json"
     qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    qra_cached = tmp_path / "qra-cached.json"
+    qra_cached.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "request": {"use_blessed_qra_cache": true},
+  "response": {"blessed_qra_cache": {"hit": true, "memory_gate": {"passed": true}}},
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}}
+}
+"""
+    )
     personality = tmp_path / "personality.json"
     personality.write_text(
         """
@@ -241,6 +282,20 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
     )
     qra = tmp_path / "qra.json"
     qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    qra_cached = tmp_path / "qra-cached.json"
+    qra_cached.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "request": {"use_blessed_qra_cache": true},
+  "response": {"blessed_qra_cache": {"hit": true, "memory_gate": {"passed": true}}},
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}}
+}
+"""
+    )
     personality = tmp_path / "personality.json"
     personality.write_text(
         """
@@ -306,7 +361,7 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
         ]
     }
 
-    audit = build_audit(matrix, [render, qra, personality, non_primary], interruption_audit_path=interruption_audit)
+    audit = build_audit(matrix, [render, qra, qra_cached, personality, non_primary], interruption_audit_path=interruption_audit)
 
     assert audit["ok"] is False
     assert audit["interruption_evidence_audit"]["ok"] is True
@@ -317,9 +372,11 @@ def test_audit_uses_dedicated_interruption_audit_for_covered_barge_in_gates(tmp_
     assert "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control" not in audit["failed_gates"]
     assert "speech_matrix_gate:stale_audio_stream_bytes_not_measured" not in audit["failed_gates"]
     assert "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised" not in audit["failed_gates"]
+    assert "speech_matrix_gate:blessed_qra_cached_response_not_exercised" not in audit["failed_gates"]
     assert "speech_matrix_gate:natural_stop_phrase_not_observed" in audit["failed_gates"]
     assert audit["interruption_matrix_remaining_failed_gates"] == ["natural_stop_phrase_not_observed"]
     assert audit["non_primary_interrupt_rejection_candidate_count"] == 1
+    assert audit["blessed_qra_cached_response_candidate_count"] == 1
 
 
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:
