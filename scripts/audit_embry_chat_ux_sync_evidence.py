@@ -63,6 +63,54 @@ def _chat_matrix_summary(matrix: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _session_blocker_summary(
+    matrix: dict[str, Any],
+    *,
+    boundary: str,
+    gate_names: set[str],
+    blocking_summary: str,
+) -> dict[str, Any]:
+    failures = [
+        session
+        for session in matrix["sessions"]
+        if session.get("folder_id") == "chat_ux_sync"
+        and any(gate in gate_names for gate in (session.get("failed_gates") or []))
+    ]
+    failed_gate_counts = Counter(
+        gate
+        for session in failures
+        for gate in (session.get("failed_gates") or [])
+        if gate in gate_names
+    )
+    receipt_paths = sorted(
+        {
+            str(session.get("latest_receipt"))
+            for session in failures
+            if session.get("latest_receipt")
+        }
+    )
+    return {
+        "boundary": boundary,
+        "ready": not failures,
+        "failed_session_count": len(failures),
+        "failed_gate_counts": dict(sorted(failed_gate_counts.items())),
+        "latest_receipt_paths": receipt_paths,
+        "sample_failures": [
+            {
+                "id": session["id"],
+                "difficulty": session["difficulty"],
+                "latest_receipt": session.get("latest_receipt"),
+                "failed_gates": [
+                    gate for gate in (session.get("failed_gates") or []) if gate in gate_names
+                ],
+                "observed": session.get("observed"),
+            }
+            for session in failures[:4]
+        ],
+        "blocking_summary": blocking_summary if failures else None,
+    }
+
+
 def _gate_by_name(receipt: dict[str, Any], name: str) -> dict[str, Any] | None:
     for gate in receipt.get("gates") or []:
         if isinstance(gate, dict) and gate.get("name") == name:
@@ -160,6 +208,40 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
     chat_matrix = _chat_matrix_summary(matrix)
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     markers = _marker_candidates(marker_glob)
+    lineage_evidence = _session_blocker_summary(
+        matrix,
+        boundary="assistant.response.plan.v1_to_chat.render.receipt.v1",
+        gate_names={
+            "assistant_response_plan_v1_not_linked",
+            "chat_render_receipt_v1_not_emitted",
+            "chat_turn_id_matches_response_plan_not_proven",
+        },
+        blocking_summary=(
+            "shared Chat UX still lacks a receipt linking assistant response plan, chat render, "
+            "spoken text, and Chatterbox audio artifact under the same turn_id"
+        ),
+    )
+    entity_underline_evidence = _session_blocker_summary(
+        matrix,
+        boundary="extract_entities_to_spoken_transcript_underlines",
+        gate_names={
+            "extract_entities_receipt_not_linked",
+            "entity_underline_render_receipt_not_emitted",
+            "spoken_transcript_entity_underlines_not_proven",
+        },
+        blocking_summary=(
+            "shared Chat UX still lacks linked $extract-entities and underline-render receipts "
+            "for entities inside the spoken transcript"
+        ),
+    )
+    runner_route_evidence = _session_blocker_summary(
+        matrix,
+        boundary="chat_ux_sync_runner_routes",
+        gate_names={"runner_route_not_implemented"},
+        blocking_summary=(
+            "advanced, adversarial, or soak Chat UX sync scenarios still have no live runner route"
+        ),
+    )
 
     chat_gate_candidates = [candidate for candidate in proof_candidates if candidate["chat_gate_pass"]]
     replay_candidates = [candidate for candidate in proof_candidates if candidate["dynamic_replay_basic"]]
@@ -196,6 +278,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
         "dynamic_replay_candidate_count": len(replay_candidates),
         "lineage_candidate_count": len(lineage_candidates),
         "entity_underline_candidate_count": len(underline_candidates),
+        "response_plan_lineage_evidence": lineage_evidence,
+        "entity_underline_evidence": entity_underline_evidence,
+        "runner_route_evidence": runner_route_evidence,
         "screenshot_marker_count": len(markers),
         "proof_candidates": proof_candidates,
         "screenshot_markers": markers,
