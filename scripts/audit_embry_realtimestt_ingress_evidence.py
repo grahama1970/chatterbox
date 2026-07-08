@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json"),
