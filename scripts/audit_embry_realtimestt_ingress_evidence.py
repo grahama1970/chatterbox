@@ -39,13 +39,30 @@ def nested_get(payload: dict[str, Any], dotted: str) -> Any:
     return value
 
 
+def extract_transcript(receipt: dict[str, Any]) -> str:
+    candidates = [
+        receipt.get("transcript"),
+        receipt.get("heard_text"),
+        nested_get(receipt, "transcript.text"),
+        nested_get(receipt, "children.realtimestt.receipt.transcript.text"),
+    ]
+    executor_calls = nested_get(receipt, "children.realtimestt.receipt.asr_executor_calls")
+    if isinstance(executor_calls, list):
+        candidates.extend(call.get("transcript") for call in executor_calls if isinstance(call, dict))
+    for candidate in candidates:
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate
+    return ""
+
+
 def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     claims = receipt.get("claims") or {}
     proves = claims.get("proves") or []
     proof_scope = str(receipt.get("proof_scope") or "")
-    transcript = str(receipt.get("transcript") or receipt.get("heard_text") or "")
+    transcript = extract_transcript(receipt)
     captured_rms = nested_get(receipt, "capture.captured_audio.rms")
     captured_audio_exists = nested_get(receipt, "capture.captured_audio.exists")
+    asr_executor_calls = nested_get(receipt, "children.realtimestt.receipt.asr_executor_calls") or []
 
     if "browser_getusermedia" in proof_scope:
         transport = "browser_getusermedia"
@@ -74,6 +91,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "ingress_proven": ingress_proven,
         "transcript_present": bool(transcript.strip()),
         "transcript": transcript,
+        "asr_executor_call_count": len(asr_executor_calls) if isinstance(asr_executor_calls, list) else 0,
         "captured_audio_exists": captured_audio_exists,
         "captured_audio_rms": captured_rms,
         "failed_gates": receipt.get("failed_gates") or [],

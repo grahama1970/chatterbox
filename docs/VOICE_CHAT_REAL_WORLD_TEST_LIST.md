@@ -184,6 +184,9 @@ That audit reports `mocked=false`, `live=true`, `ok=false`, 6 proof candidates,
 and 4 passing ingress slices. One passing candidate is the current S06
 PipeWire/Jabra monitor-loopback receipt from
 `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json`.
+The current loopback candidate records `transcript_present=true`,
+`asr_executor_call_count=1`, captured RMS `512`, and final ASR text beginning
+"He saw tracked weapon carriages...".
 The current factory-noise matrix still remains 0 passed / 20 failed, and
 browser device ingress remains inconsistent, so the subsystem is still failing
 despite that current loopback slice.

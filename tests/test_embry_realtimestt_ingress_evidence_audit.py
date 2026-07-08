@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from scripts.audit_embry_realtimestt_ingress_evidence import build_audit, classify_proof
+from scripts.audit_embry_realtimestt_ingress_evidence import build_audit, classify_proof, extract_transcript
 
 
 def _matrix_with_factory(statuses: list[str]) -> dict:
@@ -37,6 +37,39 @@ def test_classify_browser_getusermedia_success() -> None:
     assert candidate["transport"] == "browser_getusermedia"
     assert candidate["ingress_proven"] is True
     assert candidate["transcript_present"] is True
+
+
+def test_classify_loopback_wrapper_extracts_embedded_realtimestt_child_transcript() -> None:
+    receipt = {
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "capture": {"captured_audio": {"exists": True, "rms": 512}},
+        "children": {
+            "realtimestt": {
+                "receipt": {
+                    "transcript": {"text": "embry ingress proof alpha seven"},
+                    "asr_executor_calls": [
+                        {"transcript": "embry ingress proof alpha seven"},
+                    ],
+                }
+            }
+        },
+        "claims": {
+            "proves": [
+                "pipewire_monitor_loopback_captures_played_stress_audio",
+                "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+            ],
+        },
+    }
+
+    assert extract_transcript(receipt) == "embry ingress proof alpha seven"
+    candidate = classify_proof(Path("/tmp/rung8-loopback-listener.json"), receipt)
+
+    assert candidate["transport"] == "pipewire_monitor_loopback"
+    assert candidate["ingress_proven"] is True
+    assert candidate["transcript_present"] is True
+    assert candidate["asr_executor_call_count"] == 1
 
 
 def test_ingress_audit_fails_when_current_factory_matrix_fails() -> None:
@@ -78,6 +111,13 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
       "pipewire_monitor_loopback_captures_played_stress_audio",
       "captured_loopback_audio_feeds_realtimestt_automatic_vad"
     ]
+  },
+  "children": {
+    "realtimestt": {
+      "receipt": {
+        "transcript": {"text": "current loopback transcript"}
+      }
+    }
   }
 }
 """
@@ -88,6 +128,8 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
     assert audit["ok"] is False
     assert audit["live"] is True
     assert audit["current_factory_loopback_passing_candidate_count"] == 1
+    assert audit["current_factory_loopback_passing_candidates"][0]["transcript_present"] is True
+    assert audit["current_factory_loopback_passing_candidates"][0]["transcript"] == "current loopback transcript"
     assert "current_factory_matrix_has_failures" in audit["failed_gates"]
     assert "current_factory_matrix_has_no_passes" not in audit["failed_gates"]
     assert "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes" in audit["claims"]["proves"]

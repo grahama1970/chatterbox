@@ -13,6 +13,7 @@
   "current_factory_loopback_passing_candidate_count": 1,
   "current_factory_loopback_passing_candidates": [
     {
+      "asr_executor_call_count": 1,
       "captured_audio_exists": true,
       "captured_audio_rms": 512,
       "claims_does_not_prove": [
@@ -35,8 +36,8 @@
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json",
       "proof_scope": null,
-      "transcript": "",
-      "transcript_present": false,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
       "transport": "pipewire_monitor_loopback"
     }
   ],
@@ -289,10 +290,11 @@
     "factory_gate:speaker_memory_recall_found",
     "factory_gate:speaker_resolution_known_horus"
   ],
-  "generated_at_utc": "2026-07-08T04:23:00.717707+00:00",
+  "generated_at_utc": "2026-07-08T04:30:38.685906+00:00",
   "historical_candidate_count": 6,
   "historical_candidates": [
     {
+      "asr_executor_call_count": 1,
       "captured_audio_exists": true,
       "captured_audio_rms": 512,
       "claims_does_not_prove": [
@@ -315,11 +317,12 @@
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json",
       "proof_scope": null,
-      "transcript": "",
-      "transcript_present": false,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
       "transport": "pipewire_monitor_loopback"
     },
     {
+      "asr_executor_call_count": 0,
       "captured_audio_exists": null,
       "captured_audio_rms": null,
       "claims_does_not_prove": [
@@ -351,6 +354,7 @@
       "transport": "browser_getusermedia"
     },
     {
+      "asr_executor_call_count": 0,
       "captured_audio_exists": null,
       "captured_audio_rms": null,
       "claims_does_not_prove": [
@@ -377,6 +381,7 @@
       "transport": "browser_getusermedia"
     },
     {
+      "asr_executor_call_count": 0,
       "captured_audio_exists": null,
       "captured_audio_rms": null,
       "claims_does_not_prove": [
@@ -403,6 +408,7 @@
       "transport": "browser_getusermedia"
     },
     {
+      "asr_executor_call_count": 1,
       "captured_audio_exists": true,
       "captured_audio_rms": 1958,
       "claims_does_not_prove": [
@@ -425,11 +431,12 @@
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/rung8-loopback-20260702T204049Z/rung8-loopback-listener.json",
       "proof_scope": null,
-      "transcript": "",
-      "transcript_present": false,
+      "transcript": "These are track-wrapping arrows, boards are made to that to the left. Next, we'll even aim over the paddles, track with the other paddles. The lumbar forward and high track. The commander has struck over at the enemy over. As his command goes away, leaving the enemy, and without a rush, the unapologetic regimen will blow a punishing exercise, in great pain, and kept them wet in the shot, and serialises the turn to be built so both of those things in the house. Activate.",
+      "transcript_present": true,
       "transport": "pipewire_monitor_loopback"
     },
     {
+      "asr_executor_call_count": 1,
       "captured_audio_exists": true,
       "captured_audio_rms": 1955,
       "claims_does_not_prove": [
@@ -451,8 +458,8 @@
       "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/rung8-physical-mic-listener.json",
       "proof_scope": null,
-      "transcript": "",
-      "transcript_present": false,
+      "transcript": "He's all tracked, weapon-carrying, automated artillery, nested in four, or even eight-orderly cannons, trackers, guerrillas, powerful, the lump of four-wheel-matter, the commander has struck no reckoning, I think, over the whole, as his command totally, leaving the enemy with our weapons, the unapologetic regiment of wide-world, publishing exercise, and maintain, and kept them wet in the shower, and seriously turned them into big boats and bombs, just an axe, an axe to build.",
+      "transcript_present": true,
       "transport": "pipewire_physical_microphone"
     }
   ],
