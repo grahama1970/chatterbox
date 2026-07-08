@@ -23,6 +23,9 @@ def test_horus_status_audit_covers_exact_requested_items() -> None:
     assert audit["status_counts"] == {"pass": 0, "fail": 8}
     assert audit["ok"] is False
     assert audit["status"] == "failed"
+    assert audit["failed_gates"]
+    assert "item_failed:chat_ux_sync" in audit["failed_gates"]
+    assert "item_failed:browser_mic_webrtc" in audit["failed_gates"]
 
 
 def test_horus_status_audit_rejects_partial_or_nonlive_receipts() -> None:
@@ -52,6 +55,8 @@ def test_horus_status_audit_names_concrete_next_failures() -> None:
     assert "RealtimeSTT" in failures["browser_mic_webrtc"]["title"]
     assert "same-turn" in audit["items"]["chatterbox_from_live_stt"]["current_failure"]
     assert "turn-id lineage" in audit["items"]["chat_ux_sync"]["current_failure"]
+    assert "audible browser replay" in audit["items"]["chat_ux_sync"]["current_failure"]
+    assert any("audible browser playback receipt" in item for item in audit["items"]["chat_ux_sync"]["acceptance"])
     assert "event-sourced" in audit["items"]["replay"]["current_failure"]
     assert "partial" in audit["items"]["orb_sync"]["current_failure"]
     assert "strict pyannote two-speaker overlap receipt" in (
@@ -76,3 +81,16 @@ def test_horus_status_audit_attaches_receipt_paths_to_each_item() -> None:
         "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
         "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json",
     }
+
+
+def test_horus_status_audit_surfaces_artifact_failed_gates() -> None:
+    audit = build_audit(_goal_audit())
+
+    assert any(
+        gate == "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:audible_session_replay_receipt_missing"
+        for gate in audit["failed_gates"]
+    )
+    assert any(
+        gate.startswith("tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:")
+        for gate in audit["failed_gates"]
+    )

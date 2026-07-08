@@ -65,9 +65,10 @@ ITEMS: dict[str, dict[str, Any]] = {
         "acceptance": [
             "assistant.response.plan.v1 and chat.render.receipt.v1 share turn_id",
             "chat text, Chatterbox audio, memory trace, and entity underlines share the same turn",
+            "session replay emits an audible browser playback receipt that advances and is not cut off",
             "the shared Chat UX emits committed render receipts",
         ],
-        "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage and entity underline receipts are missing.",
+        "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage, entity underline receipts, and audible browser replay receipts are missing.",
     },
     "orb_sync": {
         "title": "Orb Sync",
@@ -196,6 +197,16 @@ def build_audit(goal_audit: dict[str, Any]) -> dict[str, Any]:
     counts: dict[str, int] = {"pass": 0, "fail": 0}
     for item in items.values():
         counts[item["status"]] += 1
+    failed_gates = []
+    for item_id, item in items.items():
+        if item["status"] != "fail":
+            continue
+        failed_gates.append(f"item_failed:{item_id}")
+        for reason in item["failed_reasons"]:
+            failed_gates.append(f"{item_id}:{reason}")
+        for artifact in item["evidence_artifacts"]:
+            for gate in artifact.get("failed_gates") or []:
+                failed_gates.append(f"{item_id}:{Path(artifact['path']).name}:{gate}")
 
     return {
         "schema": "chatterbox.embry_horus_e2e_status_audit.v1",
@@ -207,6 +218,7 @@ def build_audit(goal_audit: dict[str, Any]) -> dict[str, Any]:
         "source_goal_audit": str(DEFAULT_GOAL_AUDIT),
         "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
         "status_counts": counts,
+        "failed_gates": sorted(set(failed_gates)),
         "items": items,
         "next_failed_items": [
             {

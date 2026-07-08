@@ -1,6 +1,97 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T06:01:51.658808+00:00",
+  "failed_gates": [
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:current_factory_matrix_has_failures",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_final_transcript_present",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:capture_captured_audio_rms",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_command_ok",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_receipt_ok",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:runner_route_not_implemented",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
+    "browser_mic_webrtc:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
+    "browser_mic_webrtc:subsystem_status_not_passed:failing",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:assistant_response_plan_to_chat_render_lineage_missing",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:audible_session_replay_receipt_missing",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:assistant_response_plan_v1_not_linked",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:chat_render_receipt_v1_not_emitted",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:entity_underline_render_receipt_not_emitted",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:extract_entities_receipt_not_linked",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:runner_route_not_implemented",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:spoken_transcript_entity_underlines_not_proven",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_ux_matrix_has_failures",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:extract_entities_underline_render_receipt_missing",
+    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:screenshot_markers_do_not_prove_turn_lineage",
+    "chat_ux_sync:artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
+    "chat_ux_sync:subsystem_status_not_passed:failing",
+    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:interruption_matrix_has_failures",
+    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:speech_matrix_gate:natural_stop_phrase_not_observed",
+    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:speech_matrix_gate:tau_tool_wait_not_exercised",
+    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
+    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
+    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:tone_emotion_matrix_has_failures",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_answerability_matrix_has_failures",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:memory_miss_should_not_answer_unrelated_record",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:persona_memory_answer_uses_unrelated_source_collection",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:persona_memory_answer_wrong_or_unrelated",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:sparta_qra_answer_missing_acceptance_terms",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:sparta_qra_answer_overfit_to_unrelated_control_exclusion",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_call_receipt_missing",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_tau_agent_handoff_missing",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_dag_receipt_missing",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:skill_call_receipt_not_emitted",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_agent_handoff_not_exercised",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_dag_receipt_not_created",
+    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_routing_matrix_has_failures",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:current_factory_matrix_has_failures",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_final_transcript_present",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:capture_captured_audio_rms",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_command_ok",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_receipt_ok",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:runner_route_not_implemented",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
+    "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json",
+    "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
+    "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
+    "chatterbox_from_live_stt:subsystem_status_not_passed:failing,partial",
+    "interruption:subsystem_status_not_passed:failing",
+    "item_failed:browser_mic_webrtc",
+    "item_failed:chat_ux_sync",
+    "item_failed:chatterbox_from_live_stt",
+    "item_failed:interruption",
+    "item_failed:orb_sync",
+    "item_failed:real_horus_enrollment",
+    "item_failed:replay",
+    "item_failed:tau_memory_routing",
+    "orb_sync:subsystem_status_not_passed:partial",
+    "real_horus_enrollment:EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json:matrix_contains_source_audio_identity_unproven_rows",
+    "real_horus_enrollment:EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json:physical_speaker_to_microphone_identity_gating_not_proven",
+    "real_horus_enrollment:artifact_not_clean_live_pass:docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json",
+    "real_horus_enrollment:subsystem_status_not_passed:partial",
+    "replay:subsystem_status_not_passed:partial",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_answerability_matrix_has_failures",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:memory_miss_should_not_answer_unrelated_record",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:persona_memory_answer_uses_unrelated_source_collection",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:persona_memory_answer_wrong_or_unrelated",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:sparta_qra_answer_missing_acceptance_terms",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:sparta_qra_answer_overfit_to_unrelated_control_exclusion",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_call_receipt_missing",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_tau_agent_handoff_missing",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_dag_receipt_missing",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:skill_call_receipt_not_emitted",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_agent_handoff_not_exercised",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_dag_receipt_not_created",
+    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_routing_matrix_has_failures",
+    "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
+    "tau_memory_routing:subsystem_status_not_passed:failing"
+  ],
+  "generated_at_utc": "2026-07-08T07:05:40.456229+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -65,9 +156,10 @@
       "acceptance": [
         "assistant.response.plan.v1 and chat.render.receipt.v1 share turn_id",
         "chat text, Chatterbox audio, memory trace, and entity underlines share the same turn",
+        "session replay emits an audible browser playback receipt that advances and is not cut off",
         "the shared Chat UX emits committed render receipts"
       ],
-      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage and entity underline receipts are missing.",
+      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage, entity underline receipts, and audible browser replay receipts are missing.",
       "evidence_artifacts": [
         {
           "claims": {
@@ -87,6 +179,7 @@
           "exists": true,
           "failed_gates": [
             "assistant_response_plan_to_chat_render_lineage_missing",
+            "audible_session_replay_receipt_missing",
             "chat_matrix_gate:assistant_response_plan_v1_not_linked",
             "chat_matrix_gate:chat_render_receipt_v1_not_emitted",
             "chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
@@ -204,36 +297,31 @@
           "claims": {
             "does_not_prove": [
               "RealtimeSTT audio ingress",
-              "speaker identity",
+              "general speaker identity outside the linked interruption receipt",
               "memory/Tau answer correctness",
               "Chat UX synchronization",
               "orb synchronization",
-              "event-sourced replay",
-              "live barge-in interruption"
+              "event-sourced replay"
             ],
             "proves": [
               "live_chatterbox_can_render_audio",
               "approved_qra_can_generate_five_embry_audio_variants",
               "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
+              "blessed_qra_cached_response_can_render_preapproved_audio",
               "personality_audition_variants_can_render_and_play",
-              "complete_voice_delivery_envelope_can_reach_chatterbox_chunks"
+              "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
+              "live_primary_speaker_interruption_barge_in_receipt_present",
+              "live_non_primary_interrupt_audio_is_suppressed_before_turn_control",
+              "pyannote_overlap_routes_to_one_at_a_time_voice_delivery"
             ]
           },
           "exists": true,
           "failed_gates": [
             "interruption_matrix_has_failures",
-            "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
-            "speech_matrix_gate:interruption_detected_receipt_not_emitted",
             "speech_matrix_gate:natural_stop_phrase_not_observed",
-            "speech_matrix_gate:new_horus_turn_not_exercised",
-            "speech_matrix_gate:new_turn_wins_receipt_not_emitted",
-            "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised",
-            "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control",
-            "speech_matrix_gate:stale_audio_stream_bytes_not_measured",
             "speech_matrix_gate:tau_tool_wait_not_exercised",
             "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
             "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
-            "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
             "tone_emotion_matrix_has_failures"
           ],
           "live": true,
@@ -292,26 +380,20 @@
               "subjective interruption feel"
             ],
             "proves": [
-              "chatterbox_turn_control_interruption_stops_old_audio_and_starts_new_turn"
+              "at_least_one_receipt_proves_primary_speaker_barge_in_stops_old_audio_and_new_turn_wins"
             ]
           },
           "exists": true,
-          "failed_gates": [
-            "live_barge_in_receipt_present",
-            "missing:listener_interruption.detected",
-            "missing:listener_interruption.primary_speaker_match",
-            "missing:listener_interruption.speaker_id"
-          ],
+          "failed_gates": [],
           "live": true,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         }
       ],
       "failed_reasons": [
-        "subsystem_status_not_passed:failing",
-        "artifact_not_clean_live_pass:docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"
+        "subsystem_status_not_passed:failing"
       ],
       "id": "interruption",
       "live_required": true,
@@ -575,7 +657,7 @@
       "title": "Chatterbox From Live STT"
     },
     {
-      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage and entity underline receipts are missing.",
+      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage, entity underline receipts, and audible browser replay receipts are missing.",
       "id": "chat_ux_sync",
       "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
       "title": "Chat UX Sync"
