@@ -257,9 +257,8 @@
     },
     "failed_gate_counts": {
       "asr_final_transcript_present": 5,
+      "asr_transcript_matches_stress_audio": 5,
       "capture_captured_audio_rms": 15,
-      "realtimestt_command_ok": 5,
-      "realtimestt_receipt_ok": 5,
       "rung7_receipt_ok": 5,
       "speaker_memory_recall_found": 5,
       "speaker_resolution_known_horus": 5
@@ -278,14 +277,13 @@
       {
         "difficulty": "simple",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-simple-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory; the female-nearby memory question remains unproven."
       },
       {
@@ -319,14 +317,13 @@
       {
         "difficulty": "medium",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-medium-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
@@ -360,14 +357,13 @@
       {
         "difficulty": "advanced",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-advanced-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
@@ -401,14 +397,13 @@
       {
         "difficulty": "adversarial",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-adversarial-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
@@ -442,14 +437,13 @@
       {
         "difficulty": "soak",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-soak-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       },
       {
@@ -680,24 +674,23 @@
       {
         "candidate_present": true,
         "capture_kind": "physical_microphone",
-        "captured_audio_rms": 214,
-        "captured_to_play_rms_ratio": 0.3948,
+        "captured_audio_rms": 229,
+        "captured_to_play_rms_ratio": 0.4225,
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-simple-02",
         "ingress_proven": false,
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "play_audio_rms": 542,
         "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
         "record_target": "62",
         "sink_target": "64",
         "source_identity_proven": false,
-        "transcript_present": false,
+        "transcript_present": true,
         "transport": "unknown"
       },
       {
@@ -761,24 +754,23 @@
       {
         "candidate_present": true,
         "capture_kind": "physical_microphone",
-        "captured_audio_rms": 214,
-        "captured_to_play_rms_ratio": 0.3948,
+        "captured_audio_rms": 229,
+        "captured_to_play_rms_ratio": 0.4225,
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-medium-02",
         "ingress_proven": false,
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "play_audio_rms": 542,
         "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
         "record_target": "62",
         "sink_target": "64",
         "source_identity_proven": false,
-        "transcript_present": false,
+        "transcript_present": true,
         "transport": "unknown"
       },
       {
@@ -842,24 +834,23 @@
       {
         "candidate_present": true,
         "capture_kind": "physical_microphone",
-        "captured_audio_rms": 214,
-        "captured_to_play_rms_ratio": 0.3948,
+        "captured_audio_rms": 229,
+        "captured_to_play_rms_ratio": 0.4225,
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-advanced-02",
         "ingress_proven": false,
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "play_audio_rms": 542,
         "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
         "record_target": "62",
         "sink_target": "64",
         "source_identity_proven": false,
-        "transcript_present": false,
+        "transcript_present": true,
         "transport": "unknown"
       },
       {
@@ -923,24 +914,23 @@
       {
         "candidate_present": true,
         "capture_kind": "physical_microphone",
-        "captured_audio_rms": 214,
-        "captured_to_play_rms_ratio": 0.3948,
+        "captured_audio_rms": 229,
+        "captured_to_play_rms_ratio": 0.4225,
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-adversarial-02",
         "ingress_proven": false,
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "play_audio_rms": 542,
         "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
         "record_target": "62",
         "sink_target": "64",
         "source_identity_proven": false,
-        "transcript_present": false,
+        "transcript_present": true,
         "transport": "unknown"
       },
       {
@@ -1004,24 +994,23 @@
       {
         "candidate_present": true,
         "capture_kind": "physical_microphone",
-        "captured_audio_rms": 214,
-        "captured_to_play_rms_ratio": 0.3948,
+        "captured_audio_rms": 229,
+        "captured_to_play_rms_ratio": 0.4225,
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-soak-02",
         "ingress_proven": false,
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "play_audio_rms": 542,
         "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
         "record_target": "62",
         "sink_target": "64",
         "source_identity_proven": false,
-        "transcript_present": false,
+        "transcript_present": true,
         "transport": "unknown"
       },
       {
@@ -1076,16 +1065,15 @@
     "boundary": "factory_noise_audio_capture_to_realtimestt_rung7",
     "failed_gate_counts": {
       "asr_final_transcript_present": 5,
+      "asr_transcript_matches_stress_audio": 5,
       "capture_captured_audio_rms": 15,
-      "realtimestt_command_ok": 5,
-      "realtimestt_receipt_ok": 5,
       "rung7_receipt_ok": 5,
       "speaker_memory_recall_found": 5,
       "speaker_resolution_known_horus": 5
     },
     "failed_session_count": 20,
     "latest_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+      "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
       "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
       "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
       "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json"
@@ -1105,14 +1093,13 @@
       {
         "difficulty": "simple",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-simple-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory; the female-nearby memory question remains unproven."
       },
       {
@@ -1146,14 +1133,13 @@
       {
         "difficulty": "medium",
         "failed_gates": [
-          "realtimestt_command_ok",
-          "realtimestt_receipt_ok",
+          "asr_transcript_matches_stress_audio",
           "rung7_receipt_ok",
           "speaker_resolution_known_horus",
           "speaker_memory_recall_found"
         ],
         "id": "factory_noise-medium-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
         "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
       }
     ]
@@ -1162,14 +1148,13 @@
     "browser_device_ingress_inconsistent",
     "current_factory_matrix_has_failures",
     "factory_gate:asr_final_transcript_present",
+    "factory_gate:asr_transcript_matches_stress_audio",
     "factory_gate:capture_captured_audio_rms",
-    "factory_gate:realtimestt_command_ok",
-    "factory_gate:realtimestt_receipt_ok",
     "factory_gate:rung7_receipt_ok",
     "factory_gate:speaker_memory_recall_found",
     "factory_gate:speaker_resolution_known_horus"
   ],
-  "generated_at_utc": "2026-07-08T10:17:31.046092+00:00",
+  "generated_at_utc": "2026-07-08T10:21:10.073326+00:00",
   "historical_candidate_count": 18,
   "historical_candidates": [
     {
@@ -1651,6 +1636,48 @@
       "transport": "pipewire_monitor_loopback"
     },
     {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 229,
+      "captured_audio_sha256": "31cdddf5daad948a4d87438a75ff9bf458e433af9f474d7a6f11bc98e8ba5fce",
+      "claims_does_not_prove": [
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [
+        "rung7_command_ok",
+        "rung7_receipt_ok",
+        "speaker_resolution_known_horus",
+        "speaker_memory_recall_found"
+      ],
+      "ingress_proven": false,
+      "live": false,
+      "mocked": false,
+      "ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "physical_microphone",
+        "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_rms": 542,
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": false,
+      "transcript": "Thank you very much.",
+      "transcript_present": true,
+      "transport": "unknown"
+    },
+    {
       "asr_executor_call_count": 0,
       "captured_audio_exists": null,
       "captured_audio_path": null,
@@ -1777,50 +1804,6 @@
       "transcript": "He saw tracked weapon carried, automated artillery, nests with more or even eight automatic cannons shackled together on power path.",
       "transcript_present": true,
       "transport": "browser_getusermedia"
-    },
-    {
-      "asr_executor_call_count": 0,
-      "captured_audio_exists": true,
-      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/loopback-captured.wav",
-      "captured_audio_rms": 214,
-      "captured_audio_sha256": "3d1b3e893676eee492e151ab3c708d50067a8ebf42c30f07a9164b5652915036",
-      "claims_does_not_prove": [
-        "browser_webrtc_transport",
-        "overlapping_speaker_diarization",
-        "subjective_voice_quality",
-        "generalized_factory_robustness_beyond_configured_audio"
-      ],
-      "claims_proves": [],
-      "exists": true,
-      "failed_gates": [
-        "realtimestt_command_ok",
-        "realtimestt_receipt_ok",
-        "rung7_command_ok",
-        "rung7_receipt_ok",
-        "speaker_resolution_known_horus",
-        "speaker_memory_recall_found"
-      ],
-      "ingress_proven": false,
-      "live": false,
-      "mocked": false,
-      "ok": false,
-      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
-      "pipewire_identity": {
-        "capture_backend": "ffmpeg-pulse",
-        "capture_kind": "physical_microphone",
-        "pulse_source": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
-        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
-        "record_target": "62",
-        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
-        "sink_target": "64"
-      },
-      "play_audio_rms": 542,
-      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
-      "proof_scope": null,
-      "source_identity_proven": false,
-      "transcript": "",
-      "transcript_present": false,
-      "transport": "unknown"
     },
     {
       "asr_executor_call_count": 0,

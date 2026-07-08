@@ -4,9 +4,8 @@
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:current_factory_matrix_has_failures",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_final_transcript_present",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_transcript_matches_stress_audio",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:capture_captured_audio_rms",
-    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_command_ok",
-    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_receipt_ok",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
@@ -15,9 +14,8 @@
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:current_factory_matrix_has_failures",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_final_transcript_present",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_transcript_matches_stress_audio",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:capture_captured_audio_rms",
-    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_command_ok",
-    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:realtimestt_receipt_ok",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
@@ -39,7 +37,7 @@
     "replay:subsystem_status_not_passed:partial",
     "tau_memory_routing:subsystem_status_not_passed:partial"
   ],
-  "generated_at_utc": "2026-07-08T10:17:31.130303+00:00",
+  "generated_at_utc": "2026-07-08T10:21:10.157920+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -67,9 +65,8 @@
             "browser_device_ingress_inconsistent",
             "current_factory_matrix_has_failures",
             "factory_gate:asr_final_transcript_present",
+            "factory_gate:asr_transcript_matches_stress_audio",
             "factory_gate:capture_captured_audio_rms",
-            "factory_gate:realtimestt_command_ok",
-            "factory_gate:realtimestt_receipt_ok",
             "factory_gate:rung7_receipt_ok",
             "factory_gate:speaker_memory_recall_found",
             "factory_gate:speaker_resolution_known_horus"
@@ -173,9 +170,8 @@
             "browser_device_ingress_inconsistent",
             "current_factory_matrix_has_failures",
             "factory_gate:asr_final_transcript_present",
+            "factory_gate:asr_transcript_matches_stress_audio",
             "factory_gate:capture_captured_audio_rms",
-            "factory_gate:realtimestt_command_ok",
-            "factory_gate:realtimestt_receipt_ok",
             "factory_gate:rung7_receipt_ok",
             "factory_gate:speaker_memory_recall_found",
             "factory_gate:speaker_resolution_known_horus"

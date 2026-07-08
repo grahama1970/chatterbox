@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T10:17:31.089714+00:00",
+  "generated_at_utc": "2026-07-08T10:21:10.116827+00:00",
   "goal_subsystem_status_counts": {
     "failing": 1,
     "partial": 6,
@@ -352,11 +352,7 @@
           },
           {
             "count": 5,
-            "gate": "realtimestt_command_ok"
-          },
-          {
-            "count": 5,
-            "gate": "realtimestt_receipt_ok"
+            "gate": "asr_transcript_matches_stress_audio"
           },
           {
             "count": 5,

@@ -1029,7 +1029,7 @@ _FACTORY_CURRENT_RECEIPT = (
 )
 _FACTORY_SOURCE_62_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
-    "factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json"
+    "20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json"
 )
 _FACTORY_SOURCE_67_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
@@ -1056,8 +1056,7 @@ CURRENT_RESULTS.update(
             "status": "failed",
             "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
             "failed_gates": [
-                "realtimestt_command_ok",
-                "realtimestt_receipt_ok",
+                "asr_transcript_matches_stress_audio",
                 "rung7_receipt_ok",
                 "speaker_resolution_known_horus",
                 "speaker_memory_recall_found",
@@ -1570,8 +1569,7 @@ CURRENT_RESULTS.update(
             "status": "failed",
             "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
             "failed_gates": [
-                "realtimestt_command_ok",
-                "realtimestt_receipt_ok",
+                "asr_transcript_matches_stress_audio",
                 "rung7_receipt_ok",
                 "speaker_resolution_known_horus",
                 "speaker_memory_recall_found",
@@ -1663,8 +1661,7 @@ CURRENT_RESULTS.update(
             "status": "failed",
             "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
             "failed_gates": [
-                "realtimestt_command_ok",
-                "realtimestt_receipt_ok",
+                "asr_transcript_matches_stress_audio",
                 "rung7_receipt_ok",
                 "speaker_resolution_known_horus",
                 "speaker_memory_recall_found",
@@ -1756,8 +1753,7 @@ CURRENT_RESULTS.update(
             "status": "failed",
             "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
             "failed_gates": [
-                "realtimestt_command_ok",
-                "realtimestt_receipt_ok",
+                "asr_transcript_matches_stress_audio",
                 "rung7_receipt_ok",
                 "speaker_resolution_known_horus",
                 "speaker_memory_recall_found",
@@ -1849,8 +1845,7 @@ CURRENT_RESULTS.update(
             "status": "failed",
             "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
             "failed_gates": [
-                "realtimestt_command_ok",
-                "realtimestt_receipt_ok",
+                "asr_transcript_matches_stress_audio",
                 "rung7_receipt_ok",
                 "speaker_resolution_known_horus",
                 "speaker_memory_recall_found",

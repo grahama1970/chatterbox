@@ -459,7 +459,7 @@ def test_matrix_advanced_routes_48_63_subset_has_receipt_backed_results() -> Non
     assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
     assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
     assert any("voice-chat-e2e-20260707T232441Z-stress-current" in session["latest_receipt"] for session in by_folder["factory_noise"])
-    assert any("factory-source-matrix-20260707T232938Z/source-62" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-jabra-physical-source62" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert any("factory-source-matrix-20260707T232938Z/source-67" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert any("fresh-s06-webcam-20260707T143939Z" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert by_folder["tone_emotion"][0]["status"] == "passed"
@@ -487,7 +487,7 @@ def test_matrix_adversarial_routes_48_63_subset_has_receipt_backed_results() -> 
     assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
     assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
     assert any("voice-chat-e2e-20260707T232441Z-stress-current" in session["latest_receipt"] for session in by_folder["factory_noise"])
-    assert any("factory-source-matrix-20260707T232938Z/source-62" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-jabra-physical-source62" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert any("factory-source-matrix-20260707T232938Z/source-67" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert any("fresh-s06-webcam-20260707T143939Z" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert by_folder["tone_emotion"][0]["status"] == "passed"
@@ -515,7 +515,7 @@ def test_matrix_soak_routes_48_63_subset_has_receipt_backed_results() -> None:
     assert all(session["status"] == "failed" for session in by_folder["factory_noise"])
     assert all("runner_route_not_implemented" not in session["failed_gates"] for session in by_folder["factory_noise"])
     assert any("voice-chat-e2e-20260707T232441Z-stress-current" in session["latest_receipt"] for session in by_folder["factory_noise"])
-    assert any("factory-source-matrix-20260707T232938Z/source-62" in session["latest_receipt"] for session in by_folder["factory_noise"])
+    assert any("factory-jabra-physical-source62" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert any("factory-source-matrix-20260707T232938Z/source-67" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert any("fresh-s06-webcam-20260707T143939Z" in session["latest_receipt"] for session in by_folder["factory_noise"])
     assert by_folder["tone_emotion"][0]["status"] == "passed"
@@ -673,6 +673,14 @@ def test_matrix_factory_noise_simple_failures_use_audio_capture_receipts() -> No
     assert all("runner_route_not_implemented" not in session["failed_gates"] for session in sessions)
     assert any("capture_captured_audio_rms" in session["failed_gates"] for session in sessions)
     assert any("speaker_resolution_known_horus" in session["failed_gates"] for session in sessions)
+    by_id = {session["id"]: session for session in sessions}
+    assert "factory-jabra-physical-source62" in by_id["factory_noise-simple-02"]["latest_receipt"]
+    assert by_id["factory_noise-simple-02"]["failed_gates"] == [
+        "asr_transcript_matches_stress_audio",
+        "rung7_receipt_ok",
+        "speaker_resolution_known_horus",
+        "speaker_memory_recall_found",
+    ]
 
 
 def test_matrix_chat_ux_simple_cases_have_replay_lineage_and_underlines() -> None:

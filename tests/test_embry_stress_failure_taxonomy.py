@@ -77,8 +77,9 @@ def test_taxonomy_exposes_top_repair_blockers() -> None:
     assert "interruption_detected_receipt_not_emitted" not in gates
     assert gates["capture_captured_audio_rms"] == 15
     assert gates["asr_final_transcript_present"] == 5
-    assert gates["realtimestt_command_ok"] == 5
-    assert gates["realtimestt_receipt_ok"] == 5
+    assert gates["asr_transcript_matches_stress_audio"] == 5
+    assert gates.get("realtimestt_command_ok", 0) == 0
+    assert gates.get("realtimestt_receipt_ok", 0) == 0
     assert gates["rung7_receipt_ok"] == 5
     assert gates["speaker_resolution_known_horus"] == 5
     assert gates["speaker_memory_recall_found"] == 5
