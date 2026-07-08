@@ -194,6 +194,20 @@ measurements, new-turn-wins evidence, non-primary rejection evidence, or Tau
 tool-wait natural-stop evidence for those prompts. This replaces the old
 generic `runner_route_not_implemented` label for simple interruption cases.
 
+Latest matrix factory-noise receipts:
+
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json`
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json`
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json`
+- `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json`
+
+Those receipts now back the four simple `realtimestt.factory_capture` matrix
+cases. Current failures are concrete audio/ASR boundaries: the latest stress
+capture from source 67 had RMS `7`, current source 67 had RMS `6`, the webcam
+path recorded zero-RMS audio, and source 62 captured non-silent audio but failed
+RealtimeSTT/rung7 and Horus speaker-resolution/memory recall gates. These cases
+remain failed; they are no longer generic runner gaps.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`

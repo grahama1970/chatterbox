@@ -626,6 +626,72 @@ CURRENT_RESULTS.update(
     }
 )
 
+_FACTORY_CURRENT_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
+    "voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json"
+)
+_FACTORY_SOURCE_62_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
+    "factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json"
+)
+_FACTORY_SOURCE_67_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
+    "factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json"
+)
+_FACTORY_WEBCAM_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
+    "fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json"
+)
+
+CURRENT_RESULTS.update(
+    {
+        "factory_noise-simple-01": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_CURRENT_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms", "asr_final_transcript_present"],
+            "observed": (
+                "Current factory-stress capture played the Horus/factory WAV through sink 64, "
+                "but captured RMS was 7, so the ASR path could not prove a QRA question over "
+                "factory-floor background noise."
+            ),
+        },
+        "factory_noise-simple-02": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_62_RECEIPT,
+            "failed_gates": [
+                "realtimestt_command_ok",
+                "realtimestt_receipt_ok",
+                "rung7_receipt_ok",
+                "speaker_resolution_known_horus",
+                "speaker_memory_recall_found",
+            ],
+            "observed": (
+                "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did "
+                "not resolve Horus or recover speaker-scoped memory; the female-nearby memory "
+                "question remains unproven."
+            ),
+        },
+        "factory_noise-simple-03": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_SOURCE_67_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "Current Jabra source 67 run captured RMS 6, so the compliance question through "
+                "the Jabra speaker/mic path failed at the audio capture boundary."
+            ),
+        },
+        "factory_noise-simple-04": {
+            "status": "failed",
+            "latest_receipt": _FACTORY_WEBCAM_RECEIPT,
+            "failed_gates": ["capture_captured_audio_rms"],
+            "observed": (
+                "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio "
+                "played, so the research question through that microphone path failed at capture."
+            ),
+        },
+    }
+)
+
 _TONE_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T001850Z-matrix-tone-simple/receipt.json"

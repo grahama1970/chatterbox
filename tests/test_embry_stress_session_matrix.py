@@ -134,6 +134,22 @@ def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:
     assert all("interruption_detected_receipt_not_emitted" in session["failed_gates"] for session in sessions)
 
 
+def test_matrix_factory_noise_simple_failures_use_audio_capture_receipts() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["folder_id"] == "factory_noise" and session["difficulty"] == "simple"
+    ]
+
+    assert len(sessions) == 4
+    assert all(session["status"] == "failed" for session in sessions)
+    assert all(session["latest_receipt"] for session in sessions)
+    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in sessions)
+    assert any("capture_captured_audio_rms" in session["failed_gates"] for session in sessions)
+    assert any("speaker_resolution_known_horus" in session["failed_gates"] for session in sessions)
+
+
 def test_every_case_requires_humanized_conversation_delivery() -> None:
     matrix = build_matrix()
 
