@@ -59,6 +59,12 @@ def load_export_like_assignment(path: Path, name: str) -> str | None:
 
 def child_env(args: argparse.Namespace) -> dict[str, str]:
     env = os.environ.copy()
+    repo_root = str(Path(__file__).resolve().parents[1])
+    env["PYTHONPATH"] = (
+        repo_root
+        if not env.get("PYTHONPATH")
+        else f"{repo_root}{os.pathsep}{env['PYTHONPATH']}"
+    )
     if not env.get("HF_TOKEN"):
         hf_token = load_export_like_assignment(Path.home() / ".zshrc", "HF_TOKEN")
         if hf_token:

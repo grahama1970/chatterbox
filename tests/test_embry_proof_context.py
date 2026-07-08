@@ -1,8 +1,13 @@
 import argparse
 import json
+import scripts
 from pathlib import Path
 
 from scripts.embry_proof_context import append_event, apply_proof_context, proof_context_from_args
+
+
+def test_scripts_package_resolves_to_repo() -> None:
+    assert Path(scripts.__file__).resolve().parent == Path(__file__).resolve().parents[1] / "scripts"
 
 
 def test_proof_context_enriches_receipt_and_appends_turn_event(tmp_path: Path) -> None:
