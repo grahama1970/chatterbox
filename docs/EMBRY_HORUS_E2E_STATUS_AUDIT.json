@@ -9,6 +9,8 @@
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_segment_horus_ratio",
+    "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_segment_primary_margin",
     "browser_mic_webrtc:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "browser_mic_webrtc:subsystem_status_not_passed:failing",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
@@ -19,6 +21,8 @@
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:rung7_receipt_ok",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_segment_horus_ratio",
+    "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_segment_primary_margin",
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:subsystem_status_not_passed:failing,partial",
     "interruption:subsystem_status_not_passed:partial",
@@ -37,7 +41,7 @@
     "replay:subsystem_status_not_passed:partial",
     "tau_memory_routing:subsystem_status_not_passed:partial"
   ],
-  "generated_at_utc": "2026-07-08T10:21:10.157920+00:00",
+  "generated_at_utc": "2026-07-08T10:27:25.080664+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -69,7 +73,9 @@
             "factory_gate:capture_captured_audio_rms",
             "factory_gate:rung7_receipt_ok",
             "factory_gate:speaker_memory_recall_found",
-            "factory_gate:speaker_resolution_known_horus"
+            "factory_gate:speaker_resolution_known_horus",
+            "factory_gate:speaker_segment_horus_ratio",
+            "factory_gate:speaker_segment_primary_margin"
           ],
           "live": true,
           "mocked": false,
@@ -174,7 +180,9 @@
             "factory_gate:capture_captured_audio_rms",
             "factory_gate:rung7_receipt_ok",
             "factory_gate:speaker_memory_recall_found",
-            "factory_gate:speaker_resolution_known_horus"
+            "factory_gate:speaker_resolution_known_horus",
+            "factory_gate:speaker_segment_horus_ratio",
+            "factory_gate:speaker_segment_primary_margin"
           ],
           "live": true,
           "mocked": false,

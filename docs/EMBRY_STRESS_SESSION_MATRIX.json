@@ -21,7 +21,7 @@
     "soak"
   ],
   "folder_count": 15,
-  "generated_at_utc": "2026-07-08T10:21:09Z",
+  "generated_at_utc": "2026-07-08T10:27:14Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 300,
   "sessions": [
@@ -23599,6 +23599,8 @@
       },
       "failed_gates": [
         "asr_transcript_matches_stress_audio",
+        "speaker_segment_horus_ratio",
+        "speaker_segment_primary_margin",
         "rung7_receipt_ok",
         "speaker_resolution_known_horus",
         "speaker_memory_recall_found"
@@ -23608,7 +23610,7 @@
       "id": "factory_noise-simple-02",
       "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
       "mocked": false,
-      "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory; the female-nearby memory question remains unproven.",
+      "observed": "Jabra source 62 captured non-silent audio, but RealtimeSTT transcribed the wrong phrase and speaker-window evidence scored 0/6 voiced windows as Horus (/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T102516Z-source62-speaker-segment-venv/speaker-segment-evidence.json); the female-nearby memory question remains unproven.",
       "oracle": {
         "required_gates": [
           "captured_audio_non_silent",
@@ -23971,6 +23973,8 @@
       },
       "failed_gates": [
         "asr_transcript_matches_stress_audio",
+        "speaker_segment_horus_ratio",
+        "speaker_segment_primary_margin",
         "rung7_receipt_ok",
         "speaker_resolution_known_horus",
         "speaker_memory_recall_found"
@@ -23980,7 +23984,7 @@
       "id": "factory_noise-medium-02",
       "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
       "mocked": false,
-      "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory.",
+      "observed": "Jabra source 62 captured non-silent audio, but RealtimeSTT transcribed the wrong phrase and speaker-window evidence scored 0/6 voiced windows as Horus (/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T102516Z-source62-speaker-segment-venv/speaker-segment-evidence.json).",
       "oracle": {
         "required_gates": [
           "captured_audio_non_silent",
@@ -24343,6 +24347,8 @@
       },
       "failed_gates": [
         "asr_transcript_matches_stress_audio",
+        "speaker_segment_horus_ratio",
+        "speaker_segment_primary_margin",
         "rung7_receipt_ok",
         "speaker_resolution_known_horus",
         "speaker_memory_recall_found"
@@ -24352,7 +24358,7 @@
       "id": "factory_noise-advanced-02",
       "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
       "mocked": false,
-      "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory.",
+      "observed": "Jabra source 62 captured non-silent audio, but RealtimeSTT transcribed the wrong phrase and speaker-window evidence scored 0/6 voiced windows as Horus (/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T102516Z-source62-speaker-segment-venv/speaker-segment-evidence.json).",
       "oracle": {
         "required_gates": [
           "captured_audio_non_silent",
@@ -24715,6 +24721,8 @@
       },
       "failed_gates": [
         "asr_transcript_matches_stress_audio",
+        "speaker_segment_horus_ratio",
+        "speaker_segment_primary_margin",
         "rung7_receipt_ok",
         "speaker_resolution_known_horus",
         "speaker_memory_recall_found"
@@ -24724,7 +24732,7 @@
       "id": "factory_noise-adversarial-02",
       "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
       "mocked": false,
-      "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory.",
+      "observed": "Jabra source 62 captured non-silent audio, but RealtimeSTT transcribed the wrong phrase and speaker-window evidence scored 0/6 voiced windows as Horus (/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T102516Z-source62-speaker-segment-venv/speaker-segment-evidence.json).",
       "oracle": {
         "required_gates": [
           "captured_audio_non_silent",
@@ -25087,6 +25095,8 @@
       },
       "failed_gates": [
         "asr_transcript_matches_stress_audio",
+        "speaker_segment_horus_ratio",
+        "speaker_segment_primary_margin",
         "rung7_receipt_ok",
         "speaker_resolution_known_horus",
         "speaker_memory_recall_found"
@@ -25096,7 +25106,7 @@
       "id": "factory_noise-soak-02",
       "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T101852Z-factory-jabra-physical-source62/S06-factory-noise/rung8-loopback-listener.json",
       "mocked": false,
-      "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory.",
+      "observed": "Jabra source 62 captured non-silent audio, but RealtimeSTT transcribed the wrong phrase and speaker-window evidence scored 0/6 voiced windows as Horus (/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T102516Z-source62-speaker-segment-venv/speaker-segment-evidence.json).",
       "oracle": {
         "required_gates": [
           "captured_audio_non_silent",

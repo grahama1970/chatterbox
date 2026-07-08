@@ -677,10 +677,13 @@ def test_matrix_factory_noise_simple_failures_use_audio_capture_receipts() -> No
     assert "factory-jabra-physical-source62" in by_id["factory_noise-simple-02"]["latest_receipt"]
     assert by_id["factory_noise-simple-02"]["failed_gates"] == [
         "asr_transcript_matches_stress_audio",
+        "speaker_segment_horus_ratio",
+        "speaker_segment_primary_margin",
         "rung7_receipt_ok",
         "speaker_resolution_known_horus",
         "speaker_memory_recall_found",
     ]
+    assert "speaker-segment-evidence" in by_id["factory_noise-simple-02"]["observed"]
 
 
 def test_matrix_chat_ux_simple_cases_have_replay_lineage_and_underlines() -> None:

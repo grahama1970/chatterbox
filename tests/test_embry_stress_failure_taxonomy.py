@@ -78,6 +78,8 @@ def test_taxonomy_exposes_top_repair_blockers() -> None:
     assert gates["capture_captured_audio_rms"] == 15
     assert gates["asr_final_transcript_present"] == 5
     assert gates["asr_transcript_matches_stress_audio"] == 5
+    assert gates["speaker_segment_horus_ratio"] == 5
+    assert gates["speaker_segment_primary_margin"] == 5
     assert gates.get("realtimestt_command_ok", 0) == 0
     assert gates.get("realtimestt_receipt_ok", 0) == 0
     assert gates["rung7_receipt_ok"] == 5
