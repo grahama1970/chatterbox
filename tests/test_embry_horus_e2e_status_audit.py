@@ -97,11 +97,8 @@ def test_horus_status_audit_surfaces_artifact_failed_gates() -> None:
         gate == "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:assistant_response_plan_to_chat_render_lineage_missing"
         for gate in audit["failed_gates"]
     )
-    assert any(
-        gate == "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:skill_call_receipt_not_emitted"
-        for gate in audit["failed_gates"]
-    )
-    assert any(
-        gate == "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_agent_handoff_not_exercised"
+    assert "tau_memory_routing:subsystem_status_not_passed:partial" in audit["failed_gates"]
+    assert not any(
+        gate.startswith("tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:")
         for gate in audit["failed_gates"]
     )

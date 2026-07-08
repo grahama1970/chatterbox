@@ -1,14 +1,14 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T09:08:16.998897+00:00",
+  "generated_at_utc": "2026-07-08T09:42:46.561913+00:00",
   "goal_subsystem_status_counts": {
-    "failing": 3,
-    "partial": 5
+    "failing": 2,
+    "partial": 6
   },
   "matrix_status_counts": {
-    "failed": 170,
+    "failed": 71,
     "not_run": 0,
-    "passed": 130
+    "passed": 229
   },
   "objective": "Stress test Embry voice/chat system to identify concrete failures across RealtimeSTT ingress, speaker identity, memory/Tau routing, Chatterbox speech, Chat UX sync, orb sync, replay, and interruption.",
   "overall": {
@@ -275,7 +275,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+      "next_proof": "Tie the same memory/Tau routing receipts to a live RealtimeSTT final transcript, Chatterbox audio artifact, and Chat UX render receipt sharing one turn_id.",
       "objective_phrase": "memory/Tau routing",
       "requirement_ids": [
         "VC-14",
@@ -323,48 +323,15 @@
           "status": "partial"
         }
       ],
-      "status": "failing",
-      "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes.",
+      "status": "partial",
+      "summary": "Memory answerability, external research, Tau handoff, DAG, and direct skill-call matrix rows pass with receipt-backed evidence; full live STT -> memory/Tau -> Chatterbox turn linkage remains unproven.",
       "taxonomy": {
         "status_counts": {
-          "failed": 99,
+          "failed": 0,
           "not_run": 0,
-          "passed": 101
+          "passed": 200
         },
-        "top_failed_gates": [
-          {
-            "count": 39,
-            "gate": "skill_call_receipt_not_emitted"
-          },
-          {
-            "count": 39,
-            "gate": "tau_agent_handoff_not_exercised"
-          },
-          {
-            "count": 39,
-            "gate": "tau_dag_receipt_not_created"
-          },
-          {
-            "count": 20,
-            "gate": "memory_miss_should_not_answer_unrelated_record"
-          },
-          {
-            "count": 20,
-            "gate": "persona_memory_answer_uses_unrelated_source_collection"
-          },
-          {
-            "count": 20,
-            "gate": "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          },
-          {
-            "count": 5,
-            "gate": "persona_memory_answer_wrong_or_unrelated"
-          },
-          {
-            "count": 5,
-            "gate": "sparta_qra_answer_missing_acceptance_terms"
-          }
-        ]
+        "top_failed_gates": []
       },
       "taxonomy_subsystems": [
         "memory_answerability",

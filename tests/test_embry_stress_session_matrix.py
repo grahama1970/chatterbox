@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 210, "failed": 90, "not_run": 0}
+    assert status_counts == {"passed": 229, "failed": 71, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -263,7 +263,10 @@ def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
     assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
     assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
 
-    for folder in ["voice_control_skill", "interruption"]:
+    assert all(session["status"] == "passed" for session in by_folder["voice_control_skill"])
+    assert all("voice-control-all-matrix" in session["latest_receipt"] for session in by_folder["voice_control_skill"])
+
+    for folder in ["interruption"]:
         assert all(session["status"] == "failed" for session in by_folder[folder])
         assert all(
             "matrix-medium-routes-32-47" in session["latest_receipt"]
@@ -295,12 +298,9 @@ def test_matrix_advanced_routes_32_47_subset_records_mixed_preflight_failures() 
     assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
     assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
 
-    for folder in ["voice_control_skill"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
+    assert all(session["status"] == "passed" for session in by_folder["voice_control_skill"])
+    assert all("voice-control-all-matrix" in session["latest_receipt"] for session in by_folder["voice_control_skill"])
+    assert all(session["failed_gates"] == [] for session in by_folder["voice_control_skill"])
 
     assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
@@ -329,12 +329,9 @@ def test_matrix_adversarial_routes_32_47_subset_records_mixed_preflight_failures
     assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
     assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
 
-    for folder in ["voice_control_skill"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
+    assert all(session["status"] == "passed" for session in by_folder["voice_control_skill"])
+    assert all("voice-control-all-matrix" in session["latest_receipt"] for session in by_folder["voice_control_skill"])
+    assert all(session["failed_gates"] == [] for session in by_folder["voice_control_skill"])
 
     assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
@@ -363,12 +360,9 @@ def test_matrix_soak_routes_32_47_subset_records_mixed_preflight_failures() -> N
     assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
     assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
 
-    for folder in ["voice_control_skill"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
+    assert all(session["status"] == "passed" for session in by_folder["voice_control_skill"])
+    assert all("voice-control-all-matrix" in session["latest_receipt"] for session in by_folder["voice_control_skill"])
+    assert all(session["failed_gates"] == [] for session in by_folder["voice_control_skill"])
 
     assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
@@ -538,7 +532,6 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case", "skill_sparta_validator"}
         or (
             session["folder_id"] == "voice_control_skill"
-            and session["id"] == "voice_control_skill-simple-01"
         )
     ]
     preflight_failures = [
@@ -546,13 +539,10 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         for session in sessions
         if session["folder_id"]
         not in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case", "skill_sparta_validator"}
-        and not (
-            session["folder_id"] == "voice_control_skill"
-            and session["id"] == "voice_control_skill-simple-01"
-        )
+        and session["folder_id"] != "voice_control_skill"
     ]
-    assert len(proven_sessions) == 17
-    assert len(preflight_failures) == 3
+    assert len(proven_sessions) == 20
+    assert len(preflight_failures) == 0
     assert all(session["status"] == "passed" for session in proven_sessions)
     assert all(session["failed_gates"] == [] for session in proven_sessions)
     assert all(
@@ -571,7 +561,7 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         if session["folder_id"] == "skill_create_evidence_case"
     )
     assert all(
-        "skill-voice-control-live-timeout-fixed" in session["latest_receipt"]
+        "voice-control-all-matrix" in session["latest_receipt"]
         for session in proven_sessions
         if session["folder_id"] == "voice_control_skill"
     )
@@ -580,10 +570,7 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         for session in proven_sessions
         if session["folder_id"] == "skill_sparta_validator"
     )
-    assert all(session["status"] == "failed" for session in preflight_failures)
-    assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in preflight_failures)
-    assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in preflight_failures)
-    assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in preflight_failures)
+    assert preflight_failures == []
 
 
 def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:

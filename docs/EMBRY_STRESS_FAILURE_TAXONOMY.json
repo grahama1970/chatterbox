@@ -1,29 +1,29 @@
 {
   "difficulty_status_counts": {
     "advanced": {
-      "failed": 35,
+      "failed": 15,
       "not_run": 0,
-      "passed": 25
+      "passed": 45
     },
     "adversarial": {
-      "failed": 35,
+      "failed": 15,
       "not_run": 0,
-      "passed": 25
+      "passed": 45
     },
     "medium": {
-      "failed": 33,
+      "failed": 13,
       "not_run": 0,
-      "passed": 27
+      "passed": 47
     },
     "simple": {
-      "failed": 32,
+      "failed": 13,
       "not_run": 0,
-      "passed": 28
+      "passed": 47
     },
     "soak": {
-      "failed": 35,
+      "failed": 15,
       "not_run": 0,
-      "passed": 25
+      "passed": 45
     }
   },
   "does_not_prove": [
@@ -45,27 +45,19 @@
     "entity_underline_render_receipt_not_emitted": 2,
     "extract_entities_receipt_not_linked": 2,
     "interruption_detected_receipt_not_emitted": 20,
-    "memory_miss_should_not_answer_unrelated_record": 20,
     "natural_stop_phrase_not_observed": 5,
     "new_horus_turn_not_exercised": 5,
     "new_turn_wins_receipt_not_emitted": 5,
     "non_primary_interrupt_rejection_not_exercised": 5,
-    "persona_memory_answer_uses_unrelated_source_collection": 20,
-    "persona_memory_answer_wrong_or_unrelated": 5,
     "realtimestt_command_ok": 2,
     "realtimestt_receipt_ok": 2,
     "rung7_receipt_ok": 2,
     "runner_route_not_implemented": 24,
-    "skill_call_receipt_not_emitted": 39,
-    "sparta_qra_answer_missing_acceptance_terms": 5,
-    "sparta_qra_answer_overfit_to_unrelated_control_exclusion": 20,
     "speaker_gate_receipt_not_linked_to_turn_control": 5,
     "speaker_memory_recall_found": 2,
     "speaker_resolution_known_horus": 2,
     "spoken_transcript_entity_underlines_not_proven": 2,
     "stale_audio_stream_bytes_not_measured": 5,
-    "tau_agent_handoff_not_exercised": 39,
-    "tau_dag_receipt_not_created": 39,
     "tau_tool_wait_not_exercised": 5,
     "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved": 5,
     "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light": 5,
@@ -93,14 +85,14 @@
       "passed": 0
     },
     "persona_memory_miss": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "persona_memory_recall": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "skill_analytics": {
       "failed": 0,
@@ -118,14 +110,14 @@
       "passed": 20
     },
     "skill_sparta_validator": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "sparta_qra_compliance": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "speaker_identity": {
       "failed": 0,
@@ -143,16 +135,16 @@
       "passed": 5
     },
     "voice_control_skill": {
-      "failed": 19,
+      "failed": 0,
       "not_run": 0,
-      "passed": 1
+      "passed": 20
     }
   },
-  "generated_at_utc": "2026-07-08T06:16:41.647925+00:00",
+  "generated_at_utc": "2026-07-08T09:42:46.219283+00:00",
   "matrix_status_counts": {
-    "failed": 170,
+    "failed": 71,
     "not_run": 0,
-    "passed": 130
+    "passed": 229
   },
   "missing_receipt_sessions": [],
   "not_run_sessions": [],
@@ -174,19 +166,19 @@
       "passed": 5
     },
     "memory.persona_memory": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "memory.persona_memory.fail_closed": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "memory.sparta_qra": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "memory.speaker.resolve": {
       "failed": 0,
@@ -219,14 +211,14 @@
       "passed": 20
     },
     "tau.skill.embry_voice_control": {
-      "failed": 19,
+      "failed": 0,
       "not_run": 0,
-      "passed": 1
+      "passed": 20
     },
     "tau.skill.sparta_validator": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "ux-lab.shared_chat": {
       "failed": 16,
@@ -241,7 +233,7 @@
     "external_research": {
       "failed_gate_counts": {},
       "failed_sessions": [],
-      "primary_blocker": "No current blocker in the matrix rows; source receipt route passes.",
+      "primary_blocker": "No current blocker in the matrix rows; all receipt-backed rows pass.",
       "session_count": 20,
       "status_counts": {
         "failed": 0,
@@ -554,751 +546,14 @@
       "title": "Interruption And Turn Control"
     },
     "memory_answerability": {
-      "failed_gate_counts": {
-        "memory_miss_should_not_answer_unrelated_record": 20,
-        "persona_memory_answer_uses_unrelated_source_collection": 20,
-        "persona_memory_answer_wrong_or_unrelated": 5,
-        "sparta_qra_answer_missing_acceptance_terms": 5,
-        "sparta_qra_answer_overfit_to_unrelated_control_exclusion": 20
-      },
-      "failed_sessions": [
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection",
-            "persona_memory_answer_wrong_or_unrelated"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "sparta_qra_answer_missing_acceptance_terms",
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-          "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection",
-            "persona_memory_answer_wrong_or_unrelated"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "sparta_qra_answer_missing_acceptance_terms",
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-          "observed": "Live adversarial memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection",
-            "persona_memory_answer_wrong_or_unrelated"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "sparta_qra_answer_missing_acceptance_terms",
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-          "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-simple-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned unrelated Embry config skill instead of clarifying.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned Horus TTS skill text for an unrecorded nickname.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned Embry Agent daemon skill text for undocumented promise.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned YouTube transcript skill text for muted factory phrase.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection",
-            "persona_memory_answer_wrong_or_unrelated"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-simple-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned Horus TTS skill description instead of Cthonia.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned a plausible voice-workbench memory from unrelated source collection.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned Horus TTS pipeline memory from unrelated source collection.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Admitted no specific QRA-caching conversation but still used unrelated collection.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion",
-            "sparta_qra_answer_missing_acceptance_terms"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-simple-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned unrelated S0609/deprecated-control answer.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned S0609/deprecated-control answer for mandatory evidence fields.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Evidence trail still carried deprecated/non-generation control leakage.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json",
-          "observed": "Returned S0609/deprecated-control answer for weak-evidence handling.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "memory_miss_should_not_answer_unrelated_record"
-          ],
-          "folder_id": "persona_memory_miss",
-          "id": "persona_memory_miss-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory.fail_closed",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection",
-            "persona_memory_answer_wrong_or_unrelated"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "persona_memory_answer_uses_unrelated_source_collection"
-          ],
-          "folder_id": "persona_memory_recall",
-          "id": "persona_memory_recall-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.persona_memory",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "sparta_qra_answer_missing_acceptance_terms",
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-          ],
-          "folder_id": "sparta_qra_compliance",
-          "id": "sparta_qra_compliance-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
-          "observed": "Live soak memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources.",
-          "route": "memory.sparta_qra",
-          "status": "failed"
-        }
-      ],
-      "primary_blocker": "Memory answers still leak unrelated SPARTA/persona records or answer memory misses.",
+      "failed_gate_counts": {},
+      "failed_sessions": [],
+      "primary_blocker": "No current blocker in the matrix rows; all receipt-backed rows pass.",
       "session_count": 60,
       "status_counts": {
-        "failed": 60,
+        "failed": 0,
         "not_run": 0,
-        "passed": 0
+        "passed": 60
       },
       "title": "Memory Answerability"
     },
@@ -1798,7 +1053,7 @@
     "speaker_identity": {
       "failed_gate_counts": {},
       "failed_sessions": [],
-      "primary_blocker": "No current blocker in the matrix rows; memory speaker resolve route passes.",
+      "primary_blocker": "No current blocker in the matrix rows; all receipt-backed rows pass.",
       "session_count": 20,
       "status_counts": {
         "failed": 0,
@@ -1808,565 +1063,14 @@
       "title": "Speaker Identity"
     },
     "tau_skill_routing": {
-      "failed_gate_counts": {
-        "skill_call_receipt_not_emitted": 39,
-        "tau_agent_handoff_not_exercised": 39,
-        "tau_dag_receipt_not_created": 39
-      },
-      "failed_sessions": [
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-simple-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_sparta_validator",
-          "id": "skill_sparta_validator-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.sparta_validator",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "voice_control_skill",
-          "id": "voice_control_skill-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        }
-      ],
-      "primary_blocker": "Tau handoff, DAG receipt, and skill.call receipts are not emitted.",
+      "failed_gate_counts": {},
+      "failed_sessions": [],
+      "primary_blocker": "No current blocker in the matrix rows; all receipt-backed rows pass.",
       "session_count": 120,
       "status_counts": {
-        "failed": 39,
+        "failed": 0,
         "not_run": 0,
-        "passed": 81
+        "passed": 120
       },
       "title": "Tau And Direct Skill Routing"
     },
@@ -2570,32 +1274,8 @@
   },
   "top_failed_gates": [
     {
-      "count": 39,
-      "gate": "tau_agent_handoff_not_exercised"
-    },
-    {
-      "count": 39,
-      "gate": "skill_call_receipt_not_emitted"
-    },
-    {
-      "count": 39,
-      "gate": "tau_dag_receipt_not_created"
-    },
-    {
       "count": 24,
       "gate": "runner_route_not_implemented"
-    },
-    {
-      "count": 20,
-      "gate": "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-    },
-    {
-      "count": 20,
-      "gate": "persona_memory_answer_uses_unrelated_source_collection"
-    },
-    {
-      "count": 20,
-      "gate": "memory_miss_should_not_answer_unrelated_record"
     },
     {
       "count": 20,
@@ -2604,14 +1284,6 @@
     {
       "count": 6,
       "gate": "capture_captured_audio_rms"
-    },
-    {
-      "count": 5,
-      "gate": "sparta_qra_answer_missing_acceptance_terms"
-    },
-    {
-      "count": 5,
-      "gate": "persona_memory_answer_wrong_or_unrelated"
     },
     {
       "count": 5,

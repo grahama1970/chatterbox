@@ -42,9 +42,9 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "requirement_ids": ["VC-14", "VC-16", "VC-17", "VC-18", "VC-20", "VC-21", "VC-22"],
         "taxonomy_subsystems": ["memory_answerability", "tau_skill_routing", "external_research"],
         "evidence_artifacts": ["docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"],
-        "status": "failing",
-        "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes.",
-        "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+        "status": "partial",
+        "summary": "Memory answerability, external research, Tau handoff, DAG, and direct skill-call matrix rows pass with receipt-backed evidence; full live STT -> memory/Tau -> Chatterbox turn linkage remains unproven.",
+        "next_proof": "Tie the same memory/Tau routing receipts to a live RealtimeSTT final transcript, Chatterbox audio artifact, and Chat UX render receipt sharing one turn_id.",
     },
     "chatterbox_speech": {
         "title": "Chatterbox Speech",

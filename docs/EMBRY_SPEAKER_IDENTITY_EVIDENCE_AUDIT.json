@@ -28,7 +28,7 @@
     "physical_speaker_to_microphone_identity_gating_not_proven"
   ],
   "fixture_gate_candidate_count": 1,
-  "generated_at_utc": "2026-07-08T09:02:47.273052+00:00",
+  "generated_at_utc": "2026-07-08T09:42:46.521211+00:00",
   "independent_enrollment_candidate_count": 1,
   "known_horus_candidate_count": 2,
   "live": true,

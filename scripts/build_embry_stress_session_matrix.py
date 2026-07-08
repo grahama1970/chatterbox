@@ -1973,6 +1973,10 @@ _VOICE_CONTROL_SKILL_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T054520Z-skill-voice-control-live-timeout-fixed/receipt.json"
 )
+_VOICE_CONTROL_ALL_SKILL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T092737Z-voice-control-all-matrix/receipt.json"
+)
 
 CURRENT_RESULTS["voice_control_skill-simple-01"] = {
     "status": "passed",
@@ -1983,6 +1987,19 @@ CURRENT_RESULTS["voice_control_skill-simple-01"] = {
         "memory/Tau/Chatterbox text turn and wrote a passing skill.call.receipt.v1."
     ),
 }
+
+for _difficulty in DIFFICULTIES:
+    for _index in range(1, 5):
+        CURRENT_RESULTS[f"voice_control_skill-{_difficulty}-{_index:02d}"] = {
+            "status": "passed",
+            "latest_receipt": _VOICE_CONTROL_ALL_SKILL_RECEIPT,
+            "failed_gates": [],
+            "observed": (
+                "Tau dag-run invoked embry-voice-control verify --profile controlled-live "
+                "for all voice-control matrix rows, emitted tau.dag_receipt.v1 and "
+                "skill.call.receipt.v1, and recorded READY voice-control reports."
+            ),
+        }
 
 _SPEAKER_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/"

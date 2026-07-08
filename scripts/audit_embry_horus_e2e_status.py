@@ -46,7 +46,7 @@ ITEMS: dict[str, dict[str, Any]] = {
             "Tau handoff/DAG/skill.call receipts are emitted",
             "Sparta QRA, persona memory, and external research routes are receipt-backed",
         ],
-        "current_failure": "Memory/Tau routing is failing: answerability and Tau/direct skill receipt gates remain failed.",
+        "current_failure": "Memory/Tau routing is partial: answerability, external research, Tau handoff, DAG, and skill-call matrix rows pass, but they are not yet tied to one live STT -> memory/Tau -> Chatterbox turn ledger.",
     },
     "chatterbox_from_live_stt": {
         "title": "Chatterbox From Live STT",

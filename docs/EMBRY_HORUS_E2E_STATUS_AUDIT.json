@@ -26,13 +26,6 @@
     "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:screenshot_markers_do_not_prove_turn_lineage",
     "chat_ux_sync:artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
     "chat_ux_sync:subsystem_status_not_passed:failing",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_call_receipt_missing",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_tau_agent_handoff_missing",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_dag_receipt_missing",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:skill_call_receipt_not_emitted",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_agent_handoff_not_exercised",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_dag_receipt_not_created",
-    "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_routing_matrix_has_failures",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:current_factory_matrix_has_failures",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:asr_final_transcript_present",
@@ -43,7 +36,6 @@
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:runner_route_not_implemented",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
-    "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:subsystem_status_not_passed:failing,partial",
     "interruption:subsystem_status_not_passed:partial",
@@ -61,17 +53,9 @@
     "real_horus_enrollment:artifact_not_clean_live_pass:docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json",
     "real_horus_enrollment:subsystem_status_not_passed:partial",
     "replay:subsystem_status_not_passed:partial",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_call_receipt_missing",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:skill_tau_agent_handoff_missing",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_dag_receipt_missing",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:skill_call_receipt_not_emitted",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_agent_handoff_not_exercised",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_dag_receipt_not_created",
-    "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_routing_matrix_has_failures",
-    "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
-    "tau_memory_routing:subsystem_status_not_passed:failing"
+    "tau_memory_routing:subsystem_status_not_passed:partial"
   ],
-  "generated_at_utc": "2026-07-08T09:08:16.959552+00:00",
+  "generated_at_utc": "2026-07-08T09:42:46.603732+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -247,24 +231,16 @@
               "interruption"
             ],
             "proves": [
-              "blocked_memory_answerability_can_be_suppressed_before_chatterbox"
+              "memory_answerability_tau_skill_routing_and_external_research_are_all_passing"
             ]
           },
           "exists": true,
-          "failed_gates": [
-            "skill_call_receipt_missing",
-            "skill_tau_agent_handoff_missing",
-            "tau_dag_receipt_missing",
-            "tau_skill_gate:skill_call_receipt_not_emitted",
-            "tau_skill_gate:tau_agent_handoff_not_exercised",
-            "tau_skill_gate:tau_dag_receipt_not_created",
-            "tau_skill_routing_matrix_has_failures"
-          ],
+          "failed_gates": [],
           "live": true,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         },
         {
           "claims": {
@@ -291,8 +267,7 @@
       ],
       "failed_reasons": [
         "subsystem_status_not_passed:failing,partial",
-        "artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
-        "artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
+        "artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json"
       ],
       "id": "chatterbox_from_live_stt",
       "live_required": true,
@@ -307,9 +282,9 @@
         },
         {
           "id": "memory_tau_routing",
-          "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
-          "status": "failing",
-          "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes."
+          "next_proof": "Tie the same memory/Tau routing receipts to a live RealtimeSTT final transcript, Chatterbox audio artifact, and Chat UX render receipt sharing one turn_id.",
+          "status": "partial",
+          "summary": "Memory answerability, external research, Tau handoff, DAG, and direct skill-call matrix rows pass with receipt-backed evidence; full live STT -> memory/Tau -> Chatterbox turn linkage remains unproven."
         },
         {
           "id": "chatterbox_speech",
@@ -529,7 +504,7 @@
         "Tau handoff/DAG/skill.call receipts are emitted",
         "Sparta QRA, persona memory, and external research routes are receipt-backed"
       ],
-      "current_failure": "Memory/Tau routing is failing: answerability and Tau/direct skill receipt gates remain failed.",
+      "current_failure": "Memory/Tau routing is partial: answerability, external research, Tau handoff, DAG, and skill-call matrix rows pass, but they are not yet tied to one live STT -> memory/Tau -> Chatterbox turn ledger.",
       "evidence_artifacts": [
         {
           "claims": {
@@ -543,29 +518,20 @@
               "interruption"
             ],
             "proves": [
-              "blocked_memory_answerability_can_be_suppressed_before_chatterbox"
+              "memory_answerability_tau_skill_routing_and_external_research_are_all_passing"
             ]
           },
           "exists": true,
-          "failed_gates": [
-            "skill_call_receipt_missing",
-            "skill_tau_agent_handoff_missing",
-            "tau_dag_receipt_missing",
-            "tau_skill_gate:skill_call_receipt_not_emitted",
-            "tau_skill_gate:tau_agent_handoff_not_exercised",
-            "tau_skill_gate:tau_dag_receipt_not_created",
-            "tau_skill_routing_matrix_has_failures"
-          ],
+          "failed_gates": [],
           "live": true,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         }
       ],
       "failed_reasons": [
-        "subsystem_status_not_passed:failing",
-        "artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
+        "subsystem_status_not_passed:partial"
       ],
       "id": "tau_memory_routing",
       "live_required": true,
@@ -574,9 +540,9 @@
       "subsystems": [
         {
           "id": "memory_tau_routing",
-          "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
-          "status": "failing",
-          "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes."
+          "next_proof": "Tie the same memory/Tau routing receipts to a live RealtimeSTT final transcript, Chatterbox audio artifact, and Chat UX render receipt sharing one turn_id.",
+          "status": "partial",
+          "summary": "Memory answerability, external research, Tau handoff, DAG, and direct skill-call matrix rows pass with receipt-backed evidence; full live STT -> memory/Tau -> Chatterbox turn linkage remains unproven."
         }
       ],
       "title": "Tau / Memory Routing"
@@ -598,9 +564,9 @@
       "title": "Browser Mic / WebRTC To RealtimeSTT"
     },
     {
-      "current_failure": "Memory/Tau routing is failing: answerability and Tau/direct skill receipt gates remain failed.",
+      "current_failure": "Memory/Tau routing is partial: answerability, external research, Tau handoff, DAG, and skill-call matrix rows pass, but they are not yet tied to one live STT -> memory/Tau -> Chatterbox turn ledger.",
       "id": "tau_memory_routing",
-      "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+      "next_proof": "Tie the same memory/Tau routing receipts to a live RealtimeSTT final transcript, Chatterbox audio artifact, and Chat UX render receipt sharing one turn_id.",
       "title": "Tau / Memory Routing"
     },
     {

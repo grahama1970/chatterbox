@@ -155,6 +155,8 @@ def build_taxonomy(matrix: dict[str, Any]) -> dict[str, Any]:
         subsystem["failed_sessions"] = sorted(
             subsystem["failed_sessions"], key=lambda item: (item["difficulty"], item["folder_id"], item["id"])
         )
+        if subsystem["status_counts"]["failed"] == 0:
+            subsystem["primary_blocker"] = "No current blocker in the matrix rows; all receipt-backed rows pass."
 
     matrix_status_counts = _empty_status_counts()
     for status in matrix_status_counts:
