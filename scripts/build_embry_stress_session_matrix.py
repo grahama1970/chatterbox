@@ -562,6 +562,70 @@ for _folder_id in [
             "observed": _observed,
         }
 
+_INTERRUPTION_SIMPLE_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T013317Z-matrix-interruption-simple/receipt.json"
+)
+
+CURRENT_RESULTS.update(
+    {
+        "interruption-simple-01": {
+            "status": "failed",
+            "latest_receipt": _INTERRUPTION_SIMPLE_RECEIPT,
+            "failed_gates": [
+                "interruption_detected_receipt_not_emitted",
+                "new_horus_turn_not_exercised",
+                "new_turn_wins_receipt_not_emitted",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, "
+                "but no live Horus barge-in detection, new-turn-wins receipt, or interruption "
+                "receipt was emitted."
+            ),
+        },
+        "interruption-simple-02": {
+            "status": "failed",
+            "latest_receipt": _INTERRUPTION_SIMPLE_RECEIPT,
+            "failed_gates": [
+                "blessed_qra_cached_response_not_exercised",
+                "interruption_detected_receipt_not_emitted",
+                "stale_audio_stream_bytes_not_measured",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the "
+                "blessed-QRA cached response path and stale post-cancel stream-byte measurement "
+                "were not exercised in this matrix case."
+            ),
+        },
+        "interruption-simple-03": {
+            "status": "failed",
+            "latest_receipt": _INTERRUPTION_SIMPLE_RECEIPT,
+            "failed_gates": [
+                "interruption_detected_receipt_not_emitted",
+                "non_primary_interrupt_rejection_not_exercised",
+                "speaker_gate_receipt_not_linked_to_turn_control",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no "
+                "non-primary speaker rejection receipt was linked to turn control."
+            ),
+        },
+        "interruption-simple-04": {
+            "status": "failed",
+            "latest_receipt": _INTERRUPTION_SIMPLE_RECEIPT,
+            "failed_gates": [
+                "interruption_detected_receipt_not_emitted",
+                "natural_stop_phrase_not_observed",
+                "tau_tool_wait_not_exercised",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau "
+                "tool-wait interruption or natural stop phrase was exercised."
+            ),
+        },
+    }
+)
+
 _TONE_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T001850Z-matrix-tone-simple/receipt.json"

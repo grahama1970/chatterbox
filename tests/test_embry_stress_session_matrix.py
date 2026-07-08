@@ -119,6 +119,21 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in sessions)
 
 
+def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["folder_id"] == "interruption" and session["difficulty"] == "simple"
+    ]
+
+    assert len(sessions) == 4
+    assert all(session["status"] == "failed" for session in sessions)
+    assert all("matrix-interruption-simple" in session["latest_receipt"] for session in sessions)
+    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in sessions)
+    assert all("interruption_detected_receipt_not_emitted" in session["failed_gates"] for session in sessions)
+
+
 def test_every_case_requires_humanized_conversation_delivery() -> None:
     matrix = build_matrix()
 

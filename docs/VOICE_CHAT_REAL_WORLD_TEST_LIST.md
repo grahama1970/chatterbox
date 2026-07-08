@@ -181,6 +181,19 @@ failed because no `tau.agent_handoff.v1`, `tau.dag_receipt.v1`, or
 `skill.call.receipt.v1` was emitted. These are concrete missing Tau skill
 gateway failures, not proof that the skills executed.
 
+Latest matrix interruption preflight receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json`
+
+That run covered the four simple `chatterbox.turn_control` interruption cases
+with `mocked=false`, `live=true`, and `ok=false`. Each case exercised the live
+Chatterbox cancel/duck/stop endpoints and observed action order
+`cancel -> duck -> stop`, but the cases still fail because the live suite has
+not emitted interruption-detection receipts, linked audio playback/stale-byte
+measurements, new-turn-wins evidence, non-primary rejection evidence, or Tau
+tool-wait natural-stop evidence for those prompts. This replaces the old
+generic `runner_route_not_implemented` label for simple interruption cases.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`

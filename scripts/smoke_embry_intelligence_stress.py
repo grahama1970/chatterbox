@@ -18,11 +18,13 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 
 DEFAULT_BRAVE = Path("/home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py")
 DEFAULT_TAU_RUNNER = Path("/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh")
 DEFAULT_SKILL_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills")
+DEFAULT_CHATTERBOX_URL = "http://127.0.0.1:8018"
 DEFAULT_SPEAKER_RESOLVE_THRESHOLD = 0.82
 DEFAULT_SPEAKER_AMBIGUITY_MARGIN = 0.04
 
@@ -93,6 +95,38 @@ def post_json(url: str, payload: dict[str, Any], timeout_s: int) -> dict[str, An
             "ok_http": False,
             "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
             "payload": payload,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+
+
+def get_json(url: str, timeout_s: int) -> dict[str, Any]:
+    started = time.perf_counter()
+    try:
+        with urllib.request.urlopen(url, timeout=timeout_s) as response:
+            return {
+                "ok_http": 200 <= response.status < 300,
+                "status_code": response.status,
+                "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+                "json": json.load(response),
+            }
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        try:
+            parsed: Any = json.loads(body)
+        except json.JSONDecodeError:
+            parsed = {"body": body}
+        return {
+            "ok_http": False,
+            "status_code": exc.code,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+            "json": parsed,
+            "error": f"HTTPError: {exc}",
+        }
+    except Exception as exc:  # noqa: BLE001 - receipt preserves live transport failures
+        return {
+            "ok_http": False,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
             "error_type": type(exc).__name__,
             "error": str(exc),
         }
@@ -273,6 +307,112 @@ def run_tau_skill_preflight(
         "observed": (
             "Tau wrapper and required skill preflight ran, but no tau.agent_handoff.v1, "
             "tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
+        ),
+    }
+
+
+def run_turn_control_preflight(
+    session: dict[str, Any],
+    *,
+    base_url: str,
+    timeout_s: int,
+) -> dict[str, Any]:
+    base = base_url.rstrip("/")
+    turn_id = f"matrix-turn-control-{uuid4().hex[:8]}"
+    new_turn_id = f"matrix-new-turn-{uuid4().hex[:8]}"
+    health = get_json(f"{base}/health", timeout_s)
+    failed: list[str] = []
+    if not health.get("ok_http") or not (health.get("json") or {}).get("ok"):
+        failed.append("chatterbox_health_ok")
+
+    requests = [
+        (
+            "cancel",
+            f"{base}/turn/{turn_id}/cancel",
+            {"reason": "matrix interruption preflight", "old_turn_id": turn_id, "new_turn_id": new_turn_id},
+        ),
+        (
+            "duck",
+            f"{base}/playback/{turn_id}/duck",
+            {"reason": "matrix interruption preflight", "old_turn_id": turn_id, "new_turn_id": new_turn_id},
+        ),
+        (
+            "stop",
+            f"{base}/playback/{turn_id}/stop",
+            {"reason": "matrix interruption preflight", "old_turn_id": turn_id, "new_turn_id": new_turn_id},
+        ),
+    ]
+    responses: list[dict[str, Any]] = []
+    for action, url, payload in requests:
+        response = post_json(url, payload, timeout_s)
+        responses.append({"action": action, "request": payload, "response": response})
+        body = response.get("json") if isinstance(response.get("json"), dict) else {}
+        if not response.get("ok_http") or not body.get("ok"):
+            failed.append(f"{action}_response_ok")
+        control = body.get("control") if isinstance(body.get("control"), dict) else {}
+        if control.get("turn_id") != turn_id:
+            failed.append(f"{action}_turn_id_matches")
+
+    final_body = responses[-1].get("response", {}).get("json") if responses else {}
+    final_control = final_body.get("control") if isinstance(final_body, dict) and isinstance(final_body.get("control"), dict) else {}
+    action_order = [event.get("action") for event in final_control.get("events") or [] if isinstance(event, dict)]
+    if action_order[-3:] != ["cancel", "duck", "stop"]:
+        failed.append("control_event_order")
+    if not final_control.get("cancelled"):
+        failed.append("cancelled_state_true")
+    if not final_control.get("stale_chunks_should_skip"):
+        failed.append("stale_chunks_should_skip_true")
+    if not final_control.get("ducked"):
+        failed.append("ducked_state_true")
+    if not final_control.get("stopped"):
+        failed.append("stopped_state_true")
+
+    question = normalize(str(session.get("question") or ""))
+    if "blessed qra" in question or "cached response" in question:
+        scenario_failed = [
+            "blessed_qra_cached_response_not_exercised",
+            "stale_audio_stream_bytes_not_measured",
+            "interruption_detected_receipt_not_emitted",
+        ]
+    elif "non primary" in question or "non-primary" in str(session.get("question") or "").lower():
+        scenario_failed = [
+            "non_primary_interrupt_rejection_not_exercised",
+            "speaker_gate_receipt_not_linked_to_turn_control",
+            "interruption_detected_receipt_not_emitted",
+        ]
+    elif "tau tool wait" in question or "natural stop" in question:
+        scenario_failed = [
+            "tau_tool_wait_not_exercised",
+            "natural_stop_phrase_not_observed",
+            "interruption_detected_receipt_not_emitted",
+        ]
+    else:
+        scenario_failed = [
+            "new_horus_turn_not_exercised",
+            "new_turn_wins_receipt_not_emitted",
+            "interruption_detected_receipt_not_emitted",
+        ]
+    failed.extend(scenario_failed)
+
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": str(session.get("route") or ""),
+        "health": health,
+        "turn_id": turn_id,
+        "new_turn_id": new_turn_id,
+        "responses": responses,
+        "final_control": final_control,
+        "action_order": action_order,
+        "endpoint_preflight_ok": not [gate for gate in failed if gate.endswith("_ok") or gate.endswith("_matches") or gate.endswith("_true") or gate == "control_event_order"],
+        "ok": False,
+        "mocked": False,
+        "live": bool(health.get("ok_http")),
+        "failed_gates": sorted(set(failed)),
+        "observed": (
+            "Chatterbox cancel/duck/stop endpoint state was exercised, but this matrix case still lacks "
+            "a live interruption-detection receipt, linked audio playback evidence, and new-turn outcome proof."
         ),
     }
 
@@ -468,6 +608,7 @@ def run_matrix_session(
     memory_url: str,
     brave_script: Path,
     tau_runner: Path,
+    chatterbox_url: str = DEFAULT_CHATTERBOX_URL,
     skill_root: Path = DEFAULT_SKILL_ROOT,
     timeout_s: int,
 ) -> dict[str, Any]:
@@ -511,6 +652,8 @@ def run_matrix_session(
         }
     if route.startswith("tau.skill."):
         return run_tau_skill_preflight(session, tau_runner=tau_runner, skill_root=skill_root, timeout_s=timeout_s)
+    if route == "chatterbox.turn_control":
+        return run_turn_control_preflight(session, base_url=chatterbox_url, timeout_s=timeout_s)
     if route == "memory.intent.voice_delivery":
         intent = post_json(
             f"{memory_url.rstrip('/')}/intent",
@@ -689,6 +832,7 @@ def main() -> int:
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--brave-script", default=DEFAULT_BRAVE, type=Path)
     parser.add_argument("--tau-runner", default=DEFAULT_TAU_RUNNER, type=Path)
+    parser.add_argument("--chatterbox-url", default=DEFAULT_CHATTERBOX_URL)
     parser.add_argument("--skill-root", default=DEFAULT_SKILL_ROOT, type=Path)
     parser.add_argument("--timeout-s", default=120, type=int)
     parser.add_argument("--render-spoken-failures", action="store_true")
@@ -723,6 +867,7 @@ def main() -> int:
                 memory_url=args.memory_url,
                 brave_script=args.brave_script,
                 tau_runner=args.tau_runner,
+                chatterbox_url=args.chatterbox_url,
                 skill_root=args.skill_root,
                 timeout_s=args.timeout_s,
             )

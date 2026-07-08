@@ -234,6 +234,59 @@ def test_tau_direct_skill_route_fails_missing_skill_file(monkeypatch, tmp_path) 
     assert result["skill_preflight"]["skill_exists"] is False
 
 
+def test_chatterbox_turn_control_route_exercises_endpoints_but_fails_without_interruption_receipts(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    posts = []
+
+    def fake_get_json(url: str, timeout_s: int) -> dict:
+        return {"ok_http": True, "json": {"ok": True}, "elapsed_ms": 1.0, "url": url}
+
+    def fake_post_json(url: str, payload: dict, timeout_s: int) -> dict:
+        posts.append((url, payload, timeout_s))
+        action = "cancel" if "/cancel" in url else "duck" if "/duck" in url else "stop"
+        events = [{"action": item} for item in ["cancel", "duck", "stop"][: len(posts)]]
+        return {
+            "ok_http": True,
+            "json": {
+                "ok": True,
+                "control": {
+                    "turn_id": payload["old_turn_id"],
+                    "events": events,
+                    "cancelled": len(posts) >= 1,
+                    "stale_chunks_should_skip": len(posts) >= 1,
+                    "ducked": len(posts) >= 2,
+                    "stopped": len(posts) >= 3,
+                },
+            },
+        }
+
+    monkeypatch.setattr("scripts.smoke_embry_intelligence_stress.get_json", fake_get_json)
+    monkeypatch.setattr("scripts.smoke_embry_intelligence_stress.post_json", fake_post_json)
+
+    result = run_matrix_session(
+        {
+            "id": "interruption-simple-01",
+            "route": "chatterbox.turn_control",
+            "question": "Interrupt Embry mid-answer with a new Horus question.",
+        },
+        memory_url="http://127.0.0.1:8601",
+        brave_script=tmp_path / "brave.py",
+        tau_runner=tmp_path / "tau-run.sh",
+        chatterbox_url="http://127.0.0.1:8018",
+        timeout_s=30,
+    )
+
+    assert [post[0].rsplit("/", 1)[-1] for post in posts] == ["cancel", "duck", "stop"]
+    assert result["endpoint_preflight_ok"] is True
+    assert result["live"] is True
+    assert result["ok"] is False
+    assert "new_horus_turn_not_exercised" in result["failed_gates"]
+    assert "new_turn_wins_receipt_not_emitted" in result["failed_gates"]
+    assert "interruption_detected_receipt_not_emitted" in result["failed_gates"]
+
+
 def test_speaker_resolution_payload_known_horus_uses_speaker_tags() -> None:
     payload = speaker_resolution_payload(
         {
