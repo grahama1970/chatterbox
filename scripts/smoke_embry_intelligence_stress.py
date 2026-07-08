@@ -223,7 +223,12 @@ def classify_matrix_answer(session: dict[str, Any], answer: dict[str, Any]) -> l
         if has_unrelated_persona_source(answer):
             failed.append("persona_memory_answer_uses_unrelated_source_collection")
     elif route == "memory.persona_memory.fail_closed":
-        if payload.get("can_answer") is True or bool(text):
+        fail_closed_answer = (
+            payload.get("can_answer") is False
+            and payload.get("answer_type") == "insufficient_memory_evidence"
+            and not answer_sources(answer)
+        )
+        if not fail_closed_answer and (payload.get("can_answer") is True or bool(text)):
             failed.append("memory_miss_should_not_answer_unrelated_record")
     else:
         failed.append("runner_route_not_implemented")

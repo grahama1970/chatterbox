@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T075749Z-memory-answerability-ledger/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-answerability-runtime-block/20260708T010111Z-answerability-runtime-block/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T002830Z-matrix-tau-simple/receipt.json"),
