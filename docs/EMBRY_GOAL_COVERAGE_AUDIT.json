@@ -1,0 +1,595 @@
+{
+  "generated_at_utc": "2026-07-08T02:58:51.033844+00:00",
+  "goal_subsystem_status_counts": {
+    "failing": 4,
+    "insufficient_evidence": 1,
+    "partial": 3
+  },
+  "matrix_status_counts": {
+    "failed": 251,
+    "not_run": 0,
+    "passed": 49
+  },
+  "objective": "Stress test Embry voice/chat system to identify concrete failures across RealtimeSTT ingress, speaker identity, memory/Tau routing, Chatterbox speech, Chat UX sync, orb sync, replay, and interruption.",
+  "overall": {
+    "ready": false,
+    "reason": "Goal subsystems still include failing, partial, and insufficient-evidence rows.",
+    "status": "not_ready"
+  },
+  "readiness_rule": "ready only when every required row has a current non-mocked receipt with mocked=false, live=true, empty failed_gates, and inspectable artifact paths",
+  "receipt_backed_count": 300,
+  "schema": "chatterbox.embry_goal_coverage_audit.v1",
+  "source_requirements": "docs/voice_chat_e2e_requirements.json",
+  "source_taxonomy": "docs/EMBRY_STRESS_FAILURE_TAXONOMY.json",
+  "subsystems": {
+    "chat_ux_sync": {
+      "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
+      "objective_phrase": "Chat UX sync",
+      "requirement_ids": [
+        "VC-01",
+        "VC-24"
+      ],
+      "requirements": [
+        {
+          "id": "VC-01",
+          "name": "turn ledger and renderer envelope",
+          "status": "partial"
+        },
+        {
+          "id": "VC-24",
+          "name": "chat interface voice parity",
+          "status": "missing"
+        }
+      ],
+      "status": "failing",
+      "summary": "Replay and inline trace basics pass, but turn-id lineage, chat render receipts, and entity underline receipts fail.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 16,
+          "not_run": 0,
+          "passed": 4
+        },
+        "top_failed_gates": [
+          {
+            "count": 12,
+            "gate": "runner_route_not_implemented"
+          },
+          {
+            "count": 2,
+            "gate": "assistant_response_plan_v1_not_linked"
+          },
+          {
+            "count": 2,
+            "gate": "chat_render_receipt_v1_not_emitted"
+          },
+          {
+            "count": 2,
+            "gate": "chat_turn_id_matches_response_plan_not_proven"
+          },
+          {
+            "count": 2,
+            "gate": "entity_underline_render_receipt_not_emitted"
+          },
+          {
+            "count": 2,
+            "gate": "extract_entities_receipt_not_linked"
+          },
+          {
+            "count": 2,
+            "gate": "spoken_transcript_entity_underlines_not_proven"
+          }
+        ]
+      },
+      "taxonomy_subsystems": [
+        "shared_chat_ux"
+      ],
+      "title": "Chat UX Sync"
+    },
+    "chatterbox_speech": {
+      "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
+      "objective_phrase": "Chatterbox speech",
+      "requirement_ids": [
+        "VC-12",
+        "VC-13",
+        "VC-15",
+        "VC-16",
+        "VC-17",
+        "VC-18",
+        "VC-25"
+      ],
+      "requirements": [
+        {
+          "id": "VC-12",
+          "name": "barge-in cancels old speech",
+          "status": "partial"
+        },
+        {
+          "id": "VC-13",
+          "name": "zero old-turn bytes after cancel",
+          "status": "proven_at_stream_boundary"
+        },
+        {
+          "id": "VC-15",
+          "name": "Chatterbox receives tone controls",
+          "status": "partial"
+        },
+        {
+          "id": "VC-16",
+          "name": "near-exact QRA blessed audio fast path",
+          "status": "proven_for_one_receipt"
+        },
+        {
+          "id": "VC-17",
+          "name": "QRA cache disabled path",
+          "status": "missing"
+        },
+        {
+          "id": "VC-18",
+          "name": "five Embry QRA variants",
+          "status": "partial"
+        },
+        {
+          "id": "VC-25",
+          "name": "subjective voice quality review",
+          "status": "pending_human_quality_review"
+        }
+      ],
+      "status": "partial",
+      "summary": "Chatterbox render and stream-cancel proof slices exist, but tone coverage, interruption behavior, QRA disabled regressions, and subjective voice quality remain open.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 35,
+          "not_run": 0,
+          "passed": 5
+        },
+        "top_failed_gates": [
+          {
+            "count": 20,
+            "gate": "interruption_detected_receipt_not_emitted"
+          },
+          {
+            "count": 5,
+            "gate": "blessed_qra_cached_response_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "natural_stop_phrase_not_observed"
+          },
+          {
+            "count": 5,
+            "gate": "new_horus_turn_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "new_turn_wins_receipt_not_emitted"
+          },
+          {
+            "count": 5,
+            "gate": "non_primary_interrupt_rejection_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "speaker_gate_receipt_not_linked_to_turn_control"
+          },
+          {
+            "count": 5,
+            "gate": "stale_audio_stream_bytes_not_measured"
+          },
+          {
+            "count": 5,
+            "gate": "tau_tool_wait_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved"
+          }
+        ]
+      },
+      "taxonomy_subsystems": [
+        "interruption_turn_control",
+        "tone_emotion_intent"
+      ],
+      "title": "Chatterbox Speech"
+    },
+    "interruption": {
+      "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
+      "objective_phrase": "interruption",
+      "requirement_ids": [
+        "VC-12",
+        "VC-13"
+      ],
+      "requirements": [
+        {
+          "id": "VC-12",
+          "name": "barge-in cancels old speech",
+          "status": "partial"
+        },
+        {
+          "id": "VC-13",
+          "name": "zero old-turn bytes after cancel",
+          "status": "proven_at_stream_boundary"
+        }
+      ],
+      "status": "failing",
+      "summary": "All 20 matrix interruption rows fail; cancel/duck/stop endpoints are exercised, but live detection and new-turn/stale-audio receipts are missing.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 20,
+          "not_run": 0,
+          "passed": 0
+        },
+        "top_failed_gates": [
+          {
+            "count": 20,
+            "gate": "interruption_detected_receipt_not_emitted"
+          },
+          {
+            "count": 5,
+            "gate": "blessed_qra_cached_response_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "natural_stop_phrase_not_observed"
+          },
+          {
+            "count": 5,
+            "gate": "new_horus_turn_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "new_turn_wins_receipt_not_emitted"
+          },
+          {
+            "count": 5,
+            "gate": "non_primary_interrupt_rejection_not_exercised"
+          },
+          {
+            "count": 5,
+            "gate": "speaker_gate_receipt_not_linked_to_turn_control"
+          },
+          {
+            "count": 5,
+            "gate": "stale_audio_stream_bytes_not_measured"
+          },
+          {
+            "count": 5,
+            "gate": "tau_tool_wait_not_exercised"
+          }
+        ]
+      },
+      "taxonomy_subsystems": [
+        "interruption_turn_control"
+      ],
+      "title": "Interruption"
+    },
+    "memory_tau_routing": {
+      "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+      "objective_phrase": "memory/Tau routing",
+      "requirement_ids": [
+        "VC-14",
+        "VC-16",
+        "VC-17",
+        "VC-18",
+        "VC-20",
+        "VC-21",
+        "VC-22"
+      ],
+      "requirements": [
+        {
+          "id": "VC-14",
+          "name": "memory intent routes tone",
+          "status": "partial"
+        },
+        {
+          "id": "VC-16",
+          "name": "near-exact QRA blessed audio fast path",
+          "status": "proven_for_one_receipt"
+        },
+        {
+          "id": "VC-17",
+          "name": "QRA cache disabled path",
+          "status": "missing"
+        },
+        {
+          "id": "VC-18",
+          "name": "five Embry QRA variants",
+          "status": "partial"
+        },
+        {
+          "id": "VC-20",
+          "name": "speaker-scoped conversational memory",
+          "status": "missing"
+        },
+        {
+          "id": "VC-21",
+          "name": "memory miss no hallucination",
+          "status": "missing"
+        },
+        {
+          "id": "VC-22",
+          "name": "wait and holding utterances",
+          "status": "partial"
+        }
+      ],
+      "status": "failing",
+      "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 180,
+          "not_run": 0,
+          "passed": 20
+        },
+        "top_failed_gates": [
+          {
+            "count": 120,
+            "gate": "tau_agent_handoff_not_exercised"
+          },
+          {
+            "count": 100,
+            "gate": "skill_call_receipt_not_emitted"
+          },
+          {
+            "count": 100,
+            "gate": "tau_dag_receipt_not_created"
+          },
+          {
+            "count": 20,
+            "gate": "memory_miss_should_not_answer_unrelated_record"
+          },
+          {
+            "count": 20,
+            "gate": "persona_memory_answer_uses_unrelated_source_collection"
+          },
+          {
+            "count": 20,
+            "gate": "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
+          },
+          {
+            "count": 5,
+            "gate": "persona_memory_answer_wrong_or_unrelated"
+          },
+          {
+            "count": 5,
+            "gate": "sparta_qra_answer_missing_acceptance_terms"
+          }
+        ]
+      },
+      "taxonomy_subsystems": [
+        "memory_answerability",
+        "tau_skill_routing",
+        "external_research"
+      ],
+      "title": "Memory And Tau Routing"
+    },
+    "orb_sync": {
+      "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
+      "objective_phrase": "orb sync",
+      "requirement_ids": [],
+      "requirements": [],
+      "status": "insufficient_evidence",
+      "summary": "Local UI screenshot markers show the orb route was inspected, but there is no committed receipt proving orb envelope samples are synchronized to the same live Chatterbox turn.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 0,
+          "not_run": 0,
+          "passed": 0
+        },
+        "top_failed_gates": []
+      },
+      "taxonomy_subsystems": [],
+      "title": "Orb Sync"
+    },
+    "realtimestt_ingress": {
+      "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
+      "objective_phrase": "RealtimeSTT ingress",
+      "requirement_ids": [
+        "VC-02",
+        "VC-03",
+        "VC-04",
+        "VC-10",
+        "VC-23"
+      ],
+      "requirements": [
+        {
+          "id": "VC-02",
+          "name": "browser microphone ASR quality",
+          "status": "partial"
+        },
+        {
+          "id": "VC-03",
+          "name": "pipewire or loopback transport",
+          "status": "partial"
+        },
+        {
+          "id": "VC-04",
+          "name": "listener event ledger",
+          "status": "partial"
+        },
+        {
+          "id": "VC-10",
+          "name": "factory-floor background noise stress",
+          "status": "missing"
+        },
+        {
+          "id": "VC-23",
+          "name": "latency budgets at every boundary",
+          "status": "partial"
+        }
+      ],
+      "status": "failing",
+      "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 20,
+          "not_run": 0,
+          "passed": 0
+        },
+        "top_failed_gates": [
+          {
+            "count": 12,
+            "gate": "runner_route_not_implemented"
+          },
+          {
+            "count": 6,
+            "gate": "capture_captured_audio_rms"
+          },
+          {
+            "count": 2,
+            "gate": "asr_final_transcript_present"
+          },
+          {
+            "count": 2,
+            "gate": "realtimestt_command_ok"
+          },
+          {
+            "count": 2,
+            "gate": "realtimestt_receipt_ok"
+          },
+          {
+            "count": 2,
+            "gate": "rung7_receipt_ok"
+          },
+          {
+            "count": 2,
+            "gate": "speaker_memory_recall_found"
+          },
+          {
+            "count": 2,
+            "gate": "speaker_resolution_known_horus"
+          }
+        ]
+      },
+      "taxonomy_subsystems": [
+        "realtimestt_audio_ingress"
+      ],
+      "title": "RealtimeSTT Ingress"
+    },
+    "replay": {
+      "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+      "objective_phrase": "replay",
+      "requirement_ids": [
+        "VC-01",
+        "VC-24"
+      ],
+      "requirements": [
+        {
+          "id": "VC-01",
+          "name": "turn ledger and renderer envelope",
+          "status": "partial"
+        },
+        {
+          "id": "VC-24",
+          "name": "chat interface voice parity",
+          "status": "missing"
+        }
+      ],
+      "status": "partial",
+      "summary": "Basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal with original timing is not proven.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 16,
+          "not_run": 0,
+          "passed": 4
+        },
+        "top_failed_gates": [
+          {
+            "count": 12,
+            "gate": "runner_route_not_implemented"
+          },
+          {
+            "count": 2,
+            "gate": "assistant_response_plan_v1_not_linked"
+          },
+          {
+            "count": 2,
+            "gate": "chat_render_receipt_v1_not_emitted"
+          },
+          {
+            "count": 2,
+            "gate": "chat_turn_id_matches_response_plan_not_proven"
+          },
+          {
+            "count": 2,
+            "gate": "entity_underline_render_receipt_not_emitted"
+          },
+          {
+            "count": 2,
+            "gate": "extract_entities_receipt_not_linked"
+          },
+          {
+            "count": 2,
+            "gate": "spoken_transcript_entity_underlines_not_proven"
+          }
+        ]
+      },
+      "taxonomy_subsystems": [
+        "shared_chat_ux"
+      ],
+      "title": "Replay"
+    },
+    "speaker_identity": {
+      "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
+      "objective_phrase": "speaker identity",
+      "requirement_ids": [
+        "VC-05",
+        "VC-06",
+        "VC-07",
+        "VC-08",
+        "VC-11",
+        "VC-19",
+        "VC-20"
+      ],
+      "requirements": [
+        {
+          "id": "VC-05",
+          "name": "speaker identity before personal memory",
+          "status": "partial"
+        },
+        {
+          "id": "VC-06",
+          "name": "Horus Lupercal primary speaker persona",
+          "status": "partial"
+        },
+        {
+          "id": "VC-07",
+          "name": "unknown speaker identity clarification",
+          "status": "missing"
+        },
+        {
+          "id": "VC-08",
+          "name": "ambiguous speaker fail closed",
+          "status": "missing"
+        },
+        {
+          "id": "VC-11",
+          "name": "female distractor filtering",
+          "status": "missing"
+        },
+        {
+          "id": "VC-19",
+          "name": "unknown speaker utterance bank",
+          "status": "missing"
+        },
+        {
+          "id": "VC-20",
+          "name": "speaker-scoped conversational memory",
+          "status": "missing"
+        }
+      ],
+      "status": "partial",
+      "summary": "Matrix speaker-resolution rows pass, but full enrollment, unknown/ambiguous/live distractor identity, and speaker-scoped memory conversations remain incomplete.",
+      "taxonomy": {
+        "status_counts": {
+          "failed": 0,
+          "not_run": 0,
+          "passed": 20
+        },
+        "top_failed_gates": []
+      },
+      "taxonomy_subsystems": [
+        "speaker_identity"
+      ],
+      "title": "Speaker Identity"
+    }
+  }
+}

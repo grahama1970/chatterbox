@@ -85,6 +85,10 @@ Latest generated failure taxonomy:
 
 `docs/EMBRY_STRESS_FAILURE_TAXONOMY.json`
 
+Latest generated goal coverage audit:
+
+`docs/EMBRY_GOAL_COVERAGE_AUDIT.json`
+
 The matrix now has 300 receipt-backed sessions: 49 passed, 251 failed, and
 0 not-run. The taxonomy converts those rows into subsystem repair blockers:
 
@@ -111,6 +115,18 @@ mic/WebRTC across devices, full live RealtimeSTT -> speaker/diarization ->
 memory/Tau -> Chatterbox -> Chat UX, Chatterbox generated from every live STT
 turn, orb/audio/chat synchronization from one event journal, event-sourced
 replay, or live barge-in with stale audio suppression.
+
+The goal coverage audit maps the active objective directly:
+
+- Failing: `realtimestt_ingress`, `memory_tau_routing`, `chat_ux_sync`,
+  `interruption`.
+- Partial: `speaker_identity`, `chatterbox_speech`, `replay`.
+- Insufficient evidence: `orb_sync`.
+
+The next proof required for `orb_sync` is not another screenshot alone. It must
+be a receipt linking the same `turn_id`, Chatterbox audio artifact id, playback
+timestamps, orb authority, envelope frame count, and screenshot path for one
+live or replayed turn.
 
 Latest memory answerability ledger receipt:
 
