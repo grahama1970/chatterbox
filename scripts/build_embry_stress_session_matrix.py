@@ -1819,6 +1819,10 @@ for _folder_id, _receipt in _DIRECT_SKILL_SIMPLE_RECEIPTS.items():
             ),
         }
 
+_CREATE_EVIDENCE_CASE_SKILL_DAG_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T060000Z-skill-create-evidence-case-simple-live/receipt.json"
+)
 _ANALYTICS_SKILL_DAG_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T052215Z-skill-analytics-all-live/receipt.json"
@@ -1827,6 +1831,18 @@ _CREATE_FIGURE_SKILL_DAG_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T052948Z-skill-create-figure-all-live/receipt.json"
 )
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"skill_create_evidence_case-simple-{_index:02d}"] = {
+        "status": "passed",
+        "latest_receipt": _CREATE_EVIDENCE_CASE_SKILL_DAG_RECEIPT,
+        "failed_gates": [],
+        "observed": (
+            "Tau dag-run invoked skills/create-evidence-case/run.sh test --json through "
+            "a command spec, emitted skill.call.receipt.v1, and recorded deterministic "
+            "gate output for this Embry direct-skill session."
+        ),
+    }
 
 for _difficulty in DIFFICULTIES:
     for _index in range(1, 5):

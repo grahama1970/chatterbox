@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 110, "failed": 190, "not_run": 0}
+    assert status_counts == {"passed": 114, "failed": 186, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -512,7 +512,7 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     proven_sessions = [
         session
         for session in sessions
-        if session["folder_id"] in {"skill_analytics", "skill_create_figure"}
+        if session["folder_id"] in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case"}
         or (
             session["folder_id"] == "voice_control_skill"
             and session["id"] == "voice_control_skill-simple-01"
@@ -521,14 +521,14 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     preflight_failures = [
         session
         for session in sessions
-        if session["folder_id"] not in {"skill_analytics", "skill_create_figure"}
+        if session["folder_id"] not in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case"}
         and not (
             session["folder_id"] == "voice_control_skill"
             and session["id"] == "voice_control_skill-simple-01"
         )
     ]
-    assert len(proven_sessions) == 9
-    assert len(preflight_failures) == 11
+    assert len(proven_sessions) == 13
+    assert len(preflight_failures) == 7
     assert all(session["status"] == "passed" for session in proven_sessions)
     assert all(session["failed_gates"] == [] for session in proven_sessions)
     assert all(
@@ -540,6 +540,11 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         "skill-create-figure-all-live" in session["latest_receipt"]
         for session in proven_sessions
         if session["folder_id"] == "skill_create_figure"
+    )
+    assert all(
+        "skill-create-evidence-case-simple-live" in session["latest_receipt"]
+        for session in proven_sessions
+        if session["folder_id"] == "skill_create_evidence_case"
     )
     assert all(
         "skill-voice-control-live-timeout-fixed" in session["latest_receipt"]
