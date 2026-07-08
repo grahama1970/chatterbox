@@ -1208,6 +1208,62 @@ CURRENT_RESULTS.update(
     }
 )
 
+_ADVANCED_ROUTES_48_63_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T021302Z-matrix-advanced-routes-48-63/receipt.json"
+)
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"speaker_identity-advanced-{_index:02d}"] = {
+        "status": "passed",
+        "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
+        "failed_gates": [],
+        "observed": (
+            "Live advanced speaker-resolution policy case passed through memory /speaker/resolve "
+            "using deterministic speaker evidence."
+        ),
+    }
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"factory_noise-advanced-{_index:02d}"] = {
+        "status": "failed",
+        "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
+        "failed_gates": ["runner_route_not_implemented"],
+        "observed": (
+            "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation "
+            "for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+        ),
+    }
+
+CURRENT_RESULTS.update(
+    {
+        "tone_emotion-advanced-01": {
+            "status": "passed",
+            "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
+            "failed_gates": [],
+            "observed": "Memory /intent returned an acceptable voice_delivery tone for a frustrated/warm de-escalation prompt.",
+        },
+        "tone_emotion-advanced-02": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
+            "failed_gates": ["voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"],
+            "observed": "Memory /intent returned an unacceptable tone for hostile input; expected deflect_calm, firm_boundary, or playful_light.",
+        },
+        "tone_emotion-advanced-03": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
+            "failed_gates": ["voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved"],
+            "observed": "Memory /intent returned an unacceptable tone for discouraged input; expected a careful, neutral-warm, or relieved support tone.",
+        },
+        "tone_emotion-advanced-04": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_48_63_RECEIPT,
+            "failed_gates": ["voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt"],
+            "observed": "Memory /intent returned an unacceptable tone for speaker overlap; expected one_at_a_time_interrupt or firm_boundary.",
+        },
+    }
+)
+
 _TONE_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T001850Z-matrix-tone-simple/receipt.json"
