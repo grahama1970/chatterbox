@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:48:48.578868+00:00",
+  "generated_at_utc": "2026-07-08T04:51:37.545795+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -298,9 +298,6 @@
           "exists": true,
           "failed_gates": [
             "live_barge_in_receipt_present",
-            "missing:embry_playback.audio_artifact_id",
-            "missing:embry_playback.offset_ms_at_interrupt",
-            "missing:embry_playback.started_at_epoch_ms",
             "missing:listener_interruption.detected",
             "missing:listener_interruption.primary_speaker_match",
             "missing:listener_interruption.speaker_id"

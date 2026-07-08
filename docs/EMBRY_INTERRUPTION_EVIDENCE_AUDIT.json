@@ -7,11 +7,8 @@
     {
       "chatterbox_turn_control_missing_fields": [],
       "chatterbox_turn_control_ok": true,
-      "missing_field_count": 6,
+      "missing_field_count": 3,
       "missing_fields": [
-        "embry_playback.audio_artifact_id",
-        "embry_playback.offset_ms_at_interrupt",
-        "embry_playback.started_at_epoch_ms",
         "listener_interruption.detected",
         "listener_interruption.primary_speaker_match",
         "listener_interruption.speaker_id"
@@ -28,7 +25,7 @@
         "ok": true,
         "old_turn_bytes_after_cancel": 0,
         "old_turn_id": "turn-ffd6d9e7",
-        "playback_offset_ms_at_interrupt": null,
+        "playback_offset_ms_at_interrupt": 0,
         "primary_speaker_match": null,
         "turn_control_stale_chunks_should_skip": true,
         "turn_control_stopped": true,
@@ -210,14 +207,11 @@
   },
   "failed_gates": [
     "live_barge_in_receipt_present",
-    "missing:embry_playback.audio_artifact_id",
-    "missing:embry_playback.offset_ms_at_interrupt",
-    "missing:embry_playback.started_at_epoch_ms",
     "missing:listener_interruption.detected",
     "missing:listener_interruption.primary_speaker_match",
     "missing:listener_interruption.speaker_id"
   ],
-  "generated_at_utc": "2026-07-08T04:27:57.728289+00:00",
+  "generated_at_utc": "2026-07-08T04:51:37.465468+00:00",
   "live": true,
   "mocked": false,
   "ok": false,

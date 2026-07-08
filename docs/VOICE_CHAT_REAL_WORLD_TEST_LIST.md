@@ -172,9 +172,10 @@ The best candidate is
 `/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json`.
 It proves Chatterbox turn control stopped the old audio path, skipped stale old
 chunks, emitted zero old-turn bytes after cancel, and started the new turn. It
-still does not prove live Horus barge-in because the missing fields are Embry
-playback audio artifact/start/interrupt offset, listener interruption detection,
-listener speaker id, and primary speaker match.
+also derives Embry playback artifact/start/interrupt offset from the event
+journal. It still does not prove live Horus barge-in because the missing fields
+are listener interruption detection, listener speaker id, and primary speaker
+match.
 
 Current RealtimeSTT ingress evidence audit receipt:
 

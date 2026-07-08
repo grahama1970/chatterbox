@@ -76,9 +76,10 @@ def test_interruption_audit_normalizes_legacy_timeline_but_keeps_listener_gap(tm
     events.write_text(
         "\n".join(
             [
-                '{"type":"interruption.requested"}',
-                '{"type":"playback.stopped"}',
-                '{"type":"speech.stale_skipped"}',
+                '{"type":"speech.played","turn_id":"turn-old","artifact_path":"/out/old.wav","timestamp":"2026-07-08T03:47:55Z"}',
+                '{"type":"interruption.requested","turn_id":"turn-old","timestamp":"2026-07-08T03:47:56Z"}',
+                '{"type":"playback.stopped","turn_id":"turn-old"}',
+                '{"type":"speech.stale_skipped","turn_id":"turn-old"}',
             ]
         )
         + "\n"
@@ -106,7 +107,11 @@ def test_interruption_audit_normalizes_legacy_timeline_but_keeps_listener_gap(tm
     assert result["observed"]["new_turn_wins"] is True
     assert result["observed"]["turn_control_stopped"] is True
     assert result["observed"]["turn_control_stale_chunks_should_skip"] is True
+    assert result["observed"]["playback_offset_ms_at_interrupt"] == 1000
     assert result["chatterbox_turn_control_ok"] is True
+    assert "embry_playback.audio_artifact_id" not in result["missing_fields"]
+    assert "embry_playback.started_at_epoch_ms" not in result["missing_fields"]
+    assert "embry_playback.offset_ms_at_interrupt" not in result["missing_fields"]
     assert "listener_interruption.detected" in result["missing_fields"]
     assert "listener_interruption.speaker_id" in result["missing_fields"]
 
@@ -116,9 +121,10 @@ def test_build_audit_counts_chatterbox_turn_control_without_live_listener_barge_
     events.write_text(
         "\n".join(
             [
-                '{"type":"interruption.requested"}',
-                '{"type":"playback.stopped"}',
-                '{"type":"speech.stale_skipped"}',
+                '{"type":"speech.played","turn_id":"turn-old","artifact_path":"/out/old.wav","timestamp":"2026-07-08T03:47:55Z"}',
+                '{"type":"interruption.requested","turn_id":"turn-old","timestamp":"2026-07-08T03:47:56Z"}',
+                '{"type":"playback.stopped","turn_id":"turn-old"}',
+                '{"type":"speech.stale_skipped","turn_id":"turn-old"}',
             ]
         )
         + "\n"

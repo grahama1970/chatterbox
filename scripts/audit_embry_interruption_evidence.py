@@ -74,6 +74,26 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
         return []
 
 
+def event_epoch_ms(event: dict[str, Any]) -> int | None:
+    timestamp = event.get("timestamp")
+    if not isinstance(timestamp, str) or not timestamp:
+        return None
+    try:
+        return int(datetime.fromisoformat(timestamp.replace("Z", "+00:00")).timestamp() * 1000)
+    except ValueError:
+        return None
+
+
+def first_event(events: list[dict[str, Any]], event_type: str, *, turn_id: str | None = None) -> dict[str, Any] | None:
+    for event in events:
+        if event.get("type") != event_type:
+            continue
+        if turn_id is not None and event.get("turn_id") != turn_id:
+            continue
+        return event
+    return None
+
+
 def normalize_known_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
     """Lift known legacy smoke fields into the stricter audit namespace."""
 
@@ -110,6 +130,26 @@ def normalize_known_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
         normalized.setdefault("turn_control", {})["stale_chunks_should_skip"] = True
     if any(event.get("type") == "interruption.requested" for event in events):
         normalized.setdefault("turn_control", {})["cancelled"] = True
+    old_turn_id = normalized.get("old_turn_id")
+    played_event = first_event(events, "speech.played", turn_id=str(old_turn_id) if old_turn_id else None)
+    interruption_event = first_event(events, "interruption.requested", turn_id=str(old_turn_id) if old_turn_id else None)
+    if played_event:
+        playback = normalized.setdefault("embry_playback", {})
+        artifact_path = played_event.get("artifact_path")
+        if artifact_path:
+            playback.setdefault("audio_artifact_id", Path(str(artifact_path)).name)
+            playback.setdefault("audio_artifact_path", artifact_path)
+        started_ms = event_epoch_ms(played_event)
+        if started_ms is not None:
+            playback.setdefault("started_at_epoch_ms", started_ms)
+    if played_event and interruption_event:
+        started_ms = event_epoch_ms(played_event)
+        interrupted_ms = event_epoch_ms(interruption_event)
+        if started_ms is not None and interrupted_ms is not None:
+            normalized.setdefault("embry_playback", {})["offset_ms_at_interrupt"] = max(
+                0,
+                interrupted_ms - started_ms,
+            )
     final_control = receipt.get("final_control") or {}
     cancel = receipt.get("cancel") or {}
     control = final_control or (cancel.get("control") or {})

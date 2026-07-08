@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T04:48:48.536460+00:00",
+  "generated_at_utc": "2026-07-08T04:51:37.505751+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "partial": 4
