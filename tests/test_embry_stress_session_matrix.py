@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 130, "failed": 170, "not_run": 0}
+    assert status_counts == {"passed": 210, "failed": 90, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -38,7 +38,7 @@ def test_matrix_speaker_identity_simple_cases_use_ledger_receipt() -> None:
     assert all("embry-speaker-identity-ledger" in session["latest_receipt"] for session in speaker_sessions)
 
 
-def test_matrix_memory_simple_failures_use_answerability_ledger_receipt() -> None:
+def test_matrix_memory_simple_cases_use_answerability_ledger_receipt() -> None:
     matrix = build_matrix()
     memory_sessions = [
         session
@@ -48,9 +48,9 @@ def test_matrix_memory_simple_failures_use_answerability_ledger_receipt() -> Non
     ]
 
     assert len(memory_sessions) == 12
-    assert all(session["status"] == "failed" for session in memory_sessions)
+    assert all(session["status"] == "passed" for session in memory_sessions)
     assert all("embry-memory-answerability-ledger" in session["latest_receipt"] for session in memory_sessions)
-    assert all(session["failed_gates"] for session in memory_sessions)
+    assert all(session["failed_gates"] == [] for session in memory_sessions)
 
 
 def test_matrix_medium_memory_search_subset_has_live_receipt_results() -> None:
@@ -64,12 +64,18 @@ def test_matrix_medium_memory_search_subset_has_live_receipt_results() -> None:
     ]
 
     assert len(sessions) == 16
-    assert all("matrix-medium-memory-search" in session["latest_receipt"] for session in sessions)
-    assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
-    memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
-    assert len(memory_sessions) == 12
-    assert all(session["status"] == "failed" for session in memory_sessions)
-    assert all(session["failed_gates"] for session in memory_sessions)
+    assert all(session["status"] == "passed" for session in sessions)
+    assert all(session["failed_gates"] == [] for session in sessions)
+    assert all(
+        "matrix-medium-memory-search" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] == "brave_research"
+    )
+    assert all(
+        "after-scope-fix" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] != "brave_research"
+    )
 
 
 def test_matrix_advanced_memory_search_subset_has_live_receipt_results() -> None:
@@ -83,12 +89,18 @@ def test_matrix_advanced_memory_search_subset_has_live_receipt_results() -> None
     ]
 
     assert len(sessions) == 16
-    assert all("matrix-advanced-memory-search" in session["latest_receipt"] for session in sessions)
-    assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
-    memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
-    assert len(memory_sessions) == 12
-    assert all(session["status"] == "failed" for session in memory_sessions)
-    assert all(session["failed_gates"] for session in memory_sessions)
+    assert all(session["status"] == "passed" for session in sessions)
+    assert all(session["failed_gates"] == [] for session in sessions)
+    assert all(
+        "matrix-advanced-memory-search" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] == "brave_research"
+    )
+    assert all(
+        "after-scope-fix" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] != "brave_research"
+    )
 
 
 def test_matrix_adversarial_memory_search_subset_has_live_receipt_results() -> None:
@@ -102,12 +114,18 @@ def test_matrix_adversarial_memory_search_subset_has_live_receipt_results() -> N
     ]
 
     assert len(sessions) == 16
-    assert all("matrix-adversarial-memory-search" in session["latest_receipt"] for session in sessions)
-    assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
-    memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
-    assert len(memory_sessions) == 12
-    assert all(session["status"] == "failed" for session in memory_sessions)
-    assert all(session["failed_gates"] for session in memory_sessions)
+    assert all(session["status"] == "passed" for session in sessions)
+    assert all(session["failed_gates"] == [] for session in sessions)
+    assert all(
+        "matrix-adversarial-memory-search" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] == "brave_research"
+    )
+    assert all(
+        "after-scope-fix" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] != "brave_research"
+    )
 
 
 def test_matrix_soak_memory_search_subset_has_live_receipt_results() -> None:
@@ -121,12 +139,18 @@ def test_matrix_soak_memory_search_subset_has_live_receipt_results() -> None:
     ]
 
     assert len(sessions) == 16
-    assert all("matrix-soak-memory-search" in session["latest_receipt"] for session in sessions)
-    assert all(session["status"] == "passed" for session in sessions if session["folder_id"] == "brave_research")
-    memory_sessions = [session for session in sessions if session["folder_id"] != "brave_research"]
-    assert len(memory_sessions) == 12
-    assert all(session["status"] == "failed" for session in memory_sessions)
-    assert all(session["failed_gates"] for session in memory_sessions)
+    assert all(session["status"] == "passed" for session in sessions)
+    assert all(session["failed_gates"] == [] for session in sessions)
+    assert all(
+        "matrix-soak-memory-search" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] == "brave_research"
+    )
+    assert all(
+        "after-scope-fix" in session["latest_receipt"]
+        for session in sessions
+        if session["folder_id"] != "brave_research"
+    )
 
 
 def test_matrix_medium_tau_and_skill_subset_records_dag_and_remaining_skill_failures() -> None:
@@ -236,7 +260,10 @@ def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
-    for folder in ["skill_sparta_validator", "voice_control_skill", "interruption"]:
+    assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
+    assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
+
+    for folder in ["voice_control_skill", "interruption"]:
         assert all(session["status"] == "failed" for session in by_folder[folder])
         assert all(
             "matrix-medium-routes-32-47" in session["latest_receipt"]
@@ -261,18 +288,23 @@ def test_matrix_advanced_routes_32_47_subset_records_mixed_preflight_failures() 
     ]
 
     assert len(sessions) == 16
-    assert all(session["status"] == "failed" for session in sessions)
-    assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
-    for folder in ["skill_sparta_validator", "voice_control_skill"]:
+    assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
+    assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
+
+    for folder in ["voice_control_skill"]:
+        assert all(session["status"] == "failed" for session in by_folder[folder])
+        assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in by_folder[folder])
         assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
         assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
         assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
+    assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
+    assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in by_folder["interruption"])
     assert all(
         "interruption_detected_receipt_not_emitted" in session["failed_gates"]
         for session in by_folder["interruption"]
@@ -290,18 +322,23 @@ def test_matrix_adversarial_routes_32_47_subset_records_mixed_preflight_failures
     ]
 
     assert len(sessions) == 16
-    assert all(session["status"] == "failed" for session in sessions)
-    assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
-    for folder in ["skill_sparta_validator", "voice_control_skill"]:
+    assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
+    assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
+
+    for folder in ["voice_control_skill"]:
+        assert all(session["status"] == "failed" for session in by_folder[folder])
+        assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in by_folder[folder])
         assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
         assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
         assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
+    assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
+    assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in by_folder["interruption"])
     assert all(
         "interruption_detected_receipt_not_emitted" in session["failed_gates"]
         for session in by_folder["interruption"]
@@ -319,18 +356,23 @@ def test_matrix_soak_routes_32_47_subset_records_mixed_preflight_failures() -> N
     ]
 
     assert len(sessions) == 16
-    assert all(session["status"] == "failed" for session in sessions)
-    assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in sessions)
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
 
-    for folder in ["skill_sparta_validator", "voice_control_skill"]:
+    assert all(session["status"] == "passed" for session in by_folder["skill_sparta_validator"])
+    assert all("sparta-validator-all-live" in session["latest_receipt"] for session in by_folder["skill_sparta_validator"])
+
+    for folder in ["voice_control_skill"]:
+        assert all(session["status"] == "failed" for session in by_folder[folder])
+        assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in by_folder[folder])
         assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
         assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
         assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
+    assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
+    assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in by_folder["interruption"])
     assert all(
         "interruption_detected_receipt_not_emitted" in session["failed_gates"]
         for session in by_folder["interruption"]
@@ -492,7 +534,8 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     proven_sessions = [
         session
         for session in sessions
-        if session["folder_id"] in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case"}
+        if session["folder_id"]
+        in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case", "skill_sparta_validator"}
         or (
             session["folder_id"] == "voice_control_skill"
             and session["id"] == "voice_control_skill-simple-01"
@@ -501,14 +544,15 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     preflight_failures = [
         session
         for session in sessions
-        if session["folder_id"] not in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case"}
+        if session["folder_id"]
+        not in {"skill_analytics", "skill_create_figure", "skill_create_evidence_case", "skill_sparta_validator"}
         and not (
             session["folder_id"] == "voice_control_skill"
             and session["id"] == "voice_control_skill-simple-01"
         )
     ]
-    assert len(proven_sessions) == 13
-    assert len(preflight_failures) == 7
+    assert len(proven_sessions) == 17
+    assert len(preflight_failures) == 3
     assert all(session["status"] == "passed" for session in proven_sessions)
     assert all(session["failed_gates"] == [] for session in proven_sessions)
     assert all(
@@ -530,6 +574,11 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         "skill-voice-control-live-timeout-fixed" in session["latest_receipt"]
         for session in proven_sessions
         if session["folder_id"] == "voice_control_skill"
+    )
+    assert all(
+        "sparta-validator-all-live" in session["latest_receipt"]
+        for session in proven_sessions
+        if session["folder_id"] == "skill_sparta_validator"
     )
     assert all(session["status"] == "failed" for session in preflight_failures)
     assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in preflight_failures)
