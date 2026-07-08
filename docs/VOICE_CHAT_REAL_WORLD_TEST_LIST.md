@@ -128,6 +128,17 @@ persona-memory miss prompts still answered unrelated records instead of
 clarifying. These failures are now receipt-backed medium cases rather than
 `not_run`.
 
+Latest matrix advanced memory/search subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json`
+
+That run executed `16` advanced sessions with `mocked=false`, `live=true`, and
+`ok=false`. The four Brave Search research sessions passed. The twelve advanced
+SPARTA/persona-memory cases failed the same answerability classes as the simple
+and medium runs: S0609/deprecated-control leakage, unrelated persona-memory
+source collections, and memory-miss prompts answering unrelated records instead
+of clarifying.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
@@ -285,7 +296,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`22` passed, `98` failed, and `180` are `not_run`. This is the intended source
+`26` passed, `110` failed, and `164` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.

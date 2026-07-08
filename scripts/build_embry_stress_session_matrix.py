@@ -577,6 +577,51 @@ for _index in range(1, 5):
         "observed": "Live Brave Search medium session returned relevant source results.",
     }
 
+_ADVANCED_MEMORY_SEARCH_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T015631Z-matrix-advanced-memory-search/receipt.json"
+)
+
+_ADVANCED_MEMORY_FAILURES = {
+    "sparta_qra_compliance-advanced-01": [
+        "sparta_qra_answer_missing_acceptance_terms",
+        "sparta_qra_answer_overfit_to_unrelated_control_exclusion",
+    ],
+    "sparta_qra_compliance-advanced-02": ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"],
+    "sparta_qra_compliance-advanced-03": ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"],
+    "sparta_qra_compliance-advanced-04": ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"],
+    "persona_memory_recall-advanced-01": [
+        "persona_memory_answer_uses_unrelated_source_collection",
+        "persona_memory_answer_wrong_or_unrelated",
+    ],
+    "persona_memory_recall-advanced-02": ["persona_memory_answer_uses_unrelated_source_collection"],
+    "persona_memory_recall-advanced-03": ["persona_memory_answer_uses_unrelated_source_collection"],
+    "persona_memory_recall-advanced-04": ["persona_memory_answer_uses_unrelated_source_collection"],
+    "persona_memory_miss-advanced-01": ["memory_miss_should_not_answer_unrelated_record"],
+    "persona_memory_miss-advanced-02": ["memory_miss_should_not_answer_unrelated_record"],
+    "persona_memory_miss-advanced-03": ["memory_miss_should_not_answer_unrelated_record"],
+    "persona_memory_miss-advanced-04": ["memory_miss_should_not_answer_unrelated_record"],
+}
+
+for _session_id, _failed_gates in _ADVANCED_MEMORY_FAILURES.items():
+    CURRENT_RESULTS[_session_id] = {
+        "status": "failed",
+        "latest_receipt": _ADVANCED_MEMORY_SEARCH_RECEIPT,
+        "failed_gates": _failed_gates,
+        "observed": (
+            "Live advanced memory/search subset returned an answerability failure before speech; "
+            "see the receipt case for exact response text and sources."
+        ),
+    }
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"brave_research-advanced-{_index:02d}"] = {
+        "status": "passed",
+        "latest_receipt": _ADVANCED_MEMORY_SEARCH_RECEIPT,
+        "failed_gates": [],
+        "observed": "Live Brave Search advanced session returned relevant source results.",
+    }
+
 _MEDIUM_TAU_SKILL_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T014802Z-matrix-medium-routes-16-31/receipt.json"
