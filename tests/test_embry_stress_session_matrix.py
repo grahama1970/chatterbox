@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 44, "failed": 212, "not_run": 44}
+    assert status_counts == {"passed": 44, "failed": 228, "not_run": 28}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -182,6 +182,26 @@ def test_matrix_adversarial_tau_and_skill_subset_has_live_preflight_failures() -
     assert len(sessions) == 16
     assert all(session["status"] == "failed" for session in sessions)
     assert all("matrix-adversarial-routes-16-31" in session["latest_receipt"] for session in sessions)
+    assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in sessions)
+    skill_sessions = [session for session in sessions if session["folder_id"].startswith("skill_")]
+    assert len(skill_sessions) == 12
+    assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in skill_sessions)
+    assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in skill_sessions)
+
+
+def test_matrix_soak_tau_and_skill_subset_has_live_preflight_failures() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["difficulty"] == "soak"
+        and session["folder_id"]
+        in {"tau_tool_orchestration", "skill_create_evidence_case", "skill_create_figure", "skill_analytics"}
+    ]
+
+    assert len(sessions) == 16
+    assert all(session["status"] == "failed" for session in sessions)
+    assert all("matrix-soak-routes-16-31" in session["latest_receipt"] for session in sessions)
     assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in sessions)
     skill_sessions = [session for session in sessions if session["folder_id"].startswith("skill_")]
     assert len(skill_sessions) == 12

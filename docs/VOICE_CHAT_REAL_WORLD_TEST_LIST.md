@@ -244,6 +244,18 @@ persona-memory miss prompts still answered unrelated records instead of
 clarifying. The matrix now records `44` passed, `212` failed, and `44` not-run
 sessions.
 
+Latest matrix soak Tau/direct-skill subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024031Z-matrix-soak-routes-16-31/receipt.json`
+
+That run executed `16` soak Tau/direct-skill sessions with `mocked=false`,
+`live=true`, and `ok=false`. The four soak Tau orchestration sessions reached
+the Tau wrapper but still produced no `tau.agent_handoff.v1` work order or DAG
+receipt. The twelve soak direct-skill sessions for create-evidence-case,
+create-figure, and analytics confirmed the required skill files exist, but no
+Tau handoff, `tau.dag_receipt.v1`, or `skill.call.receipt.v1` was emitted. The
+matrix now records `44` passed, `228` failed, and `28` not-run sessions.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`
