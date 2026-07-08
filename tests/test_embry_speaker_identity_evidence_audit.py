@@ -253,6 +253,15 @@ def test_audit_fails_when_matrix_passes_but_physical_identity_is_unproven(tmp_pa
     assert "physical_speaker_to_microphone_identity_gating_not_proven" in audit["failed_gates"]
     assert "matrix_contains_source_audio_identity_unproven_rows" in audit["failed_gates"]
     assert "overlap_diarization_not_proven" in audit["failed_gates"]
+    assert audit["source_audio_identity_evidence"]["boundary"] == "speaker_matrix_source_audio_identity"
+    assert audit["source_audio_identity_evidence"]["ready"] is False
+    assert audit["source_audio_identity_evidence"]["failed_session_count"] == 1
+    assert audit["source_audio_identity_evidence"]["latest_receipt_paths"] == ["/tmp/speaker-passed.json"]
+    assert audit["physical_identity_evidence"]["boundary"] == "physical_speaker_to_microphone_identity_gating"
+    assert audit["physical_identity_evidence"]["ready"] is False
+    assert audit["physical_identity_evidence"]["known_horus_candidate_count"] == 1
+    assert audit["physical_identity_evidence"]["blocked_candidate_count"] == 1
+    assert "still disclaim physical speaker-to-microphone" in audit["physical_identity_evidence"]["blocking_summary"]
 
 
 def test_audit_passes_only_with_physical_identity_and_overlap_evidence_removed_from_failures(tmp_path: Path) -> None:
@@ -379,4 +388,7 @@ def test_audit_passes_only_with_physical_identity_and_overlap_evidence_removed_f
     assert audit["overlap_diarization_candidate_count"] == 1
     assert audit["independent_enrollment_candidate_count"] == 1
     assert audit["physical_identity_candidate_count"] == 1
+    assert audit["source_audio_identity_evidence"]["ready"] is True
+    assert audit["physical_identity_evidence"]["ready"] is True
+    assert audit["physical_identity_evidence"]["physical_identity_candidate_count"] == 1
     assert audit["failed_gates"] == []

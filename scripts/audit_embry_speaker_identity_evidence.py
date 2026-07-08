@@ -71,6 +71,81 @@ def _speaker_matrix_summary(matrix: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _source_audio_identity_summary(speaker_matrix: dict[str, Any]) -> dict[str, Any]:
+    source_unproven = [
+        session
+        for session in speaker_matrix["sessions"]
+        if "source_audio_identity_proven=false" in str(session.get("observed", ""))
+    ]
+    receipt_paths = sorted(
+        {
+            str(session.get("latest_receipt"))
+            for session in source_unproven
+            if session.get("latest_receipt")
+        }
+    )
+    return {
+        "boundary": "speaker_matrix_source_audio_identity",
+        "ready": not source_unproven,
+        "failed_session_count": len(source_unproven),
+        "latest_receipt_paths": receipt_paths,
+        "sample_failures": source_unproven[:4],
+        "blocking_summary": (
+            "speaker identity matrix contains policy rows where source_audio_identity_proven=false; "
+            "these rows prove memory /speaker/resolve policy, not raw audio identity"
+        )
+        if source_unproven
+        else None,
+    }
+
+
+def _physical_identity_summary(proof_candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    physical_candidates = [
+        candidate
+        for candidate in proof_candidates
+        if candidate["known_horus_resolution_ok"]
+    ]
+    proven = [
+        candidate
+        for candidate in physical_candidates
+        if candidate["physical_identity_not_proven_by_claims"] is False
+        and candidate["source_audio_identity_proven"] is True
+    ]
+    blocked = [
+        candidate
+        for candidate in physical_candidates
+        if candidate["physical_identity_not_proven_by_claims"] is True
+        or candidate["source_audio_identity_proven"] is not True
+    ]
+    return {
+        "boundary": "physical_speaker_to_microphone_identity_gating",
+        "ready": bool(proven),
+        "known_horus_candidate_count": len(physical_candidates),
+        "physical_identity_candidate_count": len(proven),
+        "blocked_candidate_count": len(blocked),
+        "sample_blocked_candidates": [
+            {
+                "path": candidate["path"],
+                "source_audio_identity_proven": candidate["source_audio_identity_proven"],
+                "physical_identity_not_proven_by_claims": candidate["physical_identity_not_proven_by_claims"],
+                "enrollment_audio": candidate["enrollment_audio"],
+                "candidate_audio": candidate["candidate_audio"],
+                "enrollment_independent_from_candidate": candidate["enrollment_independent_from_candidate"],
+                "similarity": candidate["similarity"],
+                "threshold": candidate["threshold"],
+                "claims_does_not_prove": candidate["claims_does_not_prove"],
+            }
+            for candidate in blocked[:4]
+        ],
+        "blocking_summary": (
+            "known Horus speaker-resolution receipts still disclaim physical speaker-to-microphone "
+            "identity or lack source_audio_identity_proven=true"
+        )
+        if not proven
+        else None,
+    }
+
+
 def _policy_cases_cover_required_statuses(cases: Any) -> bool:
     if not isinstance(cases, list):
         return False
@@ -219,6 +294,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         and candidate["physical_identity_not_proven_by_claims"] is False
         and candidate["source_audio_identity_proven"] is True
     ]
+    source_audio_identity = _source_audio_identity_summary(speaker_matrix)
+    physical_identity = _physical_identity_summary(proof_candidates)
 
     failed_gates: list[str] = []
     if speaker_matrix["status_counts"]["failed"]:
@@ -282,6 +359,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "pyannote_strict_two_speaker_candidate_count": len(pyannote_strict_two_speaker),
         "independent_enrollment_candidate_count": len(independent_enrollment),
         "physical_identity_candidate_count": len(physical_identity_proven),
+        "source_audio_identity_evidence": source_audio_identity,
+        "physical_identity_evidence": physical_identity,
         "proof_candidates": proof_candidates,
         "failed_gates": sorted(set(failed_gates)),
         "claims": {

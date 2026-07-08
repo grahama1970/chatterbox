@@ -26,7 +26,7 @@
     "physical_speaker_to_microphone_identity_gating_not_proven"
   ],
   "fixture_gate_candidate_count": 1,
-  "generated_at_utc": "2026-07-08T05:04:32.047697+00:00",
+  "generated_at_utc": "2026-07-08T06:56:11.907867+00:00",
   "independent_enrollment_candidate_count": 1,
   "known_horus_candidate_count": 2,
   "live": true,
@@ -35,6 +35,54 @@
   "ok": false,
   "overlap_diarization_candidate_count": 1,
   "physical_identity_candidate_count": 0,
+  "physical_identity_evidence": {
+    "blocked_candidate_count": 2,
+    "blocking_summary": "known Horus speaker-resolution receipts still disclaim physical speaker-to-microphone identity or lack source_audio_identity_proven=true",
+    "boundary": "physical_speaker_to_microphone_identity_gating",
+    "known_horus_candidate_count": 2,
+    "physical_identity_candidate_count": 0,
+    "ready": false,
+    "sample_blocked_candidates": [
+      {
+        "candidate_audio": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/horus-factory-embry-stress.wav",
+        "claims_does_not_prove": [
+          "generalized_production_noise_robustness_beyond_the_configured_fixture",
+          "browser_webrtc_readiness",
+          "memory_salience_or_qra_correctness",
+          "subjective_interruption_feel",
+          "chatterbox_tts_output_quality",
+          "physical_speaker_to_microphone_identity_gating",
+          "overlapping_speaker_diarization"
+        ],
+        "enrollment_audio": "/home/graham/workspace/experiments/agent-skills-loop2-shared/skills/persona-dream/voice_clone_candidates/horus_kling_clone_candidate.wav",
+        "enrollment_independent_from_candidate": true,
+        "path": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json",
+        "physical_identity_not_proven_by_claims": true,
+        "similarity": 0.8253,
+        "source_audio_identity_proven": null,
+        "threshold": 0.72
+      },
+      {
+        "candidate_audio": "/tmp/chatterbox-physical-listen-male-20260702T150827Z/mic_recorded_horus_male.wav",
+        "claims_does_not_prove": [
+          "production_noise_robustness",
+          "browser_webrtc_readiness",
+          "memory_salience_or_qra_correctness",
+          "subjective_interruption_feel",
+          "chatterbox_tts_output_quality",
+          "physical_speaker_to_microphone_identity_gating",
+          "overlapping_speaker_diarization"
+        ],
+        "enrollment_audio": "/tmp/chatterbox-physical-listen-male-20260702T150827Z/mic_recorded_horus_male.wav",
+        "enrollment_independent_from_candidate": false,
+        "path": "/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json",
+        "physical_identity_not_proven_by_claims": true,
+        "similarity": 1.0,
+        "source_audio_identity_proven": null,
+        "threshold": 0.45
+      }
+    ]
+  },
   "policy_ledger_candidate_count": 1,
   "proof_candidate_count": 8,
   "proof_candidates": [
@@ -367,6 +415,25 @@
   ],
   "pyannote_strict_two_speaker_candidate_count": 1,
   "schema": "chatterbox.embry_speaker_identity_evidence_audit.v1",
+  "source_audio_identity_evidence": {
+    "blocking_summary": "speaker identity matrix contains policy rows where source_audio_identity_proven=false; these rows prove memory /speaker/resolve policy, not raw audio identity",
+    "boundary": "speaker_matrix_source_audio_identity",
+    "failed_session_count": 1,
+    "latest_receipt_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json"
+    ],
+    "ready": false,
+    "sample_failures": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [],
+        "id": "speaker_identity-simple-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json",
+        "observed": "Ledger-backed live memory /speaker/resolve mapped the clean Horus candidate to horus_lupercal and emitted speaker-scoped memory tags; source_audio_identity_proven=false.",
+        "status": "passed"
+      }
+    ]
+  },
   "speaker_matrix": {
     "failed_gate_counts": {},
     "session_count": 20,
