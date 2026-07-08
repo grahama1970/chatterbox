@@ -188,6 +188,36 @@ def classify_matrix_answer(session: dict[str, Any], answer: dict[str, Any]) -> l
     return sorted(set(failed))
 
 
+def classify_voice_delivery_intent(session: dict[str, Any], intent: dict[str, Any]) -> list[str]:
+    if not intent.get("ok_http"):
+        return ["memory_intent_http_ok"]
+    payload = intent.get("json") if isinstance(intent.get("json"), dict) else {}
+    voice_delivery = payload.get("voice_delivery") if isinstance(payload.get("voice_delivery"), dict) else {}
+    failed: list[str] = []
+    if not voice_delivery:
+        return ["voice_delivery_present"]
+    if voice_delivery.get("source") != "memory_intent":
+        failed.append("voice_delivery_source_memory_intent")
+    if not voice_delivery.get("tone"):
+        failed.append("voice_delivery_tone_present")
+    if not voice_delivery.get("delivery_stage"):
+        failed.append("voice_delivery_delivery_stage_present")
+
+    question = normalize(str(session.get("question") or ""))
+    tone = normalize(str(voice_delivery.get("tone") or "")).replace(" ", "_")
+    expected_by_prompt = [
+        (["frustrated", "de_escalate", "warm"], {"neutral_warm", "calm_precise", "careful_concerned", "deflect_calm"}),
+        (["hostile", "humorous", "boundary"], {"firm_boundary", "deflect_calm", "playful_light"}),
+        (["discouraged", "gently"], {"neutral_warm", "calm_precise", "careful_concerned", "relieved"}),
+        (["two", "speakers", "overlap"], {"one_at_a_time_interrupt", "firm_boundary"}),
+    ]
+    for terms, expected_tones in expected_by_prompt:
+        if all(term in question for term in terms) and tone not in expected_tones:
+            failed.append(f"voice_delivery_tone_expected_{'_or_'.join(sorted(expected_tones))}")
+            break
+    return sorted(set(failed))
+
+
 def run_memory_case(case: dict[str, Any], *, memory_url: str, timeout_s: int) -> dict[str, Any]:
     intent = post_json(
         f"{memory_url.rstrip('/')}/intent",
@@ -271,6 +301,25 @@ def run_matrix_session(
 ) -> dict[str, Any]:
     route = str(session.get("route") or "")
     query = str(session.get("question") or "")
+    if route == "memory.intent.voice_delivery":
+        intent = post_json(
+            f"{memory_url.rstrip('/')}/intent",
+            {"q": query, "scope": "persona_memory", "fast": True},
+            timeout_s,
+        )
+        failed = classify_voice_delivery_intent(session, intent)
+        return {
+            "id": session["id"],
+            "matrix_session": session,
+            "query": query,
+            "route": route,
+            "intent": intent,
+            "voice_delivery": (intent.get("json") or {}).get("voice_delivery") if isinstance(intent.get("json"), dict) else None,
+            "ok": not failed,
+            "mocked": False,
+            "live": bool(intent.get("ok_http")),
+            "failed_gates": failed,
+        }
     if route.startswith("memory."):
         scope = "sparta_qra" if route == "memory.sparta_qra" else "persona_memory"
         intent = post_json(

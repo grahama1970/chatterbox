@@ -102,6 +102,18 @@ with `24` completed case events. This is useful failure evidence: the Sessions
 matrix now distinguishes answerability failures from route families that do not
 yet have executable live sanity implementations.
 
+Latest matrix tone/emotion receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T001850Z-matrix-tone-simple/receipt.json`
+
+That run re-executed the four simple `memory.intent.voice_delivery` sessions
+with an executable live `/intent` route. It reported `mocked=false`,
+`live=true`, and `ok=false`: one prompt passed, while hostile, discouraged, and
+two-speaker-overlap prompts all returned `memory_confident`/`satisfied` instead
+of the expected conversational tones. This converts the prior generic
+`runner_route_not_implemented` tone failures into concrete `$memory` intent
+tone-selection failures.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`
@@ -114,7 +126,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `200` labeled sessions across `10` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`4` passed, `36` failed, and `160` are `not_run`. This is the intended source
+`5` passed, `35` failed, and `160` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 ## Required Receipt Fields

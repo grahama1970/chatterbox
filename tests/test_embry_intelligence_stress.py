@@ -1,5 +1,10 @@
 from scripts.build_embry_stress_session_matrix import build_matrix
-from scripts.smoke_embry_intelligence_stress import classify_answer, classify_matrix_answer, select_matrix_sessions
+from scripts.smoke_embry_intelligence_stress import (
+    classify_answer,
+    classify_matrix_answer,
+    classify_voice_delivery_intent,
+    select_matrix_sessions,
+)
 
 
 def answer_payload(text: str, *, can_answer: bool = True) -> dict:
@@ -81,6 +86,43 @@ def test_matrix_answer_marks_unsupported_route_unimplemented() -> None:
     )
 
     assert failed == ["runner_route_not_implemented"]
+
+
+def intent_payload(tone: str, *, source: str = "memory_intent", delivery_stage: str = "satisfied") -> dict:
+    return {
+        "ok_http": True,
+        "json": {
+            "voice_delivery": {
+                "source": source,
+                "tone": tone,
+                "delivery_stage": delivery_stage,
+            },
+        },
+    }
+
+
+def test_voice_delivery_intent_rejects_generic_memory_confident_for_overlap() -> None:
+    failed = classify_voice_delivery_intent(
+        {
+            "route": "memory.intent.voice_delivery",
+            "question": "Two speakers overlap; Embry should say a human one-at-a-time boundary.",
+        },
+        intent_payload("memory_confident"),
+    )
+
+    assert "voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt" in failed
+
+
+def test_voice_delivery_intent_accepts_one_at_a_time_overlap_tone() -> None:
+    failed = classify_voice_delivery_intent(
+        {
+            "route": "memory.intent.voice_delivery",
+            "question": "Two speakers overlap; Embry should say a human one-at-a-time boundary.",
+        },
+        intent_payload("one_at_a_time_interrupt", delivery_stage="boundary"),
+    )
+
+    assert failed == []
 
 
 def test_select_matrix_sessions_filters_folder_difficulty_and_limit() -> None:
