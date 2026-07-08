@@ -1,6 +1,6 @@
 # Project Knowledge: chatterbox
 
-**Last updated:** 2026-07-04 00:00 by agent
+**Last updated:** 2026-07-08 07:23 by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -85,6 +85,7 @@
 - 2026-07-08: Event-sourced replay receipt added for the live Chatterbox interruption session. `scripts/build_embry_event_sourced_replay_receipt.py` converted `/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json` and its `task-events.jsonl` into `/tmp/chatterbox-fork-agent-out/event-sourced-replay/20260708T034752Z-interrupt-current/replay-receipt.json`. The receipt has `mocked=false`, `live=true`, `ok=true`, a 10-event journal, required replay event types, old/new turn ids, three audio artifact ids, matching timing offsets, and matching chat/audio/turn order flags. This proves event-journal reconstruction for a Chatterbox interruption session; it does not prove browser Chat UX rendering, RealtimeSTT live microphone correctness, speaker identity correctness, or subjective replay timing quality.
 - 2026-07-08: Direct Chatterbox/orb envelope receipt added. `scripts/build_embry_orb_sync_receipt.py` normalized `/tmp/embry-orb-direct-speak-proof.json` into `/tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak/orb-sync-receipt.json`. The receipt has `mocked=false`, `live=true`, `ok=true`, turn/audio artifact id `0b0d4fe7ea12`, playback start `1783361300926`, `orb.authority=server-envelope`, 330 envelope frames, max level `0.798`, 20 nonzero audio samples, 21 bound samples, and screenshot `/tmp/embry-orb-direct-speak-proof.png`. `docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json` now passes for this bounded proof. Goal-level `orb_sync` remains `partial` because the same orb linkage has not yet been emitted from a full shared Chat UX or live listener turn.
 - 2026-07-08: Replay evidence audit now requires passing candidates to be live/unmocked and reports wrapper `live=true` when at least one current event-sourced replay receipt passes. `docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json` now has `ok=true`, `live=true`, `failed_gates=[]`, and the exact Horus audit no longer flags the replay evidence artifact as not clean. Goal-level replay remains `partial` because browser shared Chat UX replay from a full live listener session is still missing.
+- 2026-07-08 focused proof pass: the previously unproven Embry voice/chat gates now have focused receipts, but not yet one unified event-spine receipt. Rung 1 local audio graph -> RealtimeSTT PASS: /tmp/embry-live-e2e/rung1-20260708T105423Z-hello-alpha7781-pw-fixed/rung_receipt.json. Rung 2 source-audio Horus speaker gate PASS after tightening the margin to 0.12: /tmp/embry-live-e2e/rung2-20260708T-default-after-margin-fix/rung2_source_audio_speaker_gate_receipt.json; the earlier failure proved generic espeak audio was accepted as Horus under the loose margin. Browser getUserMedia/WebRTC transport PASS with real devices and pw-play fixture: /tmp/embry-live-e2e/browser-webrtc-20260708T-focused-shortplay/receipt.json. Listener ASR -> memory recall -> QRA hook -> Tau/Chatterbox PASS using the real local Whisper token from docker exec whisper whisper_manage --getkey: /tmp/embry-live-e2e/rung3-20260708T-listener-memory-tau-qra-realkey2/listener-memory-tau-qra.json. Shared Chat UX lineage/entity underline PASS: /tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/20260708T-focused-lineage/receipt.json. Chat replay audio PASS only when the proof waits long enough for the 25.88s artifact: /tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio/20260708T-focused-replay-audio-35s/receipt.json. Direct Chatterbox/orb envelope PASS: /tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak-focused/orb-sync-receipt.json. Fresh interruption PASS with --path-map /out=/tmp/chatterbox-fork-agent-out: /tmp/embry-live-e2e/rung4-20260708T-focused-interrupt/rung4-live-interrupt-mapped.json. Brave Search cross-checks saved at /tmp/chatterbox-brave-whisper-auth.json, /tmp/chatterbox-brave-chrome-audio.json, and /tmp/chatterbox-brave-pipewire-webrtc.json confirmed docker-whisper bearer-key behavior, Chrome autoplay test flags/user-gesture constraints, and PipeWire pw-play/pw-record monitor tooling.
 
 ## Recent Decisions
 
@@ -98,6 +99,7 @@
 | 2026-07-08 | Blocked answerability decisions must fail before Chatterbox synthesis | `/tau/voice-render` now rejects `block_before_speech` answerability receipts and the live runtime-block receipt shows no finished audio artifacts for 12 blocked memory cases. |
 | 2026-07-08 | Embry stress tests must be generated from source-backed oracles, not demos | The matrix now has 300 cases with per-row oracle, required receipts, answerability policy, and Tau-only direct-skill constraints. |
 | 2026-07-08 | No Embry conversation test may be flat or neutral | Every matrix row now requires a conversation arc, steering strategy, `$memory` intent tone, inline emotion tags, pause policy, and interruption policy. |
+| 2026-07-08 | Use focused proof receipts before unified Embry voice-loop claims | The 2026-07-08 pass showed each gate can be proven independently, but the full-loop claim still needs one shared turn_id/event-spine receipt tying browser/RealtimeSTT, speaker gate, memory/Tau, Chatterbox, Chat UX, orb, replay, and interruption together. |
 
 ## Open Questions
 
@@ -142,6 +144,11 @@
 | docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json | Generated failing exact pass/fail receipt for the eight requested Horus voice/chat proof items |
 | docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md | Human-readable list of real-world non-mocked voice sanity tests, receipts, failures, and remaining gaps |
 | docs/VOICE_CHAT_REQUIREMENTS.md | Requirements matrix for Embry voice chat, listener, memory/Tau, Chatterbox, and browser/factory boundaries |
+| scripts/rung1_audio_graph_realtimestt.py | Focused proof runner for local PipeWire/Pulse audio graph capture into RealtimeSTT external audio with nonce transcript receipt. |
+| scripts/rung2_source_audio_speaker_gate.py | Focused proof runner for independent Horus source-audio acceptance and non-Horus fail-closed speaker-gate checks. |
+| scripts/prove_embry_chat_ux_lineage.py | Browser receipt for shared Chat UX text/audio/entity underline lineage. |
+| scripts/prove_embry_chat_ux_replay_audio.py | Browser media receipt for shared Chat UX session replay audio progress and completion. |
+| scripts/smoke_browser_webrtc_transport.py | Browser getUserMedia/WebRTC-to-WebSocket PCM transport proof with real microphone devices and optional local playback fixture. |
 
 ## Infrastructure State
 
