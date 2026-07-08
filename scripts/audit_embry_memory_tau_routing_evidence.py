@@ -85,6 +85,18 @@ def _sample_failures(sessions: list[dict[str, Any]], limit: int = 8) -> list[dic
     return failures
 
 
+def _receipt_paths(sessions: list[dict[str, Any]], *, failed_only: bool = False) -> list[str]:
+    paths = sorted(
+        {
+            str(session["latest_receipt"])
+            for session in sessions
+            if session.get("latest_receipt")
+            and (not failed_only or session.get("status") == "failed")
+        }
+    )
+    return paths
+
+
 def _group_summary(matrix: dict[str, Any], folders: set[str]) -> dict[str, Any]:
     sessions = [session for session in matrix["sessions"] if session["folder_id"] in folders]
     by_folder: dict[str, dict[str, Any]] = {}
@@ -100,8 +112,46 @@ def _group_summary(matrix: dict[str, Any], folders: set[str]) -> dict[str, Any]:
         "session_count": len(sessions),
         "status_counts": _status_counts(sessions),
         "failed_gate_counts": _gate_counts(sessions),
+        "receipt_paths": _receipt_paths(sessions),
+        "failed_receipt_paths": _receipt_paths(sessions, failed_only=True),
         "by_folder": by_folder,
         "sample_failures": _sample_failures(sessions),
+    }
+
+
+def _boundary_evidence(boundary: str, summary: dict[str, Any]) -> dict[str, Any]:
+    failed_count = summary["status_counts"]["failed"]
+    return {
+        "boundary": boundary,
+        "ready": failed_count == 0 and summary["status_counts"]["passed"] > 0,
+        "session_count": summary["session_count"],
+        "passed_session_count": summary["status_counts"]["passed"],
+        "failed_session_count": failed_count,
+        "failed_gate_counts": summary["failed_gate_counts"],
+        "receipt_paths": summary.get("receipt_paths") or [],
+        "failed_receipt_paths": summary.get("failed_receipt_paths") or [],
+        "sample_failures": summary["sample_failures"],
+    }
+
+
+def _tau_skill_receipt_evidence(
+    tau_skill: dict[str, Any],
+    tau_dag_handoffs: list[dict[str, Any]],
+    direct_skill_calls: list[dict[str, Any]],
+) -> dict[str, Any]:
+    failed_count = tau_skill["status_counts"]["failed"]
+    return {
+        "boundary": "tau_skill_call_agent_handoff_dag_receipts",
+        "ready": failed_count == 0 and bool(tau_dag_handoffs) and bool(direct_skill_calls),
+        "session_count": tau_skill["session_count"],
+        "passed_session_count": tau_skill["status_counts"]["passed"],
+        "failed_session_count": failed_count,
+        "tau_dag_handoff_candidate_count": len(tau_dag_handoffs),
+        "direct_skill_call_candidate_count": len(direct_skill_calls),
+        "failed_gate_counts": tau_skill["failed_gate_counts"],
+        "receipt_paths": tau_skill.get("receipt_paths") or [],
+        "failed_receipt_paths": tau_skill.get("failed_receipt_paths") or [],
+        "sample_failures": tau_skill["sample_failures"],
     }
 
 
@@ -234,8 +284,21 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "audited_session_count": len(relevant_sessions),
         "audited_status_counts": _status_counts(relevant_sessions),
         "memory_answerability": memory,
+        "memory_answerability_evidence": _boundary_evidence(
+            "memory_answerability_before_tau_chatterbox",
+            memory,
+        ),
         "tau_skill_routing": tau_skill,
+        "tau_skill_handoff_evidence": _tau_skill_receipt_evidence(
+            tau_skill,
+            tau_dag_handoffs,
+            direct_skill_calls,
+        ),
         "external_research": external_research,
+        "external_research_evidence": _boundary_evidence(
+            "brave_research_before_tau_response",
+            external_research,
+        ),
         "proof_candidate_count": len(proof_candidates),
         "live_unmocked_candidate_count": len(live_unmocked_candidates),
         "runtime_block_candidate_count": len(runtime_blocks),

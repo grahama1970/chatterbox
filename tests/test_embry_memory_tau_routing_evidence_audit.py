@@ -147,6 +147,15 @@ def test_audit_fails_when_memory_and_tau_rows_fail(tmp_path: Path) -> None:
     assert "tau_agent_handoff_missing" in audit["failed_gates"]
     assert "skill_call_receipt_missing" in audit["failed_gates"]
     assert "tau_dag_receipt_missing" in audit["failed_gates"]
+    assert audit["memory_answerability_evidence"]["boundary"] == "memory_answerability_before_tau_chatterbox"
+    assert audit["memory_answerability_evidence"]["ready"] is False
+    assert audit["memory_answerability_evidence"]["failed_session_count"] == 1
+    assert audit["memory_answerability_evidence"]["failed_receipt_paths"] == ["/tmp/sparta_qra_compliance-failed.json"]
+    assert audit["tau_skill_handoff_evidence"]["boundary"] == "tau_skill_call_agent_handoff_dag_receipts"
+    assert audit["tau_skill_handoff_evidence"]["ready"] is False
+    assert audit["tau_skill_handoff_evidence"]["failed_session_count"] == 2
+    assert audit["tau_skill_handoff_evidence"]["tau_dag_handoff_candidate_count"] == 0
+    assert audit["tau_skill_handoff_evidence"]["direct_skill_call_candidate_count"] == 0
 
 
 def test_audit_passes_only_when_all_relevant_rows_and_runtime_block_pass(tmp_path: Path) -> None:
@@ -176,6 +185,10 @@ def test_audit_passes_only_when_all_relevant_rows_and_runtime_block_pass(tmp_pat
     assert audit["status"] == "passed"
     assert audit["failed_gates"] == []
     assert audit["audited_status_counts"] == {"passed": 10, "failed": 0, "not_run": 0}
+    assert audit["memory_answerability_evidence"]["ready"] is True
+    assert audit["memory_answerability_evidence"]["failed_session_count"] == 0
+    assert audit["external_research_evidence"]["ready"] is True
+    assert audit["external_research_evidence"]["passed_session_count"] == 1
 
 
 def test_external_research_green_does_not_mask_memory_tau_failures(tmp_path: Path) -> None:
@@ -190,6 +203,8 @@ def test_external_research_green_does_not_mask_memory_tau_failures(tmp_path: Pat
     audit = build_audit(matrix, [])
 
     assert audit["external_research"]["status_counts"] == {"passed": 1, "failed": 0, "not_run": 0}
+    assert audit["external_research_evidence"]["ready"] is True
+    assert audit["external_research_evidence"]["failed_session_count"] == 0
     assert audit["ok"] is False
     assert audit["live"] is False
     assert audit["live_unmocked_candidate_count"] == 0
