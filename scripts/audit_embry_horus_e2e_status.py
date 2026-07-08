@@ -99,7 +99,7 @@ ITEMS: dict[str, dict[str, Any]] = {
             "new Horus turn wins",
             "non-primary interruption is rejected or fail-closed",
         ],
-        "current_failure": "Interruption is partial: live primary-speaker barge-in stops old audio and a new turn wins, but natural-stop/tool-wait and non-primary interruption regressions remain incomplete.",
+        "current_failure": "Interruption is partial: live primary-speaker barge-in stops old audio and a new turn wins, and Chatterbox speech evidence covers Tau wait natural-stop and non-primary suppression slices, but these are not yet tied to one live STT -> speaker gate -> Tau/memory -> Chatterbox regression ledger.",
     },
 }
 

@@ -60,7 +60,8 @@ def test_horus_status_audit_names_concrete_next_failures() -> None:
     assert "event-sourced" in audit["items"]["replay"]["current_failure"]
     assert "partial" in audit["items"]["orb_sync"]["current_failure"]
     assert "Interruption is partial" in audit["items"]["interruption"]["current_failure"]
-    assert "natural-stop/tool-wait" in audit["items"]["interruption"]["current_failure"]
+    assert "Tau wait natural-stop" in audit["items"]["interruption"]["current_failure"]
+    assert "live STT -> speaker gate -> Tau/memory -> Chatterbox" in audit["items"]["interruption"]["current_failure"]
     assert "strict pyannote two-speaker overlap receipt" in (
         audit["items"]["real_horus_enrollment"]["current_failure"]
     )

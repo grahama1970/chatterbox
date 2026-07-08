@@ -53,8 +53,8 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["interruption_turn_control", "tone_emotion_intent"],
         "evidence_artifacts": ["docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"],
         "status": "partial",
-        "summary": "Chatterbox render, QRA disabled, QRA variant, and stream-cancel proof slices exist, but tone coverage, interruption behavior, and subjective voice quality remain open.",
-        "next_proof": "Run audible Chatterbox receipts for tone families and barge-in stale-byte behavior tied to a live turn id.",
+        "summary": "Chatterbox render, QRA disabled, QRA variant, stream-cancel, barge-in, non-primary suppression, and Tau wait natural-stop proof slices exist, but tone coverage and subjective voice quality remain open.",
+        "next_proof": "Run audible Chatterbox receipts for the remaining tone families and tie the same delivery policy to a live STT -> Tau/memory -> Chatterbox turn id.",
     },
     "chat_ux_sync": {
         "title": "Chat UX Sync",
@@ -93,8 +93,8 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["interruption_turn_control"],
         "evidence_artifacts": ["docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"],
         "status": "partial",
-        "summary": "A live primary-speaker barge-in receipt now proves old audio stops and the new turn wins; the broader matrix still lacks natural-stop/tool-wait coverage and non-primary interruption regressions.",
-        "next_proof": "Run matrix receipts for Tau tool-wait natural stops, non-primary interruption rejection, and stale-audio behavior tied to the same live turn ledger.",
+        "summary": "A live primary-speaker barge-in receipt proves old audio stops and the new turn wins; Chatterbox speech evidence now also has non-primary suppression and Tau wait natural-stop slices.",
+        "next_proof": "Run interruption regressions tied to the same live STT -> speaker gate -> Tau/memory -> Chatterbox turn ledger, including non-primary rejection and stale-audio behavior.",
     },
 }
 

@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T07:19:45.443788+00:00",
+  "generated_at_utc": "2026-07-08T07:27:45.339031+00:00",
   "goal_subsystem_status_counts": {
     "failing": 3,
     "partial": 5
@@ -92,7 +92,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Run audible Chatterbox receipts for tone families and barge-in stale-byte behavior tied to a live turn id.",
+      "next_proof": "Run audible Chatterbox receipts for the remaining tone families and tie the same delivery policy to a live STT -> Tau/memory -> Chatterbox turn id.",
       "objective_phrase": "Chatterbox speech",
       "requirement_ids": [
         "VC-12",
@@ -141,7 +141,7 @@
         }
       ],
       "status": "partial",
-      "summary": "Chatterbox render, QRA disabled, QRA variant, and stream-cancel proof slices exist, but tone coverage, interruption behavior, and subjective voice quality remain open.",
+      "summary": "Chatterbox render, QRA disabled, QRA variant, stream-cancel, barge-in, non-primary suppression, and Tau wait natural-stop proof slices exist, but tone coverage and subjective voice quality remain open.",
       "taxonomy": {
         "status_counts": {
           "failed": 35,
@@ -201,7 +201,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Run matrix receipts for Tau tool-wait natural stops, non-primary interruption rejection, and stale-audio behavior tied to the same live turn ledger.",
+      "next_proof": "Run interruption regressions tied to the same live STT -> speaker gate -> Tau/memory -> Chatterbox turn ledger, including non-primary rejection and stale-audio behavior.",
       "objective_phrase": "interruption",
       "requirement_ids": [
         "VC-12",
@@ -220,7 +220,7 @@
         }
       ],
       "status": "partial",
-      "summary": "A live primary-speaker barge-in receipt now proves old audio stops and the new turn wins; the broader matrix still lacks natural-stop/tool-wait coverage and non-primary interruption regressions.",
+      "summary": "A live primary-speaker barge-in receipt proves old audio stops and the new turn wins; Chatterbox speech evidence now also has non-primary suppression and Tau wait natural-stop slices.",
       "taxonomy": {
         "status_counts": {
           "failed": 20,

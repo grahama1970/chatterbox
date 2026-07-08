@@ -89,7 +89,7 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert "Browser replay audio now advances" in audit["subsystems"]["chat_ux_sync"]["summary"]
     assert "entity underline spans fail" in audit["subsystems"]["chat_ux_sync"]["summary"]
     assert "live primary-speaker barge-in receipt" in audit["subsystems"]["interruption"]["summary"]
-    assert "Tau tool-wait natural stops" in audit["subsystems"]["interruption"]["next_proof"]
+    assert "Tau wait natural-stop" in audit["subsystems"]["interruption"]["summary"]
     assert audit["subsystems"]["orb_sync"]["status"] == "partial"
     assert audit["goal_subsystem_status_counts"] == {
         "failing": 3,

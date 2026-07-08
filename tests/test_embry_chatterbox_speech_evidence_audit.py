@@ -196,6 +196,120 @@ def test_classify_non_primary_interruption_suppression_receipt() -> None:
     assert candidate["non_primary_interrupt_rejection_ok"] is True
 
 
+def test_classify_tau_tool_wait_natural_stop_receipt() -> None:
+    phrase = "I have part of it."
+    receipt = {
+        "schema": "chatterbox.tau_tool_wait_natural_stop.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "used_ui": False,
+        "used_mock_transcript": False,
+        "wait_decision": {
+            "should_speak": True,
+            "text": phrase,
+            "text_sha256": "phrase-sha",
+        },
+        "natural_stop": {
+            "phrase": phrase,
+            "phrase_sha256": "phrase-sha",
+            "phrase_observed": True,
+            "delivery_stage": "holding",
+            "keeps_existing_work_alive": True,
+        },
+        "tau_voice_render_response": {
+            "ok": True,
+            "tau_voice_render_request": {
+                "route": "tau_tool_wait_natural_stop",
+            },
+        },
+        "audio_metrics": {
+            "exists": True,
+            "bytes": 12000,
+            "duration_seconds": 1.2,
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/tau-tool-wait.json"), receipt)
+
+    assert candidate["proof_type"] == "tau_tool_wait_natural_stop"
+    assert candidate["tau_tool_wait_natural_stop_ok"] is True
+
+
+def test_audit_uses_tau_tool_wait_receipt_to_cover_natural_stop_gates(tmp_path: Path) -> None:
+    render = tmp_path / "render.json"
+    render.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}},
+  "response": {"voice_delivery": {"tone": "memory_confident", "delivery_stage": "satisfied", "pace": "brief", "pause_strategy": "short_answer_no_filler", "source": "memory.intent"}}
+}
+"""
+    )
+    qra = tmp_path / "qra.json"
+    qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    personality = tmp_path / "personality.json"
+    personality.write_text(
+        """
+{
+  "schema": "chatterbox.embry_personality_audition.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "variants": [
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}}
+  ]
+}
+"""
+    )
+    natural_stop = tmp_path / "natural-stop.json"
+    natural_stop.write_text(
+        """
+{
+  "schema": "chatterbox.tau_tool_wait_natural_stop.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "used_ui": false,
+  "used_mock_transcript": false,
+  "wait_decision": {"should_speak": true, "text": "I have part of it.", "text_sha256": "phrase-sha"},
+  "natural_stop": {
+    "phrase": "I have part of it.",
+    "phrase_sha256": "phrase-sha",
+    "phrase_observed": true,
+    "delivery_stage": "holding",
+    "keeps_existing_work_alive": true
+  },
+  "tau_voice_render_response": {"ok": true, "tau_voice_render_request": {"route": "tau_tool_wait_natural_stop"}},
+  "audio_metrics": {"exists": true, "bytes": 12000, "duration_seconds": 1.2}
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            _session(
+                "interruption",
+                "failed",
+                ["natural_stop_phrase_not_observed", "tau_tool_wait_not_exercised"],
+            ),
+        ]
+    }
+
+    audit = build_audit(matrix, [render, qra, personality, natural_stop])
+
+    assert audit["tau_tool_wait_natural_stop_candidate_count"] == 1
+    assert "speech_matrix_gate:natural_stop_phrase_not_observed" not in audit["failed_gates"]
+    assert "speech_matrix_gate:tau_tool_wait_not_exercised" not in audit["failed_gates"]
+
+
 def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(

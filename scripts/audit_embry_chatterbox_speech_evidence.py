@@ -27,6 +27,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/qra-creation-audio-hook.json"),
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/bless-qra-audio-variants.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/personality-audition-20260703T223052Z-scripted/personality-audition.json"),
+    Path("/tmp/chatterbox-fork-agent-out/tau-tool-wait-natural-stop/latest/receipt.json"),
 ]
 
 SPEECH_FOLDERS = {"tone_emotion", "interruption"}
@@ -133,10 +134,39 @@ def _render_audio_ok(receipt: dict[str, Any]) -> bool:
     )
 
 
+def _tau_tool_wait_natural_stop_ok(receipt: dict[str, Any]) -> bool:
+    if receipt.get("schema") != "chatterbox.tau_tool_wait_natural_stop.v1":
+        return False
+    tau_response = receipt.get("tau_voice_render_response") or {}
+    tau_request = tau_response.get("tau_voice_render_request") or {}
+    natural_stop = receipt.get("natural_stop") or {}
+    wait_decision = receipt.get("wait_decision") or {}
+    metrics = receipt.get("audio_metrics") or {}
+    return bool(
+        receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and receipt.get("used_ui") is False
+        and receipt.get("used_mock_transcript") is False
+        and tau_response.get("ok") is True
+        and tau_request.get("route") == "tau_tool_wait_natural_stop"
+        and wait_decision.get("should_speak") is True
+        and natural_stop.get("phrase_observed") is True
+        and natural_stop.get("phrase_sha256") == wait_decision.get("text_sha256")
+        and natural_stop.get("delivery_stage") == "holding"
+        and natural_stop.get("keeps_existing_work_alive") is True
+        and metrics.get("exists") is True
+        and metrics.get("bytes", 0) > 44
+        and metrics.get("duration_seconds", 0) > 0
+    )
+
+
 def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     schema = str(receipt.get("schema") or "")
     if schema == "chatterbox.tau_voice_render_smoke.v1":
         proof_type = "tau_voice_render"
+    elif schema == "chatterbox.tau_tool_wait_natural_stop.v1":
+        proof_type = "tau_tool_wait_natural_stop"
     elif schema == "chatterbox.qra_creation_audio_hook.v1":
         proof_type = "qra_creation_audio_hook"
     elif schema == "chatterbox.embry_personality_audition.v1":
@@ -206,6 +236,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         and receipt.get("interruption") is None
         and receipt.get("turn_controls") is None
     )
+    tau_tool_wait_natural_stop_ok = _tau_tool_wait_natural_stop_ok(receipt)
 
     missing_delivery_fields: list[str] = []
     missing_chunk_delivery_fields: list[list[str]] = []
@@ -233,6 +264,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "qra_disabled_normal_render_ok": qra_disabled_normal_render_ok,
         "blessed_qra_cached_response_ok": blessed_qra_cached_response_ok,
         "non_primary_interrupt_rejection_ok": non_primary_interrupt_rejection_ok,
+        "tau_tool_wait_natural_stop_ok": tau_tool_wait_natural_stop_ok,
         "variant_count": receipt.get("variant_count") or _nested_get(receipt, "child_receipt.variant_count") or len(variants),
         "played_variant_count": len(played_variants),
         "voice_delivery_missing_fields": missing_delivery_fields,
@@ -428,6 +460,9 @@ def build_audit(
     non_primary_interrupt_rejections = [
         candidate for candidate in proof_candidates if candidate["non_primary_interrupt_rejection_ok"]
     ]
+    tau_tool_wait_natural_stops = [
+        candidate for candidate in proof_candidates if candidate["tau_tool_wait_natural_stop_ok"]
+    ]
     personality = [
         candidate
         for candidate in proof_candidates
@@ -456,6 +491,9 @@ def build_audit(
     dynamic_covered_gates = set(interruption_covered_gates)
     if non_primary_interrupt_rejections:
         dynamic_covered_gates.add("non_primary_interrupt_rejection_not_exercised")
+    if tau_tool_wait_natural_stops:
+        dynamic_covered_gates.add("tau_tool_wait_not_exercised")
+        dynamic_covered_gates.add("natural_stop_phrase_not_observed")
     if qra_cached:
         dynamic_covered_gates.add("blessed_qra_cached_response_not_exercised")
     effective_interruption_failed_gates = {
@@ -500,6 +538,8 @@ def build_audit(
         partial_proves.append("live_primary_speaker_interruption_barge_in_receipt_present")
     if non_primary_interrupt_rejections:
         partial_proves.append("live_non_primary_interrupt_audio_is_suppressed_before_turn_control")
+    if tau_tool_wait_natural_stops:
+        partial_proves.append("live_tau_voice_render_can_speak_natural_tool_wait_stop_phrase")
     if speaker_identity_audit["overlap_one_at_a_time_ok"]:
         partial_proves.append("pyannote_overlap_routes_to_one_at_a_time_voice_delivery")
     does_not_prove = [
@@ -537,6 +577,7 @@ def build_audit(
         "qra_disabled_normal_render_candidate_count": len(qra_disabled),
         "blessed_qra_cached_response_candidate_count": len(qra_cached),
         "non_primary_interrupt_rejection_candidate_count": len(non_primary_interrupt_rejections),
+        "tau_tool_wait_natural_stop_candidate_count": len(tau_tool_wait_natural_stops),
         "audible_personality_candidate_count": len(personality),
         "incomplete_delivery_envelope_count": len(incomplete_delivery),
         "complete_delivery_envelope_candidate_count": len(complete_delivery),
