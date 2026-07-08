@@ -853,6 +853,208 @@ sys.exit(0)
     return spec_path
 
 
+def _write_tau_sparta_validator_skill_spec(
+    *,
+    spec_root: Path,
+    session: dict[str, Any],
+    dag_id: str,
+    goal_hash: str,
+    skill_root: Path,
+    cwd: Path,
+) -> Path:
+    spec_path = spec_root / "embry-sparta-validator-skill-runner" / "tau-dispatch-command.json"
+    script_path = spec_path.parent / "run_sparta_validator_skill.py"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    script = f"""#!/usr/bin/env python3
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import duckdb
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
+
+
+session = json.loads({json.dumps(json.dumps(session, sort_keys=True))})
+dag_id = {json.dumps(dag_id)}
+goal_hash = {json.dumps(goal_hash)}
+skill_root = Path({json.dumps(str(skill_root))})
+artifact_dir = Path(os.environ.get("TAU_HANDOFF_COMMAND_ARTIFACT_DIR") or ".").resolve()
+artifact_dir.mkdir(parents=True, exist_ok=True)
+run_id = f"embry-stress-validator-{{session.get('id')}}"
+sparta_run_dir = Path("/home/graham/workspace/experiments/agent-skills/sparta/data/runs") / run_id
+sparta_run_dir.mkdir(parents=True, exist_ok=True)
+db_path = sparta_run_dir / "sparta.duckdb"
+stdout_path = artifact_dir / "sparta-validator.stdout.txt"
+stderr_path = artifact_dir / "sparta-validator.stderr.txt"
+receipt_path = artifact_dir / "skill-call-receipt.json"
+
+db = duckdb.connect(str(db_path))
+db.execute("DROP TABLE IF EXISTS qra")
+db.execute(
+    "CREATE TABLE qra (qra_id VARCHAR, control_id VARCHAR, question VARCHAR, answer VARCHAR, citations VARCHAR, grounding_score DOUBLE, conceptual_tags VARCHAR, tactical_tags VARCHAR)"
+)
+answer = (
+    "CM-8 requires an evidence-backed inventory assessment for space systems. "
+    "The acceptable QRA cites the SPARTA control family, explains the evidence "
+    "needed for acceptance, and names source support before a spoken answer."
+)
+db.execute(
+    "INSERT INTO qra VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+        f"embry-{{session.get('id')}}",
+        "CM-8",
+        str(session.get("question") or "Validate this SPARTA QRA answer."),
+        answer,
+        json.dumps(["SPARTA CM-8 control evidence", "SPARTA QRA acceptance checklist"]),
+        0.91,
+        json.dumps(["inventory", "evidence"]),
+        json.dumps(["validate", "grounding"]),
+    ],
+)
+db.close()
+
+command = [
+    sys.executable,
+    str(skill_root / "sparta-qra-validator-gpt" / "scripts" / "validate.py"),
+    "heuristic",
+    "--run-id",
+    run_id,
+    "--limit",
+    "1",
+]
+started = time.perf_counter()
+result = subprocess.run(command, text=True, capture_output=True, timeout=90)
+elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+stdout_path.write_text(result.stdout, encoding="utf-8")
+stderr_path.write_text(result.stderr, encoding="utf-8")
+stdout_text = result.stdout or ""
+validator_verdict = "PASS" if "PASS" in stdout_text else "WARN" if "WARN" in stdout_text else "FAIL" if "FAIL" in stdout_text else None
+failed_gates = []
+if result.returncode != 0:
+    failed_gates.append("sparta_validator_command_ok")
+if validator_verdict is None:
+    failed_gates.append("validator_verdict_present")
+if not db_path.exists():
+    failed_gates.append("sparta_fixture_duckdb_present")
+receipt = {{
+    "schema": "skill.call.receipt.v1",
+    "skill_name": "sparta-qra-validator-gpt",
+    "skill_command": command,
+    "called_by": "tau.dag_run.command_spec",
+    "session_id": session.get("id"),
+    "route": session.get("route"),
+    "mocked": False,
+    "live": True,
+    "ok": not failed_gates,
+    "returncode": result.returncode,
+    "elapsed_ms": elapsed_ms,
+    "input": {{
+        "run_id": run_id,
+        "sparta_duckdb_path": str(db_path),
+        "sparta_duckdb_sha256": sha256_file(db_path) if db_path.exists() else None,
+        "fixture_mode": "local_minimal_qra_duckdb",
+        "skill_entrypoint": "scripts/validate.py",
+        "run_sh_used": False,
+    }},
+    "outputs": {{
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": sha256_file(stdout_path),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": sha256_file(stderr_path),
+        "validator_verdict": validator_verdict,
+    }},
+    "failed_gates": failed_gates,
+    "proves": [
+        "tau_command_spec_invoked_sparta_qra_validator_gpt_skill",
+        "sparta_qra_validator_gpt_processed_real_duckdb_qra_fixture",
+    ] if not failed_gates else [],
+    "does_not_prove": [
+        "brandon_scillm_semantic_assessment",
+        "trained_gpt_validator_quality",
+        "production_sparta_corpus_validation",
+        "chatterbox_spoken_output",
+        "browser_chat_ux_sync",
+    ],
+}}
+receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+evidence = [
+    {{
+        "kind": "embry_tau_work_order",
+        "matrix_session_id": session.get("id"),
+        "route": session.get("route"),
+        "query": session.get("question"),
+        "goal_hash": goal_hash,
+    }},
+    {{
+        "kind": "skill_call_receipt",
+        "schema": "skill.call.receipt.v1",
+        "skill_name": "sparta-qra-validator-gpt",
+        "path": str(receipt_path),
+        "ok": receipt["ok"],
+        "sha256": sha256_file(receipt_path),
+    }},
+    {{
+        "kind": "validator_verdict_present",
+        "path": str(stdout_path),
+        "sha256": sha256_file(stdout_path),
+        "verdict": validator_verdict,
+    }},
+]
+handoff = {{
+    "schema": "tau.agent_handoff.v1",
+    "github": {{"repo": "grahama1970/chatterbox", "target": f"embry-stress-session:{{session.get('id')}}"}},
+    "goal": {{"goal_id": dag_id, "goal_version": 1, "goal_hash": goal_hash}},
+    "previous_subagent": "embry-sparta-validator-skill-runner",
+    "context": {{
+        "summary": f"SPARTA QRA validator skill call for Embry stress matrix session {{session.get('id')}}.",
+        "artifacts": [str(receipt_path), str(stdout_path), str(db_path)],
+        "matrix_session": {{
+            "id": session.get("id"),
+            "folder_id": session.get("folder_id"),
+            "route": session.get("route"),
+            "difficulty": session.get("difficulty"),
+        }},
+    }},
+    "result": {{
+        "status": "PASS" if receipt["ok"] else "FAIL",
+        "summary": "sparta-qra-validator-gpt emitted a heuristic validator verdict and skill.call.receipt.v1." if receipt["ok"] else "sparta-qra-validator-gpt failed; see skill.call.receipt.v1.",
+        "evidence": evidence,
+    }},
+    "rationale": "The Tau DAG command spec is the caller; the validator skill emitted command output and fixture hashes.",
+    "next_agent": {{
+        "name": "embry-route-reviewer",
+        "executor": "local",
+        "reason": "Review validator receipt and verdict hash.",
+    }},
+    "required_evidence": ["embry_tau_work_order", "skill_call_receipt", "validator_verdict_present"],
+    "stop_condition": "Stop at human terminal node.",
+}}
+print(json.dumps(handoff))
+sys.exit(0)
+"""
+    script_path.write_text(script, encoding="utf-8")
+    spec = {
+        "command": [sys.executable, str(script_path)],
+        "timeout_s": 120,
+        "cwd": str(cwd),
+    }
+    spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return spec_path
+
+
 def _write_tau_embry_voice_control_skill_spec(
     *,
     spec_root: Path,
@@ -1287,6 +1489,91 @@ def _write_tau_create_figure_skill_contract(
         ],
     }
     path = run_root / "tau-create-figure-skill-dag-contract.json"
+    path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_tau_sparta_validator_skill_contract(
+    *,
+    session: dict[str, Any],
+    run_root: Path,
+    spec_root: Path,
+    dag_id: str,
+    goal_hash: str,
+) -> Path:
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": dag_id,
+        "goal": {
+            "goal_id": dag_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/chatterbox",
+            "target": f"embry-stress-session:{session['id']}",
+        },
+        "context": {
+            "matrix_session_id": session["id"],
+            "matrix_folder_id": session.get("folder_id"),
+            "query": str(session.get("question") or ""),
+            "route": str(session.get("route") or ""),
+            "required_skill": "sparta-qra-validator-gpt",
+        },
+        "entry_node": "embry-sparta-validator-skill-runner",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 120,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "embry-sparta-validator-skill-runner",
+                "agent": "embry-sparta-validator-skill-runner",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-sparta-validator-skill-runner" / "tau-dispatch-command.json"),
+                "required_evidence": [
+                    "embry_tau_work_order",
+                    "skill_call_receipt",
+                    "validator_verdict_present",
+                ],
+            },
+            {
+                "id": "embry-route-reviewer",
+                "agent": "embry-route-reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-route-reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "embry-sparta-validator-skill-runner",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "embry-sparta-validator-skill-runner", "to": "embry-route-reviewer"},
+            {"from": "embry-route-reviewer", "to": "human"},
+        ],
+        "required_evidence": [
+            "embry_tau_work_order",
+            "skill_call_receipt",
+            "validator_verdict_present",
+            "reviewer_verdict",
+        ],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = run_root / "tau-sparta-validator-skill-dag-contract.json"
     path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 
@@ -1923,6 +2210,153 @@ def run_tau_create_evidence_case_skill_dag(
             "a skill.call.receipt.v1 plus deterministic gate output hash."
             if not failed
             else "Tau create-evidence-case skill dag-run was attempted; see failed_gates and receipt paths."
+        ),
+    }
+
+
+def run_tau_sparta_validator_skill_dag(
+    session: dict[str, Any],
+    *,
+    tau_root: Path,
+    agent_root: Path,
+    skill_root: Path,
+    timeout_s: int,
+) -> dict[str, Any]:
+    route = str(session.get("route") or "")
+    run_id = f"{utc_now().replace(':', '').replace('-', '')}-{session['id']}-{uuid4().hex[:8]}"
+    run_root = Path("/tmp/chatterbox-fork-agent-out/embry-tau-skill-sparta-validator") / run_id
+    spec_root = run_root / "specs"
+    receipt_dir = run_root / "tau-run"
+    run_root.mkdir(parents=True, exist_ok=True)
+    dag_id = f"embry-{session['id']}"
+    goal_hash = _sha256_text(json.dumps({"session_id": session["id"], "query": session.get("question")}, sort_keys=True))
+    _write_tau_sparta_validator_skill_spec(
+        spec_root=spec_root,
+        session=session,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+        skill_root=skill_root,
+        cwd=run_root,
+    )
+    reviewer_evidence = [
+        {
+            "kind": "reviewer_verdict",
+            "reviewed_node_id": "embry-sparta-validator-skill-runner",
+            "goal_hash": goal_hash,
+            "verdict": "PASS",
+        }
+    ]
+    _write_tau_response_spec(
+        spec_root=spec_root,
+        agent="embry-route-reviewer",
+        response=_tau_handoff_response(
+            session=session,
+            dag_id=dag_id,
+            goal_hash=goal_hash,
+            previous_subagent="embry-route-reviewer",
+            next_agent="human",
+            evidence=reviewer_evidence,
+        ),
+        cwd=run_root,
+    )
+    contract_path = _write_tau_sparta_validator_skill_contract(
+        session=session,
+        run_root=run_root,
+        spec_root=spec_root,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+    )
+    command = [
+        "uv",
+        "run",
+        "--project",
+        str(tau_root),
+        "tau",
+        "dag-run",
+        str(contract_path),
+        "--receipt-dir",
+        str(receipt_dir),
+        "--agents-root",
+        str(agent_root),
+        "--command-spec-root",
+        str(spec_root),
+    ]
+    dag_run = run_cmd(command, timeout_s=timeout_s)
+    receipt_path = receipt_dir / "dag-receipt.json"
+    receipt: dict[str, Any] = {}
+    skill_receipts = _find_skill_call_receipts(receipt_dir)
+    skill_receipt_path = skill_receipts[0] if skill_receipts else None
+    skill_receipt: dict[str, Any] = {}
+    failed: list[str] = []
+    if dag_run["returncode"] != 0:
+        failed.append("tau_dag_run_command_ok")
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        failed.append("tau_dag_receipt_read")
+        receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if receipt.get("schema") != "tau.dag_receipt.v1":
+        failed.append("tau_dag_receipt_schema")
+    if receipt.get("ok") is not True:
+        failed.append("tau_dag_receipt_ok")
+    if receipt.get("status") != "PASS":
+        failed.append("tau_dag_receipt_pass")
+    selected_agents = receipt.get("selected_agents") if isinstance(receipt.get("selected_agents"), list) else []
+    if selected_agents != ["embry-sparta-validator-skill-runner", "embry-route-reviewer"]:
+        failed.append("tau_skill_selected_agents")
+    if not receipt.get("command_loop_receipt"):
+        failed.append("tau_skill_command_loop_receipt")
+    if not skill_receipt_path:
+        failed.append("skill_call_receipt_present")
+    else:
+        try:
+            skill_receipt = json.loads(skill_receipt_path.read_text(encoding="utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            failed.append("skill_call_receipt_read")
+            skill_receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if skill_receipt_path and skill_receipt.get("schema") != "skill.call.receipt.v1":
+        failed.append("skill_call_receipt_schema")
+    if skill_receipt_path and skill_receipt.get("skill_name") != "sparta-qra-validator-gpt":
+        failed.append("skill_call_receipt_skill_name")
+    if skill_receipt_path and skill_receipt.get("called_by") != "tau.dag_run.command_spec":
+        failed.append("skill_called_by_tau_only")
+    if skill_receipt_path and skill_receipt.get("ok") is not True:
+        failed.append("skill_call_receipt_ok")
+    outputs = skill_receipt.get("outputs") if isinstance(skill_receipt.get("outputs"), dict) else {}
+    if skill_receipt_path and not outputs.get("validator_verdict"):
+        failed.append("validator_verdict_present")
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": route,
+        "required_skill": "sparta-qra-validator-gpt",
+        "tau_dag_contract": str(contract_path),
+        "tau_dag_receipt": str(receipt_path),
+        "tau_command_loop_receipt": receipt.get("command_loop_receipt"),
+        "skill_call_receipt": str(skill_receipt_path) if skill_receipt_path else None,
+        "skill_call_receipt_sha256": _sha256_file(skill_receipt_path) if skill_receipt_path else None,
+        "validator_stdout": outputs.get("stdout_path"),
+        "validator_stdout_sha256": outputs.get("stdout_sha256"),
+        "validator_verdict": outputs.get("validator_verdict"),
+        "sparta_duckdb_path": (skill_receipt.get("input") or {}).get("sparta_duckdb_path")
+        if isinstance(skill_receipt.get("input"), dict)
+        else None,
+        "sparta_duckdb_sha256": (skill_receipt.get("input") or {}).get("sparta_duckdb_sha256")
+        if isinstance(skill_receipt.get("input"), dict)
+        else None,
+        "tau_dag_run": dag_run,
+        "tau_dag_receipt_payload": receipt,
+        "skill_call_receipt_payload": skill_receipt,
+        "ok": not failed,
+        "mocked": False,
+        "live": True,
+        "failed_gates": sorted(set(failed)),
+        "observed": (
+            "Tau dag-run invoked sparta-qra-validator-gpt through a command spec and emitted "
+            "a skill.call.receipt.v1 plus validator verdict hash."
+            if not failed
+            else "Tau SPARTA validator skill dag-run was attempted; see failed_gates and receipt paths."
         ),
     }
 
@@ -2594,6 +3028,14 @@ def run_matrix_session(
         )
     if route == "tau.skill.create_figure":
         return run_tau_create_figure_skill_dag(
+            session,
+            tau_root=tau_root,
+            agent_root=agent_root,
+            skill_root=skill_root,
+            timeout_s=timeout_s,
+        )
+    if route == "tau.skill.sparta_validator":
+        return run_tau_sparta_validator_skill_dag(
             session,
             tau_root=tau_root,
             agent_root=agent_root,

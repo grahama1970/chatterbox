@@ -1,9 +1,9 @@
 {
   "audited_session_count": 200,
   "audited_status_counts": {
-    "failed": 39,
+    "failed": 19,
     "not_run": 0,
-    "passed": 161
+    "passed": 181
   },
   "claims": {
     "does_not_prove": [
@@ -19,7 +19,7 @@
       "blocked_memory_answerability_can_be_suppressed_before_chatterbox"
     ]
   },
-  "direct_skill_call_candidate_count": 8,
+  "direct_skill_call_candidate_count": 9,
   "external_research": {
     "by_folder": {
       "brave_research": {
@@ -76,9 +76,9 @@
     "tau_skill_gate:tau_dag_receipt_not_created",
     "tau_skill_routing_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T08:10:01.647536+00:00",
+  "generated_at_utc": "2026-07-08T08:20:18.133080+00:00",
   "live": true,
-  "live_unmocked_candidate_count": 28,
+  "live_unmocked_candidate_count": 29,
   "memory_answerability": {
     "by_folder": {
       "persona_memory_miss": {
@@ -164,7 +164,7 @@
   },
   "mocked": false,
   "ok": false,
-  "proof_candidate_count": 28,
+  "proof_candidate_count": 29,
   "proof_candidates": [
     {
       "case_count": 12,
@@ -787,6 +787,29 @@
       "tau_dag_handoff_proven": false
     },
     {
+      "case_count": 20,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": true,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T081913Z-sparta-validator-all-live/receipt.json",
+      "proof_type": "tau_or_skill_routing",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
       "case_count": 1,
       "claims_does_not_prove": [
         "browser_chat_ui_sync",
@@ -914,25 +937,23 @@
   "tau_dag_handoff_candidate_count": 2,
   "tau_skill_handoff_evidence": {
     "boundary": "tau_skill_call_agent_handoff_dag_receipts",
-    "direct_skill_call_candidate_count": 8,
+    "direct_skill_call_candidate_count": 9,
     "failed_gate_counts": {
-      "skill_call_receipt_not_emitted": 39,
-      "tau_agent_handoff_not_exercised": 39,
-      "tau_dag_receipt_not_created": 39
+      "skill_call_receipt_not_emitted": 19,
+      "tau_agent_handoff_not_exercised": 19,
+      "tau_dag_receipt_not_created": 19
     },
     "failed_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json"
     ],
-    "failed_session_count": 39,
-    "passed_session_count": 81,
+    "failed_session_count": 19,
+    "passed_session_count": 101,
     "ready": false,
     "receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
@@ -947,7 +968,8 @@
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-advanced-live/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-adversarial-live/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-medium-live/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-soak-live/receipt.json"
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-soak-live/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T081913Z-sparta-validator-all-live/receipt.json"
     ],
     "sample_failures": [
       {
@@ -957,9 +979,9 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-simple-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
         "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
       },
       {
@@ -969,9 +991,9 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
         "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
       },
       {
@@ -981,21 +1003,9 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-        "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
-      },
-      {
-        "difficulty": "simple",
-        "failed_gates": [
-          "tau_agent_handoff_not_exercised",
-          "skill_call_receipt_not_emitted",
-          "tau_dag_receipt_not_created"
-        ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
         "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
       },
       {
@@ -1005,8 +1015,8 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-01",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-01",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       },
@@ -1017,8 +1027,8 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-02",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-02",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       },
@@ -1029,8 +1039,8 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-03",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-03",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       },
@@ -1041,10 +1051,22 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-04",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-04",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "tau_agent_handoff_not_exercised",
+          "skill_call_receipt_not_emitted",
+          "tau_dag_receipt_not_created"
+        ],
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-advanced-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       }
     ],
     "session_count": 120,
@@ -1083,66 +1105,13 @@
         }
       },
       "skill_sparta_validator": {
-        "failed_gate_counts": {
-          "skill_call_receipt_not_emitted": 20,
-          "tau_agent_handoff_not_exercised": 20,
-          "tau_dag_receipt_not_created": 20
-        },
-        "sample_failures": [
-          {
-            "difficulty": "simple",
-            "failed_gates": [
-              "tau_agent_handoff_not_exercised",
-              "skill_call_receipt_not_emitted",
-              "tau_dag_receipt_not_created"
-            ],
-            "folder_id": "skill_sparta_validator",
-            "id": "skill_sparta_validator-simple-01",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-            "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
-          },
-          {
-            "difficulty": "simple",
-            "failed_gates": [
-              "tau_agent_handoff_not_exercised",
-              "skill_call_receipt_not_emitted",
-              "tau_dag_receipt_not_created"
-            ],
-            "folder_id": "skill_sparta_validator",
-            "id": "skill_sparta_validator-simple-02",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-            "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
-          },
-          {
-            "difficulty": "simple",
-            "failed_gates": [
-              "tau_agent_handoff_not_exercised",
-              "skill_call_receipt_not_emitted",
-              "tau_dag_receipt_not_created"
-            ],
-            "folder_id": "skill_sparta_validator",
-            "id": "skill_sparta_validator-simple-03",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-            "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
-          },
-          {
-            "difficulty": "simple",
-            "failed_gates": [
-              "tau_agent_handoff_not_exercised",
-              "skill_call_receipt_not_emitted",
-              "tau_dag_receipt_not_created"
-            ],
-            "folder_id": "skill_sparta_validator",
-            "id": "skill_sparta_validator-simple-04",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-            "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
-          }
-        ],
+        "failed_gate_counts": {},
+        "sample_failures": [],
         "session_count": 20,
         "status_counts": {
-          "failed": 20,
+          "failed": 0,
           "not_run": 0,
-          "passed": 0
+          "passed": 20
         }
       },
       "tau_tool_orchestration": {
@@ -1220,12 +1189,11 @@
       }
     },
     "failed_gate_counts": {
-      "skill_call_receipt_not_emitted": 39,
-      "tau_agent_handoff_not_exercised": 39,
-      "tau_dag_receipt_not_created": 39
+      "skill_call_receipt_not_emitted": 19,
+      "tau_agent_handoff_not_exercised": 19,
+      "tau_dag_receipt_not_created": 19
     },
     "failed_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
@@ -1233,7 +1201,6 @@
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json"
     ],
     "receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
@@ -1248,7 +1215,8 @@
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-advanced-live/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-adversarial-live/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-medium-live/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-soak-live/receipt.json"
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-soak-live/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T081913Z-sparta-validator-all-live/receipt.json"
     ],
     "sample_failures": [
       {
@@ -1258,9 +1226,9 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-simple-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
         "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
       },
       {
@@ -1270,9 +1238,9 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
         "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
       },
       {
@@ -1282,21 +1250,9 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
-        "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
-      },
-      {
-        "difficulty": "simple",
-        "failed_gates": [
-          "tau_agent_handoff_not_exercised",
-          "skill_call_receipt_not_emitted",
-          "tau_dag_receipt_not_created"
-        ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-simple-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
         "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
       },
       {
@@ -1306,8 +1262,8 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-01",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-01",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       },
@@ -1318,8 +1274,8 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-02",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-02",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       },
@@ -1330,8 +1286,8 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-03",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-03",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       },
@@ -1342,17 +1298,29 @@
           "skill_call_receipt_not_emitted",
           "tau_dag_receipt_not_created"
         ],
-        "folder_id": "skill_sparta_validator",
-        "id": "skill_sparta_validator-medium-04",
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-medium-04",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
         "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "tau_agent_handoff_not_exercised",
+          "skill_call_receipt_not_emitted",
+          "tau_dag_receipt_not_created"
+        ],
+        "folder_id": "voice_control_skill",
+        "id": "voice_control_skill-advanced-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted."
       }
     ],
     "session_count": 120,
     "status_counts": {
-      "failed": 39,
+      "failed": 19,
       "not_run": 0,
-      "passed": 81
+      "passed": 101
     }
   }
 }

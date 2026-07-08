@@ -39,6 +39,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T061000Z-skill-create-evidence-case-soak-live/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T052215Z-skill-analytics-all-live/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T052948Z-skill-create-figure-all-live/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T081913Z-sparta-validator-all-live/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T054520Z-skill-voice-control-live-timeout-fixed/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json"),

@@ -1921,6 +1921,10 @@ _CREATE_FIGURE_SKILL_DAG_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T052948Z-skill-create-figure-all-live/receipt.json"
 )
+_SPARTA_VALIDATOR_SKILL_DAG_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T081913Z-sparta-validator-all-live/receipt.json"
+)
 
 for _difficulty in DIFFICULTIES:
     for _index in range(1, 5):
@@ -1952,6 +1956,16 @@ for _difficulty in DIFFICULTIES:
                 "Tau dag-run invoked skills/create-figure/run.sh metrics through a command spec, "
                 "emitted skill.call.receipt.v1, and recorded the SVG artifact hash for this "
                 "Embry direct-skill session."
+            ),
+        }
+        CURRENT_RESULTS[f"skill_sparta_validator-{_difficulty}-{_index:02d}"] = {
+            "status": "passed",
+            "latest_receipt": _SPARTA_VALIDATOR_SKILL_DAG_RECEIPT,
+            "failed_gates": [],
+            "observed": (
+                "Tau dag-run invoked sparta-qra-validator-gpt/scripts/validate.py heuristic "
+                "through a command spec, emitted skill.call.receipt.v1, and recorded a "
+                "validator verdict hash for this Embry direct-skill session."
             ),
         }
 
