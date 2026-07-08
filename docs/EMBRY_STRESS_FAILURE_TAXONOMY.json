@@ -1,29 +1,29 @@
 {
   "difficulty_status_counts": {
     "advanced": {
-      "failed": 39,
+      "failed": 35,
       "not_run": 0,
-      "passed": 21
+      "passed": 25
     },
     "adversarial": {
-      "failed": 39,
+      "failed": 35,
       "not_run": 0,
-      "passed": 21
+      "passed": 25
     },
     "medium": {
-      "failed": 37,
+      "failed": 33,
       "not_run": 0,
-      "passed": 23
+      "passed": 27
     },
     "simple": {
-      "failed": 36,
+      "failed": 32,
       "not_run": 0,
-      "passed": 24
+      "passed": 28
     },
     "soak": {
-      "failed": 39,
+      "failed": 35,
       "not_run": 0,
-      "passed": 21
+      "passed": 25
     }
   },
   "does_not_prove": [
@@ -56,7 +56,7 @@
     "realtimestt_receipt_ok": 2,
     "rung7_receipt_ok": 2,
     "runner_route_not_implemented": 24,
-    "skill_call_receipt_not_emitted": 59,
+    "skill_call_receipt_not_emitted": 39,
     "sparta_qra_answer_missing_acceptance_terms": 5,
     "sparta_qra_answer_overfit_to_unrelated_control_exclusion": 20,
     "speaker_gate_receipt_not_linked_to_turn_control": 5,
@@ -64,8 +64,8 @@
     "speaker_resolution_known_horus": 2,
     "spoken_transcript_entity_underlines_not_proven": 2,
     "stale_audio_stream_bytes_not_measured": 5,
-    "tau_agent_handoff_not_exercised": 59,
-    "tau_dag_receipt_not_created": 59,
+    "tau_agent_handoff_not_exercised": 39,
+    "tau_dag_receipt_not_created": 39,
     "tau_tool_wait_not_exercised": 5,
     "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved": 5,
     "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light": 5,
@@ -108,9 +108,9 @@
       "passed": 20
     },
     "skill_create_evidence_case": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "skill_create_figure": {
       "failed": 0,
@@ -148,11 +148,11 @@
       "passed": 1
     }
   },
-  "generated_at_utc": "2026-07-08T05:54:57.682129+00:00",
+  "generated_at_utc": "2026-07-08T06:01:51.573663+00:00",
   "matrix_status_counts": {
-    "failed": 190,
+    "failed": 170,
     "not_run": 0,
-    "passed": 110
+    "passed": 130
   },
   "missing_receipt_sessions": [],
   "not_run_sessions": [],
@@ -209,9 +209,9 @@
       "passed": 20
     },
     "tau.skill.create_evidence_case": {
-      "failed": 20,
+      "failed": 0,
       "not_run": 0,
-      "passed": 0
+      "passed": 20
     },
     "tau.skill.create_figure": {
       "failed": 0,
@@ -1809,67 +1809,11 @@
     },
     "tau_skill_routing": {
       "failed_gate_counts": {
-        "skill_call_receipt_not_emitted": 59,
-        "tau_agent_handoff_not_exercised": 59,
-        "tau_dag_receipt_not_created": 59
+        "skill_call_receipt_not_emitted": 39,
+        "tau_agent_handoff_not_exercised": 39,
+        "tau_dag_receipt_not_created": 39
       },
       "failed_sessions": [
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020325Z-matrix-advanced-routes-16-31/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020325Z-matrix-advanced-routes-16-31/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020325Z-matrix-advanced-routes-16-31/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020325Z-matrix-advanced-routes-16-31/receipt.json",
-          "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
         {
           "difficulty": "advanced",
           "failed_gates": [
@@ -1980,62 +1924,6 @@
           "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
           "observed": "Live advanced direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
           "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022326Z-matrix-adversarial-routes-16-31/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022326Z-matrix-adversarial-routes-16-31/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022326Z-matrix-adversarial-routes-16-31/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022326Z-matrix-adversarial-routes-16-31/receipt.json",
-          "observed": "Live adversarial direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
           "status": "failed"
         },
         {
@@ -2157,62 +2045,6 @@
             "skill_call_receipt_not_emitted",
             "tau_dag_receipt_not_created"
           ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json",
-          "observed": "Live medium direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
           "folder_id": "skill_sparta_validator",
           "id": "skill_sparta_validator-medium-01",
           "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
@@ -2325,62 +2157,6 @@
             "skill_call_receipt_not_emitted",
             "tau_dag_receipt_not_created"
           ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-simple-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
-          "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
           "folder_id": "skill_sparta_validator",
           "id": "skill_sparta_validator-simple-01",
           "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
@@ -2470,62 +2246,6 @@
           "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
           "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
           "route": "tau.skill.embry_voice_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024031Z-matrix-soak-routes-16-31/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024031Z-matrix-soak-routes-16-31/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024031Z-matrix-soak-routes-16-31/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "tau_agent_handoff_not_exercised",
-            "skill_call_receipt_not_emitted",
-            "tau_dag_receipt_not_created"
-          ],
-          "folder_id": "skill_create_evidence_case",
-          "id": "skill_create_evidence_case-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024031Z-matrix-soak-routes-16-31/receipt.json",
-          "observed": "Live soak direct-skill preflight reached Tau and found the required skill, but no Tau handoff, DAG, or skill-call receipt was emitted.",
-          "route": "tau.skill.create_evidence_case",
           "status": "failed"
         },
         {
@@ -2644,9 +2364,9 @@
       "primary_blocker": "Tau handoff, DAG receipt, and skill.call receipts are not emitted.",
       "session_count": 120,
       "status_counts": {
-        "failed": 59,
+        "failed": 39,
         "not_run": 0,
-        "passed": 61
+        "passed": 81
       },
       "title": "Tau And Direct Skill Routing"
     },
@@ -2850,15 +2570,15 @@
   },
   "top_failed_gates": [
     {
-      "count": 59,
+      "count": 39,
       "gate": "tau_agent_handoff_not_exercised"
     },
     {
-      "count": 59,
+      "count": 39,
       "gate": "skill_call_receipt_not_emitted"
     },
     {
-      "count": 59,
+      "count": 39,
       "gate": "tau_dag_receipt_not_created"
     },
     {

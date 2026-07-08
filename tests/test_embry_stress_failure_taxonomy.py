@@ -10,7 +10,7 @@ def test_taxonomy_preserves_matrix_coverage_counts() -> None:
     taxonomy = _taxonomy()
 
     assert taxonomy["session_count"] == 300
-    assert taxonomy["matrix_status_counts"] == {"passed": 114, "failed": 186, "not_run": 0}
+    assert taxonomy["matrix_status_counts"] == {"passed": 130, "failed": 170, "not_run": 0}
     assert taxonomy["receipt_backed_count"] == 300
     assert taxonomy["missing_receipt_sessions"] == []
     assert taxonomy["not_run_sessions"] == []
@@ -31,8 +31,8 @@ def test_taxonomy_groups_failures_by_subsystem() -> None:
         "not_run": 0,
     }
     assert subsystems["tau_skill_routing"]["status_counts"] == {
-        "passed": 65,
-        "failed": 55,
+        "passed": 81,
+        "failed": 39,
         "not_run": 0,
     }
     assert subsystems["shared_chat_ux"]["status_counts"] == {
@@ -67,18 +67,18 @@ def test_taxonomy_exposes_top_repair_blockers() -> None:
     gates = taxonomy["failed_gate_counts"]
     top_gates = taxonomy["top_failed_gates"]
 
-    assert gates["tau_agent_handoff_not_exercised"] == 55
-    assert gates["skill_call_receipt_not_emitted"] == 55
-    assert gates["tau_dag_receipt_not_created"] == 55
+    assert gates["tau_agent_handoff_not_exercised"] == 39
+    assert gates["skill_call_receipt_not_emitted"] == 39
+    assert gates["tau_dag_receipt_not_created"] == 39
     assert gates.get("voice_control_controlled_live_ready", 0) == 0
     assert gates.get("voice_control_case_text-turn_pass", 0) == 0
     assert gates.get("text_turn_memory_tau_chatterbox_authority", 0) == 0
     assert gates["runner_route_not_implemented"] == 24
     assert gates["interruption_detected_receipt_not_emitted"] == 20
     assert top_gates[:3] == [
-        {"gate": "tau_agent_handoff_not_exercised", "count": 55},
-        {"gate": "skill_call_receipt_not_emitted", "count": 55},
-        {"gate": "tau_dag_receipt_not_created", "count": 55},
+        {"gate": "tau_agent_handoff_not_exercised", "count": 39},
+        {"gate": "skill_call_receipt_not_emitted", "count": 39},
+        {"gate": "tau_dag_receipt_not_created", "count": 39},
     ]
 
 

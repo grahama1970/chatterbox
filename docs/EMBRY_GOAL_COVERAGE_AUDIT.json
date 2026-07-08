@@ -1,14 +1,14 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T05:54:57.761927+00:00",
+  "generated_at_utc": "2026-07-08T06:01:51.636358+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "partial": 4
   },
   "matrix_status_counts": {
-    "failed": 190,
+    "failed": 170,
     "not_run": 0,
-    "passed": 110
+    "passed": 130
   },
   "objective": "Stress test Embry voice/chat system to identify concrete failures across RealtimeSTT ingress, speaker identity, memory/Tau routing, Chatterbox speech, Chat UX sync, orb sync, replay, and interruption.",
   "overall": {
@@ -327,21 +327,21 @@
       "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes.",
       "taxonomy": {
         "status_counts": {
-          "failed": 119,
+          "failed": 99,
           "not_run": 0,
-          "passed": 81
+          "passed": 101
         },
         "top_failed_gates": [
           {
-            "count": 59,
+            "count": 39,
             "gate": "skill_call_receipt_not_emitted"
           },
           {
-            "count": 59,
+            "count": 39,
             "gate": "tau_agent_handoff_not_exercised"
           },
           {
-            "count": 59,
+            "count": 39,
             "gate": "tau_dag_receipt_not_created"
           },
           {

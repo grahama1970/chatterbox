@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 114, "failed": 186, "not_run": 0}
+    assert status_counts == {"passed": 130, "failed": 170, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -143,18 +143,13 @@ def test_matrix_medium_tau_and_skill_subset_records_dag_and_remaining_skill_fail
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
-    for folder in ["tau_tool_orchestration", "skill_create_figure", "skill_analytics"]:
+    for folder in ["tau_tool_orchestration", "skill_create_evidence_case", "skill_create_figure", "skill_analytics"]:
         assert all(session["status"] == "passed" for session in by_folder[folder])
         assert all(session["failed_gates"] == [] for session in by_folder[folder])
     assert all("matrix-tau-all-dag-current" in session["latest_receipt"] for session in by_folder["tau_tool_orchestration"])
+    assert all("skill-create-evidence-case-medium-live" in session["latest_receipt"] for session in by_folder["skill_create_evidence_case"])
     assert all("skill-create-figure-all-live" in session["latest_receipt"] for session in by_folder["skill_create_figure"])
     assert all("skill-analytics-all-live" in session["latest_receipt"] for session in by_folder["skill_analytics"])
-    for folder in ["skill_create_evidence_case"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-medium-routes-16-31" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
 
 def test_matrix_advanced_tau_and_skill_subset_records_dag_and_remaining_skill_failures() -> None:
@@ -171,18 +166,13 @@ def test_matrix_advanced_tau_and_skill_subset_records_dag_and_remaining_skill_fa
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
-    for folder in ["tau_tool_orchestration", "skill_create_figure", "skill_analytics"]:
+    for folder in ["tau_tool_orchestration", "skill_create_evidence_case", "skill_create_figure", "skill_analytics"]:
         assert all(session["status"] == "passed" for session in by_folder[folder])
         assert all(session["failed_gates"] == [] for session in by_folder[folder])
     assert all("matrix-tau-all-dag-current" in session["latest_receipt"] for session in by_folder["tau_tool_orchestration"])
+    assert all("skill-create-evidence-case-advanced-live" in session["latest_receipt"] for session in by_folder["skill_create_evidence_case"])
     assert all("skill-create-figure-all-live" in session["latest_receipt"] for session in by_folder["skill_create_figure"])
     assert all("skill-analytics-all-live" in session["latest_receipt"] for session in by_folder["skill_analytics"])
-    for folder in ["skill_create_evidence_case"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-advanced-routes-16-31" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
 
 def test_matrix_adversarial_tau_and_skill_subset_records_dag_and_remaining_skill_failures() -> None:
@@ -199,18 +189,13 @@ def test_matrix_adversarial_tau_and_skill_subset_records_dag_and_remaining_skill
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
-    for folder in ["tau_tool_orchestration", "skill_create_figure", "skill_analytics"]:
+    for folder in ["tau_tool_orchestration", "skill_create_evidence_case", "skill_create_figure", "skill_analytics"]:
         assert all(session["status"] == "passed" for session in by_folder[folder])
         assert all(session["failed_gates"] == [] for session in by_folder[folder])
     assert all("matrix-tau-all-dag-current" in session["latest_receipt"] for session in by_folder["tau_tool_orchestration"])
+    assert all("skill-create-evidence-case-adversarial-live" in session["latest_receipt"] for session in by_folder["skill_create_evidence_case"])
     assert all("skill-create-figure-all-live" in session["latest_receipt"] for session in by_folder["skill_create_figure"])
     assert all("skill-analytics-all-live" in session["latest_receipt"] for session in by_folder["skill_analytics"])
-    for folder in ["skill_create_evidence_case"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-adversarial-routes-16-31" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
 
 def test_matrix_soak_tau_and_skill_subset_records_dag_and_remaining_skill_failures() -> None:
@@ -227,18 +212,13 @@ def test_matrix_soak_tau_and_skill_subset_records_dag_and_remaining_skill_failur
     by_folder = {}
     for session in sessions:
         by_folder.setdefault(session["folder_id"], []).append(session)
-    for folder in ["tau_tool_orchestration", "skill_create_figure", "skill_analytics"]:
+    for folder in ["tau_tool_orchestration", "skill_create_evidence_case", "skill_create_figure", "skill_analytics"]:
         assert all(session["status"] == "passed" for session in by_folder[folder])
         assert all(session["failed_gates"] == [] for session in by_folder[folder])
     assert all("matrix-tau-all-dag-current" in session["latest_receipt"] for session in by_folder["tau_tool_orchestration"])
+    assert all("skill-create-evidence-case-soak-live" in session["latest_receipt"] for session in by_folder["skill_create_evidence_case"])
     assert all("skill-create-figure-all-live" in session["latest_receipt"] for session in by_folder["skill_create_figure"])
     assert all("skill-analytics-all-live" in session["latest_receipt"] for session in by_folder["skill_analytics"])
-    for folder in ["skill_create_evidence_case"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all("matrix-soak-routes-16-31" in session["latest_receipt"] for session in by_folder[folder])
-        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
-        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
-        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
 
 
 def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
