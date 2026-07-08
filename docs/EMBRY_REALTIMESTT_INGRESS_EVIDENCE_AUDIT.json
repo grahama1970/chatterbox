@@ -258,9 +258,36 @@
     "factory_gate:speaker_memory_recall_found",
     "factory_gate:speaker_resolution_known_horus"
   ],
-  "generated_at_utc": "2026-07-08T03:13:48.522176+00:00",
-  "historical_candidate_count": 5,
+  "generated_at_utc": "2026-07-08T03:46:45.626834+00:00",
+  "historical_candidate_count": 6,
   "historical_candidates": [
+    {
+      "captured_audio_exists": true,
+      "captured_audio_rms": 512,
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json",
+      "proof_scope": null,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "pipewire_monitor_loopback"
+    },
     {
       "captured_audio_exists": null,
       "captured_audio_rms": null,
@@ -398,7 +425,7 @@
       "transport": "pipewire_physical_microphone"
     }
   ],
-  "historical_passing_candidate_count": 3,
+  "historical_passing_candidate_count": 4,
   "live": false,
   "mocked": false,
   "ok": false,

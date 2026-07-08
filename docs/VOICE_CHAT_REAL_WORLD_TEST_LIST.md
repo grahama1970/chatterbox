@@ -289,6 +289,34 @@ mapped receipt is `mocked=false`, `live=true`, `ok=true`, and has empty
 `failed_gates`. Partial receipts, screenshots, UI markers, historical slices,
 and direct Chatterbox render proofs do not satisfy the full item gates.
 
+Current factory-loopback S06 receipt:
+
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/index.json`
+
+Result: `mocked=false`, `live=true`, `ok=true`, scenario `S06` passed.
+
+What it exercised:
+
+- Chatterbox health checked on `http://127.0.0.1:8018`.
+- Played the Horus/factory/Embry stress WAV through PipeWire/Jabra sink target
+  `64`.
+- Captured the monitor loopback into
+  `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/loopback-captured.wav`.
+- Fed the captured audio into RealtimeSTT automatic VAD.
+- Produced final ASR text in
+  `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/realtimestt-loopback.json`.
+- Routed the captured loopback audio through the rung7 speaker/memory contract.
+- Played three scenario WAV artifacts audibly with `pw-play --target 64`,
+  all with return code 0.
+
+What it does not prove:
+
+- browser getUserMedia/WebRTC transport
+- physical room microphone capture
+- overlapping-speaker diarization
+- subjective voice quality
+- generalized factory robustness beyond the configured stress WAV and sink
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
