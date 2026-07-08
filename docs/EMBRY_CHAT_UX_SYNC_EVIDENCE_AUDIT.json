@@ -78,59 +78,9 @@
   "chat_gate_candidate_count": 1,
   "chat_matrix": {
     "failed_gate_counts": {
-      "assistant_response_plan_v1_not_linked": 2,
-      "chat_render_receipt_v1_not_emitted": 2,
-      "chat_turn_id_matches_response_plan_not_proven": 2,
-      "entity_underline_render_receipt_not_emitted": 2,
-      "extract_entities_receipt_not_linked": 2,
-      "runner_route_not_implemented": 12,
-      "spoken_transcript_entity_underlines_not_proven": 2
+      "runner_route_not_implemented": 12
     },
     "sample_failures": [
-      {
-        "difficulty": "simple",
-        "failed_gates": [
-          "assistant_response_plan_v1_not_linked",
-          "chat_render_receipt_v1_not_emitted",
-          "chat_turn_id_matches_response_plan_not_proven"
-        ],
-        "id": "chat_ux_sync-simple-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "UI proof shows shared chat text and four Chatterbox audio sources, but no assistant.response.plan.v1 to chat.render.receipt.v1 lineage receipt proves the chat text and audio share the same turn id."
-      },
-      {
-        "difficulty": "simple",
-        "failed_gates": [
-          "extract_entities_receipt_not_linked",
-          "entity_underline_render_receipt_not_emitted",
-          "spoken_transcript_entity_underlines_not_proven"
-        ],
-        "id": "chat_ux_sync-simple-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "UI proof contains text such as horus_lupercal, but no linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "assistant_response_plan_v1_not_linked",
-          "chat_render_receipt_v1_not_emitted",
-          "chat_turn_id_matches_response_plan_not_proven"
-        ],
-        "id": "chat_ux_sync-medium-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "UI proof shows shared chat text and audio sources, but no response-plan to chat-render lineage receipt proves the same turn id."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "extract_entities_receipt_not_linked",
-          "entity_underline_render_receipt_not_emitted",
-          "spoken_transcript_entity_underlines_not_proven"
-        ],
-        "id": "chat_ux_sync-medium-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "No linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
-      },
       {
         "difficulty": "advanced",
         "failed_gates": [
@@ -166,13 +116,49 @@
         "id": "chat_ux_sync-advanced-04",
         "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
         "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-adversarial-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
+        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-adversarial-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
+        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-adversarial-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
+        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-adversarial-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
+        "observed": "The adversarial matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
       }
     ],
     "session_count": 20,
     "status_counts": {
-      "failed": 16,
+      "failed": 12,
       "not_run": 0,
-      "passed": 4
+      "passed": 8
     }
   },
   "claims": {
@@ -190,87 +176,34 @@
     ]
   },
   "dom_lineage_probe_evidence": {
-    "blocking_summary": "live shared Chat DOM lacks turn-id linkage between assistant message/audio and/or entity underline spans in the spoken transcript",
+    "blocking_summary": null,
     "boundary": "live_dom_shared_chat_turn_audio_entity_lineage",
     "candidate_count": 1,
     "candidate_paths": [
       "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"
     ],
-    "failed_candidate_count": 1,
-    "passing_candidate_count": 0,
-    "ready": false,
-    "sample_failures": [
-      {
-        "dom_entity_underlines_ready": false,
-        "dom_lineage_ready": false,
-        "observed": {
-          "assistant_message_count": 1,
-          "assistant_with_audio_count": 1,
-          "assistant_with_entity_span_count": 0,
-          "assistant_with_turn_id_count": 0,
-          "audio_artifact_count": 2,
-          "audio_with_turn_id_count": 0,
-          "chat_message_count": 7
-        },
-        "path": "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"
-      }
-    ]
+    "failed_candidate_count": 0,
+    "passing_candidate_count": 1,
+    "ready": true,
+    "sample_failures": []
   },
   "dynamic_replay_candidate_count": 2,
-  "entity_underline_candidate_count": 0,
+  "entity_underline_candidate_count": 1,
   "entity_underline_evidence": {
-    "blocking_summary": "shared Chat UX still lacks linked $extract-entities and underline-render receipts for entities inside the spoken transcript",
+    "blocking_summary": null,
     "boundary": "extract_entities_to_spoken_transcript_underlines",
-    "failed_gate_counts": {
-      "entity_underline_render_receipt_not_emitted": 2,
-      "extract_entities_receipt_not_linked": 2,
-      "spoken_transcript_entity_underlines_not_proven": 2
-    },
-    "failed_session_count": 2,
-    "latest_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"
-    ],
-    "ready": false,
-    "sample_failures": [
-      {
-        "difficulty": "simple",
-        "failed_gates": [
-          "extract_entities_receipt_not_linked",
-          "entity_underline_render_receipt_not_emitted",
-          "spoken_transcript_entity_underlines_not_proven"
-        ],
-        "id": "chat_ux_sync-simple-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "UI proof contains text such as horus_lupercal, but no linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "extract_entities_receipt_not_linked",
-          "entity_underline_render_receipt_not_emitted",
-          "spoken_transcript_entity_underlines_not_proven"
-        ],
-        "id": "chat_ux_sync-medium-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "No linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
-      }
-    ]
+    "failed_gate_counts": {},
+    "failed_session_count": 0,
+    "latest_receipt_paths": [],
+    "ready": true,
+    "sample_failures": []
   },
   "failed_gates": [
-    "assistant_response_plan_to_chat_render_lineage_missing",
-    "chat_matrix_gate:assistant_response_plan_v1_not_linked",
-    "chat_matrix_gate:chat_render_receipt_v1_not_emitted",
-    "chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
-    "chat_matrix_gate:entity_underline_render_receipt_not_emitted",
-    "chat_matrix_gate:extract_entities_receipt_not_linked",
     "chat_matrix_gate:runner_route_not_implemented",
-    "chat_matrix_gate:spoken_transcript_entity_underlines_not_proven",
-    "chat_ux_matrix_has_failures",
-    "extract_entities_underline_render_receipt_missing",
-    "screenshot_markers_do_not_prove_turn_lineage"
+    "chat_ux_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T09:42:46.385867+00:00",
-  "lineage_candidate_count": 0,
+  "generated_at_utc": "2026-07-08T09:50:05.786401+00:00",
+  "lineage_candidate_count": 1,
   "live": true,
   "live_unmocked_candidate_count": 2,
   "mocked": false,
@@ -367,23 +300,22 @@
         "audible_playback": {
           "current_time_advanced": true,
           "cut_off_after_ms": null,
-          "ended_event_count": 2,
+          "ended_event_count": 1,
           "ended_or_played_to_expected_offset": true,
           "error_event_count": 0,
-          "event_count": 54,
-          "max_current_time_seconds": 5.418,
+          "event_count": 39,
+          "max_current_time_seconds": 3.642,
           "max_duration_seconds": 5.418,
-          "play_event_count": 3,
+          "play_event_count": 2,
           "playback_started": true,
-          "playing_event_count": 3,
+          "playing_event_count": 2,
           "playing_event_seen": true,
           "srcs": [
             "http://localhost:3002/chatterbox-artifacts/tau_voice_render_smoke/finished_response.wav",
-            "http://localhost:3002/chatterbox-artifacts/voice-chat-e2e/fresh-all-audible-20260707T155951Z/S03-unknown-speaker/identity-clarification-render.wav",
             "http://localhost:3002/chatterbox-artifacts/voice-chat-e2e/fresh-all-audible-20260707T155951Z/S05-female-distractor/overlap.wav"
           ],
-          "timeupdate_event_count": 37,
-          "waiting_or_stalled_event_count": 3
+          "timeupdate_event_count": 28,
+          "waiting_or_stalled_event_count": 2
         },
         "audible_playback_present": true,
         "audio_artifact_id": null,
@@ -403,9 +335,9 @@
     {
       "audible_session_replay": false,
       "chat_gate_pass": false,
-      "dom_entity_underlines_ready": false,
+      "dom_entity_underlines_ready": true,
       "dom_lineage_probe": true,
-      "dom_lineage_ready": false,
+      "dom_lineage_ready": true,
       "dynamic_replay_basic": false,
       "exists": true,
       "extract_entities_underlines": false,
@@ -421,10 +353,10 @@
         "dom_lineage_counts": {
           "assistant_message_count": 1,
           "assistant_with_audio_count": 1,
-          "assistant_with_entity_span_count": 0,
-          "assistant_with_turn_id_count": 0,
+          "assistant_with_entity_span_count": 1,
+          "assistant_with_turn_id_count": 1,
           "audio_artifact_count": 2,
-          "audio_with_turn_id_count": 0,
+          "audio_with_turn_id_count": 1,
           "chat_message_count": 7
         },
         "extract_entities_present": false,
@@ -439,42 +371,13 @@
     }
   ],
   "response_plan_lineage_evidence": {
-    "blocking_summary": "shared Chat UX still lacks a receipt linking assistant response plan, chat render, spoken text, and Chatterbox audio artifact under the same turn_id",
+    "blocking_summary": null,
     "boundary": "assistant.response.plan.v1_to_chat.render.receipt.v1",
-    "failed_gate_counts": {
-      "assistant_response_plan_v1_not_linked": 2,
-      "chat_render_receipt_v1_not_emitted": 2,
-      "chat_turn_id_matches_response_plan_not_proven": 2
-    },
-    "failed_session_count": 2,
-    "latest_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"
-    ],
-    "ready": false,
-    "sample_failures": [
-      {
-        "difficulty": "simple",
-        "failed_gates": [
-          "assistant_response_plan_v1_not_linked",
-          "chat_render_receipt_v1_not_emitted",
-          "chat_turn_id_matches_response_plan_not_proven"
-        ],
-        "id": "chat_ux_sync-simple-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "UI proof shows shared chat text and four Chatterbox audio sources, but no assistant.response.plan.v1 to chat.render.receipt.v1 lineage receipt proves the chat text and audio share the same turn id."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "assistant_response_plan_v1_not_linked",
-          "chat_render_receipt_v1_not_emitted",
-          "chat_turn_id_matches_response_plan_not_proven"
-        ],
-        "id": "chat_ux_sync-medium-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
-        "observed": "UI proof shows shared chat text and audio sources, but no response-plan to chat-render lineage receipt proves the same turn id."
-      }
-    ]
+    "failed_gate_counts": {},
+    "failed_session_count": 0,
+    "latest_receipt_paths": [],
+    "ready": true,
+    "sample_failures": []
   },
   "runner_route_evidence": {
     "blocking_summary": "advanced, adversarial, or soak Chat UX sync scenarios still have no live runner route",

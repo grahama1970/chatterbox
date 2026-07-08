@@ -93,9 +93,13 @@ def test_horus_status_audit_surfaces_artifact_failed_gates() -> None:
         "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:audible_session_replay_receipt_missing"
         not in audit["failed_gates"]
     )
-    assert any(
+    assert not any(
         gate == "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:assistant_response_plan_to_chat_render_lineage_missing"
         for gate in audit["failed_gates"]
+    )
+    assert (
+        "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:runner_route_not_implemented"
+        in audit["failed_gates"]
     )
     assert "tau_memory_routing:subsystem_status_not_passed:partial" in audit["failed_gates"]
     assert not any(

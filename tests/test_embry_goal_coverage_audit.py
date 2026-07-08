@@ -40,8 +40,8 @@ def test_goal_audit_keeps_pass_fail_counts_attached_to_subsystems() -> None:
         "not_run": 0,
     }
     assert subsystems["chat_ux_sync"]["taxonomy"]["status_counts"] == {
-        "passed": 4,
-        "failed": 16,
+        "passed": 8,
+        "failed": 12,
         "not_run": 0,
     }
     assert subsystems["interruption"]["taxonomy"]["status_counts"] == {

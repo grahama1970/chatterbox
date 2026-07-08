@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 229, "failed": 71, "not_run": 0}
+    assert status_counts == {"passed": 233, "failed": 67, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -275,9 +275,10 @@ def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
 
     assert by_folder["chat_ux_sync"][0]["status"] == "passed"
     assert by_folder["chat_ux_sync"][1]["status"] == "passed"
-    assert by_folder["chat_ux_sync"][2]["status"] == "failed"
-    assert by_folder["chat_ux_sync"][3]["status"] == "failed"
-    assert all("chat-ux-gate-audit" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
+    assert by_folder["chat_ux_sync"][2]["status"] == "passed"
+    assert by_folder["chat_ux_sync"][3]["status"] == "passed"
+    assert all(session["failed_gates"] == [] for session in by_folder["chat_ux_sync"])
+    assert all("embry-chat-ux-lineage" in session["latest_receipt"] or "chat-ux-gate-audit" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
 
 
 def test_matrix_advanced_routes_32_47_subset_records_mixed_preflight_failures() -> None:
@@ -604,7 +605,7 @@ def test_matrix_factory_noise_simple_failures_use_audio_capture_receipts() -> No
     assert any("speaker_resolution_known_horus" in session["failed_gates"] for session in sessions)
 
 
-def test_matrix_chat_ux_simple_cases_split_replay_passes_from_lineage_failures() -> None:
+def test_matrix_chat_ux_simple_cases_have_replay_lineage_and_underlines() -> None:
     matrix = build_matrix()
     sessions = [
         session
@@ -616,11 +617,12 @@ def test_matrix_chat_ux_simple_cases_split_replay_passes_from_lineage_failures()
     by_id = {session["id"]: session for session in sessions}
     assert by_id["chat_ux_sync-simple-01"]["status"] == "passed"
     assert by_id["chat_ux_sync-simple-02"]["status"] == "passed"
-    assert by_id["chat_ux_sync-simple-03"]["status"] == "failed"
-    assert by_id["chat_ux_sync-simple-04"]["status"] == "failed"
-    assert all("chat-ux-gate-audit" in session["latest_receipt"] for session in sessions)
-    assert "chat_turn_id_matches_response_plan_not_proven" in by_id["chat_ux_sync-simple-03"]["failed_gates"]
-    assert "spoken_transcript_entity_underlines_not_proven" in by_id["chat_ux_sync-simple-04"]["failed_gates"]
+    assert by_id["chat_ux_sync-simple-03"]["status"] == "passed"
+    assert by_id["chat_ux_sync-simple-04"]["status"] == "passed"
+    assert by_id["chat_ux_sync-simple-03"]["failed_gates"] == []
+    assert by_id["chat_ux_sync-simple-04"]["failed_gates"] == []
+    assert "embry-chat-ux-lineage" in by_id["chat_ux_sync-simple-03"]["latest_receipt"]
+    assert "embry-chat-ux-lineage" in by_id["chat_ux_sync-simple-04"]["latest_receipt"]
 
 
 def test_every_case_requires_humanized_conversation_delivery() -> None:

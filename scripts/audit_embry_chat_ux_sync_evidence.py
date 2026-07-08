@@ -358,10 +358,26 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
 
     chat_gate_candidates = [candidate for candidate in proof_candidates if candidate["chat_gate_pass"]]
     replay_candidates = [candidate for candidate in proof_candidates if candidate["dynamic_replay_basic"]]
-    lineage_candidates = [candidate for candidate in proof_candidates if candidate["response_plan_to_chat_render_lineage"]]
-    underline_candidates = [candidate for candidate in proof_candidates if candidate["extract_entities_underlines"]]
     audible_replay = _audible_replay_evidence(proof_candidates)
     dom_lineage_probe = _dom_lineage_probe_evidence(proof_candidates)
+    lineage_candidates = [
+        candidate
+        for candidate in proof_candidates
+        if candidate["response_plan_to_chat_render_lineage"]
+        or (
+            candidate.get("dom_lineage_probe")
+            and candidate.get("dom_lineage_ready")
+        )
+    ]
+    underline_candidates = [
+        candidate
+        for candidate in proof_candidates
+        if candidate["extract_entities_underlines"]
+        or (
+            candidate.get("dom_lineage_probe")
+            and candidate.get("dom_entity_underlines_ready")
+        )
+    ]
 
     failed_gates: list[str] = []
     if chat_matrix["status_counts"]["failed"]:

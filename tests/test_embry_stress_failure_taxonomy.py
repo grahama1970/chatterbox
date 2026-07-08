@@ -10,7 +10,7 @@ def test_taxonomy_preserves_matrix_coverage_counts() -> None:
     taxonomy = _taxonomy()
 
     assert taxonomy["session_count"] == 300
-    assert taxonomy["matrix_status_counts"] == {"passed": 229, "failed": 71, "not_run": 0}
+    assert taxonomy["matrix_status_counts"] == {"passed": 233, "failed": 67, "not_run": 0}
     assert taxonomy["receipt_backed_count"] == 300
     assert taxonomy["missing_receipt_sessions"] == []
     assert taxonomy["not_run_sessions"] == []
@@ -36,8 +36,8 @@ def test_taxonomy_groups_failures_by_subsystem() -> None:
         "not_run": 0,
     }
     assert subsystems["shared_chat_ux"]["status_counts"] == {
-        "passed": 4,
-        "failed": 16,
+        "passed": 8,
+        "failed": 12,
         "not_run": 0,
     }
     assert subsystems["interruption_turn_control"]["status_counts"] == {

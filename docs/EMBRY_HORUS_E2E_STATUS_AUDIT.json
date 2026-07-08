@@ -13,17 +13,8 @@
     "browser_mic_webrtc:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
     "browser_mic_webrtc:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "browser_mic_webrtc:subsystem_status_not_passed:failing",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:assistant_response_plan_to_chat_render_lineage_missing",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:assistant_response_plan_v1_not_linked",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:chat_render_receipt_v1_not_emitted",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:entity_underline_render_receipt_not_emitted",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:extract_entities_receipt_not_linked",
     "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:runner_route_not_implemented",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_matrix_gate:spoken_transcript_entity_underlines_not_proven",
     "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:chat_ux_matrix_has_failures",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:extract_entities_underline_render_receipt_missing",
-    "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:screenshot_markers_do_not_prove_turn_lineage",
     "chat_ux_sync:artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
     "chat_ux_sync:subsystem_status_not_passed:failing",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:browser_device_ingress_inconsistent",
@@ -55,7 +46,7 @@
     "replay:subsystem_status_not_passed:partial",
     "tau_memory_routing:subsystem_status_not_passed:partial"
   ],
-  "generated_at_utc": "2026-07-08T09:42:46.603732+00:00",
+  "generated_at_utc": "2026-07-08T09:51:45.336042+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -142,17 +133,8 @@
           },
           "exists": true,
           "failed_gates": [
-            "assistant_response_plan_to_chat_render_lineage_missing",
-            "chat_matrix_gate:assistant_response_plan_v1_not_linked",
-            "chat_matrix_gate:chat_render_receipt_v1_not_emitted",
-            "chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
-            "chat_matrix_gate:entity_underline_render_receipt_not_emitted",
-            "chat_matrix_gate:extract_entities_receipt_not_linked",
             "chat_matrix_gate:runner_route_not_implemented",
-            "chat_matrix_gate:spoken_transcript_entity_underlines_not_proven",
-            "chat_ux_matrix_has_failures",
-            "extract_entities_underline_render_receipt_missing",
-            "screenshot_markers_do_not_prove_turn_lineage"
+            "chat_ux_matrix_has_failures"
           ],
           "live": true,
           "mocked": false,

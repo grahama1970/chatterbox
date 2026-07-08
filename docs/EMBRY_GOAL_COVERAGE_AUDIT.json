@@ -1,14 +1,14 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T09:42:46.561913+00:00",
+  "generated_at_utc": "2026-07-08T09:51:45.294076+00:00",
   "goal_subsystem_status_counts": {
     "failing": 2,
     "partial": 6
   },
   "matrix_status_counts": {
-    "failed": 71,
+    "failed": 67,
     "not_run": 0,
-    "passed": 229
+    "passed": 233
   },
   "objective": "Stress test Embry voice/chat system to identify concrete failures across RealtimeSTT ingress, speaker identity, memory/Tau routing, Chatterbox speech, Chat UX sync, orb sync, replay, and interruption.",
   "overall": {
@@ -48,38 +48,14 @@
       "summary": "Browser replay audio now advances and inline trace basics pass, but live DOM turn-id lineage, chat render receipts, and entity underline spans fail.",
       "taxonomy": {
         "status_counts": {
-          "failed": 16,
+          "failed": 12,
           "not_run": 0,
-          "passed": 4
+          "passed": 8
         },
         "top_failed_gates": [
           {
             "count": 12,
             "gate": "runner_route_not_implemented"
-          },
-          {
-            "count": 2,
-            "gate": "assistant_response_plan_v1_not_linked"
-          },
-          {
-            "count": 2,
-            "gate": "chat_render_receipt_v1_not_emitted"
-          },
-          {
-            "count": 2,
-            "gate": "chat_turn_id_matches_response_plan_not_proven"
-          },
-          {
-            "count": 2,
-            "gate": "entity_underline_render_receipt_not_emitted"
-          },
-          {
-            "count": 2,
-            "gate": "extract_entities_receipt_not_linked"
-          },
-          {
-            "count": 2,
-            "gate": "spoken_transcript_entity_underlines_not_proven"
           }
         ]
       },
@@ -475,38 +451,14 @@
       "summary": "Browser shared Chat UX replay starts media playback and audio time advances; event-sourced replay covers turn order and timing offsets, but replay from a full live listener/STT session is still missing.",
       "taxonomy": {
         "status_counts": {
-          "failed": 16,
+          "failed": 12,
           "not_run": 0,
-          "passed": 4
+          "passed": 8
         },
         "top_failed_gates": [
           {
             "count": 12,
             "gate": "runner_route_not_implemented"
-          },
-          {
-            "count": 2,
-            "gate": "assistant_response_plan_v1_not_linked"
-          },
-          {
-            "count": 2,
-            "gate": "chat_render_receipt_v1_not_emitted"
-          },
-          {
-            "count": 2,
-            "gate": "chat_turn_id_matches_response_plan_not_proven"
-          },
-          {
-            "count": 2,
-            "gate": "entity_underline_render_receipt_not_emitted"
-          },
-          {
-            "count": 2,
-            "gate": "extract_entities_receipt_not_linked"
-          },
-          {
-            "count": 2,
-            "gate": "spoken_transcript_entity_underlines_not_proven"
           }
         ]
       },
