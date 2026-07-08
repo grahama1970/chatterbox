@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from scripts.audit_embry_realtimestt_ingress_evidence import build_audit, classify_proof, extract_transcript
+from scripts.audit_embry_realtimestt_ingress_evidence import (
+    build_audit,
+    classify_proof,
+    extract_transcript,
+    is_current_factory_loopback_candidate,
+)
 
 
 def _matrix_with_factory(statuses: list[str]) -> dict:
@@ -92,7 +97,13 @@ def test_ingress_audit_fails_when_current_factory_matrix_fails() -> None:
 
 
 def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matrix_rows_fail(tmp_path: Path) -> None:
-    proof = tmp_path / "20260708T034407Z-factory-current" / "S06-factory-noise" / "rung8-loopback-listener.json"
+    proof = (
+        tmp_path
+        / "voice-chat-e2e"
+        / "20260708T034407Z-factory-current"
+        / "S06-factory-noise"
+        / "rung8-loopback-listener.json"
+    )
     proof.parent.mkdir(parents=True)
     proof.write_text(
         """
@@ -149,6 +160,19 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
     assert "current_factory_matrix_has_failures" in audit["failed_gates"]
     assert "current_factory_matrix_has_no_passes" not in audit["failed_gates"]
     assert "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes" in audit["claims"]["proves"]
+
+
+def test_current_factory_loopback_candidate_does_not_depend_on_timestamp() -> None:
+    candidate = {
+        "path": (
+            "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/"
+            "20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json"
+        ),
+        "transport": "pipewire_monitor_loopback",
+    }
+
+    assert is_current_factory_loopback_candidate(candidate) is True
+    assert is_current_factory_loopback_candidate({**candidate, "transport": "browser_getusermedia"}) is False
 
 
 def test_ingress_audit_reports_browser_device_inconsistency(tmp_path: Path) -> None:

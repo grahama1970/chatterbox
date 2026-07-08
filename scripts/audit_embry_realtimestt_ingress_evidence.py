@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-webcam-20260705T134007Z/continuous-voice-loop.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-20260705T132832Z/continuous-voice-loop.json"),
@@ -156,6 +157,15 @@ def factory_matrix_summary(matrix: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def is_current_factory_loopback_candidate(candidate: dict[str, Any]) -> bool:
+    path = candidate["path"]
+    return bool(
+        candidate["transport"] == "pipewire_monitor_loopback"
+        and "/voice-chat-e2e/" in path
+        and "/S06-factory-noise/" in path
+    )
+
+
 def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, Any]:
     candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     factory = factory_matrix_summary(matrix)
@@ -163,8 +173,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     current_factory_loopback_candidates = [
         candidate
         for candidate in passing_candidates
-        if candidate["transport"] == "pipewire_monitor_loopback"
-        and "20260708T034407Z-factory-current" in candidate["path"]
+        if is_current_factory_loopback_candidate(candidate)
     ]
     current_source_identity_candidates = [
         candidate
