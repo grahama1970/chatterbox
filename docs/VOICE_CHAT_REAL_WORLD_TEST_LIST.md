@@ -164,6 +164,17 @@ detection, listener speaker id, primary speaker match, cancelled/stopped/stale
 control state, stale old-turn byte measurement, and new-turn response
 started/wins.
 
+Current RealtimeSTT ingress evidence audit receipt:
+
+`docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`, 5 historical candidates, and
+3 historical passing ingress slices: HD webcam browser getUserMedia, PipeWire
+monitor loopback, and physical microphone. It also records 2 failed browser
+Jabra capture slices. The current factory-noise matrix remains 0 passed / 20
+failed, so the subsystem is still failing despite those historical proof
+slices.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

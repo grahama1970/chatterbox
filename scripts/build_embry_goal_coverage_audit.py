@@ -21,6 +21,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "RealtimeSTT ingress",
         "requirement_ids": ["VC-02", "VC-03", "VC-04", "VC-10", "VC-23"],
         "taxonomy_subsystems": ["realtimestt_audio_ingress"],
+        "evidence_artifacts": ["docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json"],
         "status": "failing",
         "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent.",
         "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",

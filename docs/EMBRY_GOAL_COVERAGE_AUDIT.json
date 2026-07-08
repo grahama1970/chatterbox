@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T03:09:54.606560+00:00",
+  "generated_at_utc": "2026-07-08T03:13:48.613213+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -389,7 +389,9 @@
       "title": "Orb Sync"
     },
     "realtimestt_ingress": {
-      "evidence_artifacts": [],
+      "evidence_artifacts": [
+        "docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
       "objective_phrase": "RealtimeSTT ingress",
       "requirement_ids": [
