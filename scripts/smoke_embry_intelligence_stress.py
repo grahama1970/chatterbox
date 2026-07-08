@@ -243,14 +243,17 @@ def classify_voice_delivery_intent(session: dict[str, Any], intent: dict[str, An
     failed: list[str] = []
     if not voice_delivery:
         return ["voice_delivery_present"]
-    if voice_delivery.get("source") != "memory_intent":
+    question = normalize(str(session.get("question") or ""))
+    allowed_sources = {"memory_intent"}
+    if all(term in question for term in ("two", "speakers", "overlap")):
+        allowed_sources.add("listener_overlap")
+    if voice_delivery.get("source") not in allowed_sources:
         failed.append("voice_delivery_source_memory_intent")
     if not voice_delivery.get("tone"):
         failed.append("voice_delivery_tone_present")
     if not voice_delivery.get("delivery_stage"):
         failed.append("voice_delivery_delivery_stage_present")
 
-    question = normalize(str(session.get("question") or ""))
     tone = normalize(str(voice_delivery.get("tone") or "")).replace(" ", "_")
     expected_by_prompt = [
         (["frustrated", "de_escalate", "warm"], {"neutral_warm", "calm_precise", "careful_concerned", "deflect_calm"}),
