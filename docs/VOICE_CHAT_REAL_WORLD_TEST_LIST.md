@@ -152,6 +152,20 @@ files exist, but no Tau handoff, `tau.dag_receipt.v1`, or
 `skill.call.receipt.v1` was emitted. The matrix now records `26` passed, `126`
 failed, and `148` not-run sessions.
 
+Latest matrix advanced route subset receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json`
+
+That run executed the next `16` advanced sessions with `mocked=false` and
+`ok=false`. Overall `live=false` because the four advanced Chat UX rows still
+hit `runner_route_not_implemented`. The eight SPARTA-validator and Embry
+voice-control direct-skill rows were live preflight failures: Tau found the
+required skills but emitted no Tau handoff, DAG, or `skill.call.receipt.v1`.
+The four interruption rows exercised live cancel/duck/stop endpoint paths but
+still lack interruption-detection, new-turn, stale-audio, non-primary rejection,
+and Tau-wait natural-stop receipts. The matrix now records `26` passed, `142`
+failed, and `132` not-run sessions.
+
 Latest matrix medium Tau/direct-skill subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json`

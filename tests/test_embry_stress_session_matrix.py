@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 26, "failed": 126, "not_run": 148}
+    assert status_counts == {"passed": 26, "failed": 142, "not_run": 132}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -158,6 +158,35 @@ def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
     assert by_folder["chat_ux_sync"][2]["status"] == "failed"
     assert by_folder["chat_ux_sync"][3]["status"] == "failed"
     assert all("chat-ux-gate-audit" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
+
+
+def test_matrix_advanced_routes_32_47_subset_records_mixed_preflight_failures() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["difficulty"] == "advanced"
+        and session["folder_id"]
+        in {"skill_sparta_validator", "chat_ux_sync", "voice_control_skill", "interruption"}
+    ]
+
+    assert len(sessions) == 16
+    assert all(session["status"] == "failed" for session in sessions)
+    assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in sessions)
+    by_folder = {}
+    for session in sessions:
+        by_folder.setdefault(session["folder_id"], []).append(session)
+
+    for folder in ["skill_sparta_validator", "voice_control_skill"]:
+        assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in by_folder[folder])
+        assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in by_folder[folder])
+        assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in by_folder[folder])
+
+    assert all(session["failed_gates"] == ["runner_route_not_implemented"] for session in by_folder["chat_ux_sync"])
+    assert all(
+        "interruption_detected_receipt_not_emitted" in session["failed_gates"]
+        for session in by_folder["interruption"]
+    )
 
 
 def test_matrix_medium_routes_48_63_subset_has_receipt_backed_results() -> None:

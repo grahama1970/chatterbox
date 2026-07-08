@@ -1024,6 +1024,97 @@ CURRENT_RESULTS.update(
     }
 )
 
+_ADVANCED_ROUTES_32_47_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T020917Z-matrix-advanced-routes-32-47/receipt.json"
+)
+
+for _folder_id in ["skill_sparta_validator", "voice_control_skill"]:
+    for _index in range(1, 5):
+        CURRENT_RESULTS[f"{_folder_id}-advanced-{_index:02d}"] = {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
+            "failed_gates": [
+                "tau_agent_handoff_not_exercised",
+                "skill_call_receipt_not_emitted",
+                "tau_dag_receipt_not_created",
+            ],
+            "observed": (
+                "Live advanced direct-skill preflight reached Tau and found the required skill, "
+                "but no Tau handoff, DAG, or skill-call receipt was emitted."
+            ),
+        }
+
+for _index in range(1, 5):
+    CURRENT_RESULTS[f"chat_ux_sync-advanced-{_index:02d}"] = {
+        "status": "failed",
+        "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
+        "failed_gates": ["runner_route_not_implemented"],
+        "observed": (
+            "The advanced matrix runner has no live Chat UX route implementation for this case; "
+            "this row is receipt-backed as an unimplemented runner path, not a UI proof."
+        ),
+    }
+
+CURRENT_RESULTS.update(
+    {
+        "interruption-advanced-01": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
+            "failed_gates": [
+                "interruption_detected_receipt_not_emitted",
+                "new_horus_turn_not_exercised",
+                "new_turn_wins_receipt_not_emitted",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, "
+                "but no live Horus barge-in detection, new-turn-wins receipt, or interruption "
+                "receipt was emitted."
+            ),
+        },
+        "interruption-advanced-02": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
+            "failed_gates": [
+                "blessed_qra_cached_response_not_exercised",
+                "interruption_detected_receipt_not_emitted",
+                "stale_audio_stream_bytes_not_measured",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the "
+                "blessed-QRA cached response path and stale post-cancel stream-byte measurement "
+                "were not exercised in this matrix case."
+            ),
+        },
+        "interruption-advanced-03": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
+            "failed_gates": [
+                "interruption_detected_receipt_not_emitted",
+                "non_primary_interrupt_rejection_not_exercised",
+                "speaker_gate_receipt_not_linked_to_turn_control",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no "
+                "non-primary speaker rejection receipt was linked to turn control."
+            ),
+        },
+        "interruption-advanced-04": {
+            "status": "failed",
+            "latest_receipt": _ADVANCED_ROUTES_32_47_RECEIPT,
+            "failed_gates": [
+                "interruption_detected_receipt_not_emitted",
+                "natural_stop_phrase_not_observed",
+                "tau_tool_wait_not_exercised",
+            ],
+            "observed": (
+                "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau "
+                "tool-wait interruption or natural stop phrase was exercised."
+            ),
+        },
+    }
+)
+
 _MEDIUM_ROUTES_48_63_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T015351Z-matrix-medium-routes-48-63/receipt.json"
