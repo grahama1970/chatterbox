@@ -71,7 +71,7 @@
     "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "tau_memory_routing:subsystem_status_not_passed:failing"
   ],
-  "generated_at_utc": "2026-07-08T08:47:31.156363+00:00",
+  "generated_at_utc": "2026-07-08T09:03:31.780466+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -437,6 +437,7 @@
               "speaker_identity_matrix_policy_rows_are_passing",
               "memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy",
               "fixture_primary_speaker_gate_suppresses_non_primary_audio",
+              "speaker_identity_endpoint_sanity_checks_pass",
               "known_horus_resolution_can_route_speaker_scoped_memory",
               "unknown_speaker_resolution_fails_closed_to_identity_prompt",
               "live_unknown_speaker_resolution_fails_closed_to_identity_prompt",
