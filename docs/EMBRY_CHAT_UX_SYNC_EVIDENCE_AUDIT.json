@@ -269,7 +269,7 @@
     "extract_entities_underline_render_receipt_missing",
     "screenshot_markers_do_not_prove_turn_lineage"
   ],
-  "generated_at_utc": "2026-07-08T07:15:25.879933+00:00",
+  "generated_at_utc": "2026-07-08T09:06:35.460939+00:00",
   "lineage_candidate_count": 0,
   "live": true,
   "live_unmocked_candidate_count": 2,
@@ -367,22 +367,23 @@
         "audible_playback": {
           "current_time_advanced": true,
           "cut_off_after_ms": null,
-          "ended_event_count": 1,
+          "ended_event_count": 2,
           "ended_or_played_to_expected_offset": true,
           "error_event_count": 0,
-          "event_count": 39,
-          "max_current_time_seconds": 3.666,
+          "event_count": 54,
+          "max_current_time_seconds": 5.418,
           "max_duration_seconds": 5.418,
-          "play_event_count": 2,
+          "play_event_count": 3,
           "playback_started": true,
-          "playing_event_count": 2,
+          "playing_event_count": 3,
           "playing_event_seen": true,
           "srcs": [
             "http://localhost:3002/chatterbox-artifacts/tau_voice_render_smoke/finished_response.wav",
+            "http://localhost:3002/chatterbox-artifacts/voice-chat-e2e/fresh-all-audible-20260707T155951Z/S03-unknown-speaker/identity-clarification-render.wav",
             "http://localhost:3002/chatterbox-artifacts/voice-chat-e2e/fresh-all-audible-20260707T155951Z/S05-female-distractor/overlap.wav"
           ],
-          "timeupdate_event_count": 28,
-          "waiting_or_stalled_event_count": 2
+          "timeupdate_event_count": 37,
+          "waiting_or_stalled_event_count": 3
         },
         "audible_playback_present": true,
         "audio_artifact_id": null,
