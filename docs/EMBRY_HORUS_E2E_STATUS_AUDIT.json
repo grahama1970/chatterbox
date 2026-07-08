@@ -83,7 +83,7 @@
     "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "tau_memory_routing:subsystem_status_not_passed:failing"
   ],
-  "generated_at_utc": "2026-07-08T07:42:13.909479+00:00",
+  "generated_at_utc": "2026-07-08T07:44:56.280378+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -459,7 +459,8 @@
               "unknown_speaker_resolution_fails_closed_to_identity_prompt",
               "live_unknown_speaker_resolution_fails_closed_to_identity_prompt",
               "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control",
-              "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio"
+              "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio",
+              "captured_audio_segment_windows_score_closer_to_horus_than_embry_reference"
             ]
           },
           "exists": true,

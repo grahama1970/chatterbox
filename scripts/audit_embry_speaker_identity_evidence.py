@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T074113Z-fresh-loopback/segment-evidence.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T050157Z-speaker-unknown-current/S03-unknown-speaker/identity-resolution.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/20260708T004440Z-speaker-identity-ledger/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/primary-speaker-gate-20260702T150040Z/suite-summary.json"),
@@ -191,6 +192,8 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
 
     if schema == "chatterbox.pyannote_diarization_smoke.v1":
         proof_type = "pyannote_strict_two_speaker"
+    elif schema == "chatterbox.speaker_segment_evidence.v1":
+        proof_type = "speaker_segment_evidence"
     elif receipt.get("proof_scope") == "live_memory_speaker_resolution_policy_not_audio_identity":
         proof_type = "memory_speaker_policy_ledger"
     elif "pyannote_detected_two_anonymous_overlapping_speakers" in proves:
@@ -224,6 +227,16 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         and _nested_get(receipt, "memory_intent.voice_delivery.tone") == "one_at_a_time_interrupt"
         and _nested_get(receipt, "tau_voice_render.ok") is True
     )
+    speaker_segment_evidence_ok = bool(
+        schema == "chatterbox.speaker_segment_evidence.v1"
+        and receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and "captured_audio_segment_windows_score_closer_to_horus_than_embry_reference" in proves
+        and _nested_get(receipt, "summary.horus_ratio") == 1.0
+        and (_nested_get(receipt, "summary.horus_segment_count") or 0) > 0
+        and (_nested_get(receipt, "summary.embry_segment_count") or 0) == 0
+    )
 
     return {
         "path": str(path),
@@ -248,6 +261,11 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "pyannote_speaker_count": _nested_get(receipt, "summary.speaker_count"),
         "pyannote_exclusive_speaker_count": _nested_get(receipt, "summary.exclusive_speaker_count"),
         "pyannote_overlap_seconds": _nested_get(receipt, "summary.overlap_seconds"),
+        "speaker_segment_evidence_ok": speaker_segment_evidence_ok,
+        "speaker_segment_summary": receipt.get("summary") if schema == "chatterbox.speaker_segment_evidence.v1" else None,
+        "speaker_segment_audio": _nested_get(receipt, "artifacts.audio.path"),
+        "speaker_segment_horus_enrollment": _nested_get(receipt, "artifacts.horus_enrollment.path"),
+        "speaker_segment_embry_enrollment": _nested_get(receipt, "artifacts.embry_enrollment.path"),
         "known_horus_resolution_ok": _known_speaker_resolution_ok(receipt),
         "unknown_speaker_fail_closed_ok": _unknown_speaker_resolution_ok(receipt),
         "source_audio_identity_proven": receipt.get("source_audio_identity_proven"),
@@ -281,6 +299,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     ]
     pyannote_strict_two_speaker = [
         candidate for candidate in proof_candidates if candidate["pyannote_strict_two_speaker_ok"]
+    ]
+    speaker_segment_evidence = [
+        candidate for candidate in proof_candidates if candidate["speaker_segment_evidence_ok"]
     ]
     independent_enrollment = [
         candidate
@@ -341,6 +362,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         partial_proves.append("pyannote_overlap_detection_routes_to_one_at_a_time_turn_control")
     if pyannote_strict_two_speaker:
         partial_proves.append("pyannote_strict_smoke_detects_two_speakers_in_overlap_audio")
+    if speaker_segment_evidence:
+        partial_proves.append("captured_audio_segment_windows_score_closer_to_horus_than_embry_reference")
     return {
         "schema": "chatterbox.embry_speaker_identity_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -357,6 +380,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "live_unknown_fail_closed_candidate_count": len(live_unknown_fail_closed),
         "overlap_diarization_candidate_count": len(overlap_diarization),
         "pyannote_strict_two_speaker_candidate_count": len(pyannote_strict_two_speaker),
+        "speaker_segment_evidence_candidate_count": len(speaker_segment_evidence),
         "independent_enrollment_candidate_count": len(independent_enrollment),
         "physical_identity_candidate_count": len(physical_identity_proven),
         "source_audio_identity_evidence": source_audio_identity,

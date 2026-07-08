@@ -18,7 +18,8 @@
       "unknown_speaker_resolution_fails_closed_to_identity_prompt",
       "live_unknown_speaker_resolution_fails_closed_to_identity_prompt",
       "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control",
-      "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio"
+      "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio",
+      "captured_audio_segment_windows_score_closer_to_horus_than_embry_reference"
     ]
   },
   "failed_gates": [
@@ -26,7 +27,7 @@
     "physical_speaker_to_microphone_identity_gating_not_proven"
   ],
   "fixture_gate_candidate_count": 1,
-  "generated_at_utc": "2026-07-08T06:56:11.907867+00:00",
+  "generated_at_utc": "2026-07-08T07:44:56.186311+00:00",
   "independent_enrollment_candidate_count": 1,
   "known_horus_candidate_count": 2,
   "live": true,
@@ -84,8 +85,61 @@
     ]
   },
   "policy_ledger_candidate_count": 1,
-  "proof_candidate_count": 8,
+  "proof_candidate_count": 9,
   "proof_candidates": [
+    {
+      "candidate_audio": null,
+      "claims_does_not_prove": [
+        "pyannote_or_spectral_clustering_diarization",
+        "overlapping_speaker_separation",
+        "speaker_count_estimation",
+        "word_level_speaker_attribution",
+        "browser_webrtc_transport"
+      ],
+      "claims_proves": [
+        "captured_audio_segment_windows_score_closer_to_horus_than_embry_reference",
+        "primary_speaker_segment_evidence_is_auditable_without_mocking"
+      ],
+      "enrollment_audio": null,
+      "enrollment_independent_from_candidate": false,
+      "exists": true,
+      "failed_gates": [],
+      "fixture_primary_accepts_and_rejects_non_primary": false,
+      "known_horus_resolution_ok": false,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "overlap_diarization_turn_control_ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/speaker-segment-evidence/20260708T074113Z-fresh-loopback/segment-evidence.json",
+      "physical_identity_not_proven_by_claims": false,
+      "policy_cases_cover_known_unknown_ambiguous_overlap": false,
+      "primary_speaker_match": null,
+      "proof_type": "speaker_segment_evidence",
+      "pyannote_exclusive_speaker_count": null,
+      "pyannote_overlap_seconds": null,
+      "pyannote_speaker_count": null,
+      "pyannote_strict_two_speaker_ok": false,
+      "schema": "chatterbox.speaker_segment_evidence.v1",
+      "similarity": null,
+      "source_audio_identity_proven": null,
+      "speaker_segment_audio": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/loopback-captured.wav",
+      "speaker_segment_embry_enrollment": "/home/graham/workspace/experiments/agent-skills-loop2-shared/skills/persona-dream/voice_clone_candidates/embry_kling_clone_candidate.wav",
+      "speaker_segment_evidence_ok": true,
+      "speaker_segment_horus_enrollment": "/home/graham/workspace/experiments/agent-skills-loop2-shared/skills/persona-dream/voice_clone_candidates/horus_kling_clone_candidate.wav",
+      "speaker_segment_summary": {
+        "ambiguous_segment_count": 0,
+        "embry_segment_count": 0,
+        "horus_ratio": 1.0,
+        "horus_segment_count": 6,
+        "max_primary_margin_observed": 0.3209,
+        "mean_primary_margin": 0.2378,
+        "min_primary_margin_observed": 0.1569,
+        "segment_count": 6,
+        "voiced_segment_count": 6
+      },
+      "threshold": null,
+      "unknown_speaker_fail_closed_ok": false
+    },
     {
       "candidate_audio": null,
       "claims_does_not_prove": [
@@ -120,6 +174,11 @@
       "schema": "chatterbox.voice_chat_e2e.identity_resolution.v1",
       "similarity": null,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": null,
       "unknown_speaker_fail_closed_ok": true
     },
@@ -163,6 +222,11 @@
       "schema": "embry.proof.receipt.v1",
       "similarity": null,
       "source_audio_identity_proven": false,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": null,
       "unknown_speaker_fail_closed_ok": false
     },
@@ -200,6 +264,11 @@
       "schema": "chatterbox.primary_speaker_gate_suite.v1",
       "similarity": null,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": null,
       "unknown_speaker_fail_closed_ok": false
     },
@@ -246,6 +315,11 @@
       "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
       "similarity": 0.8253,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": 0.72,
       "unknown_speaker_fail_closed_ok": false
     },
@@ -289,6 +363,11 @@
       "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
       "similarity": 0.0607,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": 0.45,
       "unknown_speaker_fail_closed_ok": true
     },
@@ -332,6 +411,11 @@
       "schema": "chatterbox.conversation_ladder.rung7.listener_contract.v1",
       "similarity": 1.0,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": 0.45,
       "unknown_speaker_fail_closed_ok": false
     },
@@ -371,6 +455,11 @@
       "schema": "chatterbox.overlap_turn_control_smoke.v1",
       "similarity": null,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": null,
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": null,
       "unknown_speaker_fail_closed_ok": false
     },
@@ -409,6 +498,11 @@
       "schema": "chatterbox.pyannote_diarization_smoke.v1",
       "similarity": null,
       "source_audio_identity_proven": null,
+      "speaker_segment_audio": "/out/overlap-turn-control-20260703T192737Z-live/overlap.wav",
+      "speaker_segment_embry_enrollment": null,
+      "speaker_segment_evidence_ok": false,
+      "speaker_segment_horus_enrollment": null,
+      "speaker_segment_summary": null,
       "threshold": null,
       "unknown_speaker_fail_closed_ok": false
     }
@@ -606,6 +700,7 @@
       "passed": 20
     }
   },
+  "speaker_segment_evidence_candidate_count": 1,
   "status": "failed",
   "unknown_fail_closed_candidate_count": 2
 }

@@ -141,6 +141,40 @@ def test_classify_strict_pyannote_two_speaker_receipt() -> None:
     assert candidate["pyannote_overlap_seconds"] == 4.725
 
 
+def test_classify_speaker_segment_evidence_receipt() -> None:
+    receipt = {
+        "schema": "chatterbox.speaker_segment_evidence.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "claims": {
+            "proves": [
+                "captured_audio_segment_windows_score_closer_to_horus_than_embry_reference",
+                "primary_speaker_segment_evidence_is_auditable_without_mocking",
+            ]
+        },
+        "artifacts": {
+            "audio": {"path": "/tmp/captured.wav"},
+            "horus_enrollment": {"path": "/tmp/horus.wav"},
+            "embry_enrollment": {"path": "/tmp/embry.wav"},
+        },
+        "summary": {
+            "horus_ratio": 1.0,
+            "horus_segment_count": 6,
+            "embry_segment_count": 0,
+            "ambiguous_segment_count": 0,
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/segment.json"), receipt)
+
+    assert candidate["proof_type"] == "speaker_segment_evidence"
+    assert candidate["speaker_segment_evidence_ok"] is True
+    assert candidate["speaker_segment_audio"] == "/tmp/captured.wav"
+    assert candidate["speaker_segment_horus_enrollment"] == "/tmp/horus.wav"
+    assert candidate["speaker_segment_embry_enrollment"] == "/tmp/embry.wav"
+
+
 def test_strict_pyannote_one_speaker_receipt_does_not_pass_two_speaker_gate() -> None:
     receipt = {
         "schema": "chatterbox.pyannote_diarization_smoke.v1",
