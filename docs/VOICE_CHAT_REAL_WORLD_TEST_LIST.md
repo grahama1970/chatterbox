@@ -77,6 +77,17 @@ It rendered all three bad answers to Chatterbox WAVs, but local playback through
 The generated WAV files are valid 24 kHz mono artifacts; playback timeout is a
 local command/device failure to investigate separately.
 
+Latest matrix subset stress receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json`
+
+That run executed `16` simple sessions from
+`docs/EMBRY_STRESS_SESSION_MATRIX.json` with `mocked=false`, `live=true`, and
+`ok=false`. It passed the four Brave Search research sessions and failed all
+four SPARTA QRA sessions, all four persona-memory recall sessions, and all four
+persona-memory miss sessions. The failures show that Embry currently needs a
+stricter answerability gate before speaking memory answers.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`
@@ -89,7 +100,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `200` labeled sessions across `10` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`1` passed, `4` failed, and `195` are `not_run`. This is the intended source
+`4` passed, `13` failed, and `183` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 ## Required Receipt Fields

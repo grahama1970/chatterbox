@@ -18,7 +18,7 @@
     "soak"
   ],
   "folder_count": 10,
-  "generated_at_utc": "2026-07-07T23:49:02Z",
+  "generated_at_utc": "2026-07-08T00:06:31Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 200,
   "sessions": [
@@ -37,7 +37,7 @@
       "folder_id": "sparta_qra_compliance",
       "folder_title": "SPARTA QRA Compliance",
       "id": "sparta_qra_compliance-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T234201Z-scripted/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
       "observed": "Returned unrelated S0609/deprecated-control answer.",
       "question": "What evidence should a SPARTA QRA include to be acceptable?",
@@ -53,16 +53,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
+      ],
       "folder_id": "sparta_qra_compliance",
       "folder_title": "SPARTA QRA Compliance",
       "id": "sparta_qra_compliance-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned S0609/deprecated-control answer for mandatory evidence fields.",
       "question": "Which SPARTA QRA evidence fields are mandatory before Embry can answer?",
       "route": "memory.sparta_qra",
-      "status": "not_run",
+      "status": "failed",
       "title": "SPARTA QRA Compliance: simple 2"
     },
     {
@@ -73,16 +75,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
+      ],
       "folder_id": "sparta_qra_compliance",
       "folder_title": "SPARTA QRA Compliance",
       "id": "sparta_qra_compliance-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Evidence trail still carried deprecated/non-generation control leakage.",
       "question": "Show the evidence trail for a spacecraft mission-control SPARTA QRA.",
       "route": "memory.sparta_qra",
-      "status": "not_run",
+      "status": "failed",
       "title": "SPARTA QRA Compliance: simple 3"
     },
     {
@@ -93,16 +97,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
+      ],
       "folder_id": "sparta_qra_compliance",
       "folder_title": "SPARTA QRA Compliance",
       "id": "sparta_qra_compliance-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned S0609/deprecated-control answer for weak-evidence handling.",
       "question": "What should Embry do when a SPARTA QRA has weak or missing evidence?",
       "route": "memory.sparta_qra",
-      "status": "not_run",
+      "status": "failed",
       "title": "SPARTA QRA Compliance: simple 4"
     },
     {
@@ -434,12 +440,13 @@
         "chat_session_log_entry"
       ],
       "failed_gates": [
+        "persona_memory_answer_uses_unrelated_source_collection",
         "persona_memory_answer_wrong_or_unrelated"
       ],
       "folder_id": "persona_memory_recall",
       "folder_title": "Persona Memory Recall",
       "id": "persona_memory_recall-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T234201Z-scripted/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
       "observed": "Returned Horus TTS skill description instead of Cthonia.",
       "question": "Where did Horus Lupercal grow up?",
@@ -455,16 +462,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "persona_memory_answer_uses_unrelated_source_collection"
+      ],
       "folder_id": "persona_memory_recall",
       "folder_title": "Persona Memory Recall",
       "id": "persona_memory_recall-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned a plausible voice-workbench memory from unrelated source collection.",
       "question": "What did Horus last ask Embry about voice testing?",
       "route": "memory.persona_memory",
-      "status": "not_run",
+      "status": "failed",
       "title": "Persona Memory Recall: simple 2"
     },
     {
@@ -475,16 +484,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "persona_memory_answer_uses_unrelated_source_collection"
+      ],
       "folder_id": "persona_memory_recall",
       "folder_title": "Persona Memory Recall",
       "id": "persona_memory_recall-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned Horus TTS pipeline memory from unrelated source collection.",
       "question": "What should Embry remember about Horus and factory-floor voice tests?",
       "route": "memory.persona_memory",
-      "status": "not_run",
+      "status": "failed",
       "title": "Persona Memory Recall: simple 3"
     },
     {
@@ -495,16 +506,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "persona_memory_answer_uses_unrelated_source_collection"
+      ],
       "folder_id": "persona_memory_recall",
       "folder_title": "Persona Memory Recall",
       "id": "persona_memory_recall-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Admitted no specific QRA-caching conversation but still used unrelated collection.",
       "question": "What was the last conversation Embry had with Horus about QRA caching?",
       "route": "memory.persona_memory",
-      "status": "not_run",
+      "status": "failed",
       "title": "Persona Memory Recall: simple 4"
     },
     {
@@ -841,7 +854,7 @@
       "folder_id": "persona_memory_miss",
       "folder_title": "Persona Memory Miss",
       "id": "persona_memory_miss-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T234201Z-scripted/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
       "observed": "Returned unrelated Embry config skill instead of clarifying.",
       "question": "What private code word did I tell Embry yesterday?",
@@ -857,16 +870,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "memory_miss_should_not_answer_unrelated_record"
+      ],
       "folder_id": "persona_memory_miss",
       "folder_title": "Persona Memory Miss",
       "id": "persona_memory_miss-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned Horus TTS skill text for an unrecorded nickname.",
       "question": "What unrecorded nickname did Horus give the WebRTC bug?",
       "route": "memory.persona_memory.fail_closed",
-      "status": "not_run",
+      "status": "failed",
       "title": "Persona Memory Miss: simple 2"
     },
     {
@@ -877,16 +892,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "memory_miss_should_not_answer_unrelated_record"
+      ],
       "folder_id": "persona_memory_miss",
       "folder_title": "Persona Memory Miss",
       "id": "persona_memory_miss-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned Embry Agent daemon skill text for undocumented promise.",
       "question": "What was the undocumented promise Embry made in the last room test?",
       "route": "memory.persona_memory.fail_closed",
-      "status": "not_run",
+      "status": "failed",
       "title": "Persona Memory Miss: simple 3"
     },
     {
@@ -897,16 +914,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "memory_miss_should_not_answer_unrelated_record"
+      ],
       "folder_id": "persona_memory_miss",
       "folder_title": "Persona Memory Miss",
       "id": "persona_memory_miss-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Returned YouTube transcript skill text for muted factory phrase.",
       "question": "What secret factory phrase did I say when the microphone was muted?",
       "route": "memory.persona_memory.fail_closed",
-      "status": "not_run",
+      "status": "failed",
       "title": "Persona Memory Miss: simple 4"
     },
     {
@@ -1241,7 +1260,7 @@
       "folder_id": "brave_research",
       "folder_title": "External Research",
       "id": "brave_research-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260707T234201Z-scripted/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
       "observed": "Brave Search returned relevant pyannote sources.",
       "question": "Research current pyannote.audio support for overlap detection.",
@@ -1261,12 +1280,12 @@
       "folder_id": "brave_research",
       "folder_title": "External Research",
       "id": "brave_research-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Brave Search returned relevant RealtimeSTT external-audio sources.",
       "question": "Find current RealtimeSTT guidance for external audio feed_audio usage.",
       "route": "brave-search.source_receipt",
-      "status": "not_run",
+      "status": "passed",
       "title": "External Research: simple 2"
     },
     {
@@ -1281,12 +1300,12 @@
       "folder_id": "brave_research",
       "folder_title": "External Research",
       "id": "brave_research-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Brave Search returned relevant getUserMedia/ASR constraint sources.",
       "question": "Search for browser getUserMedia audio processing constraints relevant to ASR.",
       "route": "brave-search.source_receipt",
-      "status": "not_run",
+      "status": "passed",
       "title": "External Research: simple 3"
     },
     {
@@ -1301,12 +1320,12 @@
       "folder_id": "brave_research",
       "folder_title": "External Research",
       "id": "brave_research-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Brave Search returned relevant streaming diarization sources.",
       "question": "Research current open-source approaches for streaming speaker diarization.",
       "route": "brave-search.source_receipt",
-      "status": "not_run",
+      "status": "passed",
       "title": "External Research: simple 4"
     },
     {
@@ -4033,8 +4052,8 @@
     }
   ],
   "status_counts": {
-    "failed": 4,
-    "not_run": 195,
-    "passed": 1
+    "failed": 13,
+    "not_run": 183,
+    "passed": 4
   }
 }

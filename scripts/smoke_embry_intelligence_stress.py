@@ -144,6 +144,50 @@ def classify_answer(case: dict[str, Any], answer: dict[str, Any]) -> list[str]:
     return failed
 
 
+def answer_sources(answer: dict[str, Any]) -> list[dict[str, Any]]:
+    payload = answer.get("json") if isinstance(answer.get("json"), dict) else {}
+    sources = payload.get("sources")
+    return sources if isinstance(sources, list) else []
+
+
+def has_unrelated_persona_source(answer: dict[str, Any]) -> bool:
+    bad_sources = {"skill_descriptions", "sparta_controls"}
+    return any(str(source.get("source") or "") in bad_sources for source in answer_sources(answer) if isinstance(source, dict))
+
+
+def classify_matrix_answer(session: dict[str, Any], answer: dict[str, Any]) -> list[str]:
+    text = answer_text(answer)
+    norm = normalize(text)
+    route = str(session.get("route") or "")
+    question = normalize(str(session.get("question") or ""))
+    failed: list[str] = []
+    if not answer.get("ok_http"):
+        return ["memory_answer_http_ok"]
+    payload = answer.get("json") if isinstance(answer.get("json"), dict) else {}
+    if route == "memory.sparta_qra":
+        if "s0609" in norm or "deprecated or revoked" in norm or "non generation" in norm:
+            failed.append("sparta_qra_answer_overfit_to_unrelated_control_exclusion")
+        if "acceptable" in question and not all(term in norm for term in ["qra", "evidence", "acceptable"]):
+            failed.append("sparta_qra_answer_missing_acceptance_terms")
+        elif not text:
+            failed.append("sparta_qra_answer_present")
+        elif not any(term in norm for term in ["sparta", "qra", "evidence", "control"]):
+            failed.append("sparta_qra_answer_missing_domain_terms")
+    elif route == "memory.persona_memory":
+        if "where did horus lupercal grow up" in question:
+            failed.extend(classify_answer({"kind": "expected_terms", "expected_terms": ["cthonia"]}, answer))
+        elif not text:
+            failed.append("persona_memory_answer_present")
+        if has_unrelated_persona_source(answer):
+            failed.append("persona_memory_answer_uses_unrelated_source_collection")
+    elif route == "memory.persona_memory.fail_closed":
+        if payload.get("can_answer") is True or bool(text):
+            failed.append("memory_miss_should_not_answer_unrelated_record")
+    else:
+        failed.append("runner_route_not_implemented")
+    return sorted(set(failed))
+
+
 def run_memory_case(case: dict[str, Any], *, memory_url: str, timeout_s: int) -> dict[str, Any]:
     intent = post_json(
         f"{memory_url.rstrip('/')}/intent",
@@ -170,14 +214,13 @@ def run_memory_case(case: dict[str, Any], *, memory_url: str, timeout_s: int) ->
     }
 
 
-def run_brave_case(*, brave_script: Path, timeout_s: int) -> dict[str, Any]:
-    query = "What is the current pyannote.audio speaker diarization repository and does it support overlapped speech detection?"
+def run_brave_query(*, case_id: str, query: str, brave_script: Path, timeout_s: int) -> dict[str, Any]:
     search = run_cmd(
         [
             "python3",
             str(brave_script),
             "web",
-            "pyannote audio GitHub overlapped speech detection speaker diarization",
+            query,
             "--count",
             "5",
             "--json",
@@ -195,10 +238,12 @@ def run_brave_case(*, brave_script: Path, timeout_s: int) -> dict[str, Any]:
         failed.append("brave_search_command_ok")
     if not results:
         failed.append("brave_search_results_present")
-    if results and not any("pyannote" in normalize(f"{item.get('title', '')} {item.get('url', '')}") for item in results):
+    query_terms = [term for term in normalize(query).split() if len(term) > 4][:4]
+    result_text = normalize(" ".join(f"{item.get('title', '')} {item.get('description', '')} {item.get('url', '')}" for item in results))
+    if results and query_terms and not any(term in result_text for term in query_terms):
         failed.append("brave_search_results_relevant")
     return {
-        "id": "external_brave_search_pyannote",
+        "id": case_id,
         "query": query,
         "brave_search": {**search, "json": parsed},
         "ok": not failed,
@@ -206,6 +251,89 @@ def run_brave_case(*, brave_script: Path, timeout_s: int) -> dict[str, Any]:
         "live": True,
         "failed_gates": failed,
     }
+
+
+def run_brave_case(*, brave_script: Path, timeout_s: int) -> dict[str, Any]:
+    return run_brave_query(
+        case_id="external_brave_search_pyannote",
+        query="pyannote audio GitHub overlapped speech detection speaker diarization",
+        brave_script=brave_script,
+        timeout_s=timeout_s,
+    )
+
+
+def run_matrix_session(
+    session: dict[str, Any],
+    *,
+    memory_url: str,
+    brave_script: Path,
+    timeout_s: int,
+) -> dict[str, Any]:
+    route = str(session.get("route") or "")
+    query = str(session.get("question") or "")
+    if route.startswith("memory."):
+        scope = "sparta_qra" if route == "memory.sparta_qra" else "persona_memory"
+        intent = post_json(
+            f"{memory_url.rstrip('/')}/intent",
+            {"q": query, "scope": scope, "fast": True},
+            timeout_s,
+        )
+        answer = post_json(
+            f"{memory_url.rstrip('/')}/answer",
+            {"q": query, "scope": scope, "k": 5},
+            timeout_s,
+        )
+        failed = classify_matrix_answer(session, answer)
+        return {
+            "id": session["id"],
+            "matrix_session": session,
+            "query": query,
+            "route": route,
+            "intent": intent,
+            "answer": answer,
+            "final_response": answer_text(answer),
+            "ok": not failed,
+            "mocked": False,
+            "live": bool(intent.get("ok_http") and answer.get("ok_http")),
+            "failed_gates": failed,
+        }
+    if route == "brave-search.source_receipt":
+        result = run_brave_query(
+            case_id=str(session["id"]),
+            query=query,
+            brave_script=brave_script,
+            timeout_s=timeout_s,
+        )
+        result["matrix_session"] = session
+        result["route"] = route
+        return result
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": query,
+        "route": route,
+        "ok": False,
+        "mocked": False,
+        "live": False,
+        "failed_gates": ["runner_route_not_implemented"],
+    }
+
+
+def select_matrix_sessions(
+    matrix: dict[str, Any],
+    *,
+    folder: str | None,
+    difficulty: str | None,
+    limit: int | None,
+) -> list[dict[str, Any]]:
+    sessions = list(matrix.get("sessions") or [])
+    if folder:
+        sessions = [session for session in sessions if session.get("folder_id") == folder]
+    if difficulty:
+        sessions = [session for session in sessions if session.get("difficulty") == difficulty]
+    if limit is not None:
+        sessions = sessions[:limit]
+    return sessions
 
 
 def render_spoken_failures(
@@ -297,14 +425,44 @@ def main() -> int:
     parser.add_argument("--render-spoken-failures", action="store_true")
     parser.add_argument("--playback-sink-target", default="64")
     parser.add_argument("--playback-timeout-s", default=60, type=int)
+    parser.add_argument("--matrix-file", type=Path)
+    parser.add_argument("--matrix-folder")
+    parser.add_argument("--matrix-difficulty")
+    parser.add_argument("--matrix-limit", type=int)
     args = parser.parse_args()
 
     started = time.perf_counter()
     out_dir = args.out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    cases = [run_memory_case(case, memory_url=args.memory_url, timeout_s=args.timeout_s) for case in CASES]
-    cases.append(run_brave_case(brave_script=args.brave_script, timeout_s=args.timeout_s))
+    matrix_selection: dict[str, Any] | None = None
+    if args.matrix_file:
+        matrix = json.loads(args.matrix_file.read_text(encoding="utf-8"))
+        selected = select_matrix_sessions(
+            matrix,
+            folder=args.matrix_folder,
+            difficulty=args.matrix_difficulty,
+            limit=args.matrix_limit,
+        )
+        cases = [
+            run_matrix_session(
+                session,
+                memory_url=args.memory_url,
+                brave_script=args.brave_script,
+                timeout_s=args.timeout_s,
+            )
+            for session in selected
+        ]
+        matrix_selection = {
+            "matrix_file": str(args.matrix_file),
+            "folder": args.matrix_folder,
+            "difficulty": args.matrix_difficulty,
+            "limit": args.matrix_limit,
+            "selected_count": len(selected),
+        }
+    else:
+        cases = [run_memory_case(case, memory_url=args.memory_url, timeout_s=args.timeout_s) for case in CASES]
+        cases.append(run_brave_case(brave_script=args.brave_script, timeout_s=args.timeout_s))
     spoken = (
         render_spoken_failures(
             cases=cases,
@@ -332,6 +490,7 @@ def main() -> int:
         "live": all(bool(case.get("live")) for case in cases),
         "ok": not failed,
         "cases": cases,
+        "matrix_selection": matrix_selection,
         "spoken_failures": spoken,
         "failed_gates": failed,
         "claims": {
