@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 9, "failed": 31, "not_run": 260}
+    assert status_counts == {"passed": 9, "failed": 51, "not_run": 240}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -100,6 +100,23 @@ def test_direct_skill_cases_require_tau_authority() -> None:
     assert all(session["expected_route"]["ui_may_call_skills"] is False for session in skill_sessions)
     assert all("tau.agent_handoff.v1" in session["oracle"]["required_receipts"] for session in skill_sessions)
     assert all("skill.call.receipt.v1" in session["oracle"]["required_receipts"] for session in skill_sessions)
+
+
+def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["route"].startswith("tau.skill.") and session["difficulty"] == "simple"
+    ]
+
+    assert len(sessions) == 20
+    assert all(session["status"] == "failed" for session in sessions)
+    assert all(session["latest_receipt"] for session in sessions)
+    assert all("embry-intelligence-stress" in session["latest_receipt"] for session in sessions)
+    assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in sessions)
+    assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in sessions)
+    assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in sessions)
 
 
 def test_every_case_requires_humanized_conversation_delivery() -> None:

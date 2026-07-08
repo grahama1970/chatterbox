@@ -21,7 +21,7 @@
     "soak"
   ],
   "folder_count": 15,
-  "generated_at_utc": "2026-07-08T01:19:41Z",
+  "generated_at_utc": "2026-07-08T01:28:51Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 300,
   "sessions": [
@@ -9033,13 +9033,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_evidence_case",
       "folder_title": "Skill: Create Evidence Case",
       "id": "skill_create_evidence_case-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -9067,7 +9071,7 @@
         "template_family": "skill_create_evidence_case",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Evidence Case: simple 1"
     },
     {
@@ -9124,13 +9128,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_evidence_case",
       "folder_title": "Skill: Create Evidence Case",
       "id": "skill_create_evidence_case-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -9158,7 +9166,7 @@
         "template_family": "skill_create_evidence_case",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Evidence Case: simple 2"
     },
     {
@@ -9215,13 +9223,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_evidence_case",
       "folder_title": "Skill: Create Evidence Case",
       "id": "skill_create_evidence_case-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -9249,7 +9261,7 @@
         "template_family": "skill_create_evidence_case",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Evidence Case: simple 3"
     },
     {
@@ -9306,13 +9318,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_evidence_case",
       "folder_title": "Skill: Create Evidence Case",
       "id": "skill_create_evidence_case-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -9340,7 +9356,7 @@
         "template_family": "skill_create_evidence_case",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Evidence Case: simple 4"
     },
     {
@@ -10853,13 +10869,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_figure",
       "folder_title": "Skill: Create Figure",
       "id": "skill_create_figure-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-figure-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -10887,7 +10907,7 @@
         "template_family": "skill_create_figure",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Figure: simple 1"
     },
     {
@@ -10944,13 +10964,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_figure",
       "folder_title": "Skill: Create Figure",
       "id": "skill_create_figure-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-figure-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -10978,7 +11002,7 @@
         "template_family": "skill_create_figure",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Figure: simple 2"
     },
     {
@@ -11035,13 +11059,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_figure",
       "folder_title": "Skill: Create Figure",
       "id": "skill_create_figure-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-figure-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -11069,7 +11097,7 @@
         "template_family": "skill_create_figure",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Figure: simple 3"
     },
     {
@@ -11126,13 +11154,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_create_figure",
       "folder_title": "Skill: Create Figure",
       "id": "skill_create_figure-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-figure-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -11160,7 +11192,7 @@
         "template_family": "skill_create_figure",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Create Figure: simple 4"
     },
     {
@@ -12673,13 +12705,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_analytics",
       "folder_title": "Skill: Analytics",
       "id": "skill_analytics-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-analytics-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -12707,7 +12743,7 @@
         "template_family": "skill_analytics",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Analytics: simple 1"
     },
     {
@@ -12764,13 +12800,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_analytics",
       "folder_title": "Skill: Analytics",
       "id": "skill_analytics-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-analytics-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -12798,7 +12838,7 @@
         "template_family": "skill_analytics",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Analytics: simple 2"
     },
     {
@@ -12855,13 +12895,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_analytics",
       "folder_title": "Skill: Analytics",
       "id": "skill_analytics-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-analytics-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -12889,7 +12933,7 @@
         "template_family": "skill_analytics",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Analytics: simple 3"
     },
     {
@@ -12946,13 +12990,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_analytics",
       "folder_title": "Skill: Analytics",
       "id": "skill_analytics-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-analytics-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -12980,7 +13028,7 @@
         "template_family": "skill_analytics",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Analytics: simple 4"
     },
     {
@@ -14493,13 +14541,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -14527,7 +14579,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: simple 1"
     },
     {
@@ -14584,13 +14636,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -14618,7 +14674,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: simple 2"
     },
     {
@@ -14675,13 +14731,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -14709,7 +14769,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: simple 3"
     },
     {
@@ -14766,13 +14826,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "skill_sparta_validator",
       "folder_title": "Skill: SPARTA Validator",
       "id": "skill_sparta_validator-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "skill_called_by_tau_only",
@@ -14800,7 +14864,7 @@
         "template_family": "skill_sparta_validator",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: SPARTA Validator: simple 4"
     },
     {
@@ -18122,13 +18186,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18157,7 +18225,7 @@
         "template_family": "voice_control_skill",
         "template_index": 1
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: simple 1"
     },
     {
@@ -18215,13 +18283,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18250,7 +18322,7 @@
         "template_family": "voice_control_skill",
         "template_index": 2
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: simple 2"
     },
     {
@@ -18308,13 +18380,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18343,7 +18419,7 @@
         "template_family": "voice_control_skill",
         "template_index": 3
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: simple 3"
     },
     {
@@ -18401,13 +18477,17 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created"
+      ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18436,7 +18516,7 @@
         "template_family": "voice_control_skill",
         "template_index": 4
       },
-      "status": "not_run",
+      "status": "failed",
       "title": "Skill: Embry Voice Control: simple 4"
     },
     {
@@ -27052,8 +27132,8 @@
     }
   ],
   "status_counts": {
-    "failed": 31,
-    "not_run": 260,
+    "failed": 51,
+    "not_run": 240,
     "passed": 9
   }
 }

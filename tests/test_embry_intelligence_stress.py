@@ -157,6 +157,83 @@ def test_tau_agent_handoff_route_runs_tau_preflight_but_fails_without_handoff(mo
     assert result["failed_gates"] == ["tau_agent_handoff_not_exercised"]
 
 
+def test_tau_direct_skill_route_checks_skill_but_fails_without_receipts(monkeypatch, tmp_path) -> None:
+    calls = []
+
+    def fake_run_cmd(cmd: list[str], *, timeout_s: int) -> dict:
+        calls.append((cmd, timeout_s))
+        return {
+            "cmd": cmd,
+            "returncode": 0,
+            "elapsed_ms": 1.0,
+            "stdout_tail": '{"ok": true}',
+            "stderr_tail": "",
+        }
+
+    skill_root = tmp_path / "skills"
+    skill_dir = skill_root / "create-figure"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text("# create-figure\n", encoding="utf-8")
+    monkeypatch.setattr("scripts.smoke_embry_intelligence_stress.run_cmd", fake_run_cmd)
+
+    result = run_matrix_session(
+        {
+            "id": "skill_create_figure-simple-01",
+            "route": "tau.skill.create_figure",
+            "question": "Ask Embry to create a figure.",
+            "expected_route": {"required_skill": "create-figure"},
+            "oracle": {"required_skill": "create-figure"},
+        },
+        memory_url="http://127.0.0.1:8601",
+        brave_script=tmp_path / "brave.py",
+        tau_runner=tmp_path / "tau-run.sh",
+        skill_root=skill_root,
+        timeout_s=30,
+    )
+
+    assert calls == [([str(tmp_path / "tau-run.sh"), "doctor"], 30)]
+    assert result["ok"] is False
+    assert result["live"] is True
+    assert result["required_skill"] == "create-figure"
+    assert result["skill_preflight"]["skill_exists"] is True
+    assert result["failed_gates"] == [
+        "tau_agent_handoff_not_exercised",
+        "skill_call_receipt_not_emitted",
+        "tau_dag_receipt_not_created",
+    ]
+
+
+def test_tau_direct_skill_route_fails_missing_skill_file(monkeypatch, tmp_path) -> None:
+    def fake_run_cmd(cmd: list[str], *, timeout_s: int) -> dict:
+        return {
+            "cmd": cmd,
+            "returncode": 0,
+            "elapsed_ms": 1.0,
+            "stdout_tail": '{"ok": true}',
+            "stderr_tail": "",
+        }
+
+    monkeypatch.setattr("scripts.smoke_embry_intelligence_stress.run_cmd", fake_run_cmd)
+
+    result = run_matrix_session(
+        {
+            "id": "skill_missing-simple-01",
+            "route": "tau.skill.missing",
+            "question": "Ask Embry to call a missing skill.",
+            "expected_route": {"required_skill": "missing-skill"},
+            "oracle": {"required_skill": "missing-skill"},
+        },
+        memory_url="http://127.0.0.1:8601",
+        brave_script=tmp_path / "brave.py",
+        tau_runner=tmp_path / "tau-run.sh",
+        skill_root=tmp_path / "skills",
+        timeout_s=30,
+    )
+
+    assert "required_skill_skill_md_exists" in result["failed_gates"]
+    assert result["skill_preflight"]["skill_exists"] is False
+
+
 def test_speaker_resolution_payload_known_horus_uses_speaker_tags() -> None:
     payload = speaker_resolution_payload(
         {

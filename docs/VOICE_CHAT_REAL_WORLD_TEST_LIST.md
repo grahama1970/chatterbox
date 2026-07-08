@@ -166,6 +166,21 @@ but no `tau.agent_handoff.v1` work order or DAG receipt was created for the
 Embry session prompts. These are now concrete missing-handoff failures, not
 generic runner gaps.
 
+Latest matrix direct-skill preflight receipts:
+
+- `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-evidence-simple/receipt.json`
+- `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-create-figure-simple/receipt.json`
+- `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-analytics-simple/receipt.json`
+- `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-sparta-validator-simple/receipt.json`
+- `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json`
+
+Those five runs covered the twenty simple direct-skill sessions with
+`mocked=false`. Each run reached the live Tau wrapper (`doctor` return code `0`)
+and confirmed the required skill file exists in `agent-skills`, but every case
+failed because no `tau.agent_handoff.v1`, `tau.dag_receipt.v1`, or
+`skill.call.receipt.v1` was emitted. These are concrete missing Tau skill
+gateway failures, not proof that the skills executed.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`
@@ -178,7 +193,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`9` passed, `31` failed, and `260` are `not_run`. This is the intended source
+`9` passed, `51` failed, and `240` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.

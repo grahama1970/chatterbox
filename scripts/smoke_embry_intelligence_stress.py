@@ -22,6 +22,7 @@ from typing import Any
 
 DEFAULT_BRAVE = Path("/home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py")
 DEFAULT_TAU_RUNNER = Path("/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh")
+DEFAULT_SKILL_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills")
 DEFAULT_SPEAKER_RESOLVE_THRESHOLD = 0.82
 DEFAULT_SPEAKER_AMBIGUITY_MARGIN = 0.04
 
@@ -221,6 +222,61 @@ def classify_voice_delivery_intent(session: dict[str, Any], intent: dict[str, An
     return sorted(set(failed))
 
 
+def required_skill_for_session(session: dict[str, Any]) -> str | None:
+    expected_route = session.get("expected_route") if isinstance(session.get("expected_route"), dict) else {}
+    oracle = session.get("oracle") if isinstance(session.get("oracle"), dict) else {}
+    return str(expected_route.get("required_skill") or oracle.get("required_skill") or "").strip() or None
+
+
+def run_tau_skill_preflight(
+    session: dict[str, Any],
+    *,
+    tau_runner: Path,
+    skill_root: Path,
+    timeout_s: int,
+) -> dict[str, Any]:
+    route = str(session.get("route") or "")
+    required_skill = required_skill_for_session(session)
+    doctor = run_cmd([str(tau_runner), "doctor"], timeout_s=timeout_s)
+    skill_path = skill_root / str(required_skill or "") / "SKILL.md"
+    skill_exists = bool(required_skill and skill_path.exists())
+    failed: list[str] = []
+    if doctor["returncode"] != 0:
+        failed.append("tau_doctor_command_ok")
+    if not required_skill:
+        failed.append("required_skill_declared")
+    if not skill_exists:
+        failed.append("required_skill_skill_md_exists")
+    failed.extend(
+        [
+            "tau_agent_handoff_not_exercised",
+            "skill_call_receipt_not_emitted",
+            "tau_dag_receipt_not_created",
+        ]
+    )
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": route,
+        "required_skill": required_skill,
+        "tau_doctor": doctor,
+        "skill_preflight": {
+            "skill_root": str(skill_root),
+            "skill_path": str(skill_path) if required_skill else None,
+            "skill_exists": skill_exists,
+        },
+        "ok": False,
+        "mocked": False,
+        "live": doctor["returncode"] == 0,
+        "failed_gates": failed,
+        "observed": (
+            "Tau wrapper and required skill preflight ran, but no tau.agent_handoff.v1, "
+            "tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session."
+        ),
+    }
+
+
 def speaker_resolution_payload(session: dict[str, Any]) -> dict[str, Any]:
     question = normalize(str(session.get("question") or ""))
     base = {
@@ -412,6 +468,7 @@ def run_matrix_session(
     memory_url: str,
     brave_script: Path,
     tau_runner: Path,
+    skill_root: Path = DEFAULT_SKILL_ROOT,
     timeout_s: int,
 ) -> dict[str, Any]:
     route = str(session.get("route") or "")
@@ -452,6 +509,8 @@ def run_matrix_session(
             "failed_gates": failed,
             "observed": "Tau wrapper doctor ran, but no tau.agent_handoff.v1 work order or DAG receipt was created for this session.",
         }
+    if route.startswith("tau.skill."):
+        return run_tau_skill_preflight(session, tau_runner=tau_runner, skill_root=skill_root, timeout_s=timeout_s)
     if route == "memory.intent.voice_delivery":
         intent = post_json(
             f"{memory_url.rstrip('/')}/intent",
@@ -630,6 +689,7 @@ def main() -> int:
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--brave-script", default=DEFAULT_BRAVE, type=Path)
     parser.add_argument("--tau-runner", default=DEFAULT_TAU_RUNNER, type=Path)
+    parser.add_argument("--skill-root", default=DEFAULT_SKILL_ROOT, type=Path)
     parser.add_argument("--timeout-s", default=120, type=int)
     parser.add_argument("--render-spoken-failures", action="store_true")
     parser.add_argument("--playback-sink-target", default="64")
@@ -663,6 +723,7 @@ def main() -> int:
                 memory_url=args.memory_url,
                 brave_script=args.brave_script,
                 tau_runner=args.tau_runner,
+                skill_root=args.skill_root,
                 timeout_s=args.timeout_s,
             )
             case["sequence"] = sequence

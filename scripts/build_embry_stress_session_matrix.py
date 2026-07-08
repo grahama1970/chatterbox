@@ -612,6 +612,46 @@ for _index in range(1, 5):
         ),
     }
 
+_DIRECT_SKILL_SIMPLE_RECEIPTS = {
+    "skill_create_evidence_case": (
+        "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+        "20260708T012426Z-skill-create-evidence-simple/receipt.json"
+    ),
+    "skill_create_figure": (
+        "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+        "20260708T012426Z-skill-create-figure-simple/receipt.json"
+    ),
+    "skill_analytics": (
+        "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+        "20260708T012426Z-skill-analytics-simple/receipt.json"
+    ),
+    "skill_sparta_validator": (
+        "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+        "20260708T012426Z-skill-sparta-validator-simple/receipt.json"
+    ),
+    "voice_control_skill": (
+        "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+        "20260708T012426Z-skill-voice-control-simple/receipt.json"
+    ),
+}
+
+for _folder_id, _receipt in _DIRECT_SKILL_SIMPLE_RECEIPTS.items():
+    for _index in range(1, 5):
+        CURRENT_RESULTS[f"{_folder_id}-simple-{_index:02d}"] = {
+            "status": "failed",
+            "latest_receipt": _receipt,
+            "failed_gates": [
+                "tau_agent_handoff_not_exercised",
+                "skill_call_receipt_not_emitted",
+                "tau_dag_receipt_not_created",
+            ],
+            "observed": (
+                "Live Tau wrapper and required skill preflight succeeded, but no "
+                "tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 "
+                "was produced for this Embry direct-skill session."
+            ),
+        }
+
 _SPEAKER_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/"
     "20260708T004440Z-speaker-identity-ledger/receipt.json"
