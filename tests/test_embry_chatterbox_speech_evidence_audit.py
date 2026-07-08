@@ -89,6 +89,36 @@ def test_classify_qra_disabled_normal_render_candidate() -> None:
     assert candidate["voice_delivery_missing_fields"] == ["pace", "pause_strategy", "source"]
 
 
+def test_classify_full_voice_delivery_envelope_is_complete() -> None:
+    receipt = {
+        "schema": "chatterbox.tau_voice_render_smoke.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "response": {
+            "voice_delivery": {
+                "tone": "memory_confident",
+                "delivery_stage": "neutral",
+                "pace": "measured",
+                "pause_strategy": "short_answer_no_filler",
+                "source": "memory.intent",
+            }
+        },
+        "artifacts": {
+            "finished_response_audio_metrics": {
+                "exists": True,
+                "bytes": 10,
+                "duration_seconds": 1.0,
+            }
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/full-delivery.json"), receipt)
+
+    assert candidate["render_audio_ok"] is True
+    assert candidate["voice_delivery_missing_fields"] == []
+
+
 def test_classify_personality_audition_played_variants() -> None:
     receipt = {
         "schema": "chatterbox.embry_personality_audition.v1",
@@ -158,6 +188,7 @@ def test_audit_fails_when_tone_and_interruption_matrix_fail(tmp_path: Path) -> N
     assert audit["qra_variant_candidate_count"] == 1
     assert audit["qra_disabled_normal_render_candidate_count"] == 0
     assert audit["audible_personality_candidate_count"] == 1
+    assert audit["complete_delivery_envelope_candidate_count"] == 1
     assert "tone_emotion_matrix_has_failures" in audit["failed_gates"]
     assert "interruption_matrix_has_failures" in audit["failed_gates"]
 
@@ -202,3 +233,4 @@ def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Pa
     assert audit["ok"] is True
     assert audit["failed_gates"] == []
     assert audit["speech_matrix"]["status_counts"] == {"passed": 2, "failed": 0, "not_run": 0}
+    assert audit["complete_delivery_envelope_candidate_count"] == 1

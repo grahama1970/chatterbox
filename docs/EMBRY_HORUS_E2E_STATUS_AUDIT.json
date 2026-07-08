@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T03:51:49.234500+00:00",
+  "generated_at_utc": "2026-07-08T03:59:18.458417+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -217,7 +217,6 @@
           },
           "exists": true,
           "failed_gates": [
-            "delivery_envelope_incomplete",
             "interruption_matrix_has_failures",
             "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
             "speech_matrix_gate:interruption_detected_receipt_not_emitted",

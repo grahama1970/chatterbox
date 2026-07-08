@@ -103,6 +103,7 @@ class SynthesisRequest(BaseModel):
     delivery_stage: str | None = None
     pace: str | None = Field(default=None, max_length=80)
     pause_strategy: str | None = Field(default=None, max_length=120)
+    voice_delivery: dict[str, Any] = Field(default_factory=dict)
     temperature: float | None = Field(default=None, ge=0.05, le=5.0)
     top_p: float | None = Field(default=None, ge=0.0, le=1.0)
     top_k: int | None = Field(default=None, ge=1, le=5000)
@@ -124,8 +125,10 @@ class SynthesisBatchRequest(RenderPlanRequest):
     ref_audio: str | None = None
     label: str | None = None
     tone: str | None = Field(default=None, max_length=80)
+    delivery_stage: str | None = Field(default=None, max_length=80)
     pace: str | None = Field(default=None, max_length=80)
     pause_strategy: str | None = Field(default=None, max_length=120)
+    voice_delivery: dict[str, Any] = Field(default_factory=dict)
     include_completion_cue: bool = True
     stream: bool = False
     crossfade_ms: int = Field(default=20, ge=0, le=250)
@@ -1246,8 +1249,10 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         blessed_qra_memory_similarity=request.blessed_qra_memory_similarity,
         blessed_qra_memory_review_status=request.blessed_qra_memory_review_status,
         tone=tone,
+        delivery_stage=delivery_stage,
         pace=tau_voice_delivery.get("pace"),
         pause_strategy=tau_voice_delivery.get("pause_strategy"),
+        voice_delivery=tau_voice_delivery,
         label=label,
         include_completion_cue=request.include_completion_cue,
         crossfade_ms=request.crossfade_ms,
@@ -1674,6 +1679,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             delivery_stage=chunk["delivery_stage"],
             pace=request.pace,
             pause_strategy=request.pause_strategy,
+            voice_delivery={**batch_voice_delivery, "delivery_stage": chunk["delivery_stage"]},
         )
         base_filename = f"chunk_{chunk['index']:02d}_{chunk['delivery_stage']}"
         out_path = batch_dir / f"{base_filename}.wav"
@@ -1727,6 +1733,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             delivery_stage="closing",
             pace=request.pace,
             pause_strategy=request.pause_strategy,
+            voice_delivery={**batch_voice_delivery, "delivery_stage": "closing"},
         )
         if request.asr_verify and asr_api_key:
             completion_result = synthesize_asr_accepted_to_file(

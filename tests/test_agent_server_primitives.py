@@ -171,6 +171,7 @@ def test_synthesis_request_explicit_delivery_stage_overrides_tone_mapping() -> N
         delivery_stage="boundary",
         pace="firm_short",
         pause_strategy="boundary_stop_then_prompt",
+        voice_delivery={"source": "memory.intent", "confidence": 0.75},
     )
 
     delivery = server.voice_delivery_for_request(request)
@@ -180,6 +181,8 @@ def test_synthesis_request_explicit_delivery_stage_overrides_tone_mapping() -> N
     assert delivery["delivery_stage_source"] == "request.delivery_stage"
     assert delivery["pace"] == "firm_short"
     assert delivery["pause_strategy"] == "boundary_stop_then_prompt"
+    assert delivery["source"] == "memory.intent"
+    assert delivery["confidence"] == 0.75
 
 
 def test_synthesize_to_file_receipt_records_voice_delivery(tmp_path: Path, monkeypatch) -> None:
@@ -269,11 +272,14 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
     assert batch.question_text == "Which control family should I use when the answer says SI?"
     assert batch.max_chars == 300
     assert batch.tone == "memory_confident"
+    assert batch.delivery_stage == "satisfied"
     assert batch.pace == "measured"
     assert batch.pause_strategy == "short_answer_no_filler"
+    assert batch.voice_delivery["source"] == "memory_intent"
     assert batch.use_blessed_qra_cache is True
     assert batch.blessed_qra_memory_key == "qra-si-answer"
     assert receipt["voice_delivery"]["tone"] == "memory_confident"
+    assert receipt["voice_delivery"]["source"] == "memory_intent"
     assert receipt["mapped_batch"]["tone"] == "memory_confident"
     assert receipt["mapped_batch"]["delivery_stage"] == "satisfied"
 

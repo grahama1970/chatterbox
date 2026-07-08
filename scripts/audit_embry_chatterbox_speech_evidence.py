@@ -14,6 +14,8 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035831Z-voice-delivery-full-chunks-after-patch/tau-voice-render-full-delivery.json"),
+    Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035428Z-voice-delivery-full-after-patch/tau-voice-render-full-delivery.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T035021Z-qra-disabled-current/S10-qra-disabled/tau-qra-disabled.json"),
     Path("/tmp/chatterbox-fork-agent-out/tau-voice-render-20260702T134405Z.json"),
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/qra-creation-audio-hook.json"),
@@ -206,6 +208,11 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         for candidate in proof_candidates
         if candidate["voice_delivery_missing_fields"] or candidate["chunk_voice_delivery_missing_fields"]
     ]
+    complete_delivery = [
+        candidate
+        for candidate in live_renders
+        if not candidate["voice_delivery_missing_fields"] and not candidate["chunk_voice_delivery_missing_fields"]
+    ]
 
     failed_gates: list[str] = []
     if not live_renders:
@@ -214,7 +221,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         failed_gates.append("blessed_qra_five_variant_generation_missing")
     if not personality:
         failed_gates.append("audible_personality_audition_missing")
-    if incomplete_delivery:
+    if not complete_delivery:
         failed_gates.append("delivery_envelope_incomplete")
     if speech_matrix["by_folder"]["tone_emotion"]["status_counts"]["failed"]:
         failed_gates.append("tone_emotion_matrix_has_failures")
@@ -238,6 +245,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "qra_disabled_normal_render_candidate_count": len(qra_disabled),
         "audible_personality_candidate_count": len(personality),
         "incomplete_delivery_envelope_count": len(incomplete_delivery),
+        "complete_delivery_envelope_candidate_count": len(complete_delivery),
         "proof_candidates": proof_candidates,
         "failed_gates": sorted(set(failed_gates)),
         "claims": {

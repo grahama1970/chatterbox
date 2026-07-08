@@ -367,6 +367,33 @@ What it does not prove:
 - complete voice-delivery metadata, because the receipt still lacks `pace`,
   `pause_strategy`, and `source`
 
+Current full voice-delivery Tau render receipt:
+
+`/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035831Z-voice-delivery-full-chunks-after-patch/tau-voice-render-full-delivery.json`
+
+Result: `mocked=false`, `live=true`, `ok=true`.
+
+What it exercised:
+
+- Sent a Tau voice render request with `tone`, `delivery_stage`, `pace`,
+  `pause_strategy`, `source`, emotion tags, and interruption policy.
+- Restarted `chatterbox-fork-agent-server` so the patched server mapping was
+  active.
+- Confirmed the Chatterbox response and chunk metadata preserved
+  `pace=measured`.
+- Confirmed the Chatterbox response and chunk metadata preserved
+  `pause_strategy=short_answer_no_filler`.
+- Confirmed the Chatterbox response and chunk metadata preserved
+  `source=memory.intent`.
+- Confirmed the response recorded `requested_delivery_stage=answer`.
+
+What it does not prove:
+
+- listener ASR
+- production memory recall correctness
+- subjective voice quality
+- full tone/emotion matrix coverage
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

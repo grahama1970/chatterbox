@@ -16,8 +16,8 @@
       "personality_audition_variants_can_render_and_play"
     ]
   },
+  "complete_delivery_envelope_candidate_count": 1,
   "failed_gates": [
-    "delivery_envelope_incomplete",
     "interruption_matrix_has_failures",
     "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
     "speech_matrix_gate:interruption_detected_receipt_not_emitted",
@@ -33,14 +33,74 @@
     "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T03:51:49.154070+00:00",
-  "incomplete_delivery_envelope_count": 2,
+  "generated_at_utc": "2026-07-08T03:59:18.378504+00:00",
+  "incomplete_delivery_envelope_count": 3,
   "live": false,
-  "live_render_candidate_count": 2,
+  "live_render_candidate_count": 4,
   "mocked": false,
   "ok": false,
-  "proof_candidate_count": 5,
+  "proof_candidate_count": 7,
   "proof_candidates": [
+    {
+      "chunk_voice_delivery_missing_fields": [],
+      "claims_does_not_prove": [
+        "listener_asr_pass",
+        "production_memory_recall_correctness",
+        "subjective_voice_quality",
+        "fresh_model_generation_quality"
+      ],
+      "claims_proves": [
+        "running_server_accepts_tau_voice_render_request",
+        "tau_voice_render_maps_to_batch_renderer",
+        "blessed_qra_cache_can_be_selected_through_tau_ingress"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035831Z-voice-delivery-full-chunks-after-patch/tau-voice-render-full-delivery.json",
+      "played_variant_count": 0,
+      "proof_type": "tau_voice_render",
+      "qra_disabled_normal_render_ok": true,
+      "qra_variants_ok": false,
+      "render_audio_ok": true,
+      "schema": "chatterbox.tau_voice_render_smoke.v1",
+      "variant_count": 0,
+      "voice_delivery_missing_fields": []
+    },
+    {
+      "chunk_voice_delivery_missing_fields": [
+        [
+          "source"
+        ]
+      ],
+      "claims_does_not_prove": [
+        "listener_asr_pass",
+        "production_memory_recall_correctness",
+        "subjective_voice_quality",
+        "fresh_model_generation_quality"
+      ],
+      "claims_proves": [
+        "running_server_accepts_tau_voice_render_request",
+        "tau_voice_render_maps_to_batch_renderer",
+        "blessed_qra_cache_can_be_selected_through_tau_ingress"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/tau-voice-render-current/20260708T035428Z-voice-delivery-full-after-patch/tau-voice-render-full-delivery.json",
+      "played_variant_count": 0,
+      "proof_type": "tau_voice_render",
+      "qra_disabled_normal_render_ok": true,
+      "qra_variants_ok": false,
+      "render_audio_ok": true,
+      "schema": "chatterbox.tau_voice_render_smoke.v1",
+      "variant_count": 0,
+      "voice_delivery_missing_fields": []
+    },
     {
       "chunk_voice_delivery_missing_fields": [
         [
@@ -193,7 +253,7 @@
       "voice_delivery_missing_fields": []
     }
   ],
-  "qra_disabled_normal_render_candidate_count": 1,
+  "qra_disabled_normal_render_candidate_count": 3,
   "qra_variant_candidate_count": 2,
   "schema": "chatterbox.embry_chatterbox_speech_evidence_audit.v1",
   "speech_matrix": {
