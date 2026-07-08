@@ -14,6 +14,9 @@ from typing import Any
 DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
+    Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083833Z-90a050c0/listener-webrtc-realtimestt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T082957Z-bb8b5e79/listener-webrtc-realtimestt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083242Z-2ff99fda/listener-webrtc-realtimestt.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/rung8-loopback-listener.json"),
     Path("/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json"),
@@ -59,6 +62,58 @@ def extract_transcript(receipt: dict[str, Any]) -> str:
 
 
 def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
+    if receipt.get("schema") == "embry_voice_control.listener_webrtc_realtimestt.v1":
+        transcript = str(receipt.get("final_transcript") or "").strip()
+        audio = receipt.get("audio") if isinstance(receipt.get("audio"), dict) else {}
+        ok = (
+            receipt.get("mocked") is False
+            and receipt.get("live") is True
+            and receipt.get("websocket_connected") is True
+            and bool(transcript)
+        )
+        return {
+            "path": str(path),
+            "exists": path.exists(),
+            "ok": ok,
+            "live": receipt.get("live"),
+            "mocked": receipt.get("mocked"),
+            "transport": "realtimestt_websocket_pcm_wav",
+            "proof_scope": "controlled_pcm_wav_over_realtimestt_ws_transcribe",
+            "ingress_proven": ok,
+            "transcript_present": bool(transcript),
+            "transcript": transcript,
+            "asr_executor_call_count": 0,
+            "captured_audio_exists": Path(str(receipt.get("audio_path", ""))).exists(),
+            "captured_audio_rms": nested_get(receipt, "audio.stats.rms"),
+            "captured_audio_path": receipt.get("audio_path"),
+            "captured_audio_sha256": None,
+            "play_audio_sha256": None,
+            "source_identity_proven": bool(receipt.get("audio_path")),
+            "pipewire_identity": {
+                "capture_backend": receipt.get("capture_source"),
+                "capture_kind": "controlled_pcm_wav",
+                "pulse_source": None,
+                "sink_target": None,
+                "sink_node_name": None,
+                "record_target": None,
+                "record_node_name": None,
+            },
+            "failed_gates": [] if ok else ["listener_final_transcript_missing"],
+            "claims_proves": [
+                "controlled_pcm_wav_can_feed_realtimestt_ws_transcribe",
+            ] if ok else [],
+            "claims_does_not_prove": [
+                "browser_getusermedia_device_capture",
+                "physical_room_microphone_capture",
+                "speaker_identity_correctness",
+                "Tau_memory_routing_from_physical_voice",
+                "Chatterbox_output_from_live_STT",
+            ],
+            "listener_state": receipt.get("listener_state"),
+            "events_by_type": receipt.get("events_by_type"),
+            "audio_stats": audio.get("stats"),
+        }
+
     claims = receipt.get("claims") or {}
     proves = claims.get("proves") or []
     proof_scope = str(receipt.get("proof_scope") or "")
@@ -247,6 +302,49 @@ def source_identity_summary(current_factory_loopback_candidates: list[dict[str, 
     }
 
 
+def listener_websocket_summary(candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    listener_candidates = [
+        candidate
+        for candidate in candidates
+        if candidate["transport"] == "realtimestt_websocket_pcm_wav"
+    ]
+    failures = [candidate for candidate in listener_candidates if not candidate["ingress_proven"]]
+    successes = [candidate for candidate in listener_candidates if candidate["ingress_proven"]]
+    return {
+        "boundary": "controlled_pcm_wav_to_realtimestt_ws_transcribe",
+        "ready": bool(successes),
+        "candidate_count": len(listener_candidates),
+        "passing_candidate_count": len(successes),
+        "failed_candidate_count": len(failures),
+        "passing_candidates": [
+            {
+                "path": candidate["path"],
+                "audio_path": candidate["captured_audio_path"],
+                "transcript_prefix": candidate["transcript"][:240],
+                "events_by_type": candidate.get("events_by_type"),
+                "audio_stats": candidate.get("audio_stats"),
+            }
+            for candidate in successes
+        ],
+        "failed_candidates": [
+            {
+                "path": candidate["path"],
+                "audio_path": candidate["captured_audio_path"],
+                "failed_gates": candidate["failed_gates"],
+                "events_by_type": candidate.get("events_by_type"),
+                "audio_stats": candidate.get("audio_stats"),
+            }
+            for candidate in failures
+        ],
+        "blocking_summary": (
+            "controlled RealtimeSTT websocket ingress works for known-good speech, "
+            "but the current Horus/browser capture artifacts do not produce final transcripts"
+        )
+        if failures and successes
+        else None,
+    }
+
+
 def is_current_factory_loopback_candidate(candidate: dict[str, Any]) -> bool:
     path = candidate["path"]
     return bool(
@@ -273,6 +371,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     browser_candidates = [candidate for candidate in candidates if candidate["transport"] == "browser_getusermedia"]
     browser_failures = [candidate for candidate in browser_candidates if not candidate["ingress_proven"]]
     browser_device_ingress = browser_device_ingress_summary(browser_candidates)
+    listener_websocket = listener_websocket_summary(candidates)
     factory_gate_blockers = factory_gate_blocker_summary(factory)
     source_identity = source_identity_summary(current_factory_loopback_candidates)
 
@@ -302,6 +401,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "current_factory_loopback_passing_candidates": current_factory_loopback_candidates,
         "current_source_identity_candidates": current_source_identity_candidates,
         "browser_device_ingress": browser_device_ingress,
+        "listener_websocket_ingress": listener_websocket,
         "factory_gate_blockers": factory_gate_blockers,
         "source_identity_evidence": source_identity,
         "historical_candidates": candidates,
