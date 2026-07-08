@@ -526,6 +526,65 @@ def test_audit_reports_memory_tau_blockers_for_tau_tool_wait_gate(tmp_path: Path
     ]
 
 
+def test_audit_reports_memory_intent_tone_blockers(tmp_path: Path) -> None:
+    render = tmp_path / "render.json"
+    render.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}},
+  "response": {"voice_delivery": {"tone": "memory_confident", "delivery_stage": "satisfied", "pace": "brief", "pause_strategy": "short_answer_no_filler", "source": "memory.intent"}}
+}
+"""
+    )
+    qra = tmp_path / "qra.json"
+    qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    personality = tmp_path / "personality.json"
+    personality.write_text(
+        """
+{
+  "schema": "chatterbox.embry_personality_audition.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "variants": [
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}}
+  ]
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            _session(
+                "tone_emotion",
+                "failed",
+                ["voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"],
+            ),
+            _session("interruption", "passed"),
+        ]
+    }
+
+    audit = build_audit(matrix, [render, qra, personality])
+
+    assert audit["ok"] is False
+    tone_evidence = audit["memory_intent_tone_evidence"]
+    assert tone_evidence["boundary"] == "memory.intent.voice_delivery"
+    assert tone_evidence["ready"] is False
+    assert tone_evidence["failed_session_count"] == 1
+    assert tone_evidence["failed_gate_counts"] == {
+        "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light": 1
+    }
+    assert tone_evidence["sample_failures"][0]["observed"] == "fixture row"
+    assert "memory /intent voice_delivery tone routing" in tone_evidence["blocking_summary"]
+
+
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(

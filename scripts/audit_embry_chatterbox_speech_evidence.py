@@ -330,6 +330,46 @@ def _memory_tau_audit_summary(path: Path | None) -> dict[str, Any]:
     }
 
 
+def _memory_intent_tone_summary(matrix: dict[str, Any], speech_matrix: dict[str, Any]) -> dict[str, Any]:
+    tone_failures = [
+        failure
+        for failure in speech_matrix["by_folder"]["tone_emotion"]["sample_failures"]
+        if any(str(gate).startswith("voice_delivery_tone_expected_") for gate in failure.get("failed_gates", []))
+    ]
+    all_tone_failures = [
+        session
+        for session in matrix["sessions"]
+        if session.get("folder_id") == "tone_emotion"
+        and any(str(gate).startswith("voice_delivery_tone_expected_") for gate in session.get("failed_gates", []))
+    ]
+    failed_gate_counts = {
+        gate: count
+        for gate, count in speech_matrix["by_folder"]["tone_emotion"]["failed_gate_counts"].items()
+        if gate.startswith("voice_delivery_tone_expected_")
+    }
+    receipt_paths = sorted(
+        {
+            str(failure.get("latest_receipt"))
+            for failure in all_tone_failures
+            if failure.get("latest_receipt")
+        }
+    )
+    return {
+        "boundary": "memory.intent.voice_delivery",
+        "ready": not failed_gate_counts,
+        "failed_session_count": len(all_tone_failures),
+        "failed_gate_counts": failed_gate_counts,
+        "sample_failures": tone_failures,
+        "latest_receipt_paths": receipt_paths,
+        "blocking_summary": (
+            "memory /intent voice_delivery tone routing is still returning an unacceptable tone "
+            "for one or more hostile, discouraged, or overlap prompts"
+        )
+        if failed_gate_counts
+        else None,
+    }
+
+
 def build_audit(
     matrix: dict[str, Any],
     proof_paths: list[Path],
@@ -342,6 +382,7 @@ def build_audit(
     interruption_audit = _interruption_audit_summary(interruption_audit_path)
     speaker_identity_audit = _speaker_identity_audit_summary(speaker_identity_audit_path)
     memory_tau_audit = _memory_tau_audit_summary(memory_tau_audit_path)
+    memory_intent_tone = _memory_intent_tone_summary(matrix, speech_matrix)
     interruption_covered_gates = set(interruption_audit["covered_gates"])
     tone_covered_gates = set(speaker_identity_audit["covered_gates"])
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
@@ -449,6 +490,7 @@ def build_audit(
         "interruption_matrix_remaining_failed_gates": sorted(effective_interruption_failed_gates),
         "speaker_identity_evidence_audit": speaker_identity_audit,
         "memory_tau_routing_evidence_audit": memory_tau_audit,
+        "memory_intent_tone_evidence": memory_intent_tone,
         "tone_emotion_matrix_remaining_failed_gates": sorted(
             gate
             for gate in speech_matrix["by_folder"]["tone_emotion"]["failed_gate_counts"]
