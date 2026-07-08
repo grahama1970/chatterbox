@@ -242,6 +242,36 @@ CURRENT_RESULTS: dict[str, dict[str, Any]] = {
     },
 }
 
+_SIMPLE_REST_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T000951Z-matrix-simple-rest/receipt.json"
+)
+
+for _folder_id in [
+    "tau_tool_orchestration",
+    "chat_ux_sync",
+    "interruption",
+    "speaker_identity",
+    "factory_noise",
+    "tone_emotion",
+]:
+    for _index in range(1, 5):
+        _session_id = f"{_folder_id}-simple-{_index:02d}"
+        _failed_gates = ["runner_route_not_implemented"]
+        _observed = "The matrix runner has no live route implementation for this simple session yet."
+        if _session_id == "factory_noise-simple-01":
+            _failed_gates.append("factory_noise_matrix_ok")
+            _observed = (
+                "The matrix runner has no live route implementation; separate current S06 receipt also "
+                "failed factory capture with source 67 RMS 7 against played WAV RMS 542."
+            )
+        CURRENT_RESULTS[_session_id] = {
+            "status": "failed",
+            "latest_receipt": _SIMPLE_REST_RECEIPT,
+            "failed_gates": _failed_gates,
+            "observed": _observed,
+        }
+
 
 def build_matrix() -> dict[str, Any]:
     sessions: list[dict[str, Any]] = []

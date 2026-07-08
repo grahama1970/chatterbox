@@ -18,7 +18,7 @@
     "soak"
   ],
   "folder_count": 10,
-  "generated_at_utc": "2026-07-08T00:06:31Z",
+  "generated_at_utc": "2026-07-08T00:14:14Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 200,
   "sessions": [
@@ -1656,16 +1656,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tau_tool_orchestration",
       "folder_title": "Tau Tool Orchestration",
       "id": "tau_tool_orchestration-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Ask Tau to create an evidence-case for a failed Embry voice receipt.",
       "route": "tau.agent_handoff",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tau Tool Orchestration: simple 1"
     },
     {
@@ -1676,16 +1678,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tau_tool_orchestration",
       "folder_title": "Tau Tool Orchestration",
       "id": "tau_tool_orchestration-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Ask Tau to route a memory failure to the correct repair owner.",
       "route": "tau.agent_handoff",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tau Tool Orchestration: simple 2"
     },
     {
@@ -1696,16 +1700,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tau_tool_orchestration",
       "folder_title": "Tau Tool Orchestration",
       "id": "tau_tool_orchestration-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Ask Tau to create a figure from analytics on the latest voice stress run.",
       "route": "tau.agent_handoff",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tau Tool Orchestration: simple 3"
     },
     {
@@ -1716,16 +1722,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tau_tool_orchestration",
       "folder_title": "Tau Tool Orchestration",
       "id": "tau_tool_orchestration-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Ask Tau to verify that a Chatterbox receipt and Chat UX run id agree.",
       "route": "tau.agent_handoff",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tau Tool Orchestration: simple 4"
     },
     {
@@ -2056,16 +2064,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Replay the latest Embry stress session and show each spoken turn in chat.",
       "route": "ux-lab.shared_chat",
-      "status": "not_run",
+      "status": "failed",
       "title": "Chat UX Sync: simple 1"
     },
     {
@@ -2076,16 +2086,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Show the memory reasoning trace inline for the current spoken response.",
       "route": "ux-lab.shared_chat",
-      "status": "not_run",
+      "status": "failed",
       "title": "Chat UX Sync: simple 2"
     },
     {
@@ -2096,16 +2108,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Prove the chat text and Chatterbox audio share the same turn id.",
       "route": "ux-lab.shared_chat",
-      "status": "not_run",
+      "status": "failed",
       "title": "Chat UX Sync: simple 3"
     },
     {
@@ -2116,16 +2130,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "chat_ux_sync",
       "folder_title": "Chat UX Sync",
       "id": "chat_ux_sync-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Show the entity underlines from memory extraction in the spoken transcript.",
       "route": "ux-lab.shared_chat",
-      "status": "not_run",
+      "status": "failed",
       "title": "Chat UX Sync: simple 4"
     },
     {
@@ -2456,16 +2472,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Interrupt Embry mid-answer with a new Horus question.",
       "route": "chatterbox.turn_control",
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: simple 1"
     },
     {
@@ -2476,16 +2494,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Interrupt a blessed QRA cached response and prove stale audio stops.",
       "route": "chatterbox.turn_control",
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: simple 2"
     },
     {
@@ -2496,16 +2516,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Have a non-primary speaker interrupt Embry and prove the new turn is rejected.",
       "route": "chatterbox.turn_control",
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: simple 3"
     },
     {
@@ -2516,16 +2538,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "interruption",
       "folder_title": "Interruption And Barge-In",
       "id": "interruption-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Interrupt Embry during a Tau tool wait and verify a natural stop phrase.",
       "route": "chatterbox.turn_control",
-      "status": "not_run",
+      "status": "failed",
       "title": "Interruption And Barge-In: simple 4"
     },
     {
@@ -2856,16 +2880,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Known Horus asks for personal memory with clean audio.",
       "route": "memory.speaker.resolve",
-      "status": "not_run",
+      "status": "failed",
       "title": "Speaker Identity: simple 1"
     },
     {
@@ -2876,16 +2902,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Unknown speaker asks for Horus memory and must be asked to identify.",
       "route": "memory.speaker.resolve",
-      "status": "not_run",
+      "status": "failed",
       "title": "Speaker Identity: simple 2"
     },
     {
@@ -2896,16 +2924,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Ambiguous speaker scores must fail closed before recall.",
       "route": "memory.speaker.resolve",
-      "status": "not_run",
+      "status": "failed",
       "title": "Speaker Identity: simple 3"
     },
     {
@@ -2916,16 +2946,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "speaker_identity",
       "folder_title": "Speaker Identity",
       "id": "speaker_identity-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Female distractor overlaps Horus and must not become memory authority.",
       "route": "memory.speaker.resolve",
-      "status": "not_run",
+      "status": "failed",
       "title": "Speaker Identity: simple 4"
     },
     {
@@ -3257,14 +3289,15 @@
         "chat_session_log_entry"
       ],
       "failed_gates": [
+        "runner_route_not_implemented",
         "factory_noise_matrix_ok"
       ],
       "folder_id": "factory_noise",
       "folder_title": "Factory Noise",
       "id": "factory_noise-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/index.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": "Source 67 captured RMS 7 against played WAV RMS 542.",
+      "observed": "The matrix runner has no live route implementation; separate current S06 receipt also failed factory capture with source 67 RMS 7 against played WAV RMS 542.",
       "question": "Horus asks a QRA question over factory-floor background noise.",
       "route": "realtimestt.factory_capture",
       "status": "failed",
@@ -3278,16 +3311,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "factory_noise",
       "folder_title": "Factory Noise",
       "id": "factory_noise-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Horus asks a memory question while a female voice speaks nearby.",
       "route": "realtimestt.factory_capture",
-      "status": "not_run",
+      "status": "failed",
       "title": "Factory Noise: simple 2"
     },
     {
@@ -3298,16 +3333,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "factory_noise",
       "folder_title": "Factory Noise",
       "id": "factory_noise-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Horus asks a compliance question through the Jabra speaker/mic path.",
       "route": "realtimestt.factory_capture",
-      "status": "not_run",
+      "status": "failed",
       "title": "Factory Noise: simple 3"
     },
     {
@@ -3318,16 +3355,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "factory_noise",
       "folder_title": "Factory Noise",
       "id": "factory_noise-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Horus asks a research question through the HD webcam microphone path.",
       "route": "realtimestt.factory_capture",
-      "status": "not_run",
+      "status": "failed",
       "title": "Factory Noise: simple 4"
     },
     {
@@ -3658,16 +3697,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tone_emotion",
       "folder_title": "Tone And Emotion",
       "id": "tone_emotion-simple-01",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "User is frustrated; Embry should de-escalate with a warm concise tone.",
       "route": "memory.intent.voice_delivery",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tone And Emotion: simple 1"
     },
     {
@@ -3678,16 +3719,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tone_emotion",
       "folder_title": "Tone And Emotion",
       "id": "tone_emotion-simple-02",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "User is hostile; Embry should use a firm humorous boundary.",
       "route": "memory.intent.voice_delivery",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tone And Emotion: simple 2"
     },
     {
@@ -3698,16 +3741,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tone_emotion",
       "folder_title": "Tone And Emotion",
       "id": "tone_emotion-simple-03",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "User is discouraged; Embry should answer gently and offer the next check.",
       "route": "memory.intent.voice_delivery",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tone And Emotion: simple 3"
     },
     {
@@ -3718,16 +3763,18 @@
         "chatterbox_audio_when_answerable",
         "chat_session_log_entry"
       ],
-      "failed_gates": [],
+      "failed_gates": [
+        "runner_route_not_implemented"
+      ],
       "folder_id": "tone_emotion",
       "folder_title": "Tone And Emotion",
       "id": "tone_emotion-simple-04",
-      "latest_receipt": null,
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
       "mocked": false,
-      "observed": null,
+      "observed": "The matrix runner has no live route implementation for this simple session yet.",
       "question": "Two speakers overlap; Embry should say a human one-at-a-time boundary.",
       "route": "memory.intent.voice_delivery",
-      "status": "not_run",
+      "status": "failed",
       "title": "Tone And Emotion: simple 4"
     },
     {
@@ -4052,8 +4099,8 @@
     }
   ],
   "status_counts": {
-    "failed": 13,
-    "not_run": 183,
+    "failed": 36,
+    "not_run": 160,
     "passed": 4
   }
 }

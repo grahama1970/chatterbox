@@ -88,10 +88,26 @@ def test_select_matrix_sessions_filters_folder_difficulty_and_limit() -> None:
         build_matrix(),
         folder="sparta_qra_compliance",
         difficulty="simple",
+        offset=0,
         limit=2,
     )
 
     assert [session["id"] for session in selected] == [
         "sparta_qra_compliance-simple-01",
         "sparta_qra_compliance-simple-02",
+    ]
+
+
+def test_select_matrix_sessions_applies_offset_after_filters() -> None:
+    selected = select_matrix_sessions(
+        build_matrix(),
+        folder=None,
+        difficulty="simple",
+        offset=16,
+        limit=2,
+    )
+
+    assert [session["id"] for session in selected] == [
+        "tau_tool_orchestration-simple-01",
+        "tau_tool_orchestration-simple-02",
     ]

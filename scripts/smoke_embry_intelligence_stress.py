@@ -324,6 +324,7 @@ def select_matrix_sessions(
     *,
     folder: str | None,
     difficulty: str | None,
+    offset: int,
     limit: int | None,
 ) -> list[dict[str, Any]]:
     sessions = list(matrix.get("sessions") or [])
@@ -331,9 +332,16 @@ def select_matrix_sessions(
         sessions = [session for session in sessions if session.get("folder_id") == folder]
     if difficulty:
         sessions = [session for session in sessions if session.get("difficulty") == difficulty]
+    sessions = sessions[max(0, offset) :]
     if limit is not None:
         sessions = sessions[:limit]
     return sessions
+
+
+def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, sort_keys=True) + "\n")
 
 
 def render_spoken_failures(
@@ -428,6 +436,7 @@ def main() -> int:
     parser.add_argument("--matrix-file", type=Path)
     parser.add_argument("--matrix-folder")
     parser.add_argument("--matrix-difficulty")
+    parser.add_argument("--matrix-offset", default=0, type=int)
     parser.add_argument("--matrix-limit", type=int)
     args = parser.parse_args()
 
@@ -442,23 +451,41 @@ def main() -> int:
             matrix,
             folder=args.matrix_folder,
             difficulty=args.matrix_difficulty,
+            offset=args.matrix_offset,
             limit=args.matrix_limit,
         )
-        cases = [
-            run_matrix_session(
+        events_path = out_dir / "matrix-case-events.jsonl"
+        cases = []
+        for sequence, session in enumerate(selected, start=1):
+            case = run_matrix_session(
                 session,
                 memory_url=args.memory_url,
                 brave_script=args.brave_script,
                 timeout_s=args.timeout_s,
             )
-            for session in selected
-        ]
+            case["sequence"] = sequence
+            cases.append(case)
+            append_jsonl(
+                events_path,
+                {
+                    "type": "matrix_case_completed",
+                    "sequence": sequence,
+                    "id": case.get("id"),
+                    "ok": case.get("ok"),
+                    "live": case.get("live"),
+                    "failed_gates": case.get("failed_gates", []),
+                    "route": case.get("route"),
+                    "ended_at_utc": utc_now(),
+                },
+            )
         matrix_selection = {
             "matrix_file": str(args.matrix_file),
             "folder": args.matrix_folder,
             "difficulty": args.matrix_difficulty,
+            "offset": args.matrix_offset,
             "limit": args.matrix_limit,
             "selected_count": len(selected),
+            "events_jsonl": str(events_path),
         }
     else:
         cases = [run_memory_case(case, memory_url=args.memory_url, timeout_s=args.timeout_s) for case in CASES]

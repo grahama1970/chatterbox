@@ -77,7 +77,7 @@ It rendered all three bad answers to Chatterbox WAVs, but local playback through
 The generated WAV files are valid 24 kHz mono artifacts; playback timeout is a
 local command/device failure to investigate separately.
 
-Latest matrix subset stress receipt:
+Latest matrix memory/search subset receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json`
 
@@ -87,6 +87,20 @@ That run executed `16` simple sessions from
 four SPARTA QRA sessions, all four persona-memory recall sessions, and all four
 persona-memory miss sessions. The failures show that Embry currently needs a
 stricter answerability gate before speaking memory answers.
+
+Latest matrix simple-rest receipt:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json`
+
+That run executed the next `24` simple sessions with `mocked=false`,
+`live=false`, and `ok=false`. Every selected route failed with
+`runner_route_not_implemented`: Tau tool orchestration, Chat UX sync,
+interruption, speaker identity, factory noise, and tone/emotion. The per-case
+event ledger is
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/matrix-case-events.jsonl`
+with `24` completed case events. This is useful failure evidence: the Sessions
+matrix now distinguishes answerability failures from route families that do not
+yet have executable live sanity implementations.
 
 Current Sessions matrix artifact:
 
@@ -100,7 +114,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `200` labeled sessions across `10` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`4` passed, `13` failed, and `183` are `not_run`. This is the intended source
+`4` passed, `36` failed, and `160` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 ## Required Receipt Fields
