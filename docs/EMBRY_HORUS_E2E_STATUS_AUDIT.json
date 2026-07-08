@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:39:57.047933+00:00",
+  "generated_at_utc": "2026-07-08T04:45:42.976292+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -403,7 +403,8 @@
               "fixture_primary_speaker_gate_suppresses_non_primary_audio",
               "known_horus_resolution_can_route_speaker_scoped_memory",
               "unknown_speaker_resolution_fails_closed_to_identity_prompt",
-              "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control"
+              "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control",
+              "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio"
             ]
           },
           "exists": true,

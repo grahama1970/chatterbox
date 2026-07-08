@@ -45,3 +45,18 @@ def test_pyannote_missing_audio_and_model_access_fail_closed(tmp_path: Path, mon
     assert receipt["claims"]["proves"] == []
     assert "audio_exists" in receipt["failed_gates"]
     assert "hf_token_or_local_model_available" in receipt["failed_gates"]
+
+
+def test_forced_num_speakers_requires_exact_output_count() -> None:
+    mod = load_pyannote_smoke_module()
+    segments = [
+        {"start_s": 0.0, "end_s": 1.0, "speaker": "SPEAKER_00"},
+        {"start_s": 1.0, "end_s": 2.0, "speaker": "SPEAKER_00"},
+    ]
+
+    assert mod.speaker_count_gate_failures(
+        speakers=["SPEAKER_00"],
+        min_speakers=2,
+        max_speakers=None,
+        num_speakers=2,
+    ) == ["min_speakers", "num_speakers_exact_match"]

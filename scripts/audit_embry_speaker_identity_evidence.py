@@ -20,6 +20,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-speaker-memory-rungs-20260702T1722Z/rung1_unknown_factory_identity.json"),
     Path("/tmp/chatterbox-speaker-memory-rungs-20260702T1800Z/rung5_known_horus_post_writeback_recall.json"),
     Path("/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json"),
+    Path("/tmp/chatterbox-fork-agent-out/pyannote-overlap-strict/current/pyannote-overlap-strict.json"),
 ]
 
 
@@ -112,7 +113,9 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     proves = claims.get("proves") or []
     does_not_prove = claims.get("does_not_prove") or []
 
-    if receipt.get("proof_scope") == "live_memory_speaker_resolution_policy_not_audio_identity":
+    if schema == "chatterbox.pyannote_diarization_smoke.v1":
+        proof_type = "pyannote_strict_two_speaker"
+    elif receipt.get("proof_scope") == "live_memory_speaker_resolution_policy_not_audio_identity":
         proof_type = "memory_speaker_policy_ledger"
     elif "pyannote_detected_two_anonymous_overlapping_speakers" in proves:
         proof_type = "overlap_diarization_turn_control"
@@ -155,6 +158,17 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "policy_cases_cover_known_unknown_ambiguous_overlap": _policy_cases_cover_required_statuses(receipt.get("cases")),
         "fixture_primary_accepts_and_rejects_non_primary": _fixture_gate_ok(receipt.get("cases")),
         "overlap_diarization_turn_control_ok": overlap_diarization_ok,
+        "pyannote_strict_two_speaker_ok": bool(
+            schema == "chatterbox.pyannote_diarization_smoke.v1"
+            and receipt.get("ok") is True
+            and receipt.get("live") is True
+            and receipt.get("mocked") is False
+            and _nested_get(receipt, "summary.speaker_count") == 2
+            and _nested_get(receipt, "summary.overlap_seconds")
+        ),
+        "pyannote_speaker_count": _nested_get(receipt, "summary.speaker_count"),
+        "pyannote_exclusive_speaker_count": _nested_get(receipt, "summary.exclusive_speaker_count"),
+        "pyannote_overlap_seconds": _nested_get(receipt, "summary.overlap_seconds"),
         "known_horus_resolution_ok": _known_speaker_resolution_ok(receipt),
         "unknown_speaker_fail_closed_ok": _unknown_speaker_resolution_ok(receipt),
         "source_audio_identity_proven": receipt.get("source_audio_identity_proven"),
@@ -180,6 +194,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     unknown_fail_closed = [candidate for candidate in proof_candidates if candidate["unknown_speaker_fail_closed_ok"]]
     overlap_diarization = [
         candidate for candidate in proof_candidates if candidate["overlap_diarization_turn_control_ok"]
+    ]
+    pyannote_strict_two_speaker = [
+        candidate for candidate in proof_candidates if candidate["pyannote_strict_two_speaker_ok"]
     ]
     independent_enrollment = [
         candidate
@@ -232,6 +249,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         partial_proves.append("unknown_speaker_resolution_fails_closed_to_identity_prompt")
     if overlap_diarization:
         partial_proves.append("pyannote_overlap_detection_routes_to_one_at_a_time_turn_control")
+    if pyannote_strict_two_speaker:
+        partial_proves.append("pyannote_strict_smoke_detects_two_speakers_in_overlap_audio")
     return {
         "schema": "chatterbox.embry_speaker_identity_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -246,6 +265,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "known_horus_candidate_count": len(known_horus),
         "unknown_fail_closed_candidate_count": len(unknown_fail_closed),
         "overlap_diarization_candidate_count": len(overlap_diarization),
+        "pyannote_strict_two_speaker_candidate_count": len(pyannote_strict_two_speaker),
         "independent_enrollment_candidate_count": len(independent_enrollment),
         "physical_identity_candidate_count": len(physical_identity_proven),
         "proof_candidates": proof_candidates,
@@ -258,6 +278,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
                 "known_horus_resolution_can_route_speaker_scoped_memory",
                 "unknown_speaker_resolution_fails_closed_to_identity_prompt",
                 "pyannote_overlap_detection_routes_to_one_at_a_time_turn_control",
+                "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio",
                 "physical_speaker_to_microphone_identity_gating",
             ]
             if ok

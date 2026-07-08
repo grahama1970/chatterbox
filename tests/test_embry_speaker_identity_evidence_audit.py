@@ -92,6 +92,47 @@ def test_classify_overlap_diarization_turn_control_receipt() -> None:
     assert candidate["overlap_diarization_turn_control_ok"] is True
 
 
+def test_classify_strict_pyannote_two_speaker_receipt() -> None:
+    receipt = {
+        "schema": "chatterbox.pyannote_diarization_smoke.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "summary": {
+            "speaker_count": 2,
+            "exclusive_speaker_count": 1,
+            "overlap_seconds": 4.725,
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/pyannote.json"), receipt)
+
+    assert candidate["proof_type"] == "pyannote_strict_two_speaker"
+    assert candidate["pyannote_strict_two_speaker_ok"] is True
+    assert candidate["pyannote_speaker_count"] == 2
+    assert candidate["pyannote_exclusive_speaker_count"] == 1
+    assert candidate["pyannote_overlap_seconds"] == 4.725
+
+
+def test_strict_pyannote_one_speaker_receipt_does_not_pass_two_speaker_gate() -> None:
+    receipt = {
+        "schema": "chatterbox.pyannote_diarization_smoke.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "summary": {
+            "speaker_count": 1,
+            "exclusive_speaker_count": 1,
+            "overlap_seconds": 0,
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/pyannote.json"), receipt)
+
+    assert candidate["proof_type"] == "pyannote_strict_two_speaker"
+    assert candidate["pyannote_strict_two_speaker_ok"] is False
+
+
 def test_audit_fails_when_matrix_passes_but_physical_identity_is_unproven(tmp_path: Path) -> None:
     policy = tmp_path / "policy.json"
     policy.write_text(
@@ -275,9 +316,28 @@ def test_audit_passes_only_with_physical_identity_and_overlap_evidence_removed_f
 """
     )
 
-    audit = build_audit({"sessions": [_session("passed")]}, [policy, fixture, known, unknown, overlap])
+    pyannote = tmp_path / "pyannote.json"
+    pyannote.write_text(
+        """
+{
+  "schema": "chatterbox.pyannote_diarization_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "summary": {
+    "speaker_count": 2,
+    "exclusive_speaker_count": 1,
+    "overlap_seconds": 4.725
+  }
+}
+"""
+    )
+
+    audit = build_audit({"sessions": [_session("passed")]}, [policy, fixture, known, unknown, overlap, pyannote])
 
     assert audit["ok"] is True
+    assert audit["pyannote_strict_two_speaker_candidate_count"] == 1
+    assert "pyannote_strict_smoke_detects_two_speakers_in_overlap_audio" in audit["claims"]["proves"]
     assert audit["live"] is True
     assert audit["policy_ledger_candidate_count"] == 1
     assert audit["fixture_gate_candidate_count"] == 1

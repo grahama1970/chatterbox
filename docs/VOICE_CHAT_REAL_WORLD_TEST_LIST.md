@@ -261,6 +261,10 @@ identity proof:
 - One independent enrollment-vs-candidate receipt exists.
 - One live pyannote overlap/turn-control receipt exists; it detects two
   anonymous overlapping speakers and routes to one-at-a-time turn control.
+- One strict pyannote two-speaker receipt exists at
+  `/tmp/chatterbox-fork-agent-out/pyannote-overlap-strict/current/pyannote-overlap-strict.json`;
+  it reports `speaker_count=2`, `overlap_seconds=4.725`, and
+  `exclusive_speaker_count=1`.
 - One matrix row still explicitly records `source_audio_identity_proven=false`.
 - No committed receipt proves physical speaker-to-microphone identity gating.
 
@@ -857,7 +861,7 @@ Every scenario receipt must include:
 | S02 | Known Horus memory | Horus stress WAV and speaker evidence | `$memory /speaker/resolve` maps to `horus_lupercal`, memory/Tau path proceeds | Passed in latest full-suite receipt. |
 | S03 | Unknown speaker | Live `$memory /speaker/resolve` with no candidates | personal memory disabled, identity clarification prompt selected, Chatterbox renders clarification | Passed in latest full-suite receipt. |
 | S04 | Ambiguous speaker | Live `$memory /speaker/resolve` with low/close candidates | personal memory disabled, clarification response rendered | Passed in latest full-suite receipt. |
-| S05 | Male plus female distractor / overlap | Generated male/female overlapping WAV through live pyannote, memory intent, Tau, Chatterbox | two anonymous speakers detected, turn-taking clarification, `one_at_a_time_interrupt` tone | Passed in latest full-suite receipt; does not prove word-level separation. |
+| S05 | Male plus female distractor / overlap | Generated male/female overlapping WAV through live pyannote, memory intent, Tau, Chatterbox | two anonymous speakers detected, turn-taking clarification, `one_at_a_time_interrupt` tone | Passed in latest full-suite receipt. Strict pyannote receipt now separately proves `speaker_count=2` for the controlled overlap WAV; it still does not map either speaker to Horus or prove word-level separation. |
 | S06 | Horus plus factory/noisy acoustic path | Horus factory-stress WAV played through speaker and captured by real source `67` | captured WAV RMS > gate, RealtimeSTT/rung7 speaker memory path, Horus speaker resolution | Passed in latest full-suite receipt with source `67`; Jabra source `62` was silent and failed earlier. |
 | S08 | Barge-in / stale turn cancellation | Live Chatterbox stream and turn cancel endpoint | old-turn stream emits zero bytes after cancel | Passed in latest full-suite receipt; physical speaker buffer flush remains separate. |
 | S09 | Blessed QRA hit | Listener-memory-Tau-QRA child smoke | near-exact memory gate, blessed cache hit, selected Embry variant | Passed inside continuous core scenario. |

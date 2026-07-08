@@ -97,6 +97,23 @@ def overlap_seconds(segments: list[dict[str, Any]]) -> float:
     return round(overlap, 3)
 
 
+def speaker_count_gate_failures(
+    *,
+    speakers: list[str],
+    min_speakers: int | None,
+    max_speakers: int | None,
+    num_speakers: int | None,
+) -> list[str]:
+    failures: list[str] = []
+    if min_speakers is not None and len(speakers) < min_speakers:
+        failures.append("min_speakers")
+    if max_speakers is not None and len(speakers) > max_speakers:
+        failures.append("max_speakers")
+    if num_speakers is not None and len(speakers) != num_speakers:
+        failures.append("num_speakers_exact_match")
+    return failures
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.perf_counter()
     audio = args.audio.resolve()
@@ -208,10 +225,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         receipt["summary"] = summary
         if not segments:
             receipt["failed_gates"].append("diarization_segments_present")
-        if args.min_speakers is not None and len(speakers) < args.min_speakers:
-            receipt["failed_gates"].append("min_speakers")
-        if args.max_speakers is not None and len(speakers) > args.max_speakers:
-            receipt["failed_gates"].append("max_speakers")
+        receipt["failed_gates"].extend(
+            speaker_count_gate_failures(
+                speakers=speakers,
+                min_speakers=args.min_speakers,
+                max_speakers=args.max_speakers,
+                num_speakers=args.num_speakers,
+            )
+        )
         receipt["ok"] = not receipt["failed_gates"]
         receipt["live"] = receipt["ok"]
         if receipt["ok"]:
