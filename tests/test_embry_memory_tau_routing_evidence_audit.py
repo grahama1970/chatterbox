@@ -54,6 +54,31 @@ def test_classify_runtime_block_receipt_as_mitigation() -> None:
     assert candidate["case_count"] == 12
 
 
+def test_classify_tau_dag_handoff_receipt_as_tau_evidence() -> None:
+    receipt = {
+        "schema": "embry.intelligence_stress.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "cases": [
+            {
+                "id": "tau_tool_orchestration-simple-01",
+                "route": "tau.agent_handoff",
+                "ok": True,
+                "tau_dag_receipt": "/tmp/run/dag-receipt.json",
+                "tau_command_loop_receipt": "/tmp/run/command-loop-receipt.json",
+            }
+        ],
+        "failed_gates": [],
+    }
+
+    candidate = classify_proof(Path("/tmp/matrix-tau-simple-dag-batch/receipt.json"), receipt)
+
+    assert candidate["proof_type"] == "tau_or_skill_routing"
+    assert candidate["tau_dag_handoff_proven"] is True
+    assert candidate["case_count"] == 1
+
+
 def test_audit_fails_when_memory_and_tau_rows_fail(tmp_path: Path) -> None:
     runtime_block = tmp_path / "runtime-block.json"
     runtime_block.write_text(
@@ -87,6 +112,7 @@ def test_audit_fails_when_memory_and_tau_rows_fail(tmp_path: Path) -> None:
     assert audit["live"] is True
     assert audit["live_unmocked_candidate_count"] == 1
     assert audit["runtime_block_candidate_count"] == 1
+    assert audit["tau_dag_handoff_candidate_count"] == 0
     assert "blocked_memory_answerability_can_be_suppressed_before_chatterbox" in audit["claims"]["proves"]
     assert "memory_answerability_matrix_has_failures" in audit["failed_gates"]
     assert "tau_skill_routing_matrix_has_failures" in audit["failed_gates"]
@@ -142,6 +168,7 @@ def test_external_research_green_does_not_mask_memory_tau_failures(tmp_path: Pat
     assert "answerability_runtime_block_receipt_missing" in audit["failed_gates"]
     assert "memory_answerability_matrix_has_failures" in audit["failed_gates"]
     assert "tau_skill_routing_matrix_has_failures" in audit["failed_gates"]
+    assert "skill_tau_agent_handoff_missing" in audit["failed_gates"]
 
 
 def test_live_memory_ledger_without_full_pass_is_reported_as_live_evidence(tmp_path: Path) -> None:

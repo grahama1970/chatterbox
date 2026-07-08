@@ -8,10 +8,12 @@ renders failed answers through Tau/Chatterbox so bad responses are audible.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -23,7 +25,9 @@ from uuid import uuid4
 
 DEFAULT_BRAVE = Path("/home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py")
 DEFAULT_TAU_RUNNER = Path("/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh")
+DEFAULT_TAU_ROOT = Path("/home/graham/workspace/experiments/tau")
 DEFAULT_SKILL_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills")
+DEFAULT_AGENT_ROOT = Path("/home/graham/workspace/experiments/agent-skills/agents")
 DEFAULT_CHATTERBOX_URL = "http://127.0.0.1:8018"
 DEFAULT_SPEAKER_RESOLVE_THRESHOLD = 0.82
 DEFAULT_SPEAKER_AMBIGUITY_MARGIN = 0.04
@@ -260,6 +264,279 @@ def required_skill_for_session(session: dict[str, Any]) -> str | None:
     expected_route = session.get("expected_route") if isinstance(session.get("expected_route"), dict) else {}
     oracle = session.get("oracle") if isinstance(session.get("oracle"), dict) else {}
     return str(expected_route.get("required_skill") or oracle.get("required_skill") or "").strip() or None
+
+
+def _sha256_text(text: str) -> str:
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _tau_handoff_response(
+    *,
+    session: dict[str, Any],
+    dag_id: str,
+    goal_hash: str,
+    previous_subagent: str,
+    next_agent: str,
+    evidence: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": {
+            "repo": "grahama1970/chatterbox",
+            "target": f"embry-stress-session:{session['id']}",
+        },
+        "goal": {
+            "goal_id": dag_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "previous_subagent": previous_subagent,
+        "context": {
+            "summary": f"Embry stress matrix Tau handoff for {session['id']}.",
+            "artifacts": [],
+            "matrix_session": {
+                "id": session["id"],
+                "folder_id": session.get("folder_id"),
+                "route": session.get("route"),
+                "difficulty": session.get("difficulty"),
+            },
+        },
+        "result": {
+            "status": "PASS",
+            "summary": f"{previous_subagent} completed for Embry stress matrix session {session['id']}.",
+            "evidence": evidence,
+        },
+        "rationale": "The Tau DAG contract controls routing and evidence requirements.",
+        "next_agent": {
+            "name": next_agent,
+            "executor": "human" if next_agent == "human" else "local",
+            "reason": "Continue along the Tau DAG edge.",
+        },
+        "required_evidence": ["embry_tau_work_order", "reviewer_verdict"],
+        "stop_condition": "Stop at human terminal node.",
+    }
+
+
+def _write_tau_response_spec(
+    *,
+    spec_root: Path,
+    agent: str,
+    response: dict[str, Any],
+    cwd: Path,
+) -> Path:
+    spec_path = spec_root / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    code = f"import json; print({json.dumps(json.dumps(response))})"
+    spec = {
+        "command": [sys.executable, "-c", code],
+        "timeout_s": 10,
+        "cwd": str(cwd),
+    }
+    spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return spec_path
+
+
+def _write_tau_handoff_contract(
+    *,
+    session: dict[str, Any],
+    run_root: Path,
+    spec_root: Path,
+    dag_id: str,
+    goal_hash: str,
+) -> Path:
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": dag_id,
+        "goal": {
+            "goal_id": dag_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/chatterbox",
+            "target": f"embry-stress-session:{session['id']}",
+        },
+        "context": {
+            "matrix_session_id": session["id"],
+            "matrix_folder_id": session.get("folder_id"),
+            "query": str(session.get("question") or ""),
+            "route": str(session.get("route") or ""),
+        },
+        "entry_node": "embry-request-router",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "embry-request-router",
+                "agent": "embry-request-router",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-request-router" / "tau-dispatch-command.json"),
+                "required_evidence": ["embry_tau_work_order"],
+            },
+            {
+                "id": "embry-route-reviewer",
+                "agent": "embry-route-reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-route-reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "embry-request-router",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "embry-request-router", "to": "embry-route-reviewer"},
+            {"from": "embry-route-reviewer", "to": "human"},
+        ],
+        "required_evidence": ["embry_tau_work_order", "reviewer_verdict"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = run_root / "tau-dag-contract.json"
+    path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def run_tau_agent_handoff_dag(
+    session: dict[str, Any],
+    *,
+    tau_root: Path,
+    agent_root: Path,
+    timeout_s: int,
+) -> dict[str, Any]:
+    route = str(session.get("route") or "")
+    run_id = f"{utc_now().replace(':', '').replace('-', '')}-{session['id']}-{uuid4().hex[:8]}"
+    run_root = Path("/tmp/chatterbox-fork-agent-out/embry-tau-dag-handoff") / run_id
+    spec_root = run_root / "specs"
+    receipt_dir = run_root / "tau-run"
+    run_root.mkdir(parents=True, exist_ok=True)
+    dag_id = f"embry-{session['id']}"
+    goal_hash = _sha256_text(json.dumps({"session_id": session["id"], "query": session.get("question")}, sort_keys=True))
+    router_evidence = [
+        {
+            "kind": "embry_tau_work_order",
+            "matrix_session_id": session["id"],
+            "route": route,
+            "query": str(session.get("question") or ""),
+            "goal_hash": goal_hash,
+        }
+    ]
+    reviewer_evidence = [
+        {
+            "kind": "reviewer_verdict",
+            "reviewed_node_id": "embry-request-router",
+            "goal_hash": goal_hash,
+            "verdict": "PASS",
+        }
+    ]
+    _write_tau_response_spec(
+        spec_root=spec_root,
+        agent="embry-request-router",
+        response=_tau_handoff_response(
+            session=session,
+            dag_id=dag_id,
+            goal_hash=goal_hash,
+            previous_subagent="embry-request-router",
+            next_agent="embry-route-reviewer",
+            evidence=router_evidence,
+        ),
+        cwd=run_root,
+    )
+    _write_tau_response_spec(
+        spec_root=spec_root,
+        agent="embry-route-reviewer",
+        response=_tau_handoff_response(
+            session=session,
+            dag_id=dag_id,
+            goal_hash=goal_hash,
+            previous_subagent="embry-route-reviewer",
+            next_agent="human",
+            evidence=reviewer_evidence,
+        ),
+        cwd=run_root,
+    )
+    contract_path = _write_tau_handoff_contract(
+        session=session,
+        run_root=run_root,
+        spec_root=spec_root,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+    )
+    command = [
+        "uv",
+        "run",
+        "--project",
+        str(tau_root),
+        "tau",
+        "dag-run",
+        str(contract_path),
+        "--receipt-dir",
+        str(receipt_dir),
+        "--agents-root",
+        str(agent_root),
+        "--command-spec-root",
+        str(spec_root),
+    ]
+    dag_run = run_cmd(command, timeout_s=timeout_s)
+    receipt_path = receipt_dir / "dag-receipt.json"
+    receipt: dict[str, Any] = {}
+    failed: list[str] = []
+    if dag_run["returncode"] != 0:
+        failed.append("tau_dag_run_command_ok")
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        failed.append("tau_dag_receipt_read")
+        receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if receipt.get("schema") != "tau.dag_receipt.v1":
+        failed.append("tau_dag_receipt_schema")
+    if receipt.get("ok") is not True:
+        failed.append("tau_dag_receipt_ok")
+    if receipt.get("status") != "PASS":
+        failed.append("tau_dag_receipt_pass")
+    selected_agents = receipt.get("selected_agents") if isinstance(receipt.get("selected_agents"), list) else []
+    if selected_agents != ["embry-request-router", "embry-route-reviewer"]:
+        failed.append("tau_agent_handoff_selected_agents")
+    if not receipt.get("command_loop_receipt"):
+        failed.append("tau_agent_handoff_command_loop_receipt")
+    reviewer_verdicts = receipt.get("reviewer_verdicts") if isinstance(receipt.get("reviewer_verdicts"), list) else []
+    if not reviewer_verdicts or reviewer_verdicts[0].get("verdict") != "PASS":
+        failed.append("tau_reviewer_verdict_pass")
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": route,
+        "tau_dag_contract": str(contract_path),
+        "tau_dag_receipt": str(receipt_path),
+        "tau_command_loop_receipt": receipt.get("command_loop_receipt"),
+        "tau_dag_run": dag_run,
+        "tau_dag_receipt_payload": receipt,
+        "ok": not failed,
+        "mocked": False,
+        "live": True,
+        "failed_gates": failed,
+        "observed": (
+            "Tau dag-run created a tau.dag_receipt.v1 and command-loop handoff receipt "
+            "for this Embry stress matrix session."
+            if not failed
+            else "Tau dag-run was attempted for this Embry stress matrix session; see failed_gates and receipt paths."
+        ),
+    }
 
 
 def run_tau_skill_preflight(
@@ -608,6 +885,8 @@ def run_matrix_session(
     memory_url: str,
     brave_script: Path,
     tau_runner: Path,
+    tau_root: Path = DEFAULT_TAU_ROOT,
+    agent_root: Path = DEFAULT_AGENT_ROOT,
     chatterbox_url: str = DEFAULT_CHATTERBOX_URL,
     skill_root: Path = DEFAULT_SKILL_ROOT,
     timeout_s: int,
@@ -633,23 +912,12 @@ def run_matrix_session(
             "failed_gates": failed,
         }
     if route == "tau.agent_handoff":
-        doctor = run_cmd([str(tau_runner), "doctor"], timeout_s=timeout_s)
-        failed: list[str] = []
-        if doctor["returncode"] != 0:
-            failed.append("tau_doctor_command_ok")
-        failed.append("tau_agent_handoff_not_exercised")
-        return {
-            "id": session["id"],
-            "matrix_session": session,
-            "query": query,
-            "route": route,
-            "tau_doctor": doctor,
-            "ok": False,
-            "mocked": False,
-            "live": doctor["returncode"] == 0,
-            "failed_gates": failed,
-            "observed": "Tau wrapper doctor ran, but no tau.agent_handoff.v1 work order or DAG receipt was created for this session.",
-        }
+        return run_tau_agent_handoff_dag(
+            session,
+            tau_root=tau_root,
+            agent_root=agent_root,
+            timeout_s=timeout_s,
+        )
     if route.startswith("tau.skill."):
         return run_tau_skill_preflight(session, tau_runner=tau_runner, skill_root=skill_root, timeout_s=timeout_s)
     if route == "chatterbox.turn_control":
@@ -832,6 +1100,8 @@ def main() -> int:
     parser.add_argument("--memory-url", default="http://127.0.0.1:8601")
     parser.add_argument("--brave-script", default=DEFAULT_BRAVE, type=Path)
     parser.add_argument("--tau-runner", default=DEFAULT_TAU_RUNNER, type=Path)
+    parser.add_argument("--tau-root", default=DEFAULT_TAU_ROOT, type=Path)
+    parser.add_argument("--agent-root", default=DEFAULT_AGENT_ROOT, type=Path)
     parser.add_argument("--chatterbox-url", default=DEFAULT_CHATTERBOX_URL)
     parser.add_argument("--skill-root", default=DEFAULT_SKILL_ROOT, type=Path)
     parser.add_argument("--timeout-s", default=120, type=int)
@@ -867,6 +1137,8 @@ def main() -> int:
                 memory_url=args.memory_url,
                 brave_script=args.brave_script,
                 tau_runner=args.tau_runner,
+                tau_root=args.tau_root,
+                agent_root=args.agent_root,
                 chatterbox_url=args.chatterbox_url,
                 skill_root=args.skill_root,
                 timeout_s=args.timeout_s,

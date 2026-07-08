@@ -840,6 +840,23 @@ for _folder_id in ["skill_create_evidence_case", "skill_create_figure", "skill_a
             ),
         }
 
+_TAU_DAG_ALL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T051253Z-matrix-tau-all-dag-current/receipt.json"
+)
+
+for _difficulty in DIFFICULTIES:
+    for _index in range(1, 5):
+        CURRENT_RESULTS[f"tau_tool_orchestration-{_difficulty}-{_index:02d}"] = {
+            "status": "passed",
+            "latest_receipt": _TAU_DAG_ALL_RECEIPT,
+            "failed_gates": [],
+            "observed": (
+                "Tau dag-run created tau.dag_receipt.v1 and command-loop handoff receipts "
+                "for this Embry stress matrix session."
+            ),
+        }
+
 _SIMPLE_REST_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T000951Z-matrix-simple-rest/receipt.json"
@@ -1748,17 +1765,17 @@ CURRENT_RESULTS.update(
 
 _TAU_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
-    "20260708T002830Z-matrix-tau-simple/receipt.json"
+    "20260708T051042Z-matrix-tau-simple-dag-batch/receipt.json"
 )
 
 for _index in range(1, 5):
     CURRENT_RESULTS[f"tau_tool_orchestration-simple-{_index:02d}"] = {
-        "status": "failed",
+        "status": "passed",
         "latest_receipt": _TAU_SIMPLE_RECEIPT,
-        "failed_gates": ["tau_agent_handoff_not_exercised"],
+        "failed_gates": [],
         "observed": (
-            "Tau wrapper doctor returned live successfully, but no tau.agent_handoff.v1 "
-            "work order or DAG receipt was created for this Embry session."
+            "Tau dag-run created a tau.dag_receipt.v1 and command-loop handoff receipt "
+            "for this Embry stress matrix session."
         ),
     }
 

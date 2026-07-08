@@ -17,6 +17,8 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-answerability-runtime-block/20260708T010111Z-answerability-runtime-block/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T002830Z-matrix-tau-simple/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T051042Z-matrix-tau-simple-dag-batch/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T051253Z-matrix-tau-all-dag-current/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json"),
 ]
@@ -115,6 +117,20 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "tau_voice_render_rejects_blocked_memory_answerability",
         "blocked_memory_answers_do_not_create_chatterbox_finished_audio",
     }.issubset(set(proves))
+    cases = receipt.get("cases") if isinstance(receipt.get("cases"), list) else []
+    tau_dag_handoff_proven = (
+        ok
+        and proof_type == "tau_or_skill_routing"
+        and bool(cases)
+        and all(
+            isinstance(case, dict)
+            and case.get("route") == "tau.agent_handoff"
+            and case.get("ok") is True
+            and bool(case.get("tau_dag_receipt"))
+            and bool(case.get("tau_command_loop_receipt"))
+            for case in cases
+        )
+    )
 
     return {
         "path": str(path),
@@ -126,6 +142,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "mocked": receipt.get("mocked"),
         "case_count": receipt.get("case_count") or len(receipt.get("cases") or receipt.get("results") or []),
         "runtime_block_proven": runtime_block_proven,
+        "tau_dag_handoff_proven": tau_dag_handoff_proven,
         "failed_gates": failed_gates,
         "claims_proves": proves,
         "claims_does_not_prove": claims.get("does_not_prove") or [],
@@ -140,6 +157,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     external_research = _group_summary(matrix, EXTERNAL_RESEARCH_FOLDERS)
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     runtime_blocks = [candidate for candidate in proof_candidates if candidate["runtime_block_proven"]]
+    tau_dag_handoffs = [candidate for candidate in proof_candidates if candidate["tau_dag_handoff_proven"]]
     live_unmocked_candidates = [
         candidate
         for candidate in proof_candidates
@@ -158,7 +176,16 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     for gate in sorted(tau_skill["failed_gate_counts"]):
         failed_gates.append(f"tau_skill_gate:{gate}")
     if "tau_agent_handoff_not_exercised" in tau_skill["failed_gate_counts"]:
-        failed_gates.append("tau_agent_handoff_missing")
+        tau_tool_gates = tau_skill["by_folder"].get("tau_tool_orchestration", {}).get("failed_gate_counts", {})
+        if "tau_agent_handoff_not_exercised" in tau_tool_gates:
+            failed_gates.append("tau_agent_handoff_missing")
+        skill_folder_gates = [
+            folder_summary.get("failed_gate_counts", {})
+            for folder, folder_summary in tau_skill["by_folder"].items()
+            if folder != "tau_tool_orchestration"
+        ]
+        if any("tau_agent_handoff_not_exercised" in gates for gates in skill_folder_gates):
+            failed_gates.append("skill_tau_agent_handoff_missing")
     if "skill_call_receipt_not_emitted" in tau_skill["failed_gate_counts"]:
         failed_gates.append("skill_call_receipt_missing")
     if "tau_dag_receipt_not_created" in tau_skill["failed_gate_counts"]:
@@ -182,6 +209,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "proof_candidate_count": len(proof_candidates),
         "live_unmocked_candidate_count": len(live_unmocked_candidates),
         "runtime_block_candidate_count": len(runtime_blocks),
+        "tau_dag_handoff_candidate_count": len(tau_dag_handoffs),
         "proof_candidates": proof_candidates,
         "failed_gates": sorted(set(failed_gates)),
         "claims": {
