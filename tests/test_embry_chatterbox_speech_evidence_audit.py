@@ -457,6 +457,75 @@ def test_audit_uses_speaker_identity_audit_for_overlap_tone_gate(tmp_path: Path)
     ]
 
 
+def test_audit_reports_memory_tau_blockers_for_tau_tool_wait_gate(tmp_path: Path) -> None:
+    render = tmp_path / "render.json"
+    render.write_text(
+        """
+{
+  "schema": "chatterbox.tau_voice_render_smoke.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "artifacts": {"finished_response_audio_metrics": {"exists": true, "bytes": 10, "duration_seconds": 1.0}},
+  "response": {"voice_delivery": {"tone": "memory_confident", "delivery_stage": "satisfied", "pace": "brief", "pause_strategy": "short_answer_no_filler", "source": "memory.intent"}}
+}
+"""
+    )
+    qra = tmp_path / "qra.json"
+    qra.write_text('{"qra_id":"qra","ok":true,"live":true,"mocked":false,"variant_count":5}')
+    personality = tmp_path / "personality.json"
+    personality.write_text(
+        """
+{
+  "schema": "chatterbox.embry_personality_audition.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "variants": [
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}},
+    {"render": {"returncode": 0}, "play": {"returncode": 0}}
+  ]
+}
+"""
+    )
+    memory_tau_audit = tmp_path / "memory-tau-audit.json"
+    memory_tau_audit.write_text(
+        """
+{
+  "ok": false,
+  "status": "failed",
+  "live": true,
+  "mocked": false,
+  "failed_gates": [
+    "skill_call_receipt_missing",
+    "skill_tau_agent_handoff_missing",
+    "tau_dag_receipt_missing"
+  ]
+}
+"""
+    )
+    matrix = {
+        "sessions": [
+            _session("tone_emotion", "passed"),
+            _session("interruption", "failed", ["tau_tool_wait_not_exercised"]),
+        ]
+    }
+
+    audit = build_audit(matrix, [render, qra, personality], memory_tau_audit_path=memory_tau_audit)
+
+    assert audit["ok"] is False
+    assert "speech_matrix_gate:tau_tool_wait_not_exercised" in audit["failed_gates"]
+    assert audit["memory_tau_routing_evidence_audit"]["tau_tool_wait_boundary_ready"] is False
+    assert audit["memory_tau_routing_evidence_audit"]["blocking_gates"] == [
+        "skill_call_receipt_missing",
+        "skill_tau_agent_handoff_missing",
+        "tau_dag_receipt_missing",
+    ]
+
+
 def test_audit_passes_when_all_speech_evidence_and_matrix_rows_pass(tmp_path: Path) -> None:
     render = tmp_path / "render.json"
     render.write_text(

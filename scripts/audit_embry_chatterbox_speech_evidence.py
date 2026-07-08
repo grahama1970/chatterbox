@@ -15,6 +15,7 @@ DEFAULT_MATRIX = Path("docs/EMBRY_STRESS_SESSION_MATRIX.json")
 DEFAULT_OUT = Path("docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json")
 DEFAULT_INTERRUPTION_AUDIT = Path("docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json")
 DEFAULT_SPEAKER_IDENTITY_AUDIT = Path("docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json")
+DEFAULT_MEMORY_TAU_AUDIT = Path("docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json")
 DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/interruption-current/20260708T063142Z-rung4-live-nonprimary-suppressed/rung4-nonprimary-suppressed.json"),
     Path("/tmp/chatterbox-fork-agent-out/full-live-sanity-20260702T140317Z-creation-hook/listener-memory-tau-qra/tau-voice-render.json"),
@@ -291,16 +292,56 @@ def _speaker_identity_audit_summary(path: Path | None) -> dict[str, Any]:
     }
 
 
+def _memory_tau_audit_summary(path: Path | None) -> dict[str, Any]:
+    if path is None:
+        return {"path": None, "exists": False, "ok": False, "tau_tool_wait_boundary_ready": False}
+    receipt = read_json(path)
+    failed_gates = receipt.get("failed_gates") or []
+    tau_tool_blocking_gates = [
+        gate
+        for gate in failed_gates
+        if gate
+        in {
+            "skill_call_receipt_missing",
+            "skill_tau_agent_handoff_missing",
+            "tau_dag_receipt_missing",
+            "tau_skill_gate:skill_call_receipt_not_emitted",
+            "tau_skill_gate:tau_agent_handoff_not_exercised",
+            "tau_skill_gate:tau_dag_receipt_not_created",
+            "tau_skill_routing_matrix_has_failures",
+        }
+    ]
+    tau_tool_wait_boundary_ready = bool(
+        path.exists()
+        and receipt.get("ok") is True
+        and receipt.get("live") is True
+        and receipt.get("mocked") is False
+        and not tau_tool_blocking_gates
+    )
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "ok": receipt.get("ok"),
+        "status": receipt.get("status"),
+        "live": receipt.get("live"),
+        "mocked": receipt.get("mocked"),
+        "tau_tool_wait_boundary_ready": tau_tool_wait_boundary_ready,
+        "blocking_gates": sorted(tau_tool_blocking_gates),
+    }
+
+
 def build_audit(
     matrix: dict[str, Any],
     proof_paths: list[Path],
     *,
     interruption_audit_path: Path | None = None,
     speaker_identity_audit_path: Path | None = None,
+    memory_tau_audit_path: Path | None = None,
 ) -> dict[str, Any]:
     speech_matrix = _group_summary(matrix, SPEECH_FOLDERS)
     interruption_audit = _interruption_audit_summary(interruption_audit_path)
     speaker_identity_audit = _speaker_identity_audit_summary(speaker_identity_audit_path)
+    memory_tau_audit = _memory_tau_audit_summary(memory_tau_audit_path)
     interruption_covered_gates = set(interruption_audit["covered_gates"])
     tone_covered_gates = set(speaker_identity_audit["covered_gates"])
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
@@ -407,6 +448,7 @@ def build_audit(
         "interruption_evidence_audit": interruption_audit,
         "interruption_matrix_remaining_failed_gates": sorted(effective_interruption_failed_gates),
         "speaker_identity_evidence_audit": speaker_identity_audit,
+        "memory_tau_routing_evidence_audit": memory_tau_audit,
         "tone_emotion_matrix_remaining_failed_gates": sorted(
             gate
             for gate in speech_matrix["by_folder"]["tone_emotion"]["failed_gate_counts"]
@@ -439,6 +481,7 @@ def main() -> int:
     parser.add_argument("--proof", action="append", type=Path, default=[])
     parser.add_argument("--interruption-audit", type=Path, default=DEFAULT_INTERRUPTION_AUDIT)
     parser.add_argument("--speaker-identity-audit", type=Path, default=DEFAULT_SPEAKER_IDENTITY_AUDIT)
+    parser.add_argument("--memory-tau-audit", type=Path, default=DEFAULT_MEMORY_TAU_AUDIT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args()
 
@@ -448,6 +491,7 @@ def main() -> int:
         [*DEFAULT_PROOFS, *args.proof],
         interruption_audit_path=args.interruption_audit,
         speaker_identity_audit_path=args.speaker_identity_audit,
+        memory_tau_audit_path=args.memory_tau_audit,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n")

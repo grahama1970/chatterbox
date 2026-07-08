@@ -31,7 +31,7 @@
     "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
     "tone_emotion_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T06:38:25.407106+00:00",
+  "generated_at_utc": "2026-07-08T06:41:16.258831+00:00",
   "incomplete_delivery_envelope_count": 4,
   "interruption_evidence_audit": {
     "best_candidate_paths": [
@@ -58,6 +58,24 @@
   ],
   "live": true,
   "live_render_candidate_count": 5,
+  "memory_tau_routing_evidence_audit": {
+    "blocking_gates": [
+      "skill_call_receipt_missing",
+      "skill_tau_agent_handoff_missing",
+      "tau_dag_receipt_missing",
+      "tau_skill_gate:skill_call_receipt_not_emitted",
+      "tau_skill_gate:tau_agent_handoff_not_exercised",
+      "tau_skill_gate:tau_dag_receipt_not_created",
+      "tau_skill_routing_matrix_has_failures"
+    ],
+    "exists": true,
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
+    "status": "failed",
+    "tau_tool_wait_boundary_ready": false
+  },
   "mocked": false,
   "non_primary_interrupt_rejection_candidate_count": 1,
   "ok": false,
