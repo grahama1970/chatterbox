@@ -92,9 +92,9 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "requirement_ids": ["VC-12", "VC-13"],
         "taxonomy_subsystems": ["interruption_turn_control"],
         "evidence_artifacts": ["docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"],
-        "status": "failing",
-        "summary": "All 20 matrix interruption rows fail; cancel/duck/stop endpoints are exercised, but live detection and new-turn/stale-audio receipts are missing.",
-        "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
+        "status": "partial",
+        "summary": "A live primary-speaker barge-in receipt now proves old audio stops and the new turn wins; the broader matrix still lacks natural-stop/tool-wait coverage and non-primary interruption regressions.",
+        "next_proof": "Run matrix receipts for Tau tool-wait natural stops, non-primary interruption rejection, and stale-audio behavior tied to the same live turn ledger.",
     },
 }
 

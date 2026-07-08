@@ -70,7 +70,7 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert audit["subsystems"]["chat_ux_sync"]["evidence_artifacts"] == [
         "docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"
     ]
-    assert audit["subsystems"]["interruption"]["status"] == "failing"
+    assert audit["subsystems"]["interruption"]["status"] == "partial"
     assert audit["subsystems"]["realtimestt_ingress"]["evidence_artifacts"] == [
         "docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json"
     ]
@@ -88,10 +88,12 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert "QRA disabled generation" not in audit["subsystems"]["chatterbox_speech"]["next_proof"]
     assert "Browser replay audio now advances" in audit["subsystems"]["chat_ux_sync"]["summary"]
     assert "entity underline spans fail" in audit["subsystems"]["chat_ux_sync"]["summary"]
+    assert "live primary-speaker barge-in receipt" in audit["subsystems"]["interruption"]["summary"]
+    assert "Tau tool-wait natural stops" in audit["subsystems"]["interruption"]["next_proof"]
     assert audit["subsystems"]["orb_sync"]["status"] == "partial"
     assert audit["goal_subsystem_status_counts"] == {
-        "failing": 4,
-        "partial": 4,
+        "failing": 3,
+        "partial": 5,
     }
 
 

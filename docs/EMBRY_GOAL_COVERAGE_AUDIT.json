@@ -1,9 +1,9 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T07:17:34.568176+00:00",
+  "generated_at_utc": "2026-07-08T07:19:45.443788+00:00",
   "goal_subsystem_status_counts": {
-    "failing": 4,
-    "partial": 4
+    "failing": 3,
+    "partial": 5
   },
   "matrix_status_counts": {
     "failed": 170,
@@ -201,7 +201,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
+      "next_proof": "Run matrix receipts for Tau tool-wait natural stops, non-primary interruption rejection, and stale-audio behavior tied to the same live turn ledger.",
       "objective_phrase": "interruption",
       "requirement_ids": [
         "VC-12",
@@ -219,8 +219,8 @@
           "status": "proven_at_stream_boundary"
         }
       ],
-      "status": "failing",
-      "summary": "All 20 matrix interruption rows fail; cancel/duck/stop endpoints are exercised, but live detection and new-turn/stale-audio receipts are missing.",
+      "status": "partial",
+      "summary": "A live primary-speaker barge-in receipt now proves old audio stops and the new turn wins; the broader matrix still lacks natural-stop/tool-wait coverage and non-primary interruption regressions.",
       "taxonomy": {
         "status_counts": {
           "failed": 20,

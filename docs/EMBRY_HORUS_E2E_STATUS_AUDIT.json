@@ -59,7 +59,7 @@
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:subsystem_status_not_passed:failing,partial",
-    "interruption:subsystem_status_not_passed:failing",
+    "interruption:subsystem_status_not_passed:partial",
     "item_failed:browser_mic_webrtc",
     "item_failed:chat_ux_sync",
     "item_failed:chatterbox_from_live_stt",
@@ -90,7 +90,7 @@
     "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "tau_memory_routing:subsystem_status_not_passed:failing"
   ],
-  "generated_at_utc": "2026-07-08T07:17:34.645880+00:00",
+  "generated_at_utc": "2026-07-08T07:19:45.487389+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -368,7 +368,7 @@
         "new Horus turn wins",
         "non-primary interruption is rejected or fail-closed"
       ],
-      "current_failure": "Interruption is failing: cancel/duck/stop endpoints are exercised, but live barge-in detection, new-turn wins, and stale-audio receipts are missing.",
+      "current_failure": "Interruption is partial: live primary-speaker barge-in stops old audio and a new turn wins, but natural-stop/tool-wait and non-primary interruption regressions remain incomplete.",
       "evidence_artifacts": [
         {
           "claims": {
@@ -391,7 +391,7 @@
         }
       ],
       "failed_reasons": [
-        "subsystem_status_not_passed:failing"
+        "subsystem_status_not_passed:partial"
       ],
       "id": "interruption",
       "live_required": true,
@@ -400,9 +400,9 @@
       "subsystems": [
         {
           "id": "interruption",
-          "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
-          "status": "failing",
-          "summary": "All 20 matrix interruption rows fail; cancel/duck/stop endpoints are exercised, but live detection and new-turn/stale-audio receipts are missing."
+          "next_proof": "Run matrix receipts for Tau tool-wait natural stops, non-primary interruption rejection, and stale-audio behavior tied to the same live turn ledger.",
+          "status": "partial",
+          "summary": "A live primary-speaker barge-in receipt now proves old audio stops and the new turn wins; the broader matrix still lacks natural-stop/tool-wait coverage and non-primary interruption regressions."
         }
       ],
       "title": "Interruption"
@@ -673,9 +673,9 @@
       "title": "Replay"
     },
     {
-      "current_failure": "Interruption is failing: cancel/duck/stop endpoints are exercised, but live barge-in detection, new-turn wins, and stale-audio receipts are missing.",
+      "current_failure": "Interruption is partial: live primary-speaker barge-in stops old audio and a new turn wins, but natural-stop/tool-wait and non-primary interruption regressions remain incomplete.",
       "id": "interruption",
-      "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
+      "next_proof": "Run matrix receipts for Tau tool-wait natural stops, non-primary interruption rejection, and stale-audio behavior tied to the same live turn ledger.",
       "title": "Interruption"
     }
   ],
