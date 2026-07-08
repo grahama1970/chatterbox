@@ -394,6 +394,32 @@ What it does not prove:
 - subjective voice quality
 - full tone/emotion matrix coverage
 
+Current event-sourced replay receipt:
+
+`/tmp/chatterbox-fork-agent-out/event-sourced-replay/20260708T034752Z-interrupt-current/replay-receipt.json`
+
+Result: `mocked=false`, `live=true`, `ok=true`.
+
+What it exercised:
+
+- Loaded the live Chatterbox interruption receipt and `task-events.jsonl`.
+- Wrote an append-only event journal with 10 validated events.
+- Included the replay-required event types:
+  `listener.audio_frame_received`, `stt.final`, `speaker_gate.accepted`,
+  `memory.intent`, `tau.voice_render_request`, `chatterbox.audio_artifact`,
+  `audio.playback_started`, and `chat.turn_rendered`.
+- Preserved old/new turn ids from the interruption session.
+- Linked three Chatterbox WAV artifacts into the replay receipt.
+- Recorded matching original/rendered timing offsets.
+- Marked chat snapshot, audio offset, and turn order replay checks as matching.
+
+What it does not prove:
+
+- RealtimeSTT live microphone correctness
+- speaker identity correctness
+- browser Chat UX rendering
+- subjective replay timing quality
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`

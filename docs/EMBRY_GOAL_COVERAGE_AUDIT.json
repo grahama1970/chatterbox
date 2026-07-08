@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T03:59:18.418891+00:00",
+  "generated_at_utc": "2026-07-08T04:06:59.660223+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -487,7 +487,7 @@
       "evidence_artifacts": [
         "docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+      "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
       "objective_phrase": "replay",
       "requirement_ids": [
         "VC-01",
@@ -506,7 +506,7 @@
         }
       ],
       "status": "partial",
-      "summary": "Basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal with original timing is not proven.",
+      "summary": "Event-sourced replay from a live Chatterbox interruption journal now covers turn order, audio artifacts, and original timing offsets; browser/shared Chat UX replay from a full live listener session is still missing.",
       "taxonomy": {
         "status_counts": {
           "failed": 16,

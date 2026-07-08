@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T03:59:18.458417+00:00",
+  "generated_at_utc": "2026-07-08T04:06:59.700048+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -466,29 +466,17 @@
               "Chatterbox synthesis quality",
               "orb synchronization"
             ],
-            "proves": []
+            "proves": [
+              "at_least_one_replay_receipt_reconstructs_chat_and_audio_from_event_journal"
+            ]
           },
           "exists": true,
-          "failed_gates": [
-            "event_sourced_replay_receipt_present",
-            "missing:event_journal.event_count",
-            "missing:event_journal.path",
-            "missing:event_journal.required_event_types",
-            "missing:event_journal.sha256",
-            "missing:replay.audio_artifact_ids",
-            "missing:replay.audio_offsets_match",
-            "missing:replay.chat_snapshots_match",
-            "missing:replay.original_timing_offsets_ms",
-            "missing:replay.rendered_timing_offsets_ms",
-            "missing:replay.turn_ids",
-            "missing:replay.turn_order_matches",
-            "missing:session_id"
-          ],
+          "failed_gates": [],
           "live": false,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         }
       ],
       "failed_reasons": [
@@ -502,9 +490,9 @@
       "subsystems": [
         {
           "id": "replay",
-          "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+          "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
           "status": "partial",
-          "summary": "Basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal with original timing is not proven."
+          "summary": "Event-sourced replay from a live Chatterbox interruption journal now covers turn order, audio artifacts, and original timing offsets; browser/shared Chat UX replay from a full live listener session is still missing."
         }
       ],
       "title": "Replay"
@@ -617,7 +605,7 @@
     {
       "current_failure": "Replay is partial: basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal is not proven.",
       "id": "replay",
-      "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+      "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
       "title": "Replay"
     },
     {

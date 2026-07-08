@@ -11,6 +11,7 @@ from typing import Any
 
 
 DEFAULT_PROOF_PATHS = [
+    Path("/tmp/chatterbox-fork-agent-out/event-sourced-replay/20260708T034752Z-interrupt-current/replay-receipt.json"),
     Path("/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"),
 ]
 DEFAULT_MARKER_GLOB = ".codex/ui-verification/*replay*.latest.json"
@@ -149,14 +150,15 @@ def audit_candidate(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
 
 def build_audit(proof_paths: list[Path]) -> dict[str, Any]:
     candidates = [audit_candidate(path, read_json(path)) for path in proof_paths]
+    has_passing_candidate = any(candidate["ok"] for candidate in candidates)
     failed_gates: list[str] = []
     if not proof_paths:
         failed_gates.append("replay_proof_artifact_present")
-    if not any(candidate["ok"] for candidate in candidates):
+    if not has_passing_candidate:
         failed_gates.append("event_sourced_replay_receipt_present")
-    for candidate in candidates:
-        for field in candidate["missing_fields"]:
-            failed_gates.append(f"missing:{field}")
+        for candidate in candidates:
+            for field in candidate["missing_fields"]:
+                failed_gates.append(f"missing:{field}")
 
     return {
         "schema": "chatterbox.embry_replay_evidence_audit.v1",

@@ -83,8 +83,8 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["shared_chat_ux"],
         "evidence_artifacts": ["docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"],
         "status": "partial",
-        "summary": "Basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal with original timing is not proven.",
-        "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+        "summary": "Event-sourced replay from a live Chatterbox interruption journal now covers turn order, audio artifacts, and original timing offsets; browser/shared Chat UX replay from a full live listener session is still missing.",
+        "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
     },
     "interruption": {
         "title": "Interruption",

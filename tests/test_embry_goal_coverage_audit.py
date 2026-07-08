@@ -97,6 +97,7 @@ def test_goal_audit_points_to_next_receipt_needed_for_orb_and_replay() -> None:
     assert "turn_id" in orb["next_proof"]
     assert "orb authority" in orb["next_proof"]
     assert orb["evidence_artifacts"] == ["docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"]
-    assert "event journal" in replay["next_proof"]
+    assert "browser shared Chat UX" in replay["next_proof"]
     assert "original timing" in replay["summary"]
+    assert "still missing" in replay["summary"]
     assert replay["evidence_artifacts"] == ["docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"]
