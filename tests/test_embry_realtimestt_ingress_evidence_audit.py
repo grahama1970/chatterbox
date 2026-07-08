@@ -6,6 +6,7 @@ from scripts.audit_embry_realtimestt_ingress_evidence import (
     extract_transcript,
     is_current_factory_loopback_candidate,
 )
+from scripts import smoke_rung8_loopback_listener
 
 
 def _matrix_with_factory(statuses: list[str]) -> dict:
@@ -231,3 +232,36 @@ def test_ingress_audit_passes_when_history_and_current_matrix_pass(tmp_path: Pat
     assert audit["ok"] is True
     assert audit["status"] == "passed"
     assert audit["failed_gates"] == []
+
+
+def test_rung8_resolves_asr_key_from_chatterbox_container_for_child_env(monkeypatch) -> None:
+    class Args:
+        api_key_env = "WHISPER_API_KEY"
+        api_key_docker_container = "chatterbox-fork-agent-server"
+        api_key_docker_env = "WHISPER_API_KEY"
+
+    def fake_docker_env_value(container: str, env_name: str) -> str | None:
+        assert container == "chatterbox-fork-agent-server"
+        assert env_name == "WHISPER_API_KEY"
+        return "secret-token"
+
+    monkeypatch.setattr(smoke_rung8_loopback_listener, "docker_env_value", fake_docker_env_value)
+    env: dict[str, str] = {}
+
+    result = smoke_rung8_loopback_listener.resolve_api_key(Args(), env)
+
+    assert result["present"] is True
+    assert result["source"] == "docker_container_env"
+    assert result["env_name"] == "WHISPER_API_KEY"
+    assert result["docker_container"] == "chatterbox-fork-agent-server"
+    assert result["docker_env"] == "WHISPER_API_KEY"
+    assert env["WHISPER_API_KEY"] == "secret-token"
+
+    receipt_metadata = {
+        "present": result["present"],
+        "source": result["source"],
+        "env_name": result["env_name"],
+        "docker_container": result["docker_container"],
+        "docker_env": result["docker_env"],
+    }
+    assert "secret-token" not in str(receipt_metadata)

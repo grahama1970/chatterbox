@@ -86,6 +86,59 @@ def run_cmd(cmd: list[str], *, timeout: float, env: dict[str, str] | None = None
         }
 
 
+def docker_env_value(container: str, env_name: str) -> str | None:
+    result = run_cmd(
+        [
+            "docker",
+            "inspect",
+            container,
+            "--format",
+            "{{range .Config.Env}}{{println .}}{{end}}",
+        ],
+        timeout=5,
+    )
+    if result["returncode"] != 0:
+        return None
+    prefix = f"{env_name}="
+    for line in (result.get("stdout_tail") or "").splitlines():
+        if line.startswith(prefix):
+            value = line[len(prefix):].strip()
+            return value or None
+    return None
+
+
+def resolve_api_key(args: argparse.Namespace, env: dict[str, str]) -> dict[str, Any]:
+    if env.get(args.api_key_env):
+        return {
+            "present": True,
+            "source": "environment",
+            "env_name": args.api_key_env,
+            "docker_container": None,
+            "docker_env": None,
+            "value": env[args.api_key_env],
+        }
+    if args.api_key_docker_container:
+        value = docker_env_value(args.api_key_docker_container, args.api_key_docker_env)
+        if value:
+            env[args.api_key_env] = value
+            return {
+                "present": True,
+                "source": "docker_container_env",
+                "env_name": args.api_key_env,
+                "docker_container": args.api_key_docker_container,
+                "docker_env": args.api_key_docker_env,
+                "value": value,
+            }
+    return {
+        "present": False,
+        "source": "missing",
+        "env_name": args.api_key_env,
+        "docker_container": args.api_key_docker_container,
+        "docker_env": args.api_key_docker_env,
+        "value": None,
+    }
+
+
 def pipewire_status() -> dict[str, Any]:
     status = run_cmd(["wpctl", "status"], timeout=5)
     return {
@@ -328,7 +381,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     env = os.environ.copy()
     env["PYTHONPATH"] = f"src:{args.realtimestt_root}"
-    if not os.getenv(args.api_key_env):
+    api_key = resolve_api_key(args, env)
+    if not api_key["present"]:
         failed_gates.append(f"api_key_env_present:{args.api_key_env}")
 
     captured_path = out_dir / "loopback-captured.wav"
@@ -436,6 +490,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "primary_speaker_enrollment": str(args.primary_speaker_enrollment.resolve()),
             "memory_question": args.memory_question,
         },
+        "asr_auth": {
+            "present": api_key["present"],
+            "source": api_key["source"],
+            "env_name": api_key["env_name"],
+            "docker_container": api_key["docker_container"],
+            "docker_env": api_key["docker_env"],
+        },
         "capture": capture,
         "children": children,
         "failed_gates": failed_gates,
@@ -482,6 +543,8 @@ def main() -> int:
     parser.add_argument("--rung7-timeout-s", default=240.0, type=float)
     parser.add_argument("--asr-openai-base-url", default=os.getenv("CHATTERBOX_ASR_OPENAI_BASE_URL", "http://127.0.0.1:9000"))
     parser.add_argument("--api-key-env", default=os.getenv("CHATTERBOX_ASR_API_KEY_ENV", "WHISPER_API_KEY"))
+    parser.add_argument("--api-key-docker-container", default="chatterbox-fork-agent-server")
+    parser.add_argument("--api-key-docker-env", default="WHISPER_API_KEY")
     parser.add_argument("--chunk-ms", default=20, type=int)
     parser.add_argument("--trailing-silence-ms", default=1800, type=int)
     parser.add_argument("--text-timeout-s", default=35.0, type=float)
