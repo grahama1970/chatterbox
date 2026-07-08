@@ -120,36 +120,45 @@ The goal coverage audit maps the active objective directly:
 
 - Failing: `realtimestt_ingress`, `memory_tau_routing`, `chat_ux_sync`,
   `interruption`.
-- Partial: `speaker_identity`, `chatterbox_speech`, `replay`.
-- Insufficient evidence: `orb_sync`.
+- Partial: `speaker_identity`, `chatterbox_speech`, `orb_sync`, `replay`.
 
-The next proof required for `orb_sync` is not another screenshot alone. It must
-be a receipt linking the same `turn_id`, Chatterbox audio artifact id, playback
-timestamps, orb authority, envelope frame count, and screenshot path for one
-live or replayed turn.
+The next proof required for `orb_sync` is not another screenshot alone. The
+direct Chatterbox/orb receipt now links one generated audio artifact to orb
+envelope samples. The remaining proof must emit the same linkage from a full
+shared Chat UX or live listener turn where RealtimeSTT, memory/Tau, Chatterbox
+playback, and orb state all share one `turn_id`.
 
 Current orb-sync audit receipt:
 
 `docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, `marker_count=2`, and
-`passing_candidate_count=0`. Both current orb UI verification markers have
-existing screenshots, but neither marker has the required synchronization
-fields: `turn_id`, `audio_artifact_id`, `playback.started_at_epoch_ms`,
-`playback.audio_artifact_id`, `orb.authority`, `orb.envelope_frame_count`,
-`orb.max_level`, and `screenshot.path`.
+Current direct orb-sync proof:
+
+`/tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak/orb-sync-receipt.json`
+
+That receipt reported `mocked=false`, `live=true`, `ok=true`, turn/audio
+artifact id `0b0d4fe7ea12`, playback start `1783361300926`,
+`orb.authority=server-envelope`, 330 envelope frames, max level `0.798`, 20
+nonzero audio samples, 21 bound samples, and screenshot
+`/tmp/embry-orb-direct-speak-proof.png`.
+
+What it does not prove:
+
+- RealtimeSTT ingress
+- speaker identity correctness
+- memory/Tau routing
+- browser shared Chat UX session replay
+- human subjective orb quality
 
 Current replay evidence audit receipt:
 
 `docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, `proof_count=4`, and
-`passing_candidate_count=0`. The dynamic replay UI proof still has
-`audioCount=3`, but no candidate proves event-sourced replay because the
-required receipt fields are missing: `session_id`, event journal path, event
-journal SHA, event count, required event types, replay turn ids, audio artifact
-ids, original timing offsets, rendered timing offsets, chat snapshot match,
-audio offset match, and turn-order match.
+That audit now reports `mocked=false`, `ok=true`, `proof_count=5`, and
+`passing_candidate_count=1` because
+`/tmp/chatterbox-fork-agent-out/event-sourced-replay/20260708T034752Z-interrupt-current/replay-receipt.json`
+provides an event journal for the live Chatterbox interruption smoke. This
+does not prove browser Chat UX rendering or a full live listener/STT replay.
 
 Current interruption evidence audit receipt:
 

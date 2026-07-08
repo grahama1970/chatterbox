@@ -1,10 +1,9 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T04:06:59.660223+00:00",
+  "generated_at_utc": "2026-07-08T04:14:42.036779+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
-    "insufficient_evidence": 1,
-    "partial": 3
+    "partial": 4
   },
   "matrix_status_counts": {
     "failed": 251,
@@ -378,12 +377,12 @@
       "evidence_artifacts": [
         "docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"
       ],
-      "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
+      "next_proof": "Emit the same orb linkage receipt from a full shared Chat UX or live listener turn where RealtimeSTT, memory/Tau, Chatterbox playback, and orb state all share one turn_id.",
       "objective_phrase": "orb sync",
       "requirement_ids": [],
       "requirements": [],
-      "status": "insufficient_evidence",
-      "summary": "Local UI screenshot markers show the orb route was inspected, but there is no committed receipt proving orb envelope samples are synchronized to the same live Chatterbox turn.",
+      "status": "partial",
+      "summary": "A direct Chatterbox speech receipt now links turn/audio artifact id, playback timestamp, server-envelope authority, nonzero orb samples, envelope frame count, max level, and screenshot path. Full shared Chat UX or live listener turn sync remains unproven.",
       "taxonomy": {
         "status_counts": {
           "failed": 0,

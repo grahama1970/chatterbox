@@ -77,7 +77,7 @@ ITEMS: dict[str, dict[str, Any]] = {
             "orb envelope frames are tied to the same Chatterbox audio artifact",
             "turn_id, playback timestamps, max level, and screenshot path are committed",
         ],
-        "current_failure": "Orb sync has insufficient evidence: screenshot markers exist, but no committed same-turn envelope receipt proves synchronization.",
+        "current_failure": "Orb sync is partial: direct Chatterbox speech is linked to server-envelope orb samples, but the same receipt has not been emitted from a full shared Chat UX or live listener turn.",
     },
     "replay": {
         "title": "Replay",
@@ -87,7 +87,7 @@ ITEMS: dict[str, dict[str, Any]] = {
             "replay reconstructs turn order and original timing offsets",
             "chat snapshots and audio offsets match the original session",
         ],
-        "current_failure": "Replay is partial: basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal is not proven.",
+        "current_failure": "Replay is partial: event-sourced Chatterbox interruption replay is proven, but browser shared Chat UX replay from a full live listener session is not proven.",
     },
     "interruption": {
         "title": "Interruption",

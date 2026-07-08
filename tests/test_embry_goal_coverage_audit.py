@@ -80,11 +80,10 @@ def test_goal_audit_names_current_hard_failures() -> None:
     assert audit["subsystems"]["chatterbox_speech"]["evidence_artifacts"] == [
         "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
     ]
-    assert audit["subsystems"]["orb_sync"]["status"] == "insufficient_evidence"
+    assert audit["subsystems"]["orb_sync"]["status"] == "partial"
     assert audit["goal_subsystem_status_counts"] == {
         "failing": 4,
-        "partial": 3,
-        "insufficient_evidence": 1,
+        "partial": 4,
     }
 
 
@@ -94,8 +93,8 @@ def test_goal_audit_points_to_next_receipt_needed_for_orb_and_replay() -> None:
     orb = audit["subsystems"]["orb_sync"]
     replay = audit["subsystems"]["replay"]
 
-    assert "turn_id" in orb["next_proof"]
-    assert "orb authority" in orb["next_proof"]
+    assert "one turn_id" in orb["next_proof"]
+    assert "server-envelope" in orb["summary"]
     assert orb["evidence_artifacts"] == ["docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"]
     assert "browser shared Chat UX" in replay["next_proof"]
     assert "original timing" in replay["summary"]

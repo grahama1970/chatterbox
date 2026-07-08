@@ -31,6 +31,8 @@ def test_orb_audit_accepts_linked_turn_audio_envelope_receipt(tmp_path: Path) ->
     receipt_path.write_text(
         """
 {
+  "mocked": false,
+  "live": true,
   "turn_id": "turn-123",
   "audio_artifact_id": "audio-456",
   "playback": {
@@ -82,6 +84,8 @@ def test_build_audit_passes_with_one_valid_candidate(tmp_path: Path) -> None:
     receipt_path.write_text(
         """
 {
+  "mocked": false,
+  "live": true,
   "turn_id": "turn-123",
   "audio_artifact_id": "audio-456",
   "playback": {

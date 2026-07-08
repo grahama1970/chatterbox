@@ -11,6 +11,9 @@ from typing import Any
 
 
 DEFAULT_MARKER_GLOB = ".codex/ui-verification/*orb*.latest.json"
+DEFAULT_RECEIPT_PATHS = [
+    Path("/tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak/orb-sync-receipt.json"),
+]
 DEFAULT_OUT = Path("docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json")
 
 
@@ -44,6 +47,8 @@ def nested_get(payload: dict[str, Any], dotted: str) -> Any:
 
 def normalized_marker(marker_path: Path, marker: dict[str, Any]) -> dict[str, Any]:
     screenshot = marker.get("screenshot")
+    if isinstance(screenshot, dict):
+        screenshot = screenshot.get("path")
     return {
         "marker_path": str(marker_path),
         "name": marker.get("name"),
@@ -63,12 +68,18 @@ def audit_candidate(marker_path: Path, marker: dict[str, Any]) -> dict[str, Any]
     receipt: dict[str, Any] = marker
     if receipt_path:
         receipt = read_json(Path(str(receipt_path)))
+    elif marker_path.name.endswith(".json") and marker.get("schema") == "chatterbox.embry_orb_sync_receipt.v1":
+        receipt_path = str(marker_path)
 
     missing_fields = [
         field
         for field in REQUIRED_LINKAGE_FIELDS
         if nested_get(receipt, field) in {None, "", 0, False}
     ]
+    if receipt.get("mocked") is not False:
+        missing_fields.append("mocked_false")
+    if receipt.get("live") is not True:
+        missing_fields.append("live_true")
 
     audio_artifact_id = nested_get(receipt, "audio_artifact_id")
     playback_audio_artifact_id = nested_get(receipt, "playback.audio_artifact_id")
@@ -102,26 +113,29 @@ def audit_candidate(marker_path: Path, marker: dict[str, Any]) -> dict[str, Any]
             "orb_max_level": max_level,
             "screenshot_path": screenshot_path,
             "screenshot_exists": screenshot_exists,
+            "mocked": receipt.get("mocked"),
+            "live": receipt.get("live"),
         },
     }
 
 
 def build_audit(marker_paths: list[Path]) -> dict[str, Any]:
     candidates = [audit_candidate(path, read_json(path)) for path in marker_paths]
+    has_passing_candidate = any(candidate["ok"] for candidate in candidates)
     failed_gates: list[str] = []
     if not marker_paths:
         failed_gates.append("orb_ui_marker_present")
-    if not any(candidate["ok"] for candidate in candidates):
+    if not has_passing_candidate:
         failed_gates.append("orb_sync_turn_audio_envelope_receipt_present")
-    for candidate in candidates:
-        for field in candidate["missing_fields"]:
-            failed_gates.append(f"missing:{field}")
+        for candidate in candidates:
+            for field in candidate["missing_fields"]:
+                failed_gates.append(f"missing:{field}")
 
     return {
         "schema": "chatterbox.embry_orb_sync_evidence_audit.v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
-        "live": False,
+        "live": has_passing_candidate,
         "ok": not failed_gates,
         "status": "passed" if not failed_gates else "failed",
         "marker_count": len(marker_paths),
@@ -152,7 +166,8 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args()
 
-    marker_paths = sorted(Path().glob(args.marker_glob))
+    marker_paths = [path for path in DEFAULT_RECEIPT_PATHS if path.exists()]
+    marker_paths.extend(sorted(Path().glob(args.marker_glob)))
     audit = build_audit(marker_paths)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n")

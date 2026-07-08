@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:06:59.700048+00:00",
+  "generated_at_utc": "2026-07-08T04:14:42.077825+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -339,7 +339,7 @@
         "orb envelope frames are tied to the same Chatterbox audio artifact",
         "turn_id, playback timestamps, max level, and screenshot path are committed"
       ],
-      "current_failure": "Orb sync has insufficient evidence: screenshot markers exist, but no committed same-turn envelope receipt proves synchronization.",
+      "current_failure": "Orb sync is partial: direct Chatterbox speech is linked to server-envelope orb samples, but the same receipt has not been emitted from a full shared Chat UX or live listener turn.",
       "evidence_artifacts": [
         {
           "claims": {
@@ -349,30 +349,21 @@
               "Chatterbox generation correctness",
               "human subjective orb quality"
             ],
-            "proves": []
+            "proves": [
+              "at_least_one_orb_receipt_links_turn_audio_playback_envelope_and_screenshot"
+            ]
           },
           "exists": true,
-          "failed_gates": [
-            "missing:audio_artifact_id",
-            "missing:orb.authority",
-            "missing:orb.envelope_frame_count",
-            "missing:orb.max_level",
-            "missing:playback.audio_artifact_id",
-            "missing:playback.started_at_epoch_ms",
-            "missing:screenshot.path",
-            "missing:turn_id",
-            "orb_sync_turn_audio_envelope_receipt_present"
-          ],
-          "live": false,
+          "failed_gates": [],
+          "live": true,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         }
       ],
       "failed_reasons": [
-        "subsystem_status_not_passed:insufficient_evidence",
-        "artifact_not_clean_live_pass:docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"
+        "subsystem_status_not_passed:partial"
       ],
       "id": "orb_sync",
       "live_required": true,
@@ -381,9 +372,9 @@
       "subsystems": [
         {
           "id": "orb_sync",
-          "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
-          "status": "insufficient_evidence",
-          "summary": "Local UI screenshot markers show the orb route was inspected, but there is no committed receipt proving orb envelope samples are synchronized to the same live Chatterbox turn."
+          "next_proof": "Emit the same orb linkage receipt from a full shared Chat UX or live listener turn where RealtimeSTT, memory/Tau, Chatterbox playback, and orb state all share one turn_id.",
+          "status": "partial",
+          "summary": "A direct Chatterbox speech receipt now links turn/audio artifact id, playback timestamp, server-envelope authority, nonzero orb samples, envelope frame count, max level, and screenshot path. Full shared Chat UX or live listener turn sync remains unproven."
         }
       ],
       "title": "Orb Sync"
@@ -456,7 +447,7 @@
         "replay reconstructs turn order and original timing offsets",
         "chat snapshots and audio offsets match the original session"
       ],
-      "current_failure": "Replay is partial: basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal is not proven.",
+      "current_failure": "Replay is partial: event-sourced Chatterbox interruption replay is proven, but browser shared Chat UX replay from a full live listener session is not proven.",
       "evidence_artifacts": [
         {
           "claims": {
@@ -597,13 +588,13 @@
       "title": "Chat UX Sync"
     },
     {
-      "current_failure": "Orb sync has insufficient evidence: screenshot markers exist, but no committed same-turn envelope receipt proves synchronization.",
+      "current_failure": "Orb sync is partial: direct Chatterbox speech is linked to server-envelope orb samples, but the same receipt has not been emitted from a full shared Chat UX or live listener turn.",
       "id": "orb_sync",
-      "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
+      "next_proof": "Emit the same orb linkage receipt from a full shared Chat UX or live listener turn where RealtimeSTT, memory/Tau, Chatterbox playback, and orb state all share one turn_id.",
       "title": "Orb Sync"
     },
     {
-      "current_failure": "Replay is partial: basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal is not proven.",
+      "current_failure": "Replay is partial: event-sourced Chatterbox interruption replay is proven, but browser shared Chat UX replay from a full live listener session is not proven.",
       "id": "replay",
       "next_proof": "Drive the persisted replay event journal through the browser shared Chat UX and then repeat from a full listener/STT session containing input, memory/Tau, Chatterbox, playback, and interruption events.",
       "title": "Replay"

@@ -72,9 +72,9 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "requirement_ids": [],
         "taxonomy_subsystems": [],
         "evidence_artifacts": ["docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"],
-        "status": "insufficient_evidence",
-        "summary": "Local UI screenshot markers show the orb route was inspected, but there is no committed receipt proving orb envelope samples are synchronized to the same live Chatterbox turn.",
-        "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
+        "status": "partial",
+        "summary": "A direct Chatterbox speech receipt now links turn/audio artifact id, playback timestamp, server-envelope authority, nonzero orb samples, envelope frame count, max level, and screenshot path. Full shared Chat UX or live listener turn sync remains unproven.",
+        "next_proof": "Emit the same orb linkage receipt from a full shared Chat UX or live listener turn where RealtimeSTT, memory/Tau, Chatterbox playback, and orb state all share one turn_id.",
     },
     "replay": {
         "title": "Replay",

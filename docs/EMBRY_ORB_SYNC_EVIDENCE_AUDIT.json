@@ -1,6 +1,32 @@
 {
-  "candidate_count": 2,
+  "candidate_count": 3,
   "candidates": [
+    {
+      "linked_receipt_path": "/tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak/orb-sync-receipt.json",
+      "marker": {
+        "marker_path": "/tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak/orb-sync-receipt.json",
+        "name": null,
+        "read_json": null,
+        "screenshot": "/tmp/embry-orb-direct-speak-proof.png",
+        "screenshot_exists": true,
+        "url": null,
+        "verified_at": null
+      },
+      "missing_fields": [],
+      "observed": {
+        "audio_artifact_id": "0b0d4fe7ea12",
+        "live": true,
+        "mocked": false,
+        "orb_authority": "server-envelope",
+        "orb_envelope_frame_count": 330,
+        "orb_max_level": 0.798,
+        "playback_audio_artifact_id": "0b0d4fe7ea12",
+        "screenshot_exists": true,
+        "screenshot_path": "/tmp/embry-orb-direct-speak-proof.png",
+        "turn_id": "0b0d4fe7ea12"
+      },
+      "ok": true
+    },
     {
       "linked_receipt_path": null,
       "marker": {
@@ -14,6 +40,8 @@
       },
       "missing_fields": [
         "audio_artifact_id",
+        "live_true",
+        "mocked_false",
         "orb.authority",
         "orb.envelope_frame_count",
         "orb.max_level",
@@ -24,6 +52,8 @@
       ],
       "observed": {
         "audio_artifact_id": null,
+        "live": null,
+        "mocked": null,
         "orb_authority": null,
         "orb_envelope_frame_count": null,
         "orb_max_level": null,
@@ -47,6 +77,8 @@
       },
       "missing_fields": [
         "audio_artifact_id",
+        "live_true",
+        "mocked_false",
         "orb.authority",
         "orb.envelope_frame_count",
         "orb.max_level",
@@ -57,6 +89,8 @@
       ],
       "observed": {
         "audio_artifact_id": null,
+        "live": null,
+        "mocked": null,
         "orb_authority": null,
         "orb_envelope_frame_count": null,
         "orb_max_level": null,
@@ -75,25 +109,17 @@
       "Chatterbox generation correctness",
       "human subjective orb quality"
     ],
-    "proves": []
+    "proves": [
+      "at_least_one_orb_receipt_links_turn_audio_playback_envelope_and_screenshot"
+    ]
   },
-  "failed_gates": [
-    "missing:audio_artifact_id",
-    "missing:orb.authority",
-    "missing:orb.envelope_frame_count",
-    "missing:orb.max_level",
-    "missing:playback.audio_artifact_id",
-    "missing:playback.started_at_epoch_ms",
-    "missing:screenshot.path",
-    "missing:turn_id",
-    "orb_sync_turn_audio_envelope_receipt_present"
-  ],
-  "generated_at_utc": "2026-07-08T03:13:48.381665+00:00",
-  "live": false,
-  "marker_count": 2,
+  "failed_gates": [],
+  "generated_at_utc": "2026-07-08T04:14:41.996392+00:00",
+  "live": true,
+  "marker_count": 3,
   "mocked": false,
-  "ok": false,
-  "passing_candidate_count": 0,
+  "ok": true,
+  "passing_candidate_count": 1,
   "required_linkage_fields": [
     "turn_id",
     "audio_artifact_id",
@@ -105,5 +131,5 @@
     "screenshot.path"
   ],
   "schema": "chatterbox.embry_orb_sync_evidence_audit.v1",
-  "status": "failed"
+  "status": "passed"
 }

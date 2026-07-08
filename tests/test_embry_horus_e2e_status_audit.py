@@ -36,10 +36,11 @@ def test_horus_status_audit_rejects_partial_or_nonlive_receipts() -> None:
         assert item["current_failure"]
 
     assert "subsystem_status_not_passed" in audit["items"]["orb_sync"]["failed_reasons"][0]
-    assert any(
+    assert not any(
         reason.startswith("artifact_not_clean_live_pass:docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json")
         for reason in audit["items"]["orb_sync"]["failed_reasons"]
     )
+    assert audit["items"]["orb_sync"]["evidence_artifacts"][0]["ok"] is True
 
 
 def test_horus_status_audit_names_concrete_next_failures() -> None:
@@ -51,7 +52,8 @@ def test_horus_status_audit_names_concrete_next_failures() -> None:
     assert "RealtimeSTT" in failures["browser_mic_webrtc"]["title"]
     assert "same-turn" in audit["items"]["chatterbox_from_live_stt"]["current_failure"]
     assert "turn-id lineage" in audit["items"]["chat_ux_sync"]["current_failure"]
-    assert "event-sourced replay" in audit["items"]["replay"]["current_failure"]
+    assert "event-sourced" in audit["items"]["replay"]["current_failure"]
+    assert "partial" in audit["items"]["orb_sync"]["current_failure"]
 
 
 def test_horus_status_audit_attaches_receipt_paths_to_each_item() -> None:
