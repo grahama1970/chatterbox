@@ -45,8 +45,8 @@ def test_goal_audit_keeps_pass_fail_counts_attached_to_subsystems() -> None:
         "not_run": 0,
     }
     assert subsystems["interruption"]["taxonomy"]["status_counts"] == {
-        "passed": 0,
-        "failed": 20,
+        "passed": 10,
+        "failed": 10,
         "not_run": 0,
     }
     assert subsystems["orb_sync"]["taxonomy"]["status_counts"] == {

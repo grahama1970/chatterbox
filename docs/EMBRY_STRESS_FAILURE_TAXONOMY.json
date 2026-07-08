@@ -1,29 +1,29 @@
 {
   "difficulty_status_counts": {
     "advanced": {
-      "failed": 11,
+      "failed": 9,
       "not_run": 0,
-      "passed": 49
+      "passed": 51
     },
     "adversarial": {
-      "failed": 11,
+      "failed": 9,
       "not_run": 0,
-      "passed": 49
+      "passed": 51
     },
     "medium": {
-      "failed": 11,
+      "failed": 9,
       "not_run": 0,
-      "passed": 49
+      "passed": 51
     },
     "simple": {
-      "failed": 11,
+      "failed": 9,
       "not_run": 0,
-      "passed": 49
+      "passed": 51
     },
     "soak": {
-      "failed": 11,
+      "failed": 9,
       "not_run": 0,
-      "passed": 49
+      "passed": 51
     }
   },
   "does_not_prove": [
@@ -39,19 +39,13 @@
     "asr_final_transcript_present": 2,
     "blessed_qra_cached_response_not_exercised": 5,
     "capture_captured_audio_rms": 6,
-    "interruption_detected_receipt_not_emitted": 20,
     "natural_stop_phrase_not_observed": 5,
-    "new_horus_turn_not_exercised": 5,
-    "new_turn_wins_receipt_not_emitted": 5,
-    "non_primary_interrupt_rejection_not_exercised": 5,
     "realtimestt_command_ok": 2,
     "realtimestt_receipt_ok": 2,
     "rung7_receipt_ok": 2,
     "runner_route_not_implemented": 12,
-    "speaker_gate_receipt_not_linked_to_turn_control": 5,
     "speaker_memory_recall_found": 2,
     "speaker_resolution_known_horus": 2,
-    "stale_audio_stream_bytes_not_measured": 5,
     "tau_tool_wait_not_exercised": 5,
     "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved": 5,
     "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light": 5,
@@ -74,9 +68,9 @@
       "passed": 0
     },
     "interruption": {
-      "failed": 20,
+      "failed": 10,
       "not_run": 0,
-      "passed": 0
+      "passed": 10
     },
     "persona_memory_miss": {
       "failed": 0,
@@ -134,11 +128,11 @@
       "passed": 20
     }
   },
-  "generated_at_utc": "2026-07-08T09:59:13.905076+00:00",
+  "generated_at_utc": "2026-07-08T10:09:58.805547+00:00",
   "matrix_status_counts": {
-    "failed": 55,
+    "failed": 45,
     "not_run": 0,
-    "passed": 245
+    "passed": 255
   },
   "missing_receipt_sessions": [],
   "not_run_sessions": [],
@@ -150,9 +144,9 @@
       "passed": 20
     },
     "chatterbox.turn_control": {
-      "failed": 20,
+      "failed": 10,
       "not_run": 0,
-      "passed": 0
+      "passed": 10
     },
     "memory.intent.voice_delivery": {
       "failed": 15,
@@ -239,293 +233,132 @@
     "interruption_turn_control": {
       "failed_gate_counts": {
         "blessed_qra_cached_response_not_exercised": 5,
-        "interruption_detected_receipt_not_emitted": 20,
         "natural_stop_phrase_not_observed": 5,
-        "new_horus_turn_not_exercised": 5,
-        "new_turn_wins_receipt_not_emitted": 5,
-        "non_primary_interrupt_rejection_not_exercised": 5,
-        "speaker_gate_receipt_not_linked_to_turn_control": 5,
-        "stale_audio_stream_bytes_not_measured": 5,
         "tau_tool_wait_not_exercised": 5
       },
       "failed_sessions": [
         {
           "difficulty": "advanced",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "new_horus_turn_not_exercised",
-            "new_turn_wins_receipt_not_emitted"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-advanced-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "blessed_qra_cached_response_not_exercised",
-            "interruption_detected_receipt_not_emitted",
-            "stale_audio_stream_bytes_not_measured"
+            "blessed_qra_cached_response_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-advanced-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves stale old-turn bytes stop after cancel, but it is not a blessed-QRA cached-response interruption scenario.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "advanced",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "non_primary_interrupt_rejection_not_exercised",
-            "speaker_gate_receipt_not_linked_to_turn_control"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-advanced-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "advanced",
-          "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
             "natural_stop_phrase_not_observed",
             "tau_tool_wait_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-advanced-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves interruption and stale-audio skipping, but no Tau tool-wait interruption or natural stop phrase receipt exists for this case.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "adversarial",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "new_horus_turn_not_exercised",
-            "new_turn_wins_receipt_not_emitted"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-adversarial-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "blessed_qra_cached_response_not_exercised",
-            "interruption_detected_receipt_not_emitted",
-            "stale_audio_stream_bytes_not_measured"
+            "blessed_qra_cached_response_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-adversarial-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves stale old-turn bytes stop after cancel, but it is not a blessed-QRA cached-response interruption scenario.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "adversarial",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "non_primary_interrupt_rejection_not_exercised",
-            "speaker_gate_receipt_not_linked_to_turn_control"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-adversarial-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "adversarial",
-          "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
             "natural_stop_phrase_not_observed",
             "tau_tool_wait_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-adversarial-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves interruption and stale-audio skipping, but no Tau tool-wait interruption or natural stop phrase receipt exists for this case.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "medium",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "new_horus_turn_not_exercised",
-            "new_turn_wins_receipt_not_emitted"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-medium-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "blessed_qra_cached_response_not_exercised",
-            "interruption_detected_receipt_not_emitted",
-            "stale_audio_stream_bytes_not_measured"
+            "blessed_qra_cached_response_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-medium-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves stale old-turn bytes stop after cancel, but it is not a blessed-QRA cached-response interruption scenario.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "medium",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "non_primary_interrupt_rejection_not_exercised",
-            "speaker_gate_receipt_not_linked_to_turn_control"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-medium-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "medium",
-          "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
             "natural_stop_phrase_not_observed",
             "tau_tool_wait_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-medium-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015035Z-matrix-medium-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves interruption and stale-audio skipping, but no Tau tool-wait interruption or natural stop phrase receipt exists for this case.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "simple",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "new_horus_turn_not_exercised",
-            "new_turn_wins_receipt_not_emitted"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-simple-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "blessed_qra_cached_response_not_exercised",
-            "interruption_detected_receipt_not_emitted",
-            "stale_audio_stream_bytes_not_measured"
+            "blessed_qra_cached_response_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-simple-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves stale old-turn bytes stop after cancel, but it is not a blessed-QRA cached-response interruption scenario.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "simple",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "non_primary_interrupt_rejection_not_exercised",
-            "speaker_gate_receipt_not_linked_to_turn_control"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-simple-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "simple",
-          "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
             "natural_stop_phrase_not_observed",
             "tau_tool_wait_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-simple-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves interruption and stale-audio skipping, but no Tau tool-wait interruption or natural stop phrase receipt exists for this case.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "soak",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "new_horus_turn_not_exercised",
-            "new_turn_wins_receipt_not_emitted"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-soak-01",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the turn-control sequence, but no live Horus barge-in detection, new-turn-wins receipt, or interruption receipt was emitted.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "blessed_qra_cached_response_not_exercised",
-            "interruption_detected_receipt_not_emitted",
-            "stale_audio_stream_bytes_not_measured"
+            "blessed_qra_cached_response_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-soak-02",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but the blessed-QRA cached response path and stale post-cancel stream-byte measurement were not exercised in this matrix case.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves stale old-turn bytes stop after cancel, but it is not a blessed-QRA cached-response interruption scenario.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         },
         {
           "difficulty": "soak",
           "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
-            "non_primary_interrupt_rejection_not_exercised",
-            "speaker_gate_receipt_not_linked_to_turn_control"
-          ],
-          "folder_id": "interruption",
-          "id": "interruption-soak-03",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no non-primary speaker rejection receipt was linked to turn control.",
-          "route": "chatterbox.turn_control",
-          "status": "failed"
-        },
-        {
-          "difficulty": "soak",
-          "failed_gates": [
-            "interruption_detected_receipt_not_emitted",
             "natural_stop_phrase_not_observed",
             "tau_tool_wait_not_exercised"
           ],
           "folder_id": "interruption",
           "id": "interruption-soak-04",
-          "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json",
-          "observed": "Live Chatterbox cancel/duck/stop endpoints accepted the sequence, but no Tau tool-wait interruption or natural stop phrase was exercised.",
+          "latest_receipt": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+          "observed": "Live Rung 4 Horus barge-in receipt proves interruption and stale-audio skipping, but no Tau tool-wait interruption or natural stop phrase receipt exists for this case.",
           "route": "chatterbox.turn_control",
           "status": "failed"
         }
@@ -533,9 +366,9 @@
       "primary_blocker": "Cancel/duck/stop endpoints are exercised, but live interruption decisions and stale-audio byte receipts are missing.",
       "session_count": 20,
       "status_counts": {
-        "failed": 20,
+        "failed": 10,
         "not_run": 0,
-        "passed": 0
+        "passed": 10
       },
       "title": "Interruption And Turn Control"
     },
@@ -1059,10 +892,6 @@
   },
   "top_failed_gates": [
     {
-      "count": 20,
-      "gate": "interruption_detected_receipt_not_emitted"
-    },
-    {
       "count": 12,
       "gate": "runner_route_not_implemented"
     },
@@ -1072,27 +901,7 @@
     },
     {
       "count": 5,
-      "gate": "new_horus_turn_not_exercised"
-    },
-    {
-      "count": 5,
-      "gate": "new_turn_wins_receipt_not_emitted"
-    },
-    {
-      "count": 5,
       "gate": "blessed_qra_cached_response_not_exercised"
-    },
-    {
-      "count": 5,
-      "gate": "stale_audio_stream_bytes_not_measured"
-    },
-    {
-      "count": 5,
-      "gate": "non_primary_interrupt_rejection_not_exercised"
-    },
-    {
-      "count": 5,
-      "gate": "speaker_gate_receipt_not_linked_to_turn_control"
     },
     {
       "count": 5,

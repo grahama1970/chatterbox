@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 245, "failed": 55, "not_run": 0}
+    assert status_counts == {"passed": 255, "failed": 45, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -266,12 +266,22 @@ def test_matrix_medium_routes_32_47_subset_has_receipt_backed_results() -> None:
     assert all(session["status"] == "passed" for session in by_folder["voice_control_skill"])
     assert all("voice-control-all-matrix" in session["latest_receipt"] for session in by_folder["voice_control_skill"])
 
-    for folder in ["interruption"]:
-        assert all(session["status"] == "failed" for session in by_folder[folder])
-        assert all(
-            "matrix-medium-routes-32-47" in session["latest_receipt"]
-            for session in by_folder[folder]
-        )
+    by_interruption_id = {session["id"]: session for session in by_folder["interruption"]}
+    assert by_interruption_id["interruption-medium-01"]["status"] == "passed"
+    assert by_interruption_id["interruption-medium-01"]["failed_gates"] == []
+    assert "rung4-live-horus-interrupt" in by_interruption_id["interruption-medium-01"]["latest_receipt"]
+    assert by_interruption_id["interruption-medium-02"]["status"] == "failed"
+    assert by_interruption_id["interruption-medium-02"]["failed_gates"] == [
+        "blessed_qra_cached_response_not_exercised"
+    ]
+    assert by_interruption_id["interruption-medium-03"]["status"] == "passed"
+    assert by_interruption_id["interruption-medium-03"]["failed_gates"] == []
+    assert "rung4-live-nonprimary-suppressed" in by_interruption_id["interruption-medium-03"]["latest_receipt"]
+    assert by_interruption_id["interruption-medium-04"]["status"] == "failed"
+    assert by_interruption_id["interruption-medium-04"]["failed_gates"] == [
+        "natural_stop_phrase_not_observed",
+        "tau_tool_wait_not_exercised",
+    ]
 
     assert by_folder["chat_ux_sync"][0]["status"] == "passed"
     assert by_folder["chat_ux_sync"][1]["status"] == "passed"
@@ -305,11 +315,22 @@ def test_matrix_advanced_routes_32_47_subset_records_mixed_preflight_failures() 
 
     assert all("chat-ux-advanced-route-live" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == [] for session in by_folder["chat_ux_sync"])
-    assert all("matrix-advanced-routes-32-47" in session["latest_receipt"] for session in by_folder["interruption"])
-    assert all(
-        "interruption_detected_receipt_not_emitted" in session["failed_gates"]
-        for session in by_folder["interruption"]
-    )
+    by_interruption_id = {session["id"]: session for session in by_folder["interruption"]}
+    assert by_interruption_id["interruption-advanced-01"]["status"] == "passed"
+    assert by_interruption_id["interruption-advanced-01"]["failed_gates"] == []
+    assert "rung4-live-horus-interrupt" in by_interruption_id["interruption-advanced-01"]["latest_receipt"]
+    assert by_interruption_id["interruption-advanced-02"]["status"] == "failed"
+    assert by_interruption_id["interruption-advanced-02"]["failed_gates"] == [
+        "blessed_qra_cached_response_not_exercised"
+    ]
+    assert by_interruption_id["interruption-advanced-03"]["status"] == "passed"
+    assert by_interruption_id["interruption-advanced-03"]["failed_gates"] == []
+    assert "rung4-live-nonprimary-suppressed" in by_interruption_id["interruption-advanced-03"]["latest_receipt"]
+    assert by_interruption_id["interruption-advanced-04"]["status"] == "failed"
+    assert by_interruption_id["interruption-advanced-04"]["failed_gates"] == [
+        "natural_stop_phrase_not_observed",
+        "tau_tool_wait_not_exercised",
+    ]
 
 
 def test_matrix_adversarial_routes_32_47_subset_records_mixed_preflight_failures() -> None:
@@ -336,11 +357,22 @@ def test_matrix_adversarial_routes_32_47_subset_records_mixed_preflight_failures
 
     assert all("chat-ux-adversarial-route-live" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == [] for session in by_folder["chat_ux_sync"])
-    assert all("matrix-adversarial-routes-32-47" in session["latest_receipt"] for session in by_folder["interruption"])
-    assert all(
-        "interruption_detected_receipt_not_emitted" in session["failed_gates"]
-        for session in by_folder["interruption"]
-    )
+    by_interruption_id = {session["id"]: session for session in by_folder["interruption"]}
+    assert by_interruption_id["interruption-adversarial-01"]["status"] == "passed"
+    assert by_interruption_id["interruption-adversarial-01"]["failed_gates"] == []
+    assert "rung4-live-horus-interrupt" in by_interruption_id["interruption-adversarial-01"]["latest_receipt"]
+    assert by_interruption_id["interruption-adversarial-02"]["status"] == "failed"
+    assert by_interruption_id["interruption-adversarial-02"]["failed_gates"] == [
+        "blessed_qra_cached_response_not_exercised"
+    ]
+    assert by_interruption_id["interruption-adversarial-03"]["status"] == "passed"
+    assert by_interruption_id["interruption-adversarial-03"]["failed_gates"] == []
+    assert "rung4-live-nonprimary-suppressed" in by_interruption_id["interruption-adversarial-03"]["latest_receipt"]
+    assert by_interruption_id["interruption-adversarial-04"]["status"] == "failed"
+    assert by_interruption_id["interruption-adversarial-04"]["failed_gates"] == [
+        "natural_stop_phrase_not_observed",
+        "tau_tool_wait_not_exercised",
+    ]
 
 
 def test_matrix_soak_routes_32_47_subset_records_mixed_preflight_failures() -> None:
@@ -367,11 +399,22 @@ def test_matrix_soak_routes_32_47_subset_records_mixed_preflight_failures() -> N
 
     assert all("chat-ux-soak-route-live" in session["latest_receipt"] for session in by_folder["chat_ux_sync"])
     assert all(session["failed_gates"] == [] for session in by_folder["chat_ux_sync"])
-    assert all("matrix-soak-routes-32-47" in session["latest_receipt"] for session in by_folder["interruption"])
-    assert all(
-        "interruption_detected_receipt_not_emitted" in session["failed_gates"]
-        for session in by_folder["interruption"]
-    )
+    by_interruption_id = {session["id"]: session for session in by_folder["interruption"]}
+    assert by_interruption_id["interruption-soak-01"]["status"] == "passed"
+    assert by_interruption_id["interruption-soak-01"]["failed_gates"] == []
+    assert "rung4-live-horus-interrupt" in by_interruption_id["interruption-soak-01"]["latest_receipt"]
+    assert by_interruption_id["interruption-soak-02"]["status"] == "failed"
+    assert by_interruption_id["interruption-soak-02"]["failed_gates"] == [
+        "blessed_qra_cached_response_not_exercised"
+    ]
+    assert by_interruption_id["interruption-soak-03"]["status"] == "passed"
+    assert by_interruption_id["interruption-soak-03"]["failed_gates"] == []
+    assert "rung4-live-nonprimary-suppressed" in by_interruption_id["interruption-soak-03"]["latest_receipt"]
+    assert by_interruption_id["interruption-soak-04"]["status"] == "failed"
+    assert by_interruption_id["interruption-soak-04"]["failed_gates"] == [
+        "natural_stop_phrase_not_observed",
+        "tau_tool_wait_not_exercised",
+    ]
 
 
 def test_matrix_medium_routes_48_63_subset_has_receipt_backed_results() -> None:
@@ -574,7 +617,7 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     assert preflight_failures == []
 
 
-def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:
+def test_matrix_interruption_simple_cases_use_current_live_receipts() -> None:
     matrix = build_matrix()
     sessions = [
         session
@@ -583,10 +626,22 @@ def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:
     ]
 
     assert len(sessions) == 4
-    assert all(session["status"] == "failed" for session in sessions)
-    assert all("matrix-interruption-simple" in session["latest_receipt"] for session in sessions)
-    assert all("runner_route_not_implemented" not in session["failed_gates"] for session in sessions)
-    assert all("interruption_detected_receipt_not_emitted" in session["failed_gates"] for session in sessions)
+    by_id = {session["id"]: session for session in sessions}
+    assert by_id["interruption-simple-01"]["status"] == "passed"
+    assert by_id["interruption-simple-01"]["failed_gates"] == []
+    assert "rung4-live-horus-interrupt" in by_id["interruption-simple-01"]["latest_receipt"]
+    assert by_id["interruption-simple-02"]["status"] == "failed"
+    assert by_id["interruption-simple-02"]["failed_gates"] == [
+        "blessed_qra_cached_response_not_exercised"
+    ]
+    assert by_id["interruption-simple-03"]["status"] == "passed"
+    assert by_id["interruption-simple-03"]["failed_gates"] == []
+    assert "rung4-live-nonprimary-suppressed" in by_id["interruption-simple-03"]["latest_receipt"]
+    assert by_id["interruption-simple-04"]["status"] == "failed"
+    assert by_id["interruption-simple-04"]["failed_gates"] == [
+        "natural_stop_phrase_not_observed",
+        "tau_tool_wait_not_exercised",
+    ]
 
 
 def test_matrix_factory_noise_simple_failures_use_audio_capture_receipts() -> None:

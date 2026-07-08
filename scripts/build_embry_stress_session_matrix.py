@@ -2004,6 +2004,58 @@ _SPEAKER_SIMPLE_RECEIPT = (
     "20260708T004440Z-speaker-identity-ledger/receipt.json"
 )
 
+_INTERRUPTION_HORUS_BARGE_IN_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/interruption-current/"
+    "20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json"
+)
+_INTERRUPTION_NONPRIMARY_SUPPRESSED_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/interruption-current/"
+    "20260708T063142Z-rung4-live-nonprimary-suppressed/rung4-nonprimary-suppressed.json"
+)
+
+for _difficulty in DIFFICULTIES:
+    CURRENT_RESULTS[f"interruption-{_difficulty}-01"] = {
+        "status": "passed",
+        "latest_receipt": _INTERRUPTION_HORUS_BARGE_IN_RECEIPT,
+        "failed_gates": [],
+        "observed": (
+            "Live Rung 4 Horus barge-in receipt used ASR plus primary-speaker verification, "
+            "emitted cancel/duck/stop turn-control state, skipped stale old-turn bytes after "
+            "cancel, and recorded new-turn-wins response startup."
+        ),
+    }
+    CURRENT_RESULTS[f"interruption-{_difficulty}-02"] = {
+        "status": "failed",
+        "latest_receipt": _INTERRUPTION_HORUS_BARGE_IN_RECEIPT,
+        "failed_gates": ["blessed_qra_cached_response_not_exercised"],
+        "observed": (
+            "Live Rung 4 Horus barge-in receipt proves stale old-turn bytes stop after cancel, "
+            "but it is not a blessed-QRA cached-response interruption scenario."
+        ),
+    }
+    CURRENT_RESULTS[f"interruption-{_difficulty}-03"] = {
+        "status": "passed",
+        "latest_receipt": _INTERRUPTION_NONPRIMARY_SUPPRESSED_RECEIPT,
+        "failed_gates": [],
+        "observed": (
+            "Live Rung 4 non-primary receipt transcribed the interrupt audio, rejected it by "
+            "primary-speaker verification, and suppressed the new turn before Chatterbox turn "
+            "control could create an Embry response."
+        ),
+    }
+    CURRENT_RESULTS[f"interruption-{_difficulty}-04"] = {
+        "status": "failed",
+        "latest_receipt": _INTERRUPTION_HORUS_BARGE_IN_RECEIPT,
+        "failed_gates": [
+            "natural_stop_phrase_not_observed",
+            "tau_tool_wait_not_exercised",
+        ],
+        "observed": (
+            "Live Rung 4 Horus barge-in receipt proves interruption and stale-audio skipping, "
+            "but no Tau tool-wait interruption or natural stop phrase receipt exists for this case."
+        ),
+    }
+
 CURRENT_RESULTS.update(
     {
         "speaker_identity-simple-01": {
