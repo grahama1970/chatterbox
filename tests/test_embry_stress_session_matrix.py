@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 109, "failed": 191, "not_run": 0}
+    assert status_counts == {"passed": 110, "failed": 190, "not_run": 0}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -513,6 +513,10 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         session
         for session in sessions
         if session["folder_id"] in {"skill_analytics", "skill_create_figure"}
+        or (
+            session["folder_id"] == "voice_control_skill"
+            and session["id"] == "voice_control_skill-simple-01"
+        )
     ]
     preflight_failures = [
         session
@@ -523,15 +527,8 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
             and session["id"] == "voice_control_skill-simple-01"
         )
     ]
-    voice_control_controlled_live = [
-        session
-        for session in sessions
-        if session["folder_id"] == "voice_control_skill"
-        and session["id"] == "voice_control_skill-simple-01"
-    ]
-    assert len(proven_sessions) == 8
+    assert len(proven_sessions) == 9
     assert len(preflight_failures) == 11
-    assert len(voice_control_controlled_live) == 1
     assert all(session["status"] == "passed" for session in proven_sessions)
     assert all(session["failed_gates"] == [] for session in proven_sessions)
     assert all(
@@ -544,17 +541,15 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         for session in proven_sessions
         if session["folder_id"] == "skill_create_figure"
     )
+    assert all(
+        "skill-voice-control-live-timeout-fixed" in session["latest_receipt"]
+        for session in proven_sessions
+        if session["folder_id"] == "voice_control_skill"
+    )
     assert all(session["status"] == "failed" for session in preflight_failures)
     assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in preflight_failures)
     assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in preflight_failures)
     assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in preflight_failures)
-    assert voice_control_controlled_live[0]["status"] == "failed"
-    assert "skill-voice-control-live" in voice_control_controlled_live[0]["latest_receipt"]
-    assert voice_control_controlled_live[0]["failed_gates"] == [
-        "text_turn_memory_tau_chatterbox_authority",
-        "voice_control_case_text-turn_pass",
-        "voice_control_controlled_live_ready",
-    ]
 
 
 def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:

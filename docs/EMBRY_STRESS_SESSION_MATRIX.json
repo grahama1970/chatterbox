@@ -21,7 +21,7 @@
     "soak"
   ],
   "folder_count": 15,
-  "generated_at_utc": "2026-07-08T05:41:03Z",
+  "generated_at_utc": "2026-07-08T05:47:56Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 300,
   "sessions": [
@@ -18410,17 +18410,13 @@
         "tau_route_required": true,
         "ui_may_call_skills": false
       },
-      "failed_gates": [
-        "text_turn_memory_tau_chatterbox_authority",
-        "voice_control_case_text-turn_pass",
-        "voice_control_controlled_live_ready"
-      ],
+      "failed_gates": [],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T053749Z-skill-voice-control-live/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T054520Z-skill-voice-control-live-timeout-fixed/receipt.json",
       "mocked": false,
-      "observed": "Tau invoked embry-voice-control verify --profile controlled-live and wrote a skill.call.receipt.v1, but the live-turn/text-turn case timed out and the overall report was USABLE_WITH_GAPS.",
+      "observed": "Tau invoked embry-voice-control verify --profile controlled-live with a live memory/Tau/Chatterbox text turn and wrote a passing skill.call.receipt.v1.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",
@@ -18449,7 +18445,7 @@
         "template_family": "voice_control_skill",
         "template_index": 1
       },
-      "status": "failed",
+      "status": "passed",
       "title": "Skill: Embry Voice Control: simple 1"
     },
     {
@@ -27557,8 +27553,8 @@
     }
   ],
   "status_counts": {
-    "failed": 191,
+    "failed": 190,
     "not_run": 0,
-    "passed": 109
+    "passed": 110
   }
 }

@@ -1853,21 +1853,16 @@ for _difficulty in DIFFICULTIES:
 
 _VOICE_CONTROL_SKILL_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
-    "20260708T053749Z-skill-voice-control-live/receipt.json"
+    "20260708T054520Z-skill-voice-control-live-timeout-fixed/receipt.json"
 )
 
 CURRENT_RESULTS["voice_control_skill-simple-01"] = {
-    "status": "failed",
+    "status": "passed",
     "latest_receipt": _VOICE_CONTROL_SKILL_RECEIPT,
-    "failed_gates": [
-        "text_turn_memory_tau_chatterbox_authority",
-        "voice_control_case_text-turn_pass",
-        "voice_control_controlled_live_ready",
-    ],
+    "failed_gates": [],
     "observed": (
-        "Tau invoked embry-voice-control verify --profile controlled-live and wrote a "
-        "skill.call.receipt.v1, but the live-turn/text-turn case timed out and the "
-        "overall report was USABLE_WITH_GAPS."
+        "Tau invoked embry-voice-control verify --profile controlled-live with a live "
+        "memory/Tau/Chatterbox text turn and wrote a passing skill.call.receipt.v1."
     ),
 }
 

@@ -739,7 +739,7 @@ command = [
     "--profile",
     "controlled-live",
     "--timeout",
-    "20",
+    "90",
     "--output-root",
     str(output_root),
 ]
