@@ -158,6 +158,94 @@ def factory_matrix_summary(matrix: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def browser_device_ingress_summary(browser_candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    failures = [candidate for candidate in browser_candidates if not candidate["ingress_proven"]]
+    successes = [candidate for candidate in browser_candidates if candidate["ingress_proven"]]
+    failed_gate_counts = Counter(
+        gate
+        for candidate in failures
+        for gate in candidate.get("failed_gates", [])
+    )
+    return {
+        "boundary": "browser_getusermedia_device_to_realtimestt",
+        "ready": bool(browser_candidates) and not failures,
+        "candidate_count": len(browser_candidates),
+        "passing_candidate_count": len(successes),
+        "failed_candidate_count": len(failures),
+        "failed_gate_counts": dict(sorted(failed_gate_counts.items())),
+        "sample_failures": [
+            {
+                "path": candidate["path"],
+                "failed_gates": candidate.get("failed_gates") or [],
+                "transcript_present": candidate["transcript_present"],
+                "captured_audio_rms": candidate["captured_audio_rms"],
+                "claims_does_not_prove": candidate.get("claims_does_not_prove") or [],
+            }
+            for candidate in failures[:4]
+        ],
+        "blocking_summary": (
+            "browser getUserMedia ingress is device-sensitive: at least one browser capture "
+            "receipt failed while another browser capture receipt passed"
+        )
+        if failures and successes
+        else None,
+    }
+
+
+def factory_gate_blocker_summary(factory: dict[str, Any]) -> dict[str, Any]:
+    failed_sessions = factory["failed_sessions"]
+    receipt_paths = sorted(
+        {
+            str(session.get("latest_receipt"))
+            for session in failed_sessions
+            if session.get("latest_receipt")
+        }
+    )
+    return {
+        "boundary": "factory_noise_audio_capture_to_realtimestt_rung7",
+        "ready": not failed_sessions,
+        "failed_session_count": len(failed_sessions),
+        "failed_gate_counts": factory["failed_gate_counts"],
+        "latest_receipt_paths": receipt_paths,
+        "sample_failures": failed_sessions[:6],
+        "blocking_summary": (
+            "factory/noisy ingress scenarios still fail at capture, ASR transcript, rung7, "
+            "speaker resolution, memory recall, or unimplemented runner-route gates"
+        )
+        if failed_sessions
+        else None,
+    }
+
+
+def source_identity_summary(current_factory_loopback_candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    missing_identity = [
+        candidate
+        for candidate in current_factory_loopback_candidates
+        if not candidate["source_identity_proven"]
+    ]
+    return {
+        "boundary": "captured_audio_source_identity",
+        "ready": bool(current_factory_loopback_candidates) and not missing_identity,
+        "candidate_count": len(current_factory_loopback_candidates),
+        "source_identity_candidate_count": len(current_factory_loopback_candidates) - len(missing_identity),
+        "missing_identity_count": len(missing_identity),
+        "sample_missing_identity": [
+            {
+                "path": candidate["path"],
+                "captured_audio_path": candidate["captured_audio_path"],
+                "captured_audio_sha256": candidate["captured_audio_sha256"],
+                "pipewire_identity": candidate["pipewire_identity"],
+            }
+            for candidate in missing_identity[:4]
+        ],
+        "blocking_summary": (
+            "at least one current loopback ingress proof lacks replayable captured-audio source identity"
+        )
+        if missing_identity
+        else None,
+    }
+
+
 def is_current_factory_loopback_candidate(candidate: dict[str, Any]) -> bool:
     path = candidate["path"]
     return bool(
@@ -183,6 +271,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     ]
     browser_candidates = [candidate for candidate in candidates if candidate["transport"] == "browser_getusermedia"]
     browser_failures = [candidate for candidate in browser_candidates if not candidate["ingress_proven"]]
+    browser_device_ingress = browser_device_ingress_summary(browser_candidates)
+    factory_gate_blockers = factory_gate_blocker_summary(factory)
+    source_identity = source_identity_summary(current_factory_loopback_candidates)
 
     failed_gates: list[str] = []
     if not passing_candidates:
@@ -209,6 +300,9 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "current_source_identity_candidate_count": len(current_source_identity_candidates),
         "current_factory_loopback_passing_candidates": current_factory_loopback_candidates,
         "current_source_identity_candidates": current_source_identity_candidates,
+        "browser_device_ingress": browser_device_ingress,
+        "factory_gate_blockers": factory_gate_blockers,
+        "source_identity_evidence": source_identity,
         "historical_candidates": candidates,
         "current_factory_matrix": factory,
         "failed_gates": sorted(set(failed_gates)),

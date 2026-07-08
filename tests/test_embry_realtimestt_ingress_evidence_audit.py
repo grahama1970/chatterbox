@@ -161,6 +161,13 @@ def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matri
     assert "current_factory_matrix_has_failures" in audit["failed_gates"]
     assert "current_factory_matrix_has_no_passes" not in audit["failed_gates"]
     assert "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes" in audit["claims"]["proves"]
+    assert audit["factory_gate_blockers"]["boundary"] == "factory_noise_audio_capture_to_realtimestt_rung7"
+    assert audit["factory_gate_blockers"]["ready"] is False
+    assert audit["factory_gate_blockers"]["failed_session_count"] == 2
+    assert audit["factory_gate_blockers"]["failed_gate_counts"] == {"capture_captured_audio_rms": 2}
+    assert audit["source_identity_evidence"]["boundary"] == "captured_audio_source_identity"
+    assert audit["source_identity_evidence"]["ready"] is True
+    assert audit["source_identity_evidence"]["source_identity_candidate_count"] == 1
 
 
 def test_current_factory_loopback_candidate_does_not_depend_on_timestamp() -> None:
@@ -210,6 +217,13 @@ def test_ingress_audit_reports_browser_device_inconsistency(tmp_path: Path) -> N
     assert audit["ok"] is False
     assert audit["historical_passing_candidate_count"] == 1
     assert "browser_device_ingress_inconsistent" in audit["failed_gates"]
+    assert audit["browser_device_ingress"]["boundary"] == "browser_getusermedia_device_to_realtimestt"
+    assert audit["browser_device_ingress"]["ready"] is False
+    assert audit["browser_device_ingress"]["candidate_count"] == 2
+    assert audit["browser_device_ingress"]["passing_candidate_count"] == 1
+    assert audit["browser_device_ingress"]["failed_candidate_count"] == 1
+    assert audit["browser_device_ingress"]["failed_gate_counts"] == {"listener_transcript_present": 1}
+    assert "device-sensitive" in audit["browser_device_ingress"]["blocking_summary"]
 
 
 def test_ingress_audit_passes_when_history_and_current_matrix_pass(tmp_path: Path) -> None:
