@@ -518,9 +518,20 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
         session
         for session in sessions
         if session["folder_id"] not in {"skill_analytics", "skill_create_figure"}
+        and not (
+            session["folder_id"] == "voice_control_skill"
+            and session["id"] == "voice_control_skill-simple-01"
+        )
+    ]
+    voice_control_controlled_live = [
+        session
+        for session in sessions
+        if session["folder_id"] == "voice_control_skill"
+        and session["id"] == "voice_control_skill-simple-01"
     ]
     assert len(proven_sessions) == 8
-    assert len(preflight_failures) == 12
+    assert len(preflight_failures) == 11
+    assert len(voice_control_controlled_live) == 1
     assert all(session["status"] == "passed" for session in proven_sessions)
     assert all(session["failed_gates"] == [] for session in proven_sessions)
     assert all(
@@ -537,6 +548,13 @@ def test_matrix_direct_skill_simple_failures_use_skill_preflight_receipts() -> N
     assert all("tau_agent_handoff_not_exercised" in session["failed_gates"] for session in preflight_failures)
     assert all("skill_call_receipt_not_emitted" in session["failed_gates"] for session in preflight_failures)
     assert all("tau_dag_receipt_not_created" in session["failed_gates"] for session in preflight_failures)
+    assert voice_control_controlled_live[0]["status"] == "failed"
+    assert "skill-voice-control-live" in voice_control_controlled_live[0]["latest_receipt"]
+    assert voice_control_controlled_live[0]["failed_gates"] == [
+        "text_turn_memory_tau_chatterbox_authority",
+        "voice_control_case_text-turn_pass",
+        "voice_control_controlled_live_ready",
+    ]
 
 
 def test_matrix_interruption_simple_failures_use_turn_control_receipt() -> None:

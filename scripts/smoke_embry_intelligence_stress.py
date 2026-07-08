@@ -678,6 +678,199 @@ sys.exit(0)
     return spec_path
 
 
+def _write_tau_embry_voice_control_skill_spec(
+    *,
+    spec_root: Path,
+    session: dict[str, Any],
+    dag_id: str,
+    goal_hash: str,
+    skill_root: Path,
+    cwd: Path,
+) -> Path:
+    spec_path = spec_root / "embry-voice-control-skill-runner" / "tau-dispatch-command.json"
+    script_path = spec_path.parent / "run_embry_voice_control_skill.py"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    script = f"""#!/usr/bin/env python3
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
+
+
+def parse_report_path(stdout: str) -> str | None:
+    match = re.search(r"\\{{[\\s\\S]*\\}}", stdout)
+    if not match:
+        return None
+    try:
+        payload = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return None
+    value = payload.get("report_path")
+    return str(value) if value else None
+
+
+session = json.loads({json.dumps(json.dumps(session, sort_keys=True))})
+dag_id = {json.dumps(dag_id)}
+goal_hash = {json.dumps(goal_hash)}
+skill_root = Path({json.dumps(str(skill_root))})
+artifact_dir = Path(os.environ.get("TAU_HANDOFF_COMMAND_ARTIFACT_DIR") or ".").resolve()
+artifact_dir.mkdir(parents=True, exist_ok=True)
+stdout_path = artifact_dir / "embry-voice-control.stdout.txt"
+stderr_path = artifact_dir / "embry-voice-control.stderr.txt"
+receipt_path = artifact_dir / "skill-call-receipt.json"
+output_root = artifact_dir / "embry-voice-control-e2e"
+command = [
+    str(skill_root / "embry-voice-control" / "run.sh"),
+    "verify",
+    "--profile",
+    "controlled-live",
+    "--timeout",
+    "20",
+    "--output-root",
+    str(output_root),
+]
+started = time.perf_counter()
+result = subprocess.run(command, text=True, capture_output=True, timeout=90)
+elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+stdout_path.write_text(result.stdout, encoding="utf-8")
+stderr_path.write_text(result.stderr, encoding="utf-8")
+report_path_value = parse_report_path(result.stdout)
+report_path = Path(report_path_value) if report_path_value else None
+report = {{}}
+if report_path and report_path.exists():
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+failed_gates = []
+if report_path is None or not report_path.exists():
+    failed_gates.append("voice_control_report_present")
+if report.get("overall_readiness") != "READY":
+    failed_gates.append("voice_control_controlled_live_ready")
+case_failures = [
+    str(case.get("id"))
+    for case in report.get("cases", [])
+    if isinstance(case, dict) and case.get("assertion_status") != "pass"
+]
+for case_id in case_failures:
+    failed_gates.append(f"voice_control_case_{{case_id}}_pass")
+text_turn = next((case for case in report.get("cases", []) if isinstance(case, dict) and case.get("id") == "text-turn"), {{}})
+if text_turn.get("assertion_status") != "pass":
+    failed_gates.append("text_turn_memory_tau_chatterbox_authority")
+if result.returncode != 0 and report_path is None:
+    failed_gates.append("embry_voice_control_command_ok")
+receipt = {{
+    "schema": "skill.call.receipt.v1",
+    "skill_name": "embry-voice-control",
+    "skill_command": command,
+    "called_by": "tau.dag_run.command_spec",
+    "session_id": session.get("id"),
+    "route": session.get("route"),
+    "mocked": False,
+    "live": True,
+    "ok": not failed_gates,
+    "returncode": result.returncode,
+    "elapsed_ms": elapsed_ms,
+    "outputs": {{
+        "report_path": str(report_path) if report_path else None,
+        "report_sha256": sha256_file(report_path) if report_path and report_path.exists() else None,
+        "overall_readiness": report.get("overall_readiness"),
+        "case_count": len(report.get("cases", [])) if isinstance(report.get("cases"), list) else 0,
+        "failed_case_ids": case_failures,
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": sha256_file(stdout_path),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": sha256_file(stderr_path),
+    }},
+    "failed_gates": sorted(set(failed_gates)),
+    "proves": [
+        "tau_command_spec_invoked_embry_voice_control_skill",
+        "embry_voice_control_report_was_written",
+    ] if report_path and report_path.exists() else [],
+    "does_not_prove": [
+        "full_live_voice_loop",
+        "listener_live_realtimestt_input",
+        "release_profile_replay_and_interruption",
+    ],
+}}
+receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+evidence = [
+    {{
+        "kind": "embry_tau_work_order",
+        "matrix_session_id": session.get("id"),
+        "route": session.get("route"),
+        "query": session.get("question"),
+        "goal_hash": goal_hash,
+    }},
+    {{
+        "kind": "skill_call_receipt",
+        "schema": "skill.call.receipt.v1",
+        "skill_name": "embry-voice-control",
+        "path": str(receipt_path),
+        "ok": receipt["ok"],
+        "sha256": sha256_file(receipt_path),
+    }},
+    {{
+        "kind": "embry_voice_control_report",
+        "path": str(report_path) if report_path else None,
+        "sha256": sha256_file(report_path) if report_path and report_path.exists() else None,
+        "overall_readiness": report.get("overall_readiness"),
+        "failed_case_ids": case_failures,
+    }},
+]
+handoff = {{
+    "schema": "tau.agent_handoff.v1",
+    "github": {{"repo": "grahama1970/chatterbox", "target": f"embry-stress-session:{{session.get('id')}}"}},
+    "goal": {{"goal_id": dag_id, "goal_version": 1, "goal_hash": goal_hash}},
+    "previous_subagent": "embry-voice-control-skill-runner",
+    "context": {{
+        "summary": f"Embry voice-control skill call for stress matrix session {{session.get('id')}}.",
+        "artifacts": [str(receipt_path)] + ([str(report_path)] if report_path else []),
+        "matrix_session": {{
+            "id": session.get("id"),
+            "folder_id": session.get("folder_id"),
+            "route": session.get("route"),
+            "difficulty": session.get("difficulty"),
+        }},
+    }},
+    "result": {{
+        "status": "PASS",
+        "summary": "embry-voice-control verify was invoked and its readiness report was recorded.",
+        "evidence": evidence,
+    }},
+    "rationale": "The Tau DAG command spec is the caller; the skill receipt records whether controlled-live passed or failed.",
+    "next_agent": {{
+        "name": "embry-route-reviewer",
+        "executor": "local",
+        "reason": "Review voice-control readiness gaps and receipt fields.",
+    }},
+    "required_evidence": ["embry_tau_work_order", "skill_call_receipt", "embry_voice_control_report"],
+    "stop_condition": "Stop at human terminal node.",
+}}
+print(json.dumps(handoff))
+sys.exit(0)
+"""
+    script_path.write_text(script, encoding="utf-8")
+    spec = {
+        "command": [sys.executable, str(script_path)],
+        "timeout_s": 120,
+        "cwd": str(cwd),
+    }
+    spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return spec_path
+
+
 def _write_tau_handoff_contract(
     *,
     session: dict[str, Any],
@@ -919,6 +1112,91 @@ def _write_tau_create_figure_skill_contract(
         ],
     }
     path = run_root / "tau-create-figure-skill-dag-contract.json"
+    path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_tau_embry_voice_control_skill_contract(
+    *,
+    session: dict[str, Any],
+    run_root: Path,
+    spec_root: Path,
+    dag_id: str,
+    goal_hash: str,
+) -> Path:
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": dag_id,
+        "goal": {
+            "goal_id": dag_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/chatterbox",
+            "target": f"embry-stress-session:{session['id']}",
+        },
+        "context": {
+            "matrix_session_id": session["id"],
+            "matrix_folder_id": session.get("folder_id"),
+            "query": str(session.get("question") or ""),
+            "route": str(session.get("route") or ""),
+            "required_skill": "embry-voice-control",
+        },
+        "entry_node": "embry-voice-control-skill-runner",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 120,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "embry-voice-control-skill-runner",
+                "agent": "embry-voice-control-skill-runner",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-voice-control-skill-runner" / "tau-dispatch-command.json"),
+                "required_evidence": [
+                    "embry_tau_work_order",
+                    "skill_call_receipt",
+                    "embry_voice_control_report",
+                ],
+            },
+            {
+                "id": "embry-route-reviewer",
+                "agent": "embry-route-reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-route-reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "embry-voice-control-skill-runner",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "embry-voice-control-skill-runner", "to": "embry-route-reviewer"},
+            {"from": "embry-route-reviewer", "to": "human"},
+        ],
+        "required_evidence": [
+            "embry_tau_work_order",
+            "skill_call_receipt",
+            "embry_voice_control_report",
+            "reviewer_verdict",
+        ],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = run_root / "tau-embry-voice-control-skill-dag-contract.json"
     path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 
@@ -1242,6 +1520,148 @@ def run_tau_create_figure_skill_dag(
             "a skill.call.receipt.v1 plus SVG artifact hash."
             if not failed
             else "Tau create-figure skill dag-run was attempted; see failed_gates and receipt paths."
+        ),
+    }
+
+
+def run_tau_embry_voice_control_skill_dag(
+    session: dict[str, Any],
+    *,
+    tau_root: Path,
+    agent_root: Path,
+    skill_root: Path,
+    timeout_s: int,
+) -> dict[str, Any]:
+    route = str(session.get("route") or "")
+    run_id = f"{utc_now().replace(':', '').replace('-', '')}-{session['id']}-{uuid4().hex[:8]}"
+    run_root = Path("/tmp/chatterbox-fork-agent-out/embry-tau-skill-voice-control") / run_id
+    spec_root = run_root / "specs"
+    receipt_dir = run_root / "tau-run"
+    run_root.mkdir(parents=True, exist_ok=True)
+    dag_id = f"embry-{session['id']}"
+    goal_hash = _sha256_text(json.dumps({"session_id": session["id"], "query": session.get("question")}, sort_keys=True))
+    _write_tau_embry_voice_control_skill_spec(
+        spec_root=spec_root,
+        session=session,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+        skill_root=skill_root,
+        cwd=run_root,
+    )
+    reviewer_evidence = [
+        {
+            "kind": "reviewer_verdict",
+            "reviewed_node_id": "embry-voice-control-skill-runner",
+            "goal_hash": goal_hash,
+            "verdict": "PASS",
+        }
+    ]
+    _write_tau_response_spec(
+        spec_root=spec_root,
+        agent="embry-route-reviewer",
+        response=_tau_handoff_response(
+            session=session,
+            dag_id=dag_id,
+            goal_hash=goal_hash,
+            previous_subagent="embry-route-reviewer",
+            next_agent="human",
+            evidence=reviewer_evidence,
+        ),
+        cwd=run_root,
+    )
+    contract_path = _write_tau_embry_voice_control_skill_contract(
+        session=session,
+        run_root=run_root,
+        spec_root=spec_root,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+    )
+    command = [
+        "uv",
+        "run",
+        "--project",
+        str(tau_root),
+        "tau",
+        "dag-run",
+        str(contract_path),
+        "--receipt-dir",
+        str(receipt_dir),
+        "--agents-root",
+        str(agent_root),
+        "--command-spec-root",
+        str(spec_root),
+    ]
+    dag_run = run_cmd(command, timeout_s=timeout_s)
+    receipt_path = receipt_dir / "dag-receipt.json"
+    receipt: dict[str, Any] = {}
+    skill_receipts = _find_skill_call_receipts(receipt_dir)
+    skill_receipt_path = skill_receipts[0] if skill_receipts else None
+    skill_receipt: dict[str, Any] = {}
+    failed: list[str] = []
+    if dag_run["returncode"] != 0:
+        failed.append("tau_dag_run_command_ok")
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        failed.append("tau_dag_receipt_read")
+        receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if receipt.get("schema") != "tau.dag_receipt.v1":
+        failed.append("tau_dag_receipt_schema")
+    if receipt.get("ok") is not True:
+        failed.append("tau_dag_receipt_ok")
+    if receipt.get("status") != "PASS":
+        failed.append("tau_dag_receipt_pass")
+    selected_agents = receipt.get("selected_agents") if isinstance(receipt.get("selected_agents"), list) else []
+    if selected_agents != ["embry-voice-control-skill-runner", "embry-route-reviewer"]:
+        failed.append("tau_skill_selected_agents")
+    if not receipt.get("command_loop_receipt"):
+        failed.append("tau_skill_command_loop_receipt")
+    if not skill_receipt_path:
+        failed.append("skill_call_receipt_present")
+    else:
+        try:
+            skill_receipt = json.loads(skill_receipt_path.read_text(encoding="utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            failed.append("skill_call_receipt_read")
+            skill_receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if skill_receipt_path and skill_receipt.get("schema") != "skill.call.receipt.v1":
+        failed.append("skill_call_receipt_schema")
+    if skill_receipt_path and skill_receipt.get("skill_name") != "embry-voice-control":
+        failed.append("skill_call_receipt_skill_name")
+    if skill_receipt_path and skill_receipt.get("called_by") != "tau.dag_run.command_spec":
+        failed.append("skill_called_by_tau_only")
+    outputs = skill_receipt.get("outputs") if isinstance(skill_receipt.get("outputs"), dict) else {}
+    if skill_receipt_path and not outputs.get("report_sha256"):
+        failed.append("voice_control_report_hash_present")
+    skill_failed_gates = skill_receipt.get("failed_gates") if isinstance(skill_receipt.get("failed_gates"), list) else []
+    failed.extend(str(gate) for gate in skill_failed_gates)
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": route,
+        "required_skill": "embry-voice-control",
+        "tau_dag_contract": str(contract_path),
+        "tau_dag_receipt": str(receipt_path),
+        "tau_command_loop_receipt": receipt.get("command_loop_receipt"),
+        "skill_call_receipt": str(skill_receipt_path) if skill_receipt_path else None,
+        "skill_call_receipt_sha256": _sha256_file(skill_receipt_path) if skill_receipt_path else None,
+        "voice_control_report": outputs.get("report_path"),
+        "voice_control_report_sha256": outputs.get("report_sha256"),
+        "voice_control_overall_readiness": outputs.get("overall_readiness"),
+        "voice_control_failed_case_ids": outputs.get("failed_case_ids"),
+        "tau_dag_run": dag_run,
+        "tau_dag_receipt_payload": receipt,
+        "skill_call_receipt_payload": skill_receipt,
+        "ok": not failed,
+        "mocked": False,
+        "live": True,
+        "failed_gates": sorted(set(failed)),
+        "observed": (
+            "Tau dag-run invoked the embry-voice-control skill through a command spec and "
+            "recorded its controlled-live readiness report."
+            if not failed
+            else "Tau invoked embry-voice-control controlled-live; see failed_gates and report path."
         ),
     }
 
@@ -1763,6 +2183,14 @@ def run_matrix_session(
         )
     if route == "tau.skill.create_figure":
         return run_tau_create_figure_skill_dag(
+            session,
+            tau_root=tau_root,
+            agent_root=agent_root,
+            skill_root=skill_root,
+            timeout_s=timeout_s,
+        )
+    if route == "tau.skill.embry_voice_control":
+        return run_tau_embry_voice_control_skill_dag(
             session,
             tau_root=tau_root,
             agent_root=agent_root,

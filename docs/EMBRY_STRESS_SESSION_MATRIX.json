@@ -21,7 +21,7 @@
     "soak"
   ],
   "folder_count": 15,
-  "generated_at_utc": "2026-07-08T05:32:10Z",
+  "generated_at_utc": "2026-07-08T05:41:03Z",
   "schema": "embry.stress_session_matrix.v1",
   "session_count": 300,
   "sessions": [
@@ -18411,16 +18411,16 @@
         "ui_may_call_skills": false
       },
       "failed_gates": [
-        "tau_agent_handoff_not_exercised",
-        "skill_call_receipt_not_emitted",
-        "tau_dag_receipt_not_created"
+        "text_turn_memory_tau_chatterbox_authority",
+        "voice_control_case_text-turn_pass",
+        "voice_control_controlled_live_ready"
       ],
       "folder_id": "voice_control_skill",
       "folder_title": "Skill: Embry Voice Control",
       "id": "voice_control_skill-simple-01",
-      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T012426Z-skill-voice-control-simple/receipt.json",
+      "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T053749Z-skill-voice-control-live/receipt.json",
       "mocked": false,
-      "observed": "Live Tau wrapper and required skill preflight succeeded, but no tau.agent_handoff.v1, tau.dag_receipt.v1, or skill.call.receipt.v1 was produced for this Embry direct-skill session.",
+      "observed": "Tau invoked embry-voice-control verify --profile controlled-live and wrote a skill.call.receipt.v1, but the live-turn/text-turn case timed out and the overall report was USABLE_WITH_GAPS.",
       "oracle": {
         "required_gates": [
           "voice_control_called_by_tau_only",

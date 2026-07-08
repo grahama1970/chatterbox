@@ -67,15 +67,18 @@ def test_taxonomy_exposes_top_repair_blockers() -> None:
     gates = taxonomy["failed_gate_counts"]
     top_gates = taxonomy["top_failed_gates"]
 
-    assert gates["tau_agent_handoff_not_exercised"] == 60
-    assert gates["skill_call_receipt_not_emitted"] == 60
-    assert gates["tau_dag_receipt_not_created"] == 60
+    assert gates["tau_agent_handoff_not_exercised"] == 59
+    assert gates["skill_call_receipt_not_emitted"] == 59
+    assert gates["tau_dag_receipt_not_created"] == 59
+    assert gates["voice_control_controlled_live_ready"] == 1
+    assert gates["voice_control_case_text-turn_pass"] == 1
+    assert gates["text_turn_memory_tau_chatterbox_authority"] == 1
     assert gates["runner_route_not_implemented"] == 24
     assert gates["interruption_detected_receipt_not_emitted"] == 20
     assert top_gates[:3] == [
-        {"gate": "tau_agent_handoff_not_exercised", "count": 60},
-        {"gate": "skill_call_receipt_not_emitted", "count": 60},
-        {"gate": "tau_dag_receipt_not_created", "count": 60},
+        {"gate": "tau_agent_handoff_not_exercised", "count": 59},
+        {"gate": "skill_call_receipt_not_emitted", "count": 59},
+        {"gate": "tau_dag_receipt_not_created", "count": 59},
     ]
 
 

@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T05:32:10.320630+00:00",
+  "generated_at_utc": "2026-07-08T05:41:03.741742+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "partial": 4
@@ -333,15 +333,15 @@
         },
         "top_failed_gates": [
           {
-            "count": 60,
+            "count": 59,
             "gate": "skill_call_receipt_not_emitted"
           },
           {
-            "count": 60,
+            "count": 59,
             "gate": "tau_agent_handoff_not_exercised"
           },
           {
-            "count": 60,
+            "count": 59,
             "gate": "tau_dag_receipt_not_created"
           },
           {
@@ -363,6 +363,14 @@
           {
             "count": 5,
             "gate": "sparta_qra_answer_missing_acceptance_terms"
+          },
+          {
+            "count": 1,
+            "gate": "text_turn_memory_tau_chatterbox_authority"
+          },
+          {
+            "count": 1,
+            "gate": "voice_control_case_text-turn_pass"
           }
         ]
       },

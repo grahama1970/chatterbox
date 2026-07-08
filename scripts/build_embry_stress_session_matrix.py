@@ -1851,6 +1851,26 @@ for _difficulty in DIFFICULTIES:
             ),
         }
 
+_VOICE_CONTROL_SKILL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T053749Z-skill-voice-control-live/receipt.json"
+)
+
+CURRENT_RESULTS["voice_control_skill-simple-01"] = {
+    "status": "failed",
+    "latest_receipt": _VOICE_CONTROL_SKILL_RECEIPT,
+    "failed_gates": [
+        "text_turn_memory_tau_chatterbox_authority",
+        "voice_control_case_text-turn_pass",
+        "voice_control_controlled_live_ready",
+    ],
+    "observed": (
+        "Tau invoked embry-voice-control verify --profile controlled-live and wrote a "
+        "skill.call.receipt.v1, but the live-turn/text-turn case timed out and the "
+        "overall report was USABLE_WITH_GAPS."
+    ),
+}
+
 _SPEAKER_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/"
     "20260708T004440Z-speaker-identity-ledger/receipt.json"

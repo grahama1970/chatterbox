@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T05:32:10.361860+00:00",
+  "generated_at_utc": "2026-07-08T05:41:15.701040+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -192,6 +192,9 @@
             "tau_skill_gate:skill_call_receipt_not_emitted",
             "tau_skill_gate:tau_agent_handoff_not_exercised",
             "tau_skill_gate:tau_dag_receipt_not_created",
+            "tau_skill_gate:text_turn_memory_tau_chatterbox_authority",
+            "tau_skill_gate:voice_control_case_text-turn_pass",
+            "tau_skill_gate:voice_control_controlled_live_ready",
             "tau_skill_routing_matrix_has_failures"
           ],
           "live": true,
@@ -519,6 +522,9 @@
             "tau_skill_gate:skill_call_receipt_not_emitted",
             "tau_skill_gate:tau_agent_handoff_not_exercised",
             "tau_skill_gate:tau_dag_receipt_not_created",
+            "tau_skill_gate:text_turn_memory_tau_chatterbox_authority",
+            "tau_skill_gate:voice_control_case_text-turn_pass",
+            "tau_skill_gate:voice_control_controlled_live_ready",
             "tau_skill_routing_matrix_has_failures"
           ],
           "live": true,
