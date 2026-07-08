@@ -40,6 +40,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "objective_phrase": "memory/Tau routing",
         "requirement_ids": ["VC-14", "VC-16", "VC-17", "VC-18", "VC-20", "VC-21", "VC-22"],
         "taxonomy_subsystems": ["memory_answerability", "tau_skill_routing", "external_research"],
+        "evidence_artifacts": ["docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"],
         "status": "failing",
         "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes.",
         "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",

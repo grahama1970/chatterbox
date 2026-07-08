@@ -1,0 +1,138 @@
+from pathlib import Path
+
+from scripts.audit_embry_memory_tau_routing_evidence import build_audit, classify_proof
+
+
+def _session(folder_id: str, status: str, gates: list[str] | None = None) -> dict:
+    return {
+        "id": f"{folder_id}-{status}",
+        "folder_id": folder_id,
+        "difficulty": "simple",
+        "status": status,
+        "latest_receipt": f"/tmp/{folder_id}-{status}.json",
+        "failed_gates": gates or [],
+        "observed": "fixture row",
+    }
+
+
+def _passing_matrix() -> dict:
+    return {
+        "sessions": [
+            _session("sparta_qra_compliance", "passed"),
+            _session("persona_memory_recall", "passed"),
+            _session("persona_memory_miss", "passed"),
+            _session("tau_tool_orchestration", "passed"),
+            _session("skill_create_evidence_case", "passed"),
+            _session("skill_create_figure", "passed"),
+            _session("skill_analytics", "passed"),
+            _session("skill_sparta_validator", "passed"),
+            _session("voice_control_skill", "passed"),
+            _session("brave_research", "passed"),
+        ]
+    }
+
+
+def test_classify_runtime_block_receipt_as_mitigation() -> None:
+    receipt = {
+        "schema": "embry.answerability_runtime_block.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "case_count": 12,
+        "claims": {
+            "proves": [
+                "tau_voice_render_rejects_blocked_memory_answerability",
+                "blocked_memory_answers_do_not_create_chatterbox_finished_audio",
+            ],
+        },
+    }
+
+    candidate = classify_proof(Path("/tmp/receipt.json"), receipt)
+
+    assert candidate["proof_type"] == "answerability_runtime_block"
+    assert candidate["runtime_block_proven"] is True
+    assert candidate["case_count"] == 12
+
+
+def test_audit_fails_when_memory_and_tau_rows_fail(tmp_path: Path) -> None:
+    runtime_block = tmp_path / "runtime-block.json"
+    runtime_block.write_text(
+        """
+{
+  "schema": "embry.answerability_runtime_block.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "claims": {
+    "proves": [
+      "tau_voice_render_rejects_blocked_memory_answerability",
+      "blocked_memory_answers_do_not_create_chatterbox_finished_audio"
+    ]
+  }
+}
+"""
+    )
+    matrix = _passing_matrix()
+    matrix["sessions"].extend(
+        [
+            _session("sparta_qra_compliance", "failed", ["sparta_qra_answer_missing_acceptance_terms"]),
+            _session("tau_tool_orchestration", "failed", ["tau_agent_handoff_not_exercised"]),
+            _session("skill_create_figure", "failed", ["skill_call_receipt_not_emitted", "tau_dag_receipt_not_created"]),
+        ]
+    )
+
+    audit = build_audit(matrix, [runtime_block])
+
+    assert audit["ok"] is False
+    assert audit["runtime_block_candidate_count"] == 1
+    assert "blocked_memory_answerability_can_be_suppressed_before_chatterbox" in audit["claims"]["proves"]
+    assert "memory_answerability_matrix_has_failures" in audit["failed_gates"]
+    assert "tau_skill_routing_matrix_has_failures" in audit["failed_gates"]
+    assert "tau_agent_handoff_missing" in audit["failed_gates"]
+    assert "skill_call_receipt_missing" in audit["failed_gates"]
+    assert "tau_dag_receipt_missing" in audit["failed_gates"]
+
+
+def test_audit_passes_only_when_all_relevant_rows_and_runtime_block_pass(tmp_path: Path) -> None:
+    runtime_block = tmp_path / "runtime-block.json"
+    runtime_block.write_text(
+        """
+{
+  "schema": "embry.answerability_runtime_block.v1",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "claims": {
+    "proves": [
+      "tau_voice_render_rejects_blocked_memory_answerability",
+      "blocked_memory_answers_do_not_create_chatterbox_finished_audio"
+    ]
+  }
+}
+"""
+    )
+
+    audit = build_audit(_passing_matrix(), [runtime_block])
+
+    assert audit["ok"] is True
+    assert audit["status"] == "passed"
+    assert audit["failed_gates"] == []
+    assert audit["audited_status_counts"] == {"passed": 10, "failed": 0, "not_run": 0}
+
+
+def test_external_research_green_does_not_mask_memory_tau_failures(tmp_path: Path) -> None:
+    matrix = {
+        "sessions": [
+            _session("brave_research", "passed"),
+            _session("sparta_qra_compliance", "failed", ["sparta_qra_answer_overfit_to_unrelated_control_exclusion"]),
+            _session("skill_analytics", "failed", ["tau_agent_handoff_not_exercised"]),
+        ]
+    }
+
+    audit = build_audit(matrix, [])
+
+    assert audit["external_research"]["status_counts"] == {"passed": 1, "failed": 0, "not_run": 0}
+    assert audit["ok"] is False
+    assert "answerability_runtime_block_receipt_missing" in audit["failed_gates"]
+    assert "memory_answerability_matrix_has_failures" in audit["failed_gates"]
+    assert "tau_skill_routing_matrix_has_failures" in audit["failed_gates"]

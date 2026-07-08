@@ -59,6 +59,9 @@ def test_goal_audit_names_current_hard_failures() -> None:
     audit = _audit()
 
     assert audit["subsystems"]["memory_tau_routing"]["status"] == "failing"
+    assert audit["subsystems"]["memory_tau_routing"]["evidence_artifacts"] == [
+        "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
+    ]
     assert audit["subsystems"]["chat_ux_sync"]["status"] == "failing"
     assert audit["subsystems"]["interruption"]["status"] == "failing"
     assert audit["subsystems"]["realtimestt_ingress"]["evidence_artifacts"] == [

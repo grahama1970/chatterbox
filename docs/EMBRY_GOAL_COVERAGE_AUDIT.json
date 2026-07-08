@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-08T03:13:48.613213+00:00",
+  "generated_at_utc": "2026-07-08T03:20:47.637888+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "insufficient_evidence": 1,
@@ -268,7 +268,9 @@
       "title": "Interruption"
     },
     "memory_tau_routing": {
-      "evidence_artifacts": [],
+      "evidence_artifacts": [
+        "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
+      ],
       "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
       "objective_phrase": "memory/Tau routing",
       "requirement_ids": [
