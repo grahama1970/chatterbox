@@ -98,6 +98,10 @@ def test_horus_status_audit_surfaces_artifact_failed_gates() -> None:
         for gate in audit["failed_gates"]
     )
     assert any(
-        gate.startswith("tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:")
+        gate == "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:skill_call_receipt_not_emitted"
+        for gate in audit["failed_gates"]
+    )
+    assert any(
+        gate == "tau_memory_routing:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:tau_skill_gate:tau_agent_handoff_not_exercised"
         for gate in audit["failed_gates"]
     )

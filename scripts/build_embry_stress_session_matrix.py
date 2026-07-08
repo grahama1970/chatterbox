@@ -536,6 +536,18 @@ _MEDIUM_MEMORY_SEARCH_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T014152Z-matrix-medium-memory-search/receipt.json"
 )
+_MEDIUM_SPARTA_QRA_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080421Z-medium-sparta-qra-after-scope-fix/receipt.json"
+)
+_MEDIUM_PERSONA_RECALL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080421Z-medium-persona-recall-after-scope-fix/receipt.json"
+)
+_MEDIUM_PERSONA_MISS_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080421Z-medium-persona-miss-after-scope-fix/receipt.json"
+)
 
 _MEDIUM_MEMORY_FAILURES = {
     "sparta_qra_compliance-medium-01": [
@@ -559,14 +571,20 @@ _MEDIUM_MEMORY_FAILURES = {
 }
 
 for _session_id, _failed_gates in _MEDIUM_MEMORY_FAILURES.items():
+    if _session_id.startswith("sparta_qra_compliance-"):
+        _latest_receipt = _MEDIUM_SPARTA_QRA_RECEIPT
+        _observed = "Live medium SPARTA QRA /answer cases passed after scoped answerability filtering."
+    elif _session_id.startswith("persona_memory_recall-"):
+        _latest_receipt = _MEDIUM_PERSONA_RECALL_RECEIPT
+        _observed = "Live medium persona recall /answer cases passed after scoped answerability filtering."
+    else:
+        _latest_receipt = _MEDIUM_PERSONA_MISS_RECEIPT
+        _observed = "Live medium persona miss /answer cases failed closed with insufficient_memory_evidence and no sources."
     CURRENT_RESULTS[_session_id] = {
-        "status": "failed",
-        "latest_receipt": _MEDIUM_MEMORY_SEARCH_RECEIPT,
-        "failed_gates": _failed_gates,
-        "observed": (
-            "Live medium memory/search subset returned an answerability failure before speech; "
-            "see the receipt case for exact response text and sources."
-        ),
+        "status": "passed",
+        "latest_receipt": _latest_receipt,
+        "failed_gates": [],
+        "observed": _observed,
     }
 
 for _index in range(1, 5):
@@ -580,6 +598,18 @@ for _index in range(1, 5):
 _ADVANCED_MEMORY_SEARCH_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T015631Z-matrix-advanced-memory-search/receipt.json"
+)
+_ADVANCED_SPARTA_QRA_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080603Z-advanced-sparta-qra-after-scope-fix/receipt.json"
+)
+_ADVANCED_PERSONA_RECALL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080603Z-advanced-persona-recall-after-scope-fix/receipt.json"
+)
+_ADVANCED_PERSONA_MISS_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080603Z-advanced-persona-miss-after-scope-fix/receipt.json"
 )
 
 _ADVANCED_MEMORY_FAILURES = {
@@ -604,14 +634,20 @@ _ADVANCED_MEMORY_FAILURES = {
 }
 
 for _session_id, _failed_gates in _ADVANCED_MEMORY_FAILURES.items():
+    if _session_id.startswith("sparta_qra_compliance-"):
+        _latest_receipt = _ADVANCED_SPARTA_QRA_RECEIPT
+        _observed = "Live advanced SPARTA QRA /answer cases passed after scoped answerability filtering."
+    elif _session_id.startswith("persona_memory_recall-"):
+        _latest_receipt = _ADVANCED_PERSONA_RECALL_RECEIPT
+        _observed = "Live advanced persona recall /answer cases passed after scoped answerability filtering."
+    else:
+        _latest_receipt = _ADVANCED_PERSONA_MISS_RECEIPT
+        _observed = "Live advanced persona miss /answer cases failed closed with insufficient_memory_evidence and no sources."
     CURRENT_RESULTS[_session_id] = {
-        "status": "failed",
-        "latest_receipt": _ADVANCED_MEMORY_SEARCH_RECEIPT,
-        "failed_gates": _failed_gates,
-        "observed": (
-            "Live advanced memory/search subset returned an answerability failure before speech; "
-            "see the receipt case for exact response text and sources."
-        ),
+        "status": "passed",
+        "latest_receipt": _latest_receipt,
+        "failed_gates": [],
+        "observed": _observed,
     }
 
 for _index in range(1, 5):
@@ -625,6 +661,18 @@ for _index in range(1, 5):
 _ADVERSARIAL_MEMORY_SEARCH_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T021629Z-matrix-adversarial-memory-search/receipt.json"
+)
+_ADVERSARIAL_SPARTA_QRA_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080738Z-adversarial-sparta-qra-after-scope-fix/receipt.json"
+)
+_ADVERSARIAL_PERSONA_RECALL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080738Z-adversarial-persona-recall-after-scope-fix/receipt.json"
+)
+_ADVERSARIAL_PERSONA_MISS_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080738Z-adversarial-persona-miss-after-scope-fix/receipt.json"
 )
 
 _ADVERSARIAL_MEMORY_FAILURES = {
@@ -649,14 +697,20 @@ _ADVERSARIAL_MEMORY_FAILURES = {
 }
 
 for _session_id, _failed_gates in _ADVERSARIAL_MEMORY_FAILURES.items():
+    if _session_id.startswith("sparta_qra_compliance-"):
+        _latest_receipt = _ADVERSARIAL_SPARTA_QRA_RECEIPT
+        _observed = "Live adversarial SPARTA QRA /answer cases passed after scoped answerability filtering."
+    elif _session_id.startswith("persona_memory_recall-"):
+        _latest_receipt = _ADVERSARIAL_PERSONA_RECALL_RECEIPT
+        _observed = "Live adversarial persona recall /answer cases passed after scoped answerability filtering."
+    else:
+        _latest_receipt = _ADVERSARIAL_PERSONA_MISS_RECEIPT
+        _observed = "Live adversarial persona miss /answer cases failed closed with insufficient_memory_evidence and no sources."
     CURRENT_RESULTS[_session_id] = {
-        "status": "failed",
-        "latest_receipt": _ADVERSARIAL_MEMORY_SEARCH_RECEIPT,
-        "failed_gates": _failed_gates,
-        "observed": (
-            "Live adversarial memory/search subset returned an answerability failure before speech; "
-            "see the receipt case for exact response text and sources."
-        ),
+        "status": "passed",
+        "latest_receipt": _latest_receipt,
+        "failed_gates": [],
+        "observed": _observed,
     }
 
 for _index in range(1, 5):
@@ -670,6 +724,18 @@ for _index in range(1, 5):
 _SOAK_MEMORY_SEARCH_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T023312Z-matrix-soak-memory-search/receipt.json"
+)
+_SOAK_SPARTA_QRA_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080828Z-soak-sparta-qra-after-scope-fix/receipt.json"
+)
+_SOAK_PERSONA_RECALL_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080828Z-soak-persona-recall-after-scope-fix/receipt.json"
+)
+_SOAK_PERSONA_MISS_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T080828Z-soak-persona-miss-after-scope-fix/receipt.json"
 )
 
 _SOAK_MEMORY_FAILURES = {
@@ -694,14 +760,20 @@ _SOAK_MEMORY_FAILURES = {
 }
 
 for _session_id, _failed_gates in _SOAK_MEMORY_FAILURES.items():
+    if _session_id.startswith("sparta_qra_compliance-"):
+        _latest_receipt = _SOAK_SPARTA_QRA_RECEIPT
+        _observed = "Live soak SPARTA QRA /answer cases passed after scoped answerability filtering."
+    elif _session_id.startswith("persona_memory_recall-"):
+        _latest_receipt = _SOAK_PERSONA_RECALL_RECEIPT
+        _observed = "Live soak persona recall /answer cases passed after scoped answerability filtering."
+    else:
+        _latest_receipt = _SOAK_PERSONA_MISS_RECEIPT
+        _observed = "Live soak persona miss /answer cases failed closed with insufficient_memory_evidence and no sources."
     CURRENT_RESULTS[_session_id] = {
-        "status": "failed",
-        "latest_receipt": _SOAK_MEMORY_SEARCH_RECEIPT,
-        "failed_gates": _failed_gates,
-        "observed": (
-            "Live soak memory/search subset returned an answerability failure before speech; "
-            "see the receipt case for exact response text and sources."
-        ),
+        "status": "passed",
+        "latest_receipt": _latest_receipt,
+        "failed_gates": [],
+        "observed": _observed,
     }
 
 for _index in range(1, 5):

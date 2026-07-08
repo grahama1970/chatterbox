@@ -1,9 +1,9 @@
 {
   "audited_session_count": 200,
   "audited_status_counts": {
-    "failed": 87,
+    "failed": 39,
     "not_run": 0,
-    "passed": 113
+    "passed": 161
   },
   "claims": {
     "does_not_prove": [
@@ -68,12 +68,6 @@
     "session_count": 20
   },
   "failed_gates": [
-    "memory_answerability_matrix_has_failures",
-    "memory_gate:memory_miss_should_not_answer_unrelated_record",
-    "memory_gate:persona_memory_answer_uses_unrelated_source_collection",
-    "memory_gate:persona_memory_answer_wrong_or_unrelated",
-    "memory_gate:sparta_qra_answer_missing_acceptance_terms",
-    "memory_gate:sparta_qra_answer_overfit_to_unrelated_control_exclusion",
     "skill_call_receipt_missing",
     "skill_tau_agent_handoff_missing",
     "tau_dag_receipt_missing",
@@ -82,400 +76,95 @@
     "tau_skill_gate:tau_dag_receipt_not_created",
     "tau_skill_routing_matrix_has_failures"
   ],
-  "generated_at_utc": "2026-07-08T08:00:04.331165+00:00",
+  "generated_at_utc": "2026-07-08T08:10:01.647536+00:00",
   "live": true,
-  "live_unmocked_candidate_count": 16,
+  "live_unmocked_candidate_count": 28,
   "memory_answerability": {
     "by_folder": {
       "persona_memory_miss": {
-        "failed_gate_counts": {
-          "memory_miss_should_not_answer_unrelated_record": 16
-        },
-        "sample_failures": [
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "memory_miss_should_not_answer_unrelated_record"
-            ],
-            "folder_id": "persona_memory_miss",
-            "id": "persona_memory_miss-medium-01",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "memory_miss_should_not_answer_unrelated_record"
-            ],
-            "folder_id": "persona_memory_miss",
-            "id": "persona_memory_miss-medium-02",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "memory_miss_should_not_answer_unrelated_record"
-            ],
-            "folder_id": "persona_memory_miss",
-            "id": "persona_memory_miss-medium-03",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "memory_miss_should_not_answer_unrelated_record"
-            ],
-            "folder_id": "persona_memory_miss",
-            "id": "persona_memory_miss-medium-04",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          }
-        ],
+        "failed_gate_counts": {},
+        "sample_failures": [],
         "session_count": 20,
         "status_counts": {
-          "failed": 16,
+          "failed": 0,
           "not_run": 0,
-          "passed": 4
+          "passed": 20
         }
       },
       "persona_memory_recall": {
-        "failed_gate_counts": {
-          "persona_memory_answer_uses_unrelated_source_collection": 16,
-          "persona_memory_answer_wrong_or_unrelated": 4
-        },
-        "sample_failures": [
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "persona_memory_answer_uses_unrelated_source_collection",
-              "persona_memory_answer_wrong_or_unrelated"
-            ],
-            "folder_id": "persona_memory_recall",
-            "id": "persona_memory_recall-medium-01",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "persona_memory_answer_uses_unrelated_source_collection"
-            ],
-            "folder_id": "persona_memory_recall",
-            "id": "persona_memory_recall-medium-02",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "persona_memory_answer_uses_unrelated_source_collection"
-            ],
-            "folder_id": "persona_memory_recall",
-            "id": "persona_memory_recall-medium-03",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "persona_memory_answer_uses_unrelated_source_collection"
-            ],
-            "folder_id": "persona_memory_recall",
-            "id": "persona_memory_recall-medium-04",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          }
-        ],
+        "failed_gate_counts": {},
+        "sample_failures": [],
         "session_count": 20,
         "status_counts": {
-          "failed": 16,
+          "failed": 0,
           "not_run": 0,
-          "passed": 4
+          "passed": 20
         }
       },
       "sparta_qra_compliance": {
-        "failed_gate_counts": {
-          "sparta_qra_answer_missing_acceptance_terms": 4,
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion": 16
-        },
-        "sample_failures": [
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "sparta_qra_answer_missing_acceptance_terms",
-              "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-            ],
-            "folder_id": "sparta_qra_compliance",
-            "id": "sparta_qra_compliance-medium-01",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-            ],
-            "folder_id": "sparta_qra_compliance",
-            "id": "sparta_qra_compliance-medium-02",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-            ],
-            "folder_id": "sparta_qra_compliance",
-            "id": "sparta_qra_compliance-medium-03",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          },
-          {
-            "difficulty": "medium",
-            "failed_gates": [
-              "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-            ],
-            "folder_id": "sparta_qra_compliance",
-            "id": "sparta_qra_compliance-medium-04",
-            "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-            "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-          }
-        ],
+        "failed_gate_counts": {},
+        "sample_failures": [],
         "session_count": 20,
         "status_counts": {
-          "failed": 16,
+          "failed": 0,
           "not_run": 0,
-          "passed": 4
+          "passed": 20
         }
       }
     },
-    "failed_gate_counts": {
-      "memory_miss_should_not_answer_unrelated_record": 16,
-      "persona_memory_answer_uses_unrelated_source_collection": 16,
-      "persona_memory_answer_wrong_or_unrelated": 4,
-      "sparta_qra_answer_missing_acceptance_terms": 4,
-      "sparta_qra_answer_overfit_to_unrelated_control_exclusion": 16
-    },
-    "failed_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json"
-    ],
+    "failed_gate_counts": {},
+    "failed_receipt_paths": [],
     "receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-sparta-qra-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-sparta-qra-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-sparta-qra-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-sparta-qra-after-scope-fix/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T075749Z-memory-answerability-ledger/receipt.json"
     ],
-    "sample_failures": [
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_missing_acceptance_terms",
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_missing_acceptance_terms",
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      }
-    ],
+    "sample_failures": [],
     "session_count": 60,
     "status_counts": {
-      "failed": 48,
+      "failed": 0,
       "not_run": 0,
-      "passed": 12
+      "passed": 60
     }
   },
   "memory_answerability_evidence": {
     "boundary": "memory_answerability_before_tau_chatterbox",
-    "failed_gate_counts": {
-      "memory_miss_should_not_answer_unrelated_record": 16,
-      "persona_memory_answer_uses_unrelated_source_collection": 16,
-      "persona_memory_answer_wrong_or_unrelated": 4,
-      "sparta_qra_answer_missing_acceptance_terms": 4,
-      "sparta_qra_answer_overfit_to_unrelated_control_exclusion": 16
-    },
-    "failed_receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json"
-    ],
-    "failed_session_count": 48,
-    "passed_session_count": 12,
-    "ready": false,
+    "failed_gate_counts": {},
+    "failed_receipt_paths": [],
+    "failed_session_count": 0,
+    "passed_session_count": 60,
+    "ready": true,
     "receipt_paths": [
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021629Z-matrix-adversarial-memory-search/receipt.json",
-      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023312Z-matrix-soak-memory-search/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-sparta-qra-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-sparta-qra-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-sparta-qra-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-persona-miss-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-persona-recall-after-scope-fix/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-sparta-qra-after-scope-fix/receipt.json",
       "/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T075749Z-memory-answerability-ledger/receipt.json"
     ],
-    "sample_failures": [
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_missing_acceptance_terms",
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "medium",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-medium-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json",
-        "observed": "Live medium memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_missing_acceptance_terms",
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-01",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-02",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-03",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      },
-      {
-        "difficulty": "advanced",
-        "failed_gates": [
-          "sparta_qra_answer_overfit_to_unrelated_control_exclusion"
-        ],
-        "folder_id": "sparta_qra_compliance",
-        "id": "sparta_qra_compliance-advanced-04",
-        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T015631Z-matrix-advanced-memory-search/receipt.json",
-        "observed": "Live advanced memory/search subset returned an answerability failure before speech; see the receipt case for exact response text and sources."
-      }
-    ],
+    "sample_failures": [],
     "session_count": 60
   },
   "mocked": false,
   "ok": false,
-  "proof_candidate_count": 16,
+  "proof_candidate_count": 28,
   "proof_candidates": [
     {
       "case_count": 12,
@@ -558,6 +247,282 @@
       "proof_type": "memory_answerability_ledger",
       "runtime_block_proven": false,
       "schema": "embry.proof.receipt.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-sparta-qra-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-persona-recall-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080421Z-medium-persona-miss-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-sparta-qra-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-persona-recall-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080603Z-advanced-persona-miss-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-sparta-qra-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-persona-recall-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080738Z-adversarial-persona-miss-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-sparta-qra-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-persona-recall-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
+      "tau_dag_handoff_proven": false
+    },
+    {
+      "case_count": 4,
+      "claims_does_not_prove": [
+        "browser_chat_ui_sync",
+        "full_spoken_multiturn_conversation",
+        "human_acceptance_of_voice_performance"
+      ],
+      "claims_proves": [
+        "memory_and_brave_routes_return_relevant_answerable_results_before_voice"
+      ],
+      "direct_skill_call_proven": false,
+      "exists": true,
+      "failed_gates": [],
+      "journal": null,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T080828Z-soak-persona-miss-after-scope-fix/receipt.json",
+      "proof_type": "unknown",
+      "runtime_block_proven": false,
+      "schema": "embry.intelligence_stress.v1",
       "tau_dag_handoff_proven": false
     },
     {
