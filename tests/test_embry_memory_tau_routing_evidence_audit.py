@@ -79,6 +79,34 @@ def test_classify_tau_dag_handoff_receipt_as_tau_evidence() -> None:
     assert candidate["case_count"] == 1
 
 
+def test_classify_direct_skill_call_receipt_as_tau_skill_evidence() -> None:
+    receipt = {
+        "schema": "embry.intelligence_stress.v1",
+        "ok": True,
+        "live": True,
+        "mocked": False,
+        "cases": [
+            {
+                "id": "skill_analytics-simple-01",
+                "route": "tau.skill.analytics",
+                "ok": True,
+                "tau_dag_receipt": "/tmp/run/dag-receipt.json",
+                "tau_command_loop_receipt": "/tmp/run/command-loop-receipt.json",
+                "skill_call_receipt": "/tmp/run/skill-call-receipt.json",
+                "analytics_stdout_sha256": "sha256:" + "a" * 64,
+            }
+        ],
+        "failed_gates": [],
+    }
+
+    candidate = classify_proof(Path("/tmp/skill-analytics-all-live/receipt.json"), receipt)
+
+    assert candidate["proof_type"] == "tau_or_skill_routing"
+    assert candidate["direct_skill_call_proven"] is True
+    assert candidate["tau_dag_handoff_proven"] is False
+    assert candidate["case_count"] == 1
+
+
 def test_audit_fails_when_memory_and_tau_rows_fail(tmp_path: Path) -> None:
     runtime_block = tmp_path / "runtime-block.json"
     runtime_block.write_text(

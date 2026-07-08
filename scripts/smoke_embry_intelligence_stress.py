@@ -270,6 +270,14 @@ def _sha256_text(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
+
+
 def _tau_handoff_response(
     *,
     session: dict[str, Any],
@@ -330,6 +338,171 @@ def _write_tau_response_spec(
     spec = {
         "command": [sys.executable, "-c", code],
         "timeout_s": 10,
+        "cwd": str(cwd),
+    }
+    spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return spec_path
+
+
+def _write_tau_analytics_skill_spec(
+    *,
+    spec_root: Path,
+    session: dict[str, Any],
+    dag_id: str,
+    goal_hash: str,
+    skill_root: Path,
+    dataset_path: Path,
+    cwd: Path,
+) -> Path:
+    spec_path = spec_root / "embry-analytics-skill-runner" / "tau-dispatch-command.json"
+    script_path = spec_path.parent / "run_analytics_skill.py"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    script = f"""#!/usr/bin/env python3
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
+
+
+session = json.loads({json.dumps(json.dumps(session, sort_keys=True))})
+dag_id = {json.dumps(dag_id)}
+goal_hash = {json.dumps(goal_hash)}
+skill_root = Path({json.dumps(str(skill_root))})
+dataset_path = Path({json.dumps(str(dataset_path))})
+artifact_dir = Path(os.environ.get("TAU_HANDOFF_COMMAND_ARTIFACT_DIR") or ".").resolve()
+artifact_dir.mkdir(parents=True, exist_ok=True)
+stdout_path = artifact_dir / "analytics-describe.stdout.json"
+stderr_path = artifact_dir / "analytics-describe.stderr.txt"
+receipt_path = artifact_dir / "skill-call-receipt.json"
+command = [str(skill_root / "analytics" / "run.sh"), "describe", str(dataset_path), "--json"]
+started = time.perf_counter()
+result = subprocess.run(command, text=True, capture_output=True, timeout=60)
+elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+stdout_path.write_text(result.stdout, encoding="utf-8")
+stderr_path.write_text(result.stderr, encoding="utf-8")
+try:
+    analytics_json = json.loads(result.stdout or "{{}}")
+except json.JSONDecodeError as exc:
+    analytics_json = {{"parse_error": str(exc)}}
+failed_gates = []
+if result.returncode != 0:
+    failed_gates.append("analytics_command_ok")
+if analytics_json.get("total_rows", 0) <= 0:
+    failed_gates.append("analytics_total_rows_present")
+if "columns" not in analytics_json:
+    failed_gates.append("analytics_columns_present")
+if "recommendations" not in analytics_json:
+    failed_gates.append("analytics_recommendations_present")
+receipt = {{
+    "schema": "skill.call.receipt.v1",
+    "skill_name": "analytics",
+    "skill_command": command,
+    "called_by": "tau.dag_run.command_spec",
+    "session_id": session.get("id"),
+    "route": session.get("route"),
+    "mocked": False,
+    "live": True,
+    "ok": not failed_gates,
+    "returncode": result.returncode,
+    "elapsed_ms": elapsed_ms,
+    "input": {{
+        "path": str(dataset_path),
+        "sha256": sha256_file(dataset_path),
+        "expected_min_rows": 1,
+    }},
+    "outputs": {{
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": sha256_file(stdout_path),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": sha256_file(stderr_path),
+        "analytics_total_rows": analytics_json.get("total_rows"),
+        "analytics_total_columns": analytics_json.get("total_columns"),
+        "recommendation_count": len(analytics_json.get("recommendations") or []),
+    }},
+    "failed_gates": failed_gates,
+    "proves": [
+        "tau_command_spec_invoked_analytics_skill",
+        "analytics_describe_processed_real_jsonl_input",
+    ] if not failed_gates else [],
+    "does_not_prove": [
+        "semantic_quality_of_embry_answer",
+        "chatterbox_spoken_output",
+        "browser_chat_ux_sync",
+    ],
+}}
+receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+evidence = [
+    {{
+        "kind": "embry_tau_work_order",
+        "matrix_session_id": session.get("id"),
+        "route": session.get("route"),
+        "query": session.get("question"),
+        "goal_hash": goal_hash,
+    }},
+    {{
+        "kind": "skill_call_receipt",
+        "schema": "skill.call.receipt.v1",
+        "skill_name": "analytics",
+        "path": str(receipt_path),
+        "ok": receipt["ok"],
+        "sha256": sha256_file(receipt_path),
+    }},
+    {{
+        "kind": "analytics_result_hash_present",
+        "path": str(stdout_path),
+        "sha256": sha256_file(stdout_path),
+        "total_rows": analytics_json.get("total_rows"),
+    }},
+]
+handoff = {{
+    "schema": "tau.agent_handoff.v1",
+    "github": {{"repo": "grahama1970/chatterbox", "target": f"embry-stress-session:{{session.get('id')}}"}},
+    "goal": {{"goal_id": dag_id, "goal_version": 1, "goal_hash": goal_hash}},
+    "previous_subagent": "embry-analytics-skill-runner",
+    "context": {{
+        "summary": f"Analytics skill call for Embry stress matrix session {{session.get('id')}}.",
+        "artifacts": [str(receipt_path), str(stdout_path)],
+        "matrix_session": {{
+            "id": session.get("id"),
+            "folder_id": session.get("folder_id"),
+            "route": session.get("route"),
+            "difficulty": session.get("difficulty"),
+        }},
+    }},
+    "result": {{
+        "status": "PASS" if receipt["ok"] else "FAIL",
+        "summary": "Analytics skill describe command produced a skill.call.receipt.v1." if receipt["ok"] else "Analytics skill describe command failed; see skill.call.receipt.v1.",
+        "evidence": evidence,
+    }},
+    "rationale": "The Tau DAG command spec is the caller; the analytics skill emitted a receipt with command output hashes.",
+    "next_agent": {{
+        "name": "embry-route-reviewer",
+        "executor": "local",
+        "reason": "Review skill-call receipt and analytics output hash.",
+    }},
+    "required_evidence": ["embry_tau_work_order", "skill_call_receipt", "analytics_result_hash_present"],
+    "stop_condition": "Stop at human terminal node.",
+}}
+print(json.dumps(handoff))
+sys.exit(0)
+"""
+    script_path.write_text(script, encoding="utf-8")
+    spec = {
+        "command": [sys.executable, str(script_path)],
+        "timeout_s": 90,
         "cwd": str(cwd),
     }
     spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -409,6 +582,254 @@ def _write_tau_handoff_contract(
     path = run_root / "tau-dag-contract.json"
     path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _write_tau_analytics_skill_contract(
+    *,
+    session: dict[str, Any],
+    run_root: Path,
+    spec_root: Path,
+    dag_id: str,
+    goal_hash: str,
+) -> Path:
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": dag_id,
+        "goal": {
+            "goal_id": dag_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/chatterbox",
+            "target": f"embry-stress-session:{session['id']}",
+        },
+        "context": {
+            "matrix_session_id": session["id"],
+            "matrix_folder_id": session.get("folder_id"),
+            "query": str(session.get("question") or ""),
+            "route": str(session.get("route") or ""),
+            "required_skill": "analytics",
+        },
+        "entry_node": "embry-analytics-skill-runner",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 90,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "embry-analytics-skill-runner",
+                "agent": "embry-analytics-skill-runner",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-analytics-skill-runner" / "tau-dispatch-command.json"),
+                "required_evidence": [
+                    "embry_tau_work_order",
+                    "skill_call_receipt",
+                    "analytics_result_hash_present",
+                ],
+            },
+            {
+                "id": "embry-route-reviewer",
+                "agent": "embry-route-reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "embry-route-reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "embry-analytics-skill-runner",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "embry-analytics-skill-runner", "to": "embry-route-reviewer"},
+            {"from": "embry-route-reviewer", "to": "human"},
+        ],
+        "required_evidence": [
+            "embry_tau_work_order",
+            "skill_call_receipt",
+            "analytics_result_hash_present",
+            "reviewer_verdict",
+        ],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = run_root / "tau-analytics-skill-dag-contract.json"
+    path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_analytics_dataset(path: Path) -> None:
+    rows = [
+        {"category": "memory", "gate": "sparta_qra_answer_missing_acceptance_terms", "status": "failed", "count": 4},
+        {"category": "memory", "gate": "persona_memory_answer_wrong_or_unrelated", "status": "failed", "count": 5},
+        {"category": "tau", "gate": "tau_dag_receipt_not_created", "status": "failed", "count": 20},
+        {"category": "tau", "gate": "skill_call_receipt_not_emitted", "status": "failed", "count": 20},
+        {"category": "brave", "gate": "source_receipt_present", "status": "passed", "count": 20},
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+
+def _find_skill_call_receipts(root: Path) -> list[Path]:
+    return sorted(root.glob("**/skill-call-receipt.json"))
+
+
+def run_tau_analytics_skill_dag(
+    session: dict[str, Any],
+    *,
+    tau_root: Path,
+    agent_root: Path,
+    skill_root: Path,
+    timeout_s: int,
+) -> dict[str, Any]:
+    route = str(session.get("route") or "")
+    run_id = f"{utc_now().replace(':', '').replace('-', '')}-{session['id']}-{uuid4().hex[:8]}"
+    run_root = Path("/tmp/chatterbox-fork-agent-out/embry-tau-skill-analytics") / run_id
+    spec_root = run_root / "specs"
+    receipt_dir = run_root / "tau-run"
+    run_root.mkdir(parents=True, exist_ok=True)
+    dag_id = f"embry-{session['id']}"
+    goal_hash = _sha256_text(json.dumps({"session_id": session["id"], "query": session.get("question")}, sort_keys=True))
+    dataset_path = run_root / "stress-gates.jsonl"
+    _write_analytics_dataset(dataset_path)
+    _write_tau_analytics_skill_spec(
+        spec_root=spec_root,
+        session=session,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+        skill_root=skill_root,
+        dataset_path=dataset_path,
+        cwd=run_root,
+    )
+    reviewer_evidence = [
+        {
+            "kind": "reviewer_verdict",
+            "reviewed_node_id": "embry-analytics-skill-runner",
+            "goal_hash": goal_hash,
+            "verdict": "PASS",
+        }
+    ]
+    _write_tau_response_spec(
+        spec_root=spec_root,
+        agent="embry-route-reviewer",
+        response=_tau_handoff_response(
+            session=session,
+            dag_id=dag_id,
+            goal_hash=goal_hash,
+            previous_subagent="embry-route-reviewer",
+            next_agent="human",
+            evidence=reviewer_evidence,
+        ),
+        cwd=run_root,
+    )
+    contract_path = _write_tau_analytics_skill_contract(
+        session=session,
+        run_root=run_root,
+        spec_root=spec_root,
+        dag_id=dag_id,
+        goal_hash=goal_hash,
+    )
+    command = [
+        "uv",
+        "run",
+        "--project",
+        str(tau_root),
+        "tau",
+        "dag-run",
+        str(contract_path),
+        "--receipt-dir",
+        str(receipt_dir),
+        "--agents-root",
+        str(agent_root),
+        "--command-spec-root",
+        str(spec_root),
+    ]
+    dag_run = run_cmd(command, timeout_s=timeout_s)
+    receipt_path = receipt_dir / "dag-receipt.json"
+    receipt: dict[str, Any] = {}
+    skill_receipts = _find_skill_call_receipts(receipt_dir)
+    skill_receipt_path = skill_receipts[0] if skill_receipts else None
+    skill_receipt: dict[str, Any] = {}
+    failed: list[str] = []
+    if dag_run["returncode"] != 0:
+        failed.append("tau_dag_run_command_ok")
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        failed.append("tau_dag_receipt_read")
+        receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if receipt.get("schema") != "tau.dag_receipt.v1":
+        failed.append("tau_dag_receipt_schema")
+    if receipt.get("ok") is not True:
+        failed.append("tau_dag_receipt_ok")
+    if receipt.get("status") != "PASS":
+        failed.append("tau_dag_receipt_pass")
+    selected_agents = receipt.get("selected_agents") if isinstance(receipt.get("selected_agents"), list) else []
+    if selected_agents != ["embry-analytics-skill-runner", "embry-route-reviewer"]:
+        failed.append("tau_skill_selected_agents")
+    if not receipt.get("command_loop_receipt"):
+        failed.append("tau_skill_command_loop_receipt")
+    if not skill_receipt_path:
+        failed.append("skill_call_receipt_present")
+    else:
+        try:
+            skill_receipt = json.loads(skill_receipt_path.read_text(encoding="utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            failed.append("skill_call_receipt_read")
+            skill_receipt = {"error_type": type(exc).__name__, "error": str(exc)}
+    if skill_receipt_path and skill_receipt.get("schema") != "skill.call.receipt.v1":
+        failed.append("skill_call_receipt_schema")
+    if skill_receipt_path and skill_receipt.get("skill_name") != "analytics":
+        failed.append("skill_call_receipt_skill_name")
+    if skill_receipt_path and skill_receipt.get("called_by") != "tau.dag_run.command_spec":
+        failed.append("skill_called_by_tau_only")
+    if skill_receipt_path and skill_receipt.get("ok") is not True:
+        failed.append("skill_call_receipt_ok")
+    outputs = skill_receipt.get("outputs") if isinstance(skill_receipt.get("outputs"), dict) else {}
+    if skill_receipt_path and not outputs.get("stdout_sha256"):
+        failed.append("analytics_result_hash_present")
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": route,
+        "required_skill": "analytics",
+        "tau_dag_contract": str(contract_path),
+        "tau_dag_receipt": str(receipt_path),
+        "tau_command_loop_receipt": receipt.get("command_loop_receipt"),
+        "skill_call_receipt": str(skill_receipt_path) if skill_receipt_path else None,
+        "skill_call_receipt_sha256": _sha256_file(skill_receipt_path) if skill_receipt_path else None,
+        "analytics_stdout": outputs.get("stdout_path"),
+        "analytics_stdout_sha256": outputs.get("stdout_sha256"),
+        "tau_dag_run": dag_run,
+        "tau_dag_receipt_payload": receipt,
+        "skill_call_receipt_payload": skill_receipt,
+        "dataset": {
+            "path": str(dataset_path),
+            "sha256": _sha256_file(dataset_path),
+        },
+        "ok": not failed,
+        "mocked": False,
+        "live": True,
+        "failed_gates": sorted(set(failed)),
+        "observed": (
+            "Tau dag-run invoked the analytics skill through a command spec and emitted "
+            "a skill.call.receipt.v1 plus analytics output hash."
+            if not failed
+            else "Tau analytics skill dag-run was attempted; see failed_gates and receipt paths."
+        ),
+    }
 
 
 def run_tau_agent_handoff_dag(
@@ -916,6 +1337,14 @@ def run_matrix_session(
             session,
             tau_root=tau_root,
             agent_root=agent_root,
+            timeout_s=timeout_s,
+        )
+    if route == "tau.skill.analytics":
+        return run_tau_analytics_skill_dag(
+            session,
+            tau_root=tau_root,
+            agent_root=agent_root,
+            skill_root=skill_root,
             timeout_s=timeout_s,
         )
     if route.startswith("tau.skill."):

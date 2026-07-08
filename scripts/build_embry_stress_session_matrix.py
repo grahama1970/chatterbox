@@ -1819,6 +1819,24 @@ for _folder_id, _receipt in _DIRECT_SKILL_SIMPLE_RECEIPTS.items():
             ),
         }
 
+_ANALYTICS_SKILL_DAG_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T052215Z-skill-analytics-all-live/receipt.json"
+)
+
+for _difficulty in DIFFICULTIES:
+    for _index in range(1, 5):
+        CURRENT_RESULTS[f"skill_analytics-{_difficulty}-{_index:02d}"] = {
+            "status": "passed",
+            "latest_receipt": _ANALYTICS_SKILL_DAG_RECEIPT,
+            "failed_gates": [],
+            "observed": (
+                "Tau dag-run invoked skills/analytics/run.sh describe through a command spec, "
+                "emitted skill.call.receipt.v1, and recorded the analytics output hash for "
+                "this Embry direct-skill session."
+            ),
+        }
+
 _SPEAKER_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-speaker-identity-ledger/"
     "20260708T004440Z-speaker-identity-ledger/receipt.json"

@@ -19,6 +19,7 @@ DEFAULT_PROOFS = [
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T002830Z-matrix-tau-simple/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T051042Z-matrix-tau-simple-dag-batch/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T051253Z-matrix-tau-all-dag-current/receipt.json"),
+    Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T052215Z-skill-analytics-all-live/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014152Z-matrix-medium-memory-search/receipt.json"),
     Path("/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T014802Z-matrix-medium-routes-16-31/receipt.json"),
 ]
@@ -103,11 +104,17 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     failed_gates = receipt.get("failed_gates") or []
     schema = str(receipt.get("schema") or "")
 
+    cases = receipt.get("cases") if isinstance(receipt.get("cases"), list) else []
+
     if "answerability_runtime_block" in schema:
         proof_type = "answerability_runtime_block"
     elif "memory-answerability-ledger" in str(path) or "answerability" in str(receipt.get("proof_scope") or ""):
         proof_type = "memory_answerability_ledger"
-    elif "tau" in str(path) or any("tau" in str(gate) for gate in failed_gates):
+    elif (
+        "tau" in str(path)
+        or any("tau" in str(gate) for gate in failed_gates)
+        or any(isinstance(case, dict) and str(case.get("route") or "").startswith("tau.") for case in cases)
+    ):
         proof_type = "tau_or_skill_routing"
     else:
         proof_type = "unknown"
@@ -117,7 +124,6 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "tau_voice_render_rejects_blocked_memory_answerability",
         "blocked_memory_answers_do_not_create_chatterbox_finished_audio",
     }.issubset(set(proves))
-    cases = receipt.get("cases") if isinstance(receipt.get("cases"), list) else []
     tau_dag_handoff_proven = (
         ok
         and proof_type == "tau_or_skill_routing"
@@ -128,6 +134,21 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
             and case.get("ok") is True
             and bool(case.get("tau_dag_receipt"))
             and bool(case.get("tau_command_loop_receipt"))
+            for case in cases
+        )
+    )
+    direct_skill_call_proven = (
+        ok
+        and proof_type == "tau_or_skill_routing"
+        and bool(cases)
+        and all(
+            isinstance(case, dict)
+            and str(case.get("route") or "").startswith("tau.skill.")
+            and case.get("ok") is True
+            and bool(case.get("tau_dag_receipt"))
+            and bool(case.get("tau_command_loop_receipt"))
+            and bool(case.get("skill_call_receipt"))
+            and bool(case.get("analytics_stdout_sha256") or case.get("skill_call_receipt_sha256"))
             for case in cases
         )
     )
@@ -143,6 +164,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "case_count": receipt.get("case_count") or len(receipt.get("cases") or receipt.get("results") or []),
         "runtime_block_proven": runtime_block_proven,
         "tau_dag_handoff_proven": tau_dag_handoff_proven,
+        "direct_skill_call_proven": direct_skill_call_proven,
         "failed_gates": failed_gates,
         "claims_proves": proves,
         "claims_does_not_prove": claims.get("does_not_prove") or [],
@@ -158,6 +180,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
     proof_candidates = [classify_proof(path, read_json(path)) for path in proof_paths if path.exists()]
     runtime_blocks = [candidate for candidate in proof_candidates if candidate["runtime_block_proven"]]
     tau_dag_handoffs = [candidate for candidate in proof_candidates if candidate["tau_dag_handoff_proven"]]
+    direct_skill_calls = [candidate for candidate in proof_candidates if candidate["direct_skill_call_proven"]]
     live_unmocked_candidates = [
         candidate
         for candidate in proof_candidates
@@ -210,6 +233,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path]) -> dict[str, An
         "live_unmocked_candidate_count": len(live_unmocked_candidates),
         "runtime_block_candidate_count": len(runtime_blocks),
         "tau_dag_handoff_candidate_count": len(tau_dag_handoffs),
+        "direct_skill_call_candidate_count": len(direct_skill_calls),
         "proof_candidates": proof_candidates,
         "failed_gates": sorted(set(failed_gates)),
         "claims": {
