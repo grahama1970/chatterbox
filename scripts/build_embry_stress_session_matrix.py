@@ -692,6 +692,61 @@ CURRENT_RESULTS.update(
     }
 )
 
+_CHAT_UX_GATE_AUDIT_RECEIPT = (
+    "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
+    "20260708T013912Z-chat-ux-gate-audit/audit.json"
+)
+
+CURRENT_RESULTS.update(
+    {
+        "chat_ux_sync-simple-01": {
+            "status": "passed",
+            "latest_receipt": _CHAT_UX_GATE_AUDIT_RECEIPT,
+            "failed_gates": [],
+            "observed": (
+                "Deterministic gate audit found dynamic replay evidence: replay reduced the chat "
+                "to the current turn, embedded audio artifacts in the shared Chat UX, and completed."
+            ),
+        },
+        "chat_ux_sync-simple-02": {
+            "status": "passed",
+            "latest_receipt": _CHAT_UX_GATE_AUDIT_RECEIPT,
+            "failed_gates": [],
+            "observed": (
+                "Deterministic gate audit found inline reasoning trace evidence during replay "
+                "with liveReasoningTraceVisibleDuringReplay=true."
+            ),
+        },
+        "chat_ux_sync-simple-03": {
+            "status": "failed",
+            "latest_receipt": _CHAT_UX_GATE_AUDIT_RECEIPT,
+            "failed_gates": [
+                "assistant_response_plan_v1_not_linked",
+                "chat_render_receipt_v1_not_emitted",
+                "chat_turn_id_matches_response_plan_not_proven",
+            ],
+            "observed": (
+                "UI proof shows shared chat text and four Chatterbox audio sources, but no "
+                "assistant.response.plan.v1 to chat.render.receipt.v1 lineage receipt proves "
+                "the chat text and audio share the same turn id."
+            ),
+        },
+        "chat_ux_sync-simple-04": {
+            "status": "failed",
+            "latest_receipt": _CHAT_UX_GATE_AUDIT_RECEIPT,
+            "failed_gates": [
+                "extract_entities_receipt_not_linked",
+                "entity_underline_render_receipt_not_emitted",
+                "spoken_transcript_entity_underlines_not_proven",
+            ],
+            "observed": (
+                "UI proof contains text such as horus_lupercal, but no linked $extract-entities "
+                "receipt or underline-render receipt proves entity underlines in the spoken transcript."
+            ),
+        },
+    }
+)
+
 _TONE_SIMPLE_RECEIPT = (
     "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/"
     "20260708T001850Z-matrix-tone-simple/receipt.json"

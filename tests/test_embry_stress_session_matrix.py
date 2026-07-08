@@ -14,7 +14,7 @@ def test_matrix_marks_only_receipt_backed_current_results() -> None:
     matrix = build_matrix()
     status_counts = matrix["status_counts"]
 
-    assert status_counts == {"passed": 9, "failed": 51, "not_run": 240}
+    assert status_counts == {"passed": 11, "failed": 49, "not_run": 240}
     for session in matrix["sessions"]:
         if session["status"] in {"passed", "failed"}:
             assert session["latest_receipt"]
@@ -148,6 +148,25 @@ def test_matrix_factory_noise_simple_failures_use_audio_capture_receipts() -> No
     assert all("runner_route_not_implemented" not in session["failed_gates"] for session in sessions)
     assert any("capture_captured_audio_rms" in session["failed_gates"] for session in sessions)
     assert any("speaker_resolution_known_horus" in session["failed_gates"] for session in sessions)
+
+
+def test_matrix_chat_ux_simple_cases_split_replay_passes_from_lineage_failures() -> None:
+    matrix = build_matrix()
+    sessions = [
+        session
+        for session in matrix["sessions"]
+        if session["folder_id"] == "chat_ux_sync" and session["difficulty"] == "simple"
+    ]
+
+    assert len(sessions) == 4
+    by_id = {session["id"]: session for session in sessions}
+    assert by_id["chat_ux_sync-simple-01"]["status"] == "passed"
+    assert by_id["chat_ux_sync-simple-02"]["status"] == "passed"
+    assert by_id["chat_ux_sync-simple-03"]["status"] == "failed"
+    assert by_id["chat_ux_sync-simple-04"]["status"] == "failed"
+    assert all("chat-ux-gate-audit" in session["latest_receipt"] for session in sessions)
+    assert "chat_turn_id_matches_response_plan_not_proven" in by_id["chat_ux_sync-simple-03"]["failed_gates"]
+    assert "spoken_transcript_entity_underlines_not_proven" in by_id["chat_ux_sync-simple-04"]["failed_gates"]
 
 
 def test_every_case_requires_humanized_conversation_delivery() -> None:

@@ -208,6 +208,20 @@ path recorded zero-RMS audio, and source 62 captured non-silent audio but failed
 RealtimeSTT/rung7 and Horus speaker-resolution/memory recall gates. These cases
 remain failed; they are no longer generic runner gaps.
 
+Latest matrix Chat UX gate audit:
+
+`/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json`
+
+That deterministic audit reads existing UI and voice receipts. It lets the
+matrix mark the simple replay and inline-reasoning Chat UX cases as passed:
+dynamic replay reduced the chat to the current turn, embedded audio artifacts
+in the shared Chat UX, completed without static reset, and showed the reasoning
+trace during replay. Two simple Chat UX cases remain failed: there is still no
+linked `assistant.response.plan.v1` -> `chat.render.receipt.v1` lineage proof
+that chat text and Chatterbox audio share the same `turn_id`, and there is no
+linked `$extract-entities` receipt proving faint underline entity rendering in
+the spoken transcript.
+
 Current Sessions matrix artifact:
 
 `docs/EMBRY_STRESS_SESSION_MATRIX.json`
@@ -220,7 +234,7 @@ python3 scripts/build_embry_stress_session_matrix.py --out docs/EMBRY_STRESS_SES
 
 The matrix contains `300` labeled sessions across `15` route families and `5`
 difficulty levels. It marks only receipt-backed cases as pass/fail: currently
-`9` passed, `51` failed, and `240` are `not_run`. This is the intended source
+`11` passed, `49` failed, and `240` are `not_run`. This is the intended source
 for the Embry Voice Sessions pane; unrun cases must not be shown as passing.
 
 The current matrix is now a generated case contract, not just a session list.
