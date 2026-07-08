@@ -148,15 +148,29 @@ def artifact_entry(path: Path) -> dict[str, Any]:
     }
 
 
-def child_status(receipt: dict[str, Any], *, path: Path) -> dict[str, Any]:
+def child_status(receipt: dict[str, Any], *, path: Path, turn_id: str | None = None) -> dict[str, Any]:
     return {
         "ok": receipt.get("ok") is True,
         "live": receipt.get("live") is True,
         "mocked": receipt.get("mocked") is True,
+        "turn_id": turn_id,
+        "child_native_turn_id": receipt.get("turn_id"),
         "path": str(path),
         "failed_gates": receipt.get("failed_gates") or [],
         "schema": receipt.get("schema"),
     }
+
+
+def event_turn_ids(events_path: Path) -> list[str | None]:
+    turn_ids: list[str | None] = []
+    if not events_path.exists():
+        return turn_ids
+    for line in events_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        event = json.loads(line)
+        turn_ids.append(event.get("turn_id"))
+    return turn_ids
 
 
 def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
@@ -171,14 +185,16 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
     child_receipts: dict[str, Any] = {}
     commands: list[dict[str, Any]] = []
     nonce = args.nonce or secrets.token_hex(4)
+    turn_id = args.turn_id or f"turn_{secrets.token_hex(8)}"
     python = str(args.child_python)
     speaker_gate_python = str(args.speaker_gate_python)
 
     journal.append(
         "voice_control.check.started",
         component="embry-voice-control",
-        payload={"check": "os-loopback-core", "nonce_sha256": sha256_text(nonce)},
+        payload={"check": "os-loopback-core", "nonce_sha256": sha256_text(nonce), "turn_id": turn_id},
         source={"live": True, "mocked": False, "transport": "unix_socket_or_cli"},
+        turn_id=turn_id,
     )
 
     rung1_dir = session_dir / "artifacts/json/rung1"
@@ -199,7 +215,7 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
     write_json(session_dir / "commands/rung1_command.json", rung1_run)
     rung1_path = rung1_dir / "rung_receipt.json"
     rung1 = read_json(rung1_path)
-    child_receipts["audio_graph_realtimestt"] = child_status(rung1, path=rung1_path)
+    child_receipts["audio_graph_realtimestt"] = child_status(rung1, path=rung1_path, turn_id=turn_id)
     if rung1_run["returncode"] != 0 or rung1.get("ok") is not True:
         failed_gates.append("audio_graph_realtimestt_ok")
     journal.append(
@@ -208,6 +224,7 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
         payload=child_receipts["audio_graph_realtimestt"],
         source={"live": rung1.get("live") is True, "mocked": rung1.get("mocked") is True, "transport": "pipewire_pulse_monitor"},
         artifacts=[artifact_entry(rung1_path), artifact_entry(rung1_dir / "captured.wav")],
+        turn_id=turn_id,
     )
 
     captured_wav = rung1_dir / "captured.wav"
@@ -228,7 +245,7 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
         write_json(session_dir / "commands/rung2_command.json", rung2_run)
         rung2_path = session_dir / "artifacts/json" / rung2_run_id / "rung2_source_audio_speaker_gate_receipt.json"
         rung2 = read_json(rung2_path)
-        child_receipts["speaker_gate"] = child_status(rung2, path=rung2_path)
+        child_receipts["speaker_gate"] = child_status(rung2, path=rung2_path, turn_id=turn_id)
         if rung2_run["returncode"] != 0 or rung2.get("ok") is not True:
             failed_gates.append("speaker_gate_ok")
         journal.append(
@@ -237,6 +254,7 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
             payload=child_receipts["speaker_gate"],
             source={"live": rung2.get("live") is True, "mocked": rung2.get("mocked") is True, "transport": "source_audio_embedding"},
             artifacts=[artifact_entry(rung2_path)],
+            turn_id=turn_id,
         )
     elif args.with_speaker_gate:
         failed_gates.append("speaker_gate_input_captured_wav_exists")
@@ -256,7 +274,7 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
         write_json(session_dir / "commands/memory_tau_command.json", core_run)
         core_path = core_dir / "listener-memory-tau-qra.json"
         core = read_json(core_path)
-        child_receipts["memory_tau_chatterbox"] = child_status(core, path=core_path)
+        child_receipts["memory_tau_chatterbox"] = child_status(core, path=core_path, turn_id=turn_id)
         if core_run["returncode"] != 0 or core.get("ok") is not True:
             failed_gates.append("memory_tau_chatterbox_ok")
         journal.append(
@@ -265,6 +283,7 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
             payload=child_receipts["memory_tau_chatterbox"],
             source={"live": core.get("live") is True, "mocked": core.get("mocked") is True, "transport": "service_http_and_realtimestt"},
             artifacts=[artifact_entry(core_path)],
+            turn_id=turn_id,
         )
 
     commands_path = session_dir / "commands.jsonl"
@@ -276,6 +295,9 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
         failed_gates.append("asr_api_key_available")
     if journal.validation_failures:
         failed_gates.extend(f"event_journal:{gate}" for gate in journal.validation_failures)
+    observed_turn_ids = event_turn_ids(events_path)
+    if not observed_turn_ids or any(observed != turn_id for observed in observed_turn_ids):
+        failed_gates.append("parent_event_journal_single_turn_id")
 
     all_children_live = all(status.get("live") is True for status in child_receipts.values()) if child_receipts else False
     no_child_mocked = all(status.get("mocked") is not True for status in child_receipts.values()) if child_receipts else False
@@ -285,7 +307,13 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
         component="embry-voice-control",
         payload={"ok": ok, "failed_gates": failed_gates},
         source={"live": all_children_live, "mocked": not no_child_mocked, "transport": "unix_socket_or_cli"},
+        turn_id=turn_id,
     )
+    observed_turn_ids = event_turn_ids(events_path)
+    if not observed_turn_ids or any(observed != turn_id for observed in observed_turn_ids):
+        if "parent_event_journal_single_turn_id" not in failed_gates:
+            failed_gates.append("parent_event_journal_single_turn_id")
+        ok = False
     event_hash = journal.hash()
     receipt = {
         "schema": "embry.voice_control.os_loopback_core_receipt.v1",
@@ -294,6 +322,19 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
         "live": ok and all_children_live,
         "mocked": not no_child_mocked,
         "session_id": session["session_id"],
+        "turn_id": turn_id,
+        "turn_lineage": {
+            "parent_turn_id": turn_id,
+            "event_turn_ids": sorted(set(observed_turn_ids)),
+            "all_parent_events_share_turn_id": bool(observed_turn_ids)
+            and all(observed == turn_id for observed in observed_turn_ids),
+            "child_receipts_reference_parent_turn_id": all(
+                status.get("turn_id") == turn_id for status in child_receipts.values()
+            ),
+            "child_native_turn_ids": {
+                name: status.get("child_native_turn_id") for name, status in child_receipts.items()
+            },
+        },
         "session_dir": str(session_dir),
         "events_path": str(events_path),
         "event_journal_sha256": event_hash,
@@ -309,10 +350,11 @@ def check_os_loopback_core(args: argparse.Namespace) -> dict[str, Any]:
             "orchestrates_pipewire_pulse_capture_to_realtimestt",
             "orchestrates_source_audio_speaker_gate" if args.with_speaker_gate else "speaker_gate_not_requested",
             "orchestrates_memory_tau_chatterbox_component_check" if args.with_memory_tau else "memory_tau_chatterbox_not_requested",
+            "parent_event_journal_single_turn_id",
         ],
         "does_not_prove": [
             "browser_or_react_is_voice_authority",
-            "single_turn_id_across_all_voice_services",
+            "child_services_natively_accept_turn_id",
             "physical_room_microphone_capture",
             "production_pyannote_overlap_diarization",
             "shared_chat_ux_rendering",
@@ -361,6 +403,7 @@ def serve(args: argparse.Namespace) -> int:
                     elif endpoint == "/checks/os-loopback-core":
                         ns = argparse.Namespace(**vars(args))
                         ns.nonce = request.get("nonce")
+                        ns.turn_id = request.get("turn_id")
                         ns.expected_phrase = request.get("expected_phrase") or "Horus workstation loopback check"
                         ns.with_speaker_gate = bool(request.get("with_speaker_gate", True))
                         ns.with_memory_tau = bool(request.get("with_memory_tau", False))
@@ -388,6 +431,7 @@ def main() -> int:
     check_sub = check_parser.add_subparsers(dest="check_command", required=True)
     os_loop = check_sub.add_parser("os-loopback-core")
     os_loop.add_argument("--session-id")
+    os_loop.add_argument("--turn-id")
     os_loop.add_argument("--nonce")
     os_loop.add_argument("--expected-phrase", default="Horus workstation loopback check")
     os_loop.add_argument("--stage-timeout-s", type=float, default=240.0)
@@ -406,6 +450,7 @@ def main() -> int:
     serve_parser.add_argument("--socket", type=Path, default=DEFAULT_SOCKET)
     serve_parser.add_argument("--one-shot", action="store_true")
     serve_parser.add_argument("--session-id")
+    serve_parser.add_argument("--turn-id")
     serve_parser.add_argument("--nonce")
     serve_parser.add_argument("--expected-phrase", default="Horus workstation loopback check")
     serve_parser.add_argument("--stage-timeout-s", type=float, default=240.0)
