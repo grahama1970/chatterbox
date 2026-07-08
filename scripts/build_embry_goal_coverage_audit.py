@@ -23,7 +23,7 @@ GOAL_SUBSYSTEMS: dict[str, dict[str, Any]] = {
         "taxonomy_subsystems": ["realtimestt_audio_ingress"],
         "evidence_artifacts": ["docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json"],
         "status": "failing",
-        "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent.",
+        "summary": "The current S06 PipeWire/Jabra monitor-loopback slice passes with RealtimeSTT/rung7 evidence, but browser/WebRTC remains inconsistent and the broader factory capture matrix still fails.",
         "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
     },
     "speaker_identity": {

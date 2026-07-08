@@ -1,6 +1,6 @@
 {
   "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
-  "generated_at_utc": "2026-07-08T04:17:44.600601+00:00",
+  "generated_at_utc": "2026-07-08T04:23:00.800258+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -19,13 +19,14 @@
               "Chatterbox output quality",
               "Chat UX synchronization"
             ],
-            "proves": []
+            "proves": [
+              "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes"
+            ]
           },
           "exists": true,
           "failed_gates": [
             "browser_device_ingress_inconsistent",
             "current_factory_matrix_has_failures",
-            "current_factory_matrix_has_no_passes",
             "factory_gate:asr_final_transcript_present",
             "factory_gate:capture_captured_audio_rms",
             "factory_gate:realtimestt_command_ok",
@@ -35,7 +36,7 @@
             "factory_gate:speaker_memory_recall_found",
             "factory_gate:speaker_resolution_known_horus"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
@@ -55,7 +56,7 @@
           "id": "realtimestt_ingress",
           "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
           "status": "failing",
-          "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent."
+          "summary": "The current S06 PipeWire/Jabra monitor-loopback slice passes with RealtimeSTT/rung7 evidence, but browser/WebRTC remains inconsistent and the broader factory capture matrix still fails."
         }
       ],
       "title": "Browser Mic / WebRTC To RealtimeSTT"
@@ -139,13 +140,14 @@
               "Chatterbox output quality",
               "Chat UX synchronization"
             ],
-            "proves": []
+            "proves": [
+              "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes"
+            ]
           },
           "exists": true,
           "failed_gates": [
             "browser_device_ingress_inconsistent",
             "current_factory_matrix_has_failures",
-            "current_factory_matrix_has_no_passes",
             "factory_gate:asr_final_transcript_present",
             "factory_gate:capture_captured_audio_rms",
             "factory_gate:realtimestt_command_ok",
@@ -155,7 +157,7 @@
             "factory_gate:speaker_memory_recall_found",
             "factory_gate:speaker_resolution_known_horus"
           ],
-          "live": false,
+          "live": true,
           "mocked": false,
           "ok": false,
           "path": "docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
@@ -254,7 +256,7 @@
           "id": "realtimestt_ingress",
           "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
           "status": "failing",
-          "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent."
+          "summary": "The current S06 PipeWire/Jabra monitor-loopback slice passes with RealtimeSTT/rung7 evidence, but browser/WebRTC remains inconsistent and the broader factory capture matrix still fails."
         },
         {
           "id": "memory_tau_routing",

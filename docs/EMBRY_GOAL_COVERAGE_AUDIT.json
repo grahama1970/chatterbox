@@ -1,6 +1,6 @@
 {
   "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
-  "generated_at_utc": "2026-07-08T04:17:44.559770+00:00",
+  "generated_at_utc": "2026-07-08T04:23:00.759721+00:00",
   "goal_subsystem_status_counts": {
     "failing": 4,
     "partial": 4
@@ -435,7 +435,7 @@
         }
       ],
       "status": "failing",
-      "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent.",
+      "summary": "The current S06 PipeWire/Jabra monitor-loopback slice passes with RealtimeSTT/rung7 evidence, but browser/WebRTC remains inconsistent and the broader factory capture matrix still fails.",
       "taxonomy": {
         "status_counts": {
           "failed": 20,

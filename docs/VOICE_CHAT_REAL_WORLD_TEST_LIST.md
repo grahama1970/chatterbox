@@ -103,8 +103,10 @@ The matrix now has 300 receipt-backed sessions: 49 passed, 251 failed, and
   endpoint paths are exercised, but live interruption decisions, stale-audio
   byte measurements, non-primary rejection, and natural-stop receipts are
   missing.
-- RealtimeSTT audio ingress/factory capture: 0 passed, 20 failed. Current rows
-  show weak/silent capture, empty ASR, or unimplemented runner routes.
+- RealtimeSTT audio ingress/factory capture: 0 passed, 20 failed in the
+  matrix. A separate current S06 PipeWire/Jabra monitor-loopback receipt passes
+  and is recorded in the ingress audit, but current matrix rows still show
+  weak/silent capture, empty ASR, or unimplemented runner routes.
 - Tone and emotion intent: 5 passed, 15 failed. Frustrated de-escalation passes;
   hostile, discouraged, and overlap tone-family expectations fail.
 - External research: 20 passed, 0 failed.
@@ -177,12 +179,13 @@ Current RealtimeSTT ingress evidence audit receipt:
 
 `docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json`
 
-That audit reported `mocked=false`, `ok=false`, 5 historical candidates, and
-3 historical passing ingress slices: HD webcam browser getUserMedia, PipeWire
-monitor loopback, and physical microphone. It also records 2 failed browser
-Jabra capture slices. The current factory-noise matrix remains 0 passed / 20
-failed, so the subsystem is still failing despite those historical proof
-slices.
+That audit reports `mocked=false`, `live=true`, `ok=false`, 6 proof candidates,
+and 4 passing ingress slices. One passing candidate is the current S06
+PipeWire/Jabra monitor-loopback receipt from
+`/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json`.
+The current factory-noise matrix still remains 0 passed / 20 failed, and
+browser device ingress remains inconsistent, so the subsystem is still failing
+despite that current loopback slice.
 
 Current memory/Tau routing evidence audit receipt:
 

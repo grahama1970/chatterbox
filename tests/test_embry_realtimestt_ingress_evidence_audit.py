@@ -58,6 +58,41 @@ def test_ingress_audit_fails_when_current_factory_matrix_fails() -> None:
     assert str(proof_path) not in {candidate["path"] for candidate in audit["historical_candidates"]}
 
 
+def test_ingress_audit_counts_current_factory_loopback_candidate_even_when_matrix_rows_fail(tmp_path: Path) -> None:
+    proof = tmp_path / "20260708T034407Z-factory-current" / "S06-factory-noise" / "rung8-loopback-listener.json"
+    proof.parent.mkdir(parents=True)
+    proof.write_text(
+        """
+{
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "capture": {
+    "captured_audio": {
+      "exists": true,
+      "rms": 512
+    }
+  },
+  "claims": {
+    "proves": [
+      "pipewire_monitor_loopback_captures_played_stress_audio",
+      "captured_loopback_audio_feeds_realtimestt_automatic_vad"
+    ]
+  }
+}
+"""
+    )
+
+    audit = build_audit(_matrix_with_factory(["failed", "failed"]), [proof])
+
+    assert audit["ok"] is False
+    assert audit["live"] is True
+    assert audit["current_factory_loopback_passing_candidate_count"] == 1
+    assert "current_factory_matrix_has_failures" in audit["failed_gates"]
+    assert "current_factory_matrix_has_no_passes" not in audit["failed_gates"]
+    assert "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes" in audit["claims"]["proves"]
+
+
 def test_ingress_audit_reports_browser_device_inconsistency(tmp_path: Path) -> None:
     success = tmp_path / "success.json"
     failure = tmp_path / "failure.json"
