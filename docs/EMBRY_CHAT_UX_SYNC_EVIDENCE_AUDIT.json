@@ -1,4 +1,77 @@
 {
+  "audible_session_replay_candidate_count": 0,
+  "audible_session_replay_evidence": {
+    "blocking_summary": "embedded audio tags and replay DOM assertions do not prove audible browser playback; the receipt must show the selected session audio started, advanced, and was not cut off",
+    "boundary": "shared_chat_replay_to_audible_browser_playback",
+    "candidate_count": 2,
+    "candidate_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+      "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"
+    ],
+    "failed_candidate_count": 2,
+    "passing_candidate_count": 0,
+    "ready": false,
+    "required_fields": [
+      "audible_playback_receipt.playback_started",
+      "audible_playback_receipt.current_time_advanced",
+      "audible_playback_receipt.ended_or_played_to_expected_offset",
+      "audible_playback_receipt.cut_off_after_ms absent"
+    ],
+    "sample_failures": [
+      {
+        "audible_playback_present": false,
+        "chat_gate_pass": true,
+        "dynamic_replay_basic": true,
+        "observed": {
+          "audible_playback": {},
+          "audible_playback_present": false,
+          "audio_artifact_id": null,
+          "audio_artifact_ids": null,
+          "chat_gate_evidence": {
+            "audio_count": 4,
+            "audio_src_count": 4,
+            "proof_type": "UI DOM/text/audio-src proof, not full browser microphone loop."
+          },
+          "extract_entities_present": false,
+          "plan_turn_id": null,
+          "render_turn_id": null,
+          "replay_assertions": {
+            "audioArtifactsEmbeddedInSharedChat": true,
+            "dynamicReplayReducedToCurrentTurn": true,
+            "initialStaticTranscriptPresent": true,
+            "liveReasoningTraceVisibleDuringReplay": true,
+            "replayCompletesWithoutStaticReset": true
+          },
+          "underline_render_present": false
+        },
+        "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"
+      },
+      {
+        "audible_playback_present": false,
+        "chat_gate_pass": false,
+        "dynamic_replay_basic": true,
+        "observed": {
+          "audible_playback": {},
+          "audible_playback_present": false,
+          "audio_artifact_id": null,
+          "audio_artifact_ids": null,
+          "chat_gate_evidence": null,
+          "extract_entities_present": false,
+          "plan_turn_id": null,
+          "render_turn_id": null,
+          "replay_assertions": {
+            "audioArtifactsEmbeddedInSharedChat": true,
+            "dynamicReplayReducedToCurrentTurn": true,
+            "initialStaticTranscriptPresent": true,
+            "liveReasoningTraceVisibleDuringReplay": true,
+            "replayCompletesWithoutStaticReset": true
+          },
+          "underline_render_present": false
+        },
+        "path": "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json"
+      }
+    ]
+  },
   "chat_gate_candidate_count": 1,
   "chat_matrix": {
     "failed_gate_counts": {
@@ -155,6 +228,7 @@
   },
   "failed_gates": [
     "assistant_response_plan_to_chat_render_lineage_missing",
+    "audible_session_replay_receipt_missing",
     "chat_matrix_gate:assistant_response_plan_v1_not_linked",
     "chat_matrix_gate:chat_render_receipt_v1_not_emitted",
     "chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
@@ -166,7 +240,7 @@
     "extract_entities_underline_render_receipt_missing",
     "screenshot_markers_do_not_prove_turn_lineage"
   ],
-  "generated_at_utc": "2026-07-08T06:51:36.007784+00:00",
+  "generated_at_utc": "2026-07-08T07:03:31.341544+00:00",
   "lineage_candidate_count": 0,
   "live": false,
   "mocked": false,
@@ -174,12 +248,15 @@
   "proof_candidate_count": 2,
   "proof_candidates": [
     {
+      "audible_session_replay": false,
       "chat_gate_pass": true,
       "dynamic_replay_basic": true,
       "exists": true,
       "extract_entities_underlines": false,
       "inline_reasoning_trace_basic": true,
       "observed": {
+        "audible_playback": {},
+        "audible_playback_present": false,
         "audio_artifact_id": null,
         "audio_artifact_ids": null,
         "chat_gate_evidence": {
@@ -204,12 +281,15 @@
       "schema": "chatterbox.horus_live_loop_gate_audit.v1"
     },
     {
+      "audible_session_replay": false,
       "chat_gate_pass": false,
       "dynamic_replay_basic": true,
       "exists": true,
       "extract_entities_underlines": false,
       "inline_reasoning_trace_basic": true,
       "observed": {
+        "audible_playback": {},
+        "audible_playback_present": false,
         "audio_artifact_id": null,
         "audio_artifact_ids": null,
         "chat_gate_evidence": null,

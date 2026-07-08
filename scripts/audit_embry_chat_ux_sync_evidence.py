@@ -151,6 +151,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     chat_render = receipt.get("chat_render_receipt") or receipt.get("chat.render.receipt.v1")
     extract_entities = receipt.get("extract_entities_receipt") or receipt.get("extract_entities")
     underline_render = receipt.get("entity_underline_render_receipt") or receipt.get("entity_underlines")
+    audible_playback = receipt.get("audible_playback_receipt") or receipt.get("browser_audio_playback") or {}
 
     plan_turn_id = _nested_get(assistant_plan or {}, "turn_id")
     render_turn_id = _nested_get(chat_render or {}, "turn_id")
@@ -181,6 +182,13 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         and assertions.get("liveReasoningTraceVisibleDuringReplay")
         and assertions.get("replayCompletesWithoutStaticReset")
     )
+    audible_session_replay = bool(
+        audible_playback
+        and _nested_get(audible_playback, "playback_started") is True
+        and _nested_get(audible_playback, "current_time_advanced") is True
+        and _nested_get(audible_playback, "ended_or_played_to_expected_offset") is True
+        and not _nested_get(audible_playback, "cut_off_after_ms")
+    )
 
     return {
         "path": str(path),
@@ -191,6 +199,7 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         "inline_reasoning_trace_basic": bool(assertions.get("liveReasoningTraceVisibleDuringReplay")),
         "response_plan_to_chat_render_lineage": text_audio_same_turn,
         "extract_entities_underlines": entities_underlined,
+        "audible_session_replay": audible_session_replay,
         "observed": {
             "chat_gate_evidence": (chat_gate or {}).get("evidence"),
             "replay_assertions": assertions,
@@ -200,7 +209,53 @@ def classify_proof(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
             "audio_artifact_ids": _nested_get(chat_render or {}, "audio_artifact_ids"),
             "extract_entities_present": bool(extract_entities),
             "underline_render_present": bool(underline_render),
+            "audible_playback_present": bool(audible_playback),
+            "audible_playback": audible_playback,
         },
+    }
+
+
+def _audible_replay_evidence(proof_candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    passing = [candidate for candidate in proof_candidates if candidate["audible_session_replay"]]
+    candidates_with_audio_tags = [
+        candidate
+        for candidate in proof_candidates
+        if (
+            candidate.get("chat_gate_pass")
+            or candidate.get("dynamic_replay_basic")
+            or candidate["observed"].get("chat_gate_evidence")
+        )
+    ]
+    return {
+        "boundary": "shared_chat_replay_to_audible_browser_playback",
+        "ready": bool(passing),
+        "candidate_count": len(candidates_with_audio_tags),
+        "passing_candidate_count": len(passing),
+        "failed_candidate_count": len(candidates_with_audio_tags) - len(passing),
+        "required_fields": [
+            "audible_playback_receipt.playback_started",
+            "audible_playback_receipt.current_time_advanced",
+            "audible_playback_receipt.ended_or_played_to_expected_offset",
+            "audible_playback_receipt.cut_off_after_ms absent",
+        ],
+        "candidate_paths": [candidate["path"] for candidate in candidates_with_audio_tags],
+        "sample_failures": [
+            {
+                "path": candidate["path"],
+                "chat_gate_pass": candidate.get("chat_gate_pass"),
+                "dynamic_replay_basic": candidate.get("dynamic_replay_basic"),
+                "audible_playback_present": candidate["observed"].get("audible_playback_present"),
+                "observed": candidate["observed"],
+            }
+            for candidate in candidates_with_audio_tags
+            if not candidate["audible_session_replay"]
+        ][:4],
+        "blocking_summary": (
+            "embedded audio tags and replay DOM assertions do not prove audible browser playback; "
+            "the receipt must show the selected session audio started, advanced, and was not cut off"
+        )
+        if not passing
+        else None,
     }
 
 
@@ -247,6 +302,7 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
     replay_candidates = [candidate for candidate in proof_candidates if candidate["dynamic_replay_basic"]]
     lineage_candidates = [candidate for candidate in proof_candidates if candidate["response_plan_to_chat_render_lineage"]]
     underline_candidates = [candidate for candidate in proof_candidates if candidate["extract_entities_underlines"]]
+    audible_replay = _audible_replay_evidence(proof_candidates)
 
     failed_gates: list[str] = []
     if chat_matrix["status_counts"]["failed"]:
@@ -259,6 +315,8 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
         failed_gates.append("assistant_response_plan_to_chat_render_lineage_missing")
     if not underline_candidates:
         failed_gates.append("extract_entities_underline_render_receipt_missing")
+    if not audible_replay["ready"]:
+        failed_gates.append("audible_session_replay_receipt_missing")
     if markers and not lineage_candidates:
         failed_gates.append("screenshot_markers_do_not_prove_turn_lineage")
     for gate in sorted(chat_matrix["failed_gate_counts"]):
@@ -278,9 +336,11 @@ def build_audit(matrix: dict[str, Any], proof_paths: list[Path], marker_glob: st
         "dynamic_replay_candidate_count": len(replay_candidates),
         "lineage_candidate_count": len(lineage_candidates),
         "entity_underline_candidate_count": len(underline_candidates),
+        "audible_session_replay_candidate_count": audible_replay["passing_candidate_count"],
         "response_plan_lineage_evidence": lineage_evidence,
         "entity_underline_evidence": entity_underline_evidence,
         "runner_route_evidence": runner_route_evidence,
+        "audible_session_replay_evidence": audible_replay,
         "screenshot_marker_count": len(markers),
         "proof_candidates": proof_candidates,
         "screenshot_markers": markers,
