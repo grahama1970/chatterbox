@@ -26,9 +26,6 @@
     "chat_ux_sync:EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json:screenshot_markers_do_not_prove_turn_lineage",
     "chat_ux_sync:artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
     "chat_ux_sync:subsystem_status_not_passed:failing",
-    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
-    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
-    "chatterbox_from_live_stt:EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json:tone_emotion_matrix_has_failures",
     "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_answerability_matrix_has_failures",
     "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:memory_miss_should_not_answer_unrelated_record",
     "chatterbox_from_live_stt:EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json:memory_gate:persona_memory_answer_uses_unrelated_source_collection",
@@ -52,7 +49,6 @@
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:runner_route_not_implemented",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_memory_recall_found",
     "chatterbox_from_live_stt:EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json:factory_gate:speaker_resolution_known_horus",
-    "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
     "chatterbox_from_live_stt:subsystem_status_not_passed:failing,partial",
@@ -87,7 +83,7 @@
     "tau_memory_routing:artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
     "tau_memory_routing:subsystem_status_not_passed:failing"
   ],
-  "generated_at_utc": "2026-07-08T07:32:38.800459+00:00",
+  "generated_at_utc": "2026-07-08T07:38:00.705775+00:00",
   "items": {
     "browser_mic_webrtc": {
       "acceptance": [
@@ -299,36 +295,22 @@
               "event-sourced replay"
             ],
             "proves": [
-              "live_chatterbox_can_render_audio",
-              "approved_qra_can_generate_five_embry_audio_variants",
-              "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
-              "blessed_qra_cached_response_can_render_preapproved_audio",
-              "personality_audition_variants_can_render_and_play",
-              "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
-              "live_primary_speaker_interruption_barge_in_receipt_present",
-              "live_non_primary_interrupt_audio_is_suppressed_before_turn_control",
-              "live_tau_voice_render_can_speak_natural_tool_wait_stop_phrase",
-              "pyannote_overlap_routes_to_one_at_a_time_voice_delivery"
+              "chatterbox_live_render_qra_variants_personality_tone_and_interruption_are_all_passing"
             ]
           },
           "exists": true,
-          "failed_gates": [
-            "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
-            "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
-            "tone_emotion_matrix_has_failures"
-          ],
+          "failed_gates": [],
           "live": true,
           "mocked": false,
-          "ok": false,
+          "ok": true,
           "path": "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json",
-          "status": "failed"
+          "status": "passed"
         }
       ],
       "failed_reasons": [
         "subsystem_status_not_passed:failing,partial",
         "artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
-        "artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
-        "artifact_not_clean_live_pass:docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
+        "artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
       ],
       "id": "chatterbox_from_live_stt",
       "live_required": true,

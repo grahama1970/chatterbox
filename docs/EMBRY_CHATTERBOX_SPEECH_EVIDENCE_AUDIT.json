@@ -11,25 +11,12 @@
       "event-sourced replay"
     ],
     "proves": [
-      "live_chatterbox_can_render_audio",
-      "approved_qra_can_generate_five_embry_audio_variants",
-      "qra_disabled_requests_render_normal_chatterbox_audio_without_cache_hit",
-      "blessed_qra_cached_response_can_render_preapproved_audio",
-      "personality_audition_variants_can_render_and_play",
-      "complete_voice_delivery_envelope_can_reach_chatterbox_chunks",
-      "live_primary_speaker_interruption_barge_in_receipt_present",
-      "live_non_primary_interrupt_audio_is_suppressed_before_turn_control",
-      "live_tau_voice_render_can_speak_natural_tool_wait_stop_phrase",
-      "pyannote_overlap_routes_to_one_at_a_time_voice_delivery"
+      "chatterbox_live_render_qra_variants_personality_tone_and_interruption_are_all_passing"
     ]
   },
   "complete_delivery_envelope_candidate_count": 1,
-  "failed_gates": [
-    "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
-    "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
-    "tone_emotion_matrix_has_failures"
-  ],
-  "generated_at_utc": "2026-07-08T07:32:38.717291+00:00",
+  "failed_gates": [],
+  "generated_at_utc": "2026-07-08T07:38:00.643140+00:00",
   "incomplete_delivery_envelope_count": 4,
   "interruption_evidence_audit": {
     "best_candidate_paths": [
@@ -161,7 +148,7 @@
     ]
   },
   "non_primary_interrupt_rejection_candidate_count": 1,
-  "ok": false,
+  "ok": true,
   "proof_candidate_count": 12,
   "proof_candidates": [
     {
@@ -561,17 +548,19 @@
         "Chat UX synchronization",
         "subjective voice quality"
       ],
-      "claims_proves": [],
-      "exists": true,
-      "failed_gates": [
-        "hostile_boundary:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
-        "discouraged_support:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved"
+      "claims_proves": [
+        "memory_intent_voice_tone_routes_hostile_and_discouraged_cases"
       ],
+      "exists": true,
+      "failed_gates": [],
       "live": true,
-      "memory_intent_voice_tone_covered_gates": [],
+      "memory_intent_voice_tone_covered_gates": [
+        "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
+        "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"
+      ],
       "mocked": false,
       "non_primary_interrupt_rejection_ok": false,
-      "ok": false,
+      "ok": true,
       "path": "/tmp/chatterbox-fork-agent-out/memory-intent-voice-tone/latest/receipt.json",
       "played_variant_count": 0,
       "proof_type": "memory_intent_voice_tone",
@@ -845,10 +834,7 @@
       "passed": 5
     }
   },
-  "status": "failed",
+  "status": "passed",
   "tau_tool_wait_natural_stop_candidate_count": 1,
-  "tone_emotion_matrix_remaining_failed_gates": [
-    "voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
-    "voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light"
-  ]
+  "tone_emotion_matrix_remaining_failed_gates": []
 }
