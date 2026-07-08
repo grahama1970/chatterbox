@@ -155,6 +155,7 @@ def build_audit(requirements: dict[str, Any], taxonomy: dict[str, Any]) -> dict[
         ),
         "source_requirements": str(DEFAULT_REQUIREMENTS),
         "source_taxonomy": str(DEFAULT_TAXONOMY),
+        "exact_item_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
         "readiness_rule": requirements["readiness_rule"],
         "matrix_status_counts": taxonomy["matrix_status_counts"],
         "receipt_backed_count": taxonomy["receipt_backed_count"],

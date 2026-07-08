@@ -27,6 +27,7 @@ def test_goal_audit_covers_all_named_objective_subsystems() -> None:
         "reason": "Goal subsystems still include failing, partial, and insufficient-evidence rows.",
         "status": "not_ready",
     }
+    assert audit["exact_item_status_artifact"] == "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json"
 
 
 def test_goal_audit_keeps_pass_fail_counts_attached_to_subsystems() -> None:

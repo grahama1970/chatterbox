@@ -1,0 +1,639 @@
+{
+  "acceptance_rule": "each item passes only when every mapped subsystem is passed and every mapped evidence artifact is mocked=false, live=true, ok=true, and has no failed_gates",
+  "generated_at_utc": "2026-07-08T03:42:27.483727+00:00",
+  "items": {
+    "browser_mic_webrtc": {
+      "acceptance": [
+        "browser getUserMedia permission and device receipt",
+        "binary audio packets feed RealtimeSTT",
+        "RealtimeSTT realtime and final transcript events emitted",
+        "capture source identity and transcript receipt are committed"
+      ],
+      "current_failure": "RealtimeSTT ingress is failing: loopback/history slices exist, but current browser/device behavior is inconsistent and factory capture rows fail.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "speaker identity correctness",
+              "memory/Tau answerability",
+              "Chatterbox output quality",
+              "Chat UX synchronization"
+            ],
+            "proves": []
+          },
+          "exists": true,
+          "failed_gates": [
+            "browser_device_ingress_inconsistent",
+            "current_factory_matrix_has_failures",
+            "current_factory_matrix_has_no_passes",
+            "factory_gate:asr_final_transcript_present",
+            "factory_gate:capture_captured_audio_rms",
+            "factory_gate:realtimestt_command_ok",
+            "factory_gate:realtimestt_receipt_ok",
+            "factory_gate:rung7_receipt_ok",
+            "factory_gate:runner_route_not_implemented",
+            "factory_gate:speaker_memory_recall_found",
+            "factory_gate:speaker_resolution_known_horus"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:failing",
+        "artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json"
+      ],
+      "id": "browser_mic_webrtc",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "realtimestt_ingress",
+          "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
+          "status": "failing",
+          "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent."
+        }
+      ],
+      "title": "Browser Mic / WebRTC To RealtimeSTT"
+    },
+    "chat_ux_sync": {
+      "acceptance": [
+        "assistant.response.plan.v1 and chat.render.receipt.v1 share turn_id",
+        "chat text, Chatterbox audio, memory trace, and entity underlines share the same turn",
+        "the shared Chat UX emits committed render receipts"
+      ],
+      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage and entity underline receipts are missing.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT audio ingress",
+              "speaker identity correctness",
+              "memory/Tau answer correctness",
+              "Chatterbox speech quality",
+              "orb synchronization",
+              "event-sourced replay",
+              "interruption"
+            ],
+            "proves": [
+              "shared_chat_basic_audio_text_and_dynamic_replay_evidence_exists"
+            ]
+          },
+          "exists": true,
+          "failed_gates": [
+            "assistant_response_plan_to_chat_render_lineage_missing",
+            "chat_matrix_gate:assistant_response_plan_v1_not_linked",
+            "chat_matrix_gate:chat_render_receipt_v1_not_emitted",
+            "chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
+            "chat_matrix_gate:entity_underline_render_receipt_not_emitted",
+            "chat_matrix_gate:extract_entities_receipt_not_linked",
+            "chat_matrix_gate:runner_route_not_implemented",
+            "chat_matrix_gate:spoken_transcript_entity_underlines_not_proven",
+            "chat_ux_matrix_has_failures",
+            "extract_entities_underline_render_receipt_missing",
+            "screenshot_markers_do_not_prove_turn_lineage"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:failing",
+        "artifact_not_clean_live_pass:docs/EMBRY_CHAT_UX_SYNC_EVIDENCE_AUDIT.json"
+      ],
+      "id": "chat_ux_sync",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "chat_ux_sync",
+          "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
+          "status": "failing",
+          "summary": "Replay and inline trace basics pass, but turn-id lineage, chat render receipts, and entity underline receipts fail."
+        }
+      ],
+      "title": "Chat UX Sync"
+    },
+    "chatterbox_from_live_stt": {
+      "acceptance": [
+        "RealtimeSTT final event creates a turn_id",
+        "same turn_id routes through Tau/memory",
+        "same turn_id produces a Chatterbox audio artifact",
+        "tone, emotion tags, pause policy, and interruption policy are in the spoken text receipt"
+      ],
+      "current_failure": "Chatterbox can render audio in slices, but there is no clean same-turn receipt proving live STT -> Tau/memory -> Chatterbox speech.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "speaker identity correctness",
+              "memory/Tau answerability",
+              "Chatterbox output quality",
+              "Chat UX synchronization"
+            ],
+            "proves": []
+          },
+          "exists": true,
+          "failed_gates": [
+            "browser_device_ingress_inconsistent",
+            "current_factory_matrix_has_failures",
+            "current_factory_matrix_has_no_passes",
+            "factory_gate:asr_final_transcript_present",
+            "factory_gate:capture_captured_audio_rms",
+            "factory_gate:realtimestt_command_ok",
+            "factory_gate:realtimestt_receipt_ok",
+            "factory_gate:rung7_receipt_ok",
+            "factory_gate:runner_route_not_implemented",
+            "factory_gate:speaker_memory_recall_found",
+            "factory_gate:speaker_resolution_known_horus"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        },
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT audio ingress",
+              "speaker identity",
+              "Chatterbox output quality",
+              "Chat UX synchronization",
+              "orb synchronization",
+              "replay",
+              "interruption"
+            ],
+            "proves": [
+              "blocked_memory_answerability_can_be_suppressed_before_chatterbox"
+            ]
+          },
+          "exists": true,
+          "failed_gates": [
+            "memory_answerability_matrix_has_failures",
+            "memory_gate:memory_miss_should_not_answer_unrelated_record",
+            "memory_gate:persona_memory_answer_uses_unrelated_source_collection",
+            "memory_gate:persona_memory_answer_wrong_or_unrelated",
+            "memory_gate:sparta_qra_answer_missing_acceptance_terms",
+            "memory_gate:sparta_qra_answer_overfit_to_unrelated_control_exclusion",
+            "skill_call_receipt_missing",
+            "tau_agent_handoff_missing",
+            "tau_dag_receipt_missing",
+            "tau_skill_gate:skill_call_receipt_not_emitted",
+            "tau_skill_gate:tau_agent_handoff_not_exercised",
+            "tau_skill_gate:tau_dag_receipt_not_created",
+            "tau_skill_routing_matrix_has_failures"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        },
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT audio ingress",
+              "speaker identity",
+              "memory/Tau answer correctness",
+              "Chat UX synchronization",
+              "orb synchronization",
+              "event-sourced replay",
+              "live barge-in interruption"
+            ],
+            "proves": [
+              "live_chatterbox_can_render_audio",
+              "approved_qra_can_generate_five_embry_audio_variants",
+              "personality_audition_variants_can_render_and_play"
+            ]
+          },
+          "exists": true,
+          "failed_gates": [
+            "delivery_envelope_incomplete",
+            "interruption_matrix_has_failures",
+            "speech_matrix_gate:blessed_qra_cached_response_not_exercised",
+            "speech_matrix_gate:interruption_detected_receipt_not_emitted",
+            "speech_matrix_gate:natural_stop_phrase_not_observed",
+            "speech_matrix_gate:new_horus_turn_not_exercised",
+            "speech_matrix_gate:new_turn_wins_receipt_not_emitted",
+            "speech_matrix_gate:non_primary_interrupt_rejection_not_exercised",
+            "speech_matrix_gate:speaker_gate_receipt_not_linked_to_turn_control",
+            "speech_matrix_gate:stale_audio_stream_bytes_not_measured",
+            "speech_matrix_gate:tau_tool_wait_not_exercised",
+            "speech_matrix_gate:voice_delivery_tone_expected_calm_precise_or_careful_concerned_or_neutral_warm_or_relieved",
+            "speech_matrix_gate:voice_delivery_tone_expected_deflect_calm_or_firm_boundary_or_playful_light",
+            "speech_matrix_gate:voice_delivery_tone_expected_firm_boundary_or_one_at_a_time_interrupt",
+            "tone_emotion_matrix_has_failures"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:failing,partial",
+        "artifact_not_clean_live_pass:docs/EMBRY_REALTIMESTT_INGRESS_EVIDENCE_AUDIT.json",
+        "artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
+        "artifact_not_clean_live_pass:docs/EMBRY_CHATTERBOX_SPEECH_EVIDENCE_AUDIT.json"
+      ],
+      "id": "chatterbox_from_live_stt",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "realtimestt_ingress",
+          "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
+          "status": "failing",
+          "summary": "Browser/loopback proof slices exist, but factory capture matrix rows fail and device behavior is inconsistent."
+        },
+        {
+          "id": "memory_tau_routing",
+          "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+          "status": "failing",
+          "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes."
+        },
+        {
+          "id": "chatterbox_speech",
+          "next_proof": "Run audible Chatterbox receipts for tone families, QRA disabled generation, and barge-in stale-byte behavior tied to a live turn id.",
+          "status": "partial",
+          "summary": "Chatterbox render and stream-cancel proof slices exist, but tone coverage, interruption behavior, QRA disabled regressions, and subjective voice quality remain open."
+        }
+      ],
+      "title": "Chatterbox From Live STT"
+    },
+    "interruption": {
+      "acceptance": [
+        "primary Horus speech interrupts Embry playback",
+        "old turn cancels/stops with zero stale audio bytes",
+        "new Horus turn wins",
+        "non-primary interruption is rejected or fail-closed"
+      ],
+      "current_failure": "Interruption is failing: cancel/duck/stop endpoints are exercised, but live barge-in detection, new-turn wins, and stale-audio receipts are missing.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT transcription quality",
+              "speaker diarization quality",
+              "subjective interruption feel"
+            ],
+            "proves": []
+          },
+          "exists": true,
+          "failed_gates": [
+            "live_barge_in_receipt_present",
+            "missing:embry_playback.audio_artifact_id",
+            "missing:embry_playback.offset_ms_at_interrupt",
+            "missing:embry_playback.started_at_epoch_ms",
+            "missing:listener_interruption.detected",
+            "missing:listener_interruption.primary_speaker_match",
+            "missing:listener_interruption.speaker_id",
+            "missing:new_turn.response_started",
+            "missing:new_turn.wins",
+            "missing:new_turn_id",
+            "missing:old_turn_id",
+            "missing:stale_audio.old_turn_bytes_after_cancel",
+            "missing:turn_control.cancelled",
+            "missing:turn_control.stale_chunks_should_skip",
+            "missing:turn_control.stopped",
+            "missing:turn_id"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:failing",
+        "artifact_not_clean_live_pass:docs/EMBRY_INTERRUPTION_EVIDENCE_AUDIT.json"
+      ],
+      "id": "interruption",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "interruption",
+          "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
+          "status": "failing",
+          "summary": "All 20 matrix interruption rows fail; cancel/duck/stop endpoints are exercised, but live detection and new-turn/stale-audio receipts are missing."
+        }
+      ],
+      "title": "Interruption"
+    },
+    "orb_sync": {
+      "acceptance": [
+        "orb authority is recorded",
+        "orb envelope frames are tied to the same Chatterbox audio artifact",
+        "turn_id, playback timestamps, max level, and screenshot path are committed"
+      ],
+      "current_failure": "Orb sync has insufficient evidence: screenshot markers exist, but no committed same-turn envelope receipt proves synchronization.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT ingress",
+              "memory/Tau routing",
+              "Chatterbox generation correctness",
+              "human subjective orb quality"
+            ],
+            "proves": []
+          },
+          "exists": true,
+          "failed_gates": [
+            "missing:audio_artifact_id",
+            "missing:orb.authority",
+            "missing:orb.envelope_frame_count",
+            "missing:orb.max_level",
+            "missing:playback.audio_artifact_id",
+            "missing:playback.started_at_epoch_ms",
+            "missing:screenshot.path",
+            "missing:turn_id",
+            "orb_sync_turn_audio_envelope_receipt_present"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:insufficient_evidence",
+        "artifact_not_clean_live_pass:docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json"
+      ],
+      "id": "orb_sync",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "orb_sync",
+          "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
+          "status": "insufficient_evidence",
+          "summary": "Local UI screenshot markers show the orb route was inspected, but there is no committed receipt proving orb envelope samples are synchronized to the same live Chatterbox turn."
+        }
+      ],
+      "title": "Orb Sync"
+    },
+    "real_horus_enrollment": {
+      "acceptance": [
+        "fresh multi-sample Horus enrollment receipt",
+        "primary speaker accepted",
+        "female/distractor/non-primary speakers rejected",
+        "speaker-scoped memory is unlocked only for resolved Horus"
+      ],
+      "current_failure": "Speaker identity is only partial: fixture and policy rows exist, but real multi-sample Horus enrollment, physical speaker-to-mic identity gating, and overlap diarization are not proven.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT audio ingress",
+              "real multi-sample Horus enrollment",
+              "physical speaker-to-microphone identity gating",
+              "overlapping-speaker diarization",
+              "memory/Tau answer correctness",
+              "Chatterbox speech quality",
+              "Chat UX synchronization",
+              "orb synchronization",
+              "replay",
+              "interruption"
+            ],
+            "proves": [
+              "speaker_identity_matrix_policy_rows_are_passing",
+              "memory_speaker_resolve_handles_known_unknown_ambiguous_overlap_policy",
+              "fixture_primary_speaker_gate_suppresses_non_primary_audio",
+              "known_horus_resolution_can_route_speaker_scoped_memory",
+              "unknown_speaker_resolution_fails_closed_to_identity_prompt"
+            ]
+          },
+          "exists": true,
+          "failed_gates": [
+            "matrix_contains_source_audio_identity_unproven_rows",
+            "overlap_diarization_not_proven",
+            "physical_speaker_to_microphone_identity_gating_not_proven"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:partial",
+        "artifact_not_clean_live_pass:docs/EMBRY_SPEAKER_IDENTITY_EVIDENCE_AUDIT.json"
+      ],
+      "id": "real_horus_enrollment",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "speaker_identity",
+          "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
+          "status": "partial",
+          "summary": "Matrix speaker-resolution rows pass, but full enrollment, unknown/ambiguous/live distractor identity, and speaker-scoped memory conversations remain incomplete."
+        }
+      ],
+      "title": "Real Horus Enrollment"
+    },
+    "replay": {
+      "acceptance": [
+        "actual live session event journal is persisted",
+        "replay reconstructs turn order and original timing offsets",
+        "chat snapshots and audio offsets match the original session"
+      ],
+      "current_failure": "Replay is partial: basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal is not proven.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT correctness",
+              "speaker identity correctness",
+              "Chatterbox synthesis quality",
+              "orb synchronization"
+            ],
+            "proves": []
+          },
+          "exists": true,
+          "failed_gates": [
+            "event_sourced_replay_receipt_present",
+            "missing:event_journal.event_count",
+            "missing:event_journal.path",
+            "missing:event_journal.required_event_types",
+            "missing:event_journal.sha256",
+            "missing:replay.audio_artifact_ids",
+            "missing:replay.audio_offsets_match",
+            "missing:replay.chat_snapshots_match",
+            "missing:replay.original_timing_offsets_ms",
+            "missing:replay.rendered_timing_offsets_ms",
+            "missing:replay.turn_ids",
+            "missing:replay.turn_order_matches",
+            "missing:session_id"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:partial",
+        "artifact_not_clean_live_pass:docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json"
+      ],
+      "id": "replay",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "replay",
+          "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+          "status": "partial",
+          "summary": "Basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal with original timing is not proven."
+        }
+      ],
+      "title": "Replay"
+    },
+    "tau_memory_routing": {
+      "acceptance": [
+        "accepted STT final transcript creates the Tau turn",
+        "memory answerability blocks misses",
+        "Tau handoff/DAG/skill.call receipts are emitted",
+        "Sparta QRA, persona memory, and external research routes are receipt-backed"
+      ],
+      "current_failure": "Memory/Tau routing is failing: answerability and Tau/direct skill receipt gates remain failed.",
+      "evidence_artifacts": [
+        {
+          "claims": {
+            "does_not_prove": [
+              "RealtimeSTT audio ingress",
+              "speaker identity",
+              "Chatterbox output quality",
+              "Chat UX synchronization",
+              "orb synchronization",
+              "replay",
+              "interruption"
+            ],
+            "proves": [
+              "blocked_memory_answerability_can_be_suppressed_before_chatterbox"
+            ]
+          },
+          "exists": true,
+          "failed_gates": [
+            "memory_answerability_matrix_has_failures",
+            "memory_gate:memory_miss_should_not_answer_unrelated_record",
+            "memory_gate:persona_memory_answer_uses_unrelated_source_collection",
+            "memory_gate:persona_memory_answer_wrong_or_unrelated",
+            "memory_gate:sparta_qra_answer_missing_acceptance_terms",
+            "memory_gate:sparta_qra_answer_overfit_to_unrelated_control_exclusion",
+            "skill_call_receipt_missing",
+            "tau_agent_handoff_missing",
+            "tau_dag_receipt_missing",
+            "tau_skill_gate:skill_call_receipt_not_emitted",
+            "tau_skill_gate:tau_agent_handoff_not_exercised",
+            "tau_skill_gate:tau_dag_receipt_not_created",
+            "tau_skill_routing_matrix_has_failures"
+          ],
+          "live": false,
+          "mocked": false,
+          "ok": false,
+          "path": "docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json",
+          "status": "failed"
+        }
+      ],
+      "failed_reasons": [
+        "subsystem_status_not_passed:failing",
+        "artifact_not_clean_live_pass:docs/EMBRY_MEMORY_TAU_ROUTING_EVIDENCE_AUDIT.json"
+      ],
+      "id": "tau_memory_routing",
+      "live_required": true,
+      "mocked": false,
+      "status": "fail",
+      "subsystems": [
+        {
+          "id": "memory_tau_routing",
+          "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+          "status": "failing",
+          "summary": "External research rows pass, but memory answerability and Tau/direct skill routing are the largest current failure classes."
+        }
+      ],
+      "title": "Tau / Memory Routing"
+    }
+  },
+  "live": false,
+  "mocked": false,
+  "next_failed_items": [
+    {
+      "current_failure": "Speaker identity is only partial: fixture and policy rows exist, but real multi-sample Horus enrollment, physical speaker-to-mic identity gating, and overlap diarization are not proven.",
+      "id": "real_horus_enrollment",
+      "next_proof": "Run fresh Horus enrollment, unknown, ambiguous, female distractor, and speaker-scoped recall receipts under one identity ledger.",
+      "title": "Real Horus Enrollment"
+    },
+    {
+      "current_failure": "RealtimeSTT ingress is failing: loopback/history slices exist, but current browser/device behavior is inconsistent and factory capture rows fail.",
+      "id": "browser_mic_webrtc",
+      "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
+      "title": "Browser Mic / WebRTC To RealtimeSTT"
+    },
+    {
+      "current_failure": "Memory/Tau routing is failing: answerability and Tau/direct skill receipt gates remain failed.",
+      "id": "tau_memory_routing",
+      "next_proof": "Fix memory answerability gating and emit Tau handoff/DAG/skill.call receipts for direct skill routes.",
+      "title": "Tau / Memory Routing"
+    },
+    {
+      "current_failure": "Chatterbox can render audio in slices, but there is no clean same-turn receipt proving live STT -> Tau/memory -> Chatterbox speech.",
+      "id": "chatterbox_from_live_stt",
+      "next_proof": "Run a current single receipt that captures browser or PipeWire audio, emits RealtimeSTT final text, and records device/source identity.",
+      "title": "Chatterbox From Live STT"
+    },
+    {
+      "current_failure": "Chat UX sync is failing: basic audio/text and dynamic replay evidence exists, but turn-id lineage and entity underline receipts are missing.",
+      "id": "chat_ux_sync",
+      "next_proof": "Emit assistant.response.plan.v1 and chat.render.receipt.v1 with matching turn_id plus extract-entities underline render receipt.",
+      "title": "Chat UX Sync"
+    },
+    {
+      "current_failure": "Orb sync has insufficient evidence: screenshot markers exist, but no committed same-turn envelope receipt proves synchronization.",
+      "id": "orb_sync",
+      "next_proof": "Add a receipt that records turn_id, audio artifact id, playback timestamps, orb authority, envelope frame count, and screenshot path for the same replay/live turn.",
+      "title": "Orb Sync"
+    },
+    {
+      "current_failure": "Replay is partial: basic shared Chat UX replay rows pass, but event-sourced replay from a live session journal is not proven.",
+      "id": "replay",
+      "next_proof": "Replay from a persisted session event journal containing input, STT, memory/Tau, Chatterbox, playback, and interruption events.",
+      "title": "Replay"
+    },
+    {
+      "current_failure": "Interruption is failing: cancel/duck/stop endpoints are exercised, but live barge-in detection, new-turn wins, and stale-audio receipts are missing.",
+      "id": "interruption",
+      "next_proof": "Run live barge-in receipt where primary speech interrupts Embry playback, old audio stops, and a new turn wins.",
+      "title": "Interruption"
+    }
+  ],
+  "ok": false,
+  "schema": "chatterbox.embry_horus_e2e_status_audit.v1",
+  "source_goal_audit": "docs/EMBRY_GOAL_COVERAGE_AUDIT.json",
+  "status": "failed",
+  "status_counts": {
+    "fail": 8,
+    "pass": 0
+  }
+}

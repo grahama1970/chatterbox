@@ -267,6 +267,28 @@ response plan, rendered chat text, Chatterbox audio artifact, memory reasoning
 trace, and entity underline rendering. Without that, the Chat UX can look
 plausible while still failing the shared voice/chat synchronization contract.
 
+Current exact Horus E2E status audit receipt:
+
+`docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json`
+
+That audit reported `mocked=false`, `ok=false`, with 0 pass / 8 fail. It is the
+single deterministic pass/fail index for the eight items that define the current
+voice/chat stress goal:
+
+- real Horus enrollment: fail
+- browser mic/WebRTC to RealtimeSTT: fail
+- Tau/memory routing: fail
+- Chatterbox from live STT: fail
+- Chat UX sync: fail
+- orb sync: fail
+- replay: fail
+- interruption: fail
+
+The audit passes an item only when every mapped subsystem is `passed` and every
+mapped receipt is `mocked=false`, `live=true`, `ok=true`, and has empty
+`failed_gates`. Partial receipts, screenshots, UI markers, historical slices,
+and direct Chatterbox render proofs do not satisfy the full item gates.
+
 Latest memory answerability ledger receipt:
 
 `/tmp/chatterbox-fork-agent-out/embry-memory-answerability-ledger/20260708T004951Z-memory-answerability-ledger/receipt.json`
