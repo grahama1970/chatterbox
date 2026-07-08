@@ -26,6 +26,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scripts.embry_proof_context import add_proof_context_arguments, append_event as append_context_event
+from scripts.embry_proof_context import apply_proof_context, proof_context_from_args
+
 
 DEFAULT_EXPECTED = "Horus factory stress speech"
 DEFAULT_OUT = Path("/tmp/embry-live-e2e/rung1")
@@ -434,12 +437,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     events_path = out_dir / "events.ndjson"
     events_path.unlink(missing_ok=True)
+    proof_context = proof_context_from_args(args, component="rung1_audio_graph_realtimestt", default_case_id="rung1_audio_graph_realtimestt")
     nonce = args.nonce or secrets.token_hex(3)
     expected_phrase = f"{args.expected} nonce {nonce}" if args.include_nonce else args.expected
     failed_gates: list[str] = []
     env = os.environ.copy()
     api_key = resolve_api_key(args, env)
     append_event(events_path, {"type": "rung1.started", "expected_phrase_sha256": sha256_text(expected_phrase), "nonce": nonce})
+    append_context_event(
+        proof_context,
+        "rung1_audio_graph_realtimestt.started",
+        payload={"expected_phrase_sha256": sha256_text(expected_phrase), "nonce": nonce},
+    )
 
     source_wav, source_generation = generate_source_wav(args=args, out_dir=out_dir, phrase=expected_phrase)
     source_metrics = wav_metrics(source_wav, silence_threshold=args.silence_threshold) if source_wav.exists() else None
@@ -558,6 +567,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         },
     }
     append_event(events_path, {"type": "rung1.ended", "ok": ok, "failed_gates": failed_gates})
+    append_context_event(
+        proof_context,
+        "rung1_audio_graph_realtimestt.ended",
+        payload={"ok": ok, "failed_gates": failed_gates},
+        artifacts=[
+            {"path": str(out_dir / "rung_receipt.json"), "role": "receipt"},
+            {"path": str(out_dir / "captured.wav"), "role": "captured_audio"},
+        ],
+    )
+    apply_proof_context(
+        receipt,
+        proof_context,
+        proof_scope=["native_child_turn_context"],
+        does_not_prove=receipt["claims"]["does_not_prove"],
+    )
+    if proof_context.event_journal is not None:
+        receipt["event_journal_sha256"] = __import__("hashlib").sha256(
+            proof_context.event_journal.read_bytes()
+        ).hexdigest() if proof_context.event_journal.exists() else None
     (out_dir / "rung_receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return receipt
 
@@ -590,6 +618,7 @@ def main() -> int:
     parser.add_argument("--chunk-ms", type=int, default=20)
     parser.add_argument("--trailing-silence-ms", type=int, default=1600)
     parser.add_argument("--max-wer", type=float, default=0.35)
+    add_proof_context_arguments(parser)
     args = parser.parse_args()
 
     receipt = run(args)

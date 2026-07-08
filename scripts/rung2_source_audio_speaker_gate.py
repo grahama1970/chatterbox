@@ -16,6 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scripts.embry_proof_context import add_proof_context_arguments, append_event
+from scripts.embry_proof_context import apply_proof_context, proof_context_from_args
 from scripts.smoke_speaker_segment_evidence import run as run_segment_evidence
 from scripts.smoke_speaker_segment_evidence import sha256_file, wav_metrics
 
@@ -123,8 +125,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     run_id = args.run_id or default_run_id()
     out_dir = (args.out_root / run_id).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    proof_context = proof_context_from_args(args, component="rung2_source_audio_speaker_gate", default_case_id="rung2_source_audio_speaker_gate")
     failed_gates: list[str] = []
     cases: list[dict[str, Any]] = []
+    append_event(proof_context, "rung2_source_audio_speaker_gate.started", payload={"run_id": run_id})
 
     receipt: dict[str, Any] = {
         "schema": "embry.rung2_source_audio_speaker_gate.v1",
@@ -255,6 +259,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     receipt["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 3)
     receipt_path = out_dir / "rung2_source_audio_speaker_gate_receipt.json"
     receipt["receipt_path"] = str(receipt_path)
+    append_event(
+        proof_context,
+        "rung2_source_audio_speaker_gate.ended",
+        payload={"ok": receipt["ok"], "failed_gates": failed_gates},
+        artifacts=[{"path": str(receipt_path), "role": "receipt"}],
+    )
+    apply_proof_context(
+        receipt,
+        proof_context,
+        proof_scope=["native_child_turn_context"],
+        does_not_prove=receipt["claims"]["does_not_prove"],
+    )
+    if proof_context.event_journal is not None:
+        receipt["event_journal_sha256"] = sha256_file(proof_context.event_journal)
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return receipt
 
@@ -274,6 +292,7 @@ def main() -> int:
     parser.add_argument("--min-primary-margin", default=0.12, type=float)
     parser.add_argument("--min-primary-ratio", default=0.5, type=float)
     parser.add_argument("--min-voiced-segments", default=1, type=int)
+    add_proof_context_arguments(parser)
     args = parser.parse_args()
     receipt = run(args)
     print(

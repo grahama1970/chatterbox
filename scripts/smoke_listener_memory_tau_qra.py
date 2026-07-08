@@ -14,6 +14,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scripts.embry_proof_context import add_proof_context_arguments, append_event
+from scripts.embry_proof_context import apply_proof_context, proof_context_from_args
+
 
 DEFAULT_SEED_QUERY = "When should SI-7(8) be used in satellite operations?"
 
@@ -85,14 +88,17 @@ def main() -> int:
     parser.add_argument("--ledger", default="/tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json", type=Path)
     parser.add_argument("--variant", default="gentle")
     parser.add_argument("--timeout-s", default=420, type=int)
+    add_proof_context_arguments(parser)
     args = parser.parse_args()
 
     started = time.perf_counter()
     py = sys.executable
     out_dir = args.out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    proof_context = proof_context_from_args(args, component="smoke_listener_memory_tau_qra", default_case_id="listener_memory_tau_qra")
     failed_gates: list[str] = []
     children: dict[str, Any] = {}
+    append_event(proof_context, "smoke_listener_memory_tau_qra.started", payload={"seed_query": args.seed_query})
 
     api_key = os.getenv(args.api_key_env)
     if not api_key:
@@ -356,6 +362,20 @@ def main() -> int:
             ],
         },
     }
+    append_event(
+        proof_context,
+        "smoke_listener_memory_tau_qra.ended",
+        payload={"ok": receipt["ok"], "failed_gates": failed_gates, "heard_text": heard_text},
+        artifacts=[{"path": str(out_dir / "listener-memory-tau-qra.json"), "role": "receipt"}],
+    )
+    apply_proof_context(
+        receipt,
+        proof_context,
+        proof_scope=["native_child_turn_context"],
+        does_not_prove=receipt["claims"]["does_not_prove"],
+    )
+    if proof_context.event_journal is not None and proof_context.event_journal.exists():
+        receipt["event_journal_sha256"] = __import__("hashlib").sha256(proof_context.event_journal.read_bytes()).hexdigest()
     write_json(out_dir / "listener-memory-tau-qra.json", receipt)
     print(
         json.dumps(
