@@ -333,19 +333,20 @@ tasks:
     runner: local
     backend: ''
     mode: ''
-    cwd: /tmp/agent-skills-embry-event-spine
+    cwd: /home/graham/workspace/experiments/agent-skills
     agent: embry-chatterbox-voice
     depends_on:
       - '2.1'
       - '3.2'
     command: >-
-      python skills/embry-voice-control/scripts/sanity_event_spine_hardening.py
+      uv run --project skills/embry-voice-control python
+      skills/embry-voice-control/scripts/sanity_event_spine_hardening.py
       --realtimestt-python /home/graham/workspace/experiments/RealtimeSTT/.venv-fastapi/bin/python
       --realtimestt-runner /home/graham/workspace/experiments/RealtimeSTT/proofs/embry_pipewire_ingress/run_pipewire_realtimestt_ingress.py
       --source-wav /tmp/horus-high-quality-listener-source.wav
       --expected-phrase 'He saw tracked weapon carriages automated artillery nests of four or even eight automatic cannons shackled together on car platform'
       --playback-target 64 --capture-target 67
-      --event-service-url http://127.0.0.1:8019/v1/listener/events
+      --event-service-url http://127.0.0.1:8029/v1/listener/events
       --output-dir /tmp/embry-event-spine-hardening
     implementation:
       - Start or reuse the existing localhost journal service with a fresh SQLite file.
@@ -354,8 +355,11 @@ tasks:
       - Write an explicit narrow run manifest with immutable receipt hashes.
     tests:
       - >-
-        jq -e '.acceptance.pass == true and .used_mock_transcript == false and
-        .used_ui == false' /tmp/embry-realtimestt-ingress/*/receipt.json
+        jq -e '.status == "pass" and .mocked == false and .live == true and
+        .acceptance.server_sequences_contiguous == true and
+        .acceptance.restart_journal_hash_preserved == true and
+        .acceptance.consumer_ack_prevents_redelivery == true'
+        /tmp/embry-event-spine-hardening/receipt.json
     gate: >-
       One real controlled PipeWire/RealtimeSTT callback chain has server-assigned
       contiguous sequences, causal fields, restart recovery, and claim/ack evidence.
@@ -377,9 +381,10 @@ tasks:
     depends_on:
       - '4.1'
     command: >-
-      python scripts/audit_horus_live_loop_gates.py
+      bash -c 'python scripts/audit_horus_live_loop_gates.py
       --manifest /tmp/embry-event-spine-hardening/run-manifest.json
-      --output /tmp/embry-event-spine-hardening/canonical-audit.json
+      --out /tmp/embry-event-spine-hardening/canonical-audit.json;
+      test $? -eq 1'
     implementation:
       - Audit only the explicit manifest produced by Task 4.1.
       - Preserve suite_ready=false because downstream integrated gates are absent.
@@ -387,7 +392,8 @@ tasks:
     tests:
       - >-
         jq -e '.suite_ready == false and
-        .gates.unix_listener_authority.status == "PASS"'
+        ([.gates[] | select(.name == "Unix/PipeWire RealtimeSTT listener authority"
+        and .status == "PASS")] | length == 1)'
         /tmp/embry-event-spine-hardening/canonical-audit.json
     gate: >-
       The Unix listener contract can pass narrowly while the canonical full-suite
@@ -395,6 +401,7 @@ tasks:
     definition_of_done:
       command: >-
         jq -e '.suite_ready == false and
-        .gates.unix_listener_authority.status == "PASS"'
+        ([.gates[] | select(.name == "Unix/PipeWire RealtimeSTT listener authority"
+        and .status == "PASS")] | length == 1)'
         /tmp/embry-event-spine-hardening/canonical-audit.json
       assertion: exit_code == 0
