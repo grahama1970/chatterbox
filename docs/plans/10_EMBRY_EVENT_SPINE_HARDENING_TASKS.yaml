@@ -1,0 +1,360 @@
+version: 1
+kind: orchestrate-plan
+repo_root: /home/graham/workspace/experiments/chatterbox
+metadata:
+  title: Embry Event Spine Journal And Audit Hardening
+  goal: >-
+    Harden the existing Embry voice event spine with server-assigned contiguous
+    journal sequences, causal event metadata, durable consumer claim/ack state,
+    Unix listener authority in the canonical readiness audit, and correct
+    old-turn/new-turn interruption lineage while excluding physical capture and
+    all later pipeline rungs.
+  plan_type: code
+  created: '2026-07-10'
+  primary_persona:
+    name: Embry Voice Project Agent
+    role: Maintains and audits the workstation-local Embry voice event spine.
+    source: >-
+      Chatterbox PROJECT_KNOWLEDGE.md, docs/VOICE_CHAT_REQUIREMENTS.md, and the
+      WebGPT re-assessment accepted by the human on 2026-07-10.
+execution:
+  max_concurrency: 2
+capability_overlap:
+  - >-
+    EXTEND agent-skills/skills/embry-voice-control SQLite WAL EventJournal and
+    listener_service; do not create a second operational journal.
+  - >-
+    EXTEND RealtimeSTT's existing run_pipewire_realtimestt_ingress.py callback
+    publisher; do not add browser microphone authority.
+  - >-
+    EXTEND Chatterbox's manifest-driven audit and schema; keep Chatterbox as a
+    renderer and evidence auditor, not a turn orchestrator.
+  - >-
+    Chatterbox scripts/embry_event_journal.py remains a bounded proof helper and
+    is not promoted to durable operational authority.
+questions_blockers:
+  - None
+scope:
+  included:
+    - Server-assigned, transactionally contiguous per-session sequence numbers.
+    - Causation, correlation, producer, live/mocked, artifact, and receipt hashes.
+    - Durable consumer claim, acknowledgement, offset, and idempotency state.
+    - RealtimeSTT publisher acceptance of server-assigned sequence numbers.
+    - Unix/PipeWire listener authority as the readiness gate.
+    - Browser/WebRTC evidence classified as diagnostic-only.
+    - Interruption lineage with interruption_id, old_turn_id, and new_turn_id.
+    - Explicit receipt hashes and payload lineage checks in the manifest auditor.
+  excluded:
+    - Continuous physical microphone daemon or physical Horus enrollment.
+    - Memory/Tau dispatcher implementation.
+    - Chatterbox render-request v2 implementation.
+    - Downstream projections, orb behavior, replay, or browser microphone implementation.
+    - Running or promoting the 200+/300-case suite.
+  claim_boundary: >-
+    This plan may prove journal and audit contract hardening only. It must leave
+    suite_ready=false until all integrated live-loop gates pass from one manifest.
+lanes:
+  - id: journal
+    label: Journal authority
+  - id: publisher
+    label: RealtimeSTT publisher
+  - id: audit
+    label: Canonical audit
+  - id: integration
+    label: Narrow integrated proof
+  - id: retention
+    label: Relevant-file retention
+tasks:
+  - id: '1.1'
+    title: Add server sequence allocation and durable consumer state
+    lane: journal
+    runner: code-runner
+    backend: gpt-5.3-codex
+    mode: iterative
+    cwd: /tmp/agent-skills-embry-event-spine
+    agent: embry-chatterbox-voice
+    depends_on: []
+    skills:
+      - embry-voice-control
+      - best-practices-python
+    dirty_worktree_policy: isolated_worktree
+    apply_to_source: true
+    commit_on_success: true
+    rollback_on_failure: true
+    max_rounds: 3
+    allowlist:
+      - skills/embry-voice-control/src/embry_voice_control/event_journal.py
+      - skills/embry-voice-control/src/embry_voice_control/listener_service.py
+      - skills/embry-voice-control/scripts/sanity_event_spine_hardening.py
+      - skills/embry-voice-control/tests/test_event_journal.py
+      - skills/embry-voice-control/references/endpoint-contract.md
+      - skills/embry-voice-control/SKILL.md
+    read_context:
+      - skills/embry-voice-control/src/embry_voice_control/event_journal.py
+      - skills/embry-voice-control/src/embry_voice_control/listener_service.py
+      - skills/embry-voice-control/tests/test_event_journal.py
+      - skills/embry-voice-control/references/endpoint-contract.md
+    prompt: >-
+      Extend the existing Embry EventJournal and listener service in place. Let
+      SQLite allocate each session's next canonical sequence inside the same
+      transaction as insertion; producers may not choose it. Require canonical
+      causation_id, correlation_id, producer, mocked, live, artifact_hashes, and
+      receipt_hash fields. Add durable consumer registration, claim, ack, cursor,
+      and idempotency state with restart-safe semantics. Preserve exact duplicate
+      event idempotency and fail closed on conflicting event IDs. Do not edit any
+      unrelated skill or agent files.
+    implementation:
+      - Update event_journal.py schema/migrations and transaction methods.
+      - Update listener_service.py request/response contracts and claim/ack routes.
+      - Add a focused journal-hardening live receipt runner that composes the existing RealtimeSTT proof.
+      - Update focused tests and endpoint-contract documentation only.
+      - Keep SQLite WAL as the sole operational authority.
+    tests:
+      - >-
+        python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
+    blind_tests:
+      - >-
+        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
+        verify-task 1.1 skills/embry-voice-control --domain skills
+    gate: >-
+      Concurrent publishers cannot create duplicate or non-contiguous canonical
+      sequences, and a restarted consumer cannot execute an acknowledged event again.
+    definition_of_done:
+      command: >-
+        python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
+      assertion: exit_code == 0
+
+  - id: '1.2'
+    title: Adversarially verify journal concurrency and restart semantics
+    lane: journal
+    runner: local
+    backend: ''
+    mode: ''
+    cwd: /tmp/agent-skills-embry-event-spine
+    agent: general-purpose
+    depends_on:
+      - '1.1'
+    command: >-
+      python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
+      && python scripts/check_mock_evidence_claims.py
+    implementation:
+      - Run the focused repository tests without modifying production files.
+      - Preserve the machine-readable pytest output in the orchestration session.
+    tests:
+      - >-
+        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
+        verify-task 1.1 skills/embry-voice-control --domain skills
+    gate: >-
+      Tests cover concurrent append allocation, exact duplicate replay, conflicting
+      event rejection, claim expiry, ack idempotency, and restart cursor recovery.
+    definition_of_done:
+      command: >-
+        python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
+      assertion: exit_code == 0
+
+  - id: '2.1'
+    title: Remove producer-selected sequence numbers from RealtimeSTT publication
+    lane: publisher
+    runner: code-runner
+    backend: gpt-5.3-codex
+    mode: iterative
+    cwd: /home/graham/workspace/experiments/RealtimeSTT
+    agent: embry-chatterbox-voice
+    depends_on:
+      - '1.2'
+    skills:
+      - embry-voice-control
+      - best-practices-python
+    dirty_worktree_policy: isolated_worktree
+    apply_to_source: true
+    commit_on_success: true
+    rollback_on_failure: true
+    max_rounds: 3
+    allowlist:
+      - proofs/embry_pipewire_ingress/run_pipewire_realtimestt_ingress.py
+      - proofs/embry_pipewire_ingress/tests/test_event_publisher.py
+      - proofs/embry_pipewire_ingress/README.md
+      - PROJECT_KNOWLEDGE.md
+    read_context:
+      - proofs/embry_pipewire_ingress/run_pipewire_realtimestt_ingress.py
+      - proofs/embry_pipewire_ingress/README.md
+      - /tmp/agent-skills-embry-event-spine/skills/embry-voice-control/references/endpoint-contract.md
+    prompt: >-
+      Update the existing PipeWire RealtimeSTT proof publisher to omit canonical
+      sequence numbers when publishing listener events and to persist the event ID
+      and sequence returned by the journal service. Remove sequence_start as a
+      canonical control. Populate causal metadata honestly for the bounded live
+      source-WAV proof. Do not add browser capture or physical microphone behavior.
+    implementation:
+      - Update only the existing proof runner and its focused tests/docs if required.
+      - Preserve callback ordering and real RealtimeSTT callback evidence.
+      - Fail when the service response lacks an assigned sequence or event ID.
+    tests:
+      - >-
+        /home/graham/workspace/experiments/RealtimeSTT/.venv-fastapi/bin/python
+        -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
+    blind_tests:
+      - >-
+        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
+        verify-task 2.1 proofs/embry_pipewire_ingress --domain python
+    gate: >-
+      The publisher cannot force an arbitrary canonical sequence and records the
+      service-assigned identity for every delivered callback.
+    definition_of_done:
+      command: >-
+        /home/graham/workspace/experiments/RealtimeSTT/.venv-fastapi/bin/python
+        -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
+      assertion: exit_code == 0
+
+  - id: '3.1'
+    title: Replace browser readiness gate with Unix listener authority
+    lane: audit
+    runner: code-runner
+    backend: gpt-5.3-codex
+    mode: iterative
+    cwd: /home/graham/workspace/experiments/chatterbox
+    agent: embry-chatterbox-voice
+    depends_on:
+      - '1.2'
+    skills:
+      - best-practices-python
+      - best-practices-chatterbox-agent
+    dirty_worktree_policy: isolated_worktree
+    apply_to_source: true
+    commit_on_success: true
+    rollback_on_failure: true
+    max_rounds: 3
+    allowlist:
+      - scripts/audit_horus_live_loop_gates.py
+      - tests/test_audit_horus_live_loop_gates.py
+      - docs/schemas/embry.voice_run_manifest.v1.schema.json
+      - docs/schemas/embry.voice_run_manifest.v2.schema.json
+      - docs/VOICE_CHAT_REQUIREMENTS.md
+      - docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json
+    read_context:
+      - scripts/audit_horus_live_loop_gates.py
+      - tests/test_audit_horus_live_loop_gates.py
+      - docs/schemas/embry.voice_run_manifest.v1.schema.json
+      - docs/VOICE_CHAT_REQUIREMENTS.md
+    prompt: >-
+      Harden the manifest-driven Chatterbox readiness audit. Replace mandatory
+      browser_webrtc/browser_realtimestt readiness roles with a Unix/PipeWire
+      listener-authority gate; retain browser evidence only in a diagnostic section
+      that cannot promote or block suite readiness. Verify declared receipt SHA-256
+      values and compare lineage fields against receipt payloads. Replace same-turn
+      interruption matching with same-session causal lineage using interruption_id,
+      old_turn_id, and new_turn_id. Keep suite_ready fail-closed.
+    implementation:
+      - Introduce or migrate to an explicit manifest v2 schema if needed.
+      - Add negative tests for gibberish STT, hash mismatch, payload lineage mismatch.
+      - Add interruption tests that reject unrelated sessions and same-turn-only proof.
+      - Update requirements/status documentation without claiming the full loop.
+    tests:
+      - python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+    blind_tests:
+      - >-
+        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
+        verify-task 3.1 scripts/audit_horus_live_loop_gates.py --domain python
+    gate: >-
+      Browser evidence is diagnostic-only, Unix listener evidence is authoritative,
+      receipt content matches manifest hashes/lineage, and interruption spans old/new turns.
+    definition_of_done:
+      command: python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+      assertion: exit_code == 0
+
+  - id: '3.2'
+    title: Adversarially verify canonical audit fail-closed behavior
+    lane: audit
+    runner: local
+    backend: ''
+    mode: ''
+    cwd: /home/graham/workspace/experiments/chatterbox
+    agent: general-purpose
+    depends_on:
+      - '3.1'
+    command: python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+    implementation:
+      - Run focused audit tests against explicit manifests only.
+      - Confirm no latest-glob receipt discovery remains in the readiness path.
+    tests:
+      - >-
+        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
+        verify-task 3.1 scripts/audit_horus_live_loop_gates.py --domain python
+    gate: >-
+      Missing Unix authority, mismatched hashes, cross-session lineage, or fixture
+      interruption evidence deterministically leaves the gate failed.
+    definition_of_done:
+      command: python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+      assertion: exit_code == 0
+
+  - id: '4.1'
+    title: Run one controlled live journal publication proof
+    lane: integration
+    runner: local
+    backend: ''
+    mode: ''
+    cwd: /tmp/agent-skills-embry-event-spine
+    agent: embry-chatterbox-voice
+    depends_on:
+      - '2.1'
+      - '3.2'
+    command: >-
+      python skills/embry-voice-control/scripts/sanity_event_spine_hardening.py
+      --realtimestt-python /home/graham/workspace/experiments/RealtimeSTT/.venv-fastapi/bin/python
+      --realtimestt-runner /home/graham/workspace/experiments/RealtimeSTT/proofs/embry_pipewire_ingress/run_pipewire_realtimestt_ingress.py
+      --source-wav /tmp/horus-high-quality-listener-source.wav
+      --expected-phrase 'He saw tracked weapon carriages automated artillery nests of four or even eight automatic cannons shackled together on car platform'
+      --playback-target 64 --capture-target 67
+      --event-service-url http://127.0.0.1:8019/v1/listener/events
+      --output-dir /tmp/embry-event-spine-hardening
+    implementation:
+      - Start or reuse the existing localhost journal service with a fresh SQLite file.
+      - Publish real RealtimeSTT callbacks from the controlled PipeWire source path.
+      - Restart the service and verify ordered journal recovery and consumer claim/ack.
+      - Write an explicit narrow run manifest with immutable receipt hashes.
+    tests:
+      - >-
+        jq -e '.acceptance.pass == true and .used_mock_transcript == false and
+        .used_ui == false' /tmp/embry-realtimestt-ingress/*/receipt.json
+    gate: >-
+      One real controlled PipeWire/RealtimeSTT callback chain has server-assigned
+      contiguous sequences, causal fields, restart recovery, and claim/ack evidence.
+    definition_of_done:
+      command: >-
+        test -s /tmp/embry-event-spine-hardening/receipt.json
+        && jq -e '.status == "pass" and .mocked == false and .live == true and
+        .claims.physical_hot_mic == false' /tmp/embry-event-spine-hardening/receipt.json
+      assertion: exit_code == 0
+
+  - id: '4.2'
+    title: Regenerate the canonical audit from the explicit narrow manifest
+    lane: integration
+    runner: local
+    backend: ''
+    mode: ''
+    cwd: /home/graham/workspace/experiments/chatterbox
+    agent: general-purpose
+    depends_on:
+      - '4.1'
+    command: >-
+      python scripts/audit_horus_live_loop_gates.py
+      --manifest /tmp/embry-event-spine-hardening/run-manifest.json
+      --output /tmp/embry-event-spine-hardening/canonical-audit.json
+    implementation:
+      - Audit only the explicit manifest produced by Task 4.1.
+      - Preserve suite_ready=false because downstream integrated gates are absent.
+      - Record browser diagnostics separately if present; absence is not a blocker.
+    tests:
+      - >-
+        jq -e '.suite_ready == false and
+        .gates.unix_listener_authority.status == "PASS"'
+        /tmp/embry-event-spine-hardening/canonical-audit.json
+    gate: >-
+      The Unix listener contract can pass narrowly while the canonical full-suite
+      status remains unambiguously not ready.
+    definition_of_done:
+      command: >-
+        jq -e '.suite_ready == false and
+        .gates.unix_listener_authority.status == "PASS"'
+        /tmp/embry-event-spine-hardening/canonical-audit.json
+      assertion: exit_code == 0
