@@ -1,4 +1,6 @@
 {
+  "canonical_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
+  "classification": "component_slice_aggregation",
   "claims": {
     "does_not_prove": [
       "A PASS in this audit does not create new live evidence; it validates existing receipts.",
@@ -147,6 +149,8 @@
   "live": true,
   "mocked": false,
   "ok": true,
+  "suite_ready": false,
+  "superseded_for_suite_readiness": true,
   "pass_count": 8,
   "repo": {
     "branch": "main",

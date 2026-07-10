@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "embry.voice_run_manifest.v1",
+  "title": "Embry Voice Run Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "session_id",
+    "listener_authority",
+    "repo_commits",
+    "turn_ids",
+    "receipts"
+  ],
+  "properties": {
+    "schema": {"const": "embry.voice_run_manifest.v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "listener_authority": {"const": "unix_pipewire_realtimestt"},
+    "repo_commits": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "string", "minLength": 7}
+    },
+    "turn_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "receipts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {"$ref": "#/$defs/receipt"}
+      }
+    }
+  },
+  "$defs": {
+    "receipt": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["kind", "path", "session_id", "turn_id"],
+      "properties": {
+        "kind": {"type": "string", "minLength": 1},
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?\\[]+$"
+        },
+        "session_id": {"type": "string", "minLength": 1},
+        "turn_id": {"type": "string", "minLength": 1},
+        "expected_transcript": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

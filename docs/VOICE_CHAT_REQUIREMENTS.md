@@ -14,6 +14,19 @@ below has a current non-mocked receipt with `mocked=false`, `live=true`, empty
 `failed_gates`, and an inspectable artifact path. Unit tests, patched clients,
 fixture-only assertions, and DOM checks are wiring evidence only.
 
+There is one canonical suite-readiness status artifact:
+`docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json`. Historical component aggregations,
+including `docs/HORUS_COMPONENT_SLICE_AUDIT_20260708.json`, are explicitly
+classified as `component_slice_aggregation` with `suite_ready=false` and cannot
+promote the suite to ready.
+
+The component-slice auditor requires an explicit
+`embry.voice_run_manifest.v1` path. Receipt globs, modification-time selection,
+and implicit "latest" files are forbidden. Every manifest receipt declares its
+`session_id`, `turn_id`, role, and literal path; Chat, orb, replay, and
+interruption gates additionally require same-turn lineage or an actual persisted
+session journal.
+
 ## Current Evidence Baseline
 
 The strongest current full-loop proof-slice receipt is:
@@ -125,11 +138,11 @@ Latest live runner receipts:
   `mocked=false`, `live=true`, and empty `failed_gates`. It consumed the fresh
   browser WAV above, RealtimeSTT emitted final text, Tau rendered Chatterbox
   audio, stream cancel passed, and overlap one-at-a-time behavior passed.
-- `/tmp/horus-live-loop-gates-current-after-patch.json`
-  audited the current receipts for real Horus enrollment, browser mic/WebRTC,
-  Tau/memory routing, Chatterbox from live STT, Chat UX sync, orb sync, replay,
-  and interruption. Result: `ok=true`, `live=true`, `mocked=false`, 8 PASS / 0
-  FAIL.
+- `docs/HORUS_COMPONENT_SLICE_AUDIT_20260708.json` is the preserved historical
+  8/8 component aggregation. It is not a suite-readiness claim because its
+  source receipts were not selected from one explicit session manifest and its
+  gates did not require same-turn lineage. The canonical status remains
+  `docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json`.
 - `/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T214538Z-audible-all-v2/index.json`
   passed all currently implemented scenarios with `mocked=false`, `live=true`,
   empty `failed_gates`, and audible playback ledgers for every scenario through

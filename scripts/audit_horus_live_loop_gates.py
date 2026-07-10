@@ -10,26 +10,26 @@ fields needed for that gate.
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import subprocess
 from datetime import datetime, timezone
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
 
-DEFAULTS = {
-    "horus_rung7": "/tmp/chatterbox-fork-agent-out/rung7-horus-factory-stress-youtube-20260702T192914Z/rung7-combined.json",
-    "browser_webrtc": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*/browser-webrtc.json",
-    "browser_realtimestt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/02-realtimestt-listener.json",
-    "continuous_loop": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/continuous-voice-loop.json",
-    "listener_memory_tau_qra": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260703T211546Z-all-current/S01-S02-S08-S09-S12-continuous-core/11-qra-cache-probe/listener-memory-tau-qra.json",
-    "tau_voice_render": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/09-tau-voice-render.json",
-    "stream_cancel": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/10-stream-turn-cancel.json",
-    "overlap_control": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-current-*-continuous-core/12-overlap-turn-control/overlap-turn-control.json",
-    "chat_ux": "/tmp/embry-voice-controlled-loop-ui-proof-after-live-patch.json",
-    "orb_sync": "/tmp/embry_voice_orb_connection_proof.json",
-    "replay": "/tmp/codex-ui-verification/pi-mono/embry-voice-dynamic-replay-hardening/dynamic-replay-proof.json",
+RECEIPT_ROLES = {
+    "horus_rung7": ("speaker_gate", "primary_enrollment"),
+    "browser_webrtc": ("listener", "browser_webrtc"),
+    "browser_realtimestt": ("listener", "browser_realtimestt"),
+    "continuous_loop": ("listener", "continuous_loop"),
+    "listener_memory_tau_qra": ("memory", "qra_route"),
+    "tau_voice_render": ("chatterbox", "tau_voice_render"),
+    "stream_cancel": ("interruption", "stream_cancel"),
+    "overlap_control": ("interruption", "overlap_control"),
+    "chat_ux": ("chat", "turn_render"),
+    "orb_sync": ("orb", "playback_envelope"),
+    "replay": ("replay", "session_replay"),
 }
 
 
@@ -44,13 +44,55 @@ def load_json(path: Path) -> dict[str, Any]:
         return {"__load_error__": f"{type(exc).__name__}: {exc}"}
 
 
-def resolve_receipt_path(value: str) -> Path:
-    if any(ch in value for ch in "*?["):
-        matches = [Path(match) for match in glob.glob(value)]
-        matches = [match for match in matches if match.exists()]
-        if matches:
-            return max(matches, key=lambda path: path.stat().st_mtime)
-    return Path(value)
+def normalize_text(value: str) -> str:
+    return " ".join("".join(ch.lower() if ch.isalnum() else " " for ch in value).split())
+
+
+def transcript_similarity(actual: Any, expected: Any) -> float:
+    if not isinstance(actual, str) or not isinstance(expected, str):
+        return 0.0
+    return SequenceMatcher(None, normalize_text(actual), normalize_text(expected)).ratio()
+
+
+def load_manifest(path: Path) -> dict[str, Any]:
+    manifest = load_json(path)
+    if manifest.get("schema") != "embry.voice_run_manifest.v1":
+        raise ValueError("manifest_schema_invalid")
+    for field in ("run_id", "session_id", "listener_authority", "repo_commits", "turn_ids", "receipts"):
+        if not manifest.get(field):
+            raise ValueError(f"manifest_missing_{field}")
+    if manifest["listener_authority"] != "unix_pipewire_realtimestt":
+        raise ValueError("manifest_listener_authority_not_unix_pipewire_realtimestt")
+    for category, entries in manifest["receipts"].items():
+        if not isinstance(entries, list):
+            raise ValueError(f"manifest_receipts_{category}_not_list")
+        for entry in entries:
+            receipt_path = str(entry.get("path") or "")
+            if not receipt_path or any(ch in receipt_path for ch in "*?["):
+                raise ValueError(f"manifest_receipt_path_invalid:{category}:{receipt_path}")
+            if entry.get("session_id") != manifest["session_id"]:
+                raise ValueError(f"manifest_receipt_session_mismatch:{category}:{entry.get('kind')}")
+    return manifest
+
+
+def receipt_entries(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    indexed: dict[tuple[str, str], dict[str, Any]] = {}
+    for category, entries in manifest["receipts"].items():
+        for entry in entries:
+            key = (category, str(entry.get("kind") or ""))
+            if key in indexed:
+                raise ValueError(f"manifest_duplicate_receipt_role:{category}:{key[1]}")
+            indexed[key] = entry
+    return {
+        role: indexed.get(key, {"path": f"__missing__/{key[0]}/{key[1]}.json"})
+        for role, key in RECEIPT_ROLES.items()
+    }
+
+
+def same_lineage(*entries: dict[str, Any]) -> bool:
+    sessions = {entry.get("session_id") for entry in entries}
+    turns = {entry.get("turn_id") for entry in entries}
+    return None not in sessions and None not in turns and len(sessions) == 1 and len(turns) == 1
 
 
 def exists_file(path_value: Any) -> bool:
@@ -108,7 +150,9 @@ def repo_state(root: Path) -> dict[str, Any]:
 
 def audit(args: argparse.Namespace) -> dict[str, Any]:
     root = Path(__file__).resolve().parents[1]
-    paths = {key: resolve_receipt_path(str(getattr(args, key) or value)) for key, value in DEFAULTS.items()}
+    manifest = load_manifest(args.manifest)
+    entries = receipt_entries(manifest)
+    paths = {key: Path(str(entry["path"])) for key, entry in entries.items()}
     receipts = {key: load_json(path) if path.exists() else {"__missing__": True} for key, path in paths.items()}
 
     gates: list[dict[str, Any]] = []
@@ -122,7 +166,10 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check(verification.get("schema") == "chatterbox.listener.primary_speaker_verification.v1", failures, "primary_verification_schema")
     check(verification.get("ok") is True, failures, "primary_verification_ok")
     check(verification.get("primary_speaker_match") is True, failures, "primary_speaker_match_true")
-    check(str(verification.get("enrollment_audio") or "").lower().find("horus") >= 0, failures, "enrollment_audio_names_horus")
+    check(verification.get("synthetic_enrollment") is False, failures, "enrollment_is_physical_not_synthetic")
+    check(int(verification.get("enrollment_sample_count") or 0) >= 3, failures, "enrollment_has_three_samples")
+    check(int(verification.get("held_out_horus_count") or 0) >= 1, failures, "held_out_horus_validation_present")
+    check(int(verification.get("impostor_sample_count") or 0) >= 1, failures, "impostor_distribution_present")
     check(exists_file(verification.get("enrollment_audio")), failures, "enrollment_audio_exists")
     check(exists_file(verification.get("candidate_audio")), failures, "candidate_audio_exists")
     check(float(verification.get("similarity") or 0) >= float(verification.get("threshold") or 1), failures, "similarity_meets_threshold")
@@ -154,6 +201,11 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check(paths["browser_realtimestt"].exists(), failures, "browser_realtimestt_receipt_exists")
     check(ok_live_unmocked(browser_rstt), failures, "browser_realtimestt_ok_live_unmocked")
     check((browser_rstt.get("transcript") or {}).get("text") not in {None, ""}, failures, "browser_realtimestt_transcript_present")
+    transcript_score = transcript_similarity(
+        get_path(browser_rstt, "transcript", "text"),
+        entries["browser_realtimestt"].get("expected_transcript"),
+    )
+    check(transcript_score >= 0.75, failures, "browser_realtimestt_transcript_quality")
     gates.append(gate(
         "browser mic/WebRTC",
         [paths["browser_webrtc"], paths["browser_realtimestt"]],
@@ -168,6 +220,8 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             "noise_suppression": get_path(browser, "inputs", "noise_suppression"),
             "auto_gain_control": get_path(browser, "inputs", "auto_gain_control"),
             "realtimestt_transcript": get_path(browser_rstt, "transcript", "text"),
+            "expected_transcript": entries["browser_realtimestt"].get("expected_transcript"),
+            "transcript_similarity": transcript_score,
         },
     ))
 
@@ -234,6 +288,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check("What did we last talk about?" in str(chat.get("finalText") or ""), failures, "conversation_text_visible")
     check("RENDER CHATTERBOX AUDIO" in str(chat.get("finalText") or ""), failures, "chatterbox_audio_status_visible")
     check(len(chat.get("audioSrcs") or []) >= 1, failures, "audio_srcs_present")
+    check(same_lineage(entries["chat_ux"], entries["tau_voice_render"]), failures, "chat_and_chatterbox_same_turn_lineage")
     gates.append(gate(
         "Chat UX sync",
         [paths["chat_ux"]],
@@ -257,6 +312,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check(len(nonzero_samples) >= 3, failures, "nonzero_audio_samples")
     check(len(bound_samples) >= 3, failures, "speech_bound_samples")
     check(len(canvas_hashes) >= 2, failures, "canvas_hash_changes")
+    check(same_lineage(entries["orb_sync"], entries["tau_voice_render"]), failures, "orb_and_playback_same_turn_lineage")
     gates.append(gate(
         "orb sync",
         [paths["orb_sync"]],
@@ -278,6 +334,8 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check(assertions.get("liveReasoningTraceVisibleDuringReplay") is True, failures, "reasoning_trace_visible")
     check(assertions.get("replayCompletesWithoutStaticReset") is True, failures, "replay_completes")
     check(int(replay.get("audioCount") or 0) >= 1, failures, "audio_count_positive")
+    check(exists_file(replay.get("session_journal_path")), failures, "live_session_journal_exists")
+    check(replay.get("fixture_backed") is False, failures, "replay_is_not_fixture_backed")
     gates.append(gate(
         "replay",
         [paths["replay"]],
@@ -299,6 +357,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check(paths["overlap_control"].exists(), failures, "overlap_receipt_exists")
     check(ok_live_unmocked(overlap), failures, "overlap_ok_live_unmocked")
     check(exists_file(get_path(overlap, "artifacts", "tau_voice_render")), failures, "overlap_tau_voice_render_receipt_exists")
+    check(same_lineage(entries["stream_cancel"], entries["overlap_control"]), failures, "interruption_receipts_same_turn_lineage")
     gates.append(gate(
         "interruption",
         [paths["stream_cancel"], paths["overlap_control"]],
@@ -315,10 +374,16 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     fail_count = sum(1 for item in gates if item["status"] == "FAIL")
     receipt = {
         "schema": "chatterbox.horus_live_loop_gate_audit.v1",
+        "classification": "component_slice_aggregation",
+        "suite_ready": False,
+        "canonical_status_artifact": "docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json",
+        "source_manifest": str(args.manifest),
+        "run_id": manifest["run_id"],
+        "session_id": manifest["session_id"],
         "created_at_utc": utc_now(),
         "ok": fail_count == 0,
         "mocked": False,
-        "live": fail_count == 0,
+        "live": False,
         "status": "PASS" if fail_count == 0 else "FAIL",
         "pass_count": pass_count,
         "fail_count": fail_count,
@@ -340,8 +405,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    for key, value in DEFAULTS.items():
-        parser.add_argument(f"--{key.replace('_', '-')}", default=value)
+    parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 

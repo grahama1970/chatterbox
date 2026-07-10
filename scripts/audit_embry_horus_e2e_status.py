@@ -210,6 +210,10 @@ def build_audit(goal_audit: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "schema": "chatterbox.embry_horus_e2e_status_audit.v1",
+        "classification": "canonical_suite_readiness",
+        "canonical": True,
+        "suite_ready": counts["fail"] == 0,
+        "supersedes": ["docs/HORUS_COMPONENT_SLICE_AUDIT_20260708.json"],
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "mocked": False,
         "live": False,

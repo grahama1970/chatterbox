@@ -23,6 +23,10 @@ def test_horus_status_audit_covers_exact_requested_items() -> None:
     assert audit["status_counts"] == {"pass": 1, "fail": 7}
     assert audit["ok"] is False
     assert audit["status"] == "failed"
+    assert audit["classification"] == "canonical_suite_readiness"
+    assert audit["canonical"] is True
+    assert audit["suite_ready"] is False
+    assert audit["supersedes"] == ["docs/HORUS_COMPONENT_SLICE_AUDIT_20260708.json"]
     assert audit["failed_gates"]
     assert "item_failed:browser_mic_webrtc" in audit["failed_gates"]
 
