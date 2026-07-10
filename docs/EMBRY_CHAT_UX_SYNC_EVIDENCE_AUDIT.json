@@ -124,7 +124,7 @@
     "sample_failures": []
   },
   "failed_gates": [],
-  "generated_at_utc": "2026-07-08T09:59:13.954644+00:00",
+  "generated_at_utc": "2026-07-08T15:16:59.768074+00:00",
   "lineage_candidate_count": 1,
   "live": true,
   "live_unmocked_candidate_count": 2,
@@ -222,11 +222,11 @@
         "audible_playback": {
           "current_time_advanced": true,
           "cut_off_after_ms": null,
-          "ended_event_count": 1,
+          "ended_event_count": 2,
           "ended_or_played_to_expected_offset": true,
           "error_event_count": 0,
-          "event_count": 39,
-          "max_current_time_seconds": 3.622,
+          "event_count": 41,
+          "max_current_time_seconds": 5.418,
           "max_duration_seconds": 5.418,
           "play_event_count": 2,
           "playback_started": true,

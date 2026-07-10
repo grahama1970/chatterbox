@@ -1,6 +1,6 @@
 # Project Knowledge: chatterbox
 
-**Last updated:** 2026-07-08 07:23 by agent
+**Last updated:** 2026-07-10 12:35 by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -86,6 +86,7 @@
 - 2026-07-08: Direct Chatterbox/orb envelope receipt added. `scripts/build_embry_orb_sync_receipt.py` normalized `/tmp/embry-orb-direct-speak-proof.json` into `/tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak/orb-sync-receipt.json`. The receipt has `mocked=false`, `live=true`, `ok=true`, turn/audio artifact id `0b0d4fe7ea12`, playback start `1783361300926`, `orb.authority=server-envelope`, 330 envelope frames, max level `0.798`, 20 nonzero audio samples, 21 bound samples, and screenshot `/tmp/embry-orb-direct-speak-proof.png`. `docs/EMBRY_ORB_SYNC_EVIDENCE_AUDIT.json` now passes for this bounded proof. Goal-level `orb_sync` remains `partial` because the same orb linkage has not yet been emitted from a full shared Chat UX or live listener turn.
 - 2026-07-08: Replay evidence audit now requires passing candidates to be live/unmocked and reports wrapper `live=true` when at least one current event-sourced replay receipt passes. `docs/EMBRY_REPLAY_EVIDENCE_AUDIT.json` now has `ok=true`, `live=true`, `failed_gates=[]`, and the exact Horus audit no longer flags the replay evidence artifact as not clean. Goal-level replay remains `partial` because browser shared Chat UX replay from a full live listener session is still missing.
 - 2026-07-08 focused proof pass: the previously unproven Embry voice/chat gates now have focused receipts, but not yet one unified event-spine receipt. Rung 1 local audio graph -> RealtimeSTT PASS: /tmp/embry-live-e2e/rung1-20260708T105423Z-hello-alpha7781-pw-fixed/rung_receipt.json. Rung 2 source-audio Horus speaker gate PASS after tightening the margin to 0.12: /tmp/embry-live-e2e/rung2-20260708T-default-after-margin-fix/rung2_source_audio_speaker_gate_receipt.json; the earlier failure proved generic espeak audio was accepted as Horus under the loose margin. Browser getUserMedia/WebRTC transport PASS with real devices and pw-play fixture: /tmp/embry-live-e2e/browser-webrtc-20260708T-focused-shortplay/receipt.json. Listener ASR -> memory recall -> QRA hook -> Tau/Chatterbox PASS using the real local Whisper token from docker exec whisper whisper_manage --getkey: /tmp/embry-live-e2e/rung3-20260708T-listener-memory-tau-qra-realkey2/listener-memory-tau-qra.json. Shared Chat UX lineage/entity underline PASS: /tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/20260708T-focused-lineage/receipt.json. Chat replay audio PASS only when the proof waits long enough for the 25.88s artifact: /tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio/20260708T-focused-replay-audio-35s/receipt.json. Direct Chatterbox/orb envelope PASS: /tmp/chatterbox-fork-agent-out/orb-sync-current/orb-direct-speak-focused/orb-sync-receipt.json. Fresh interruption PASS with --path-map /out=/tmp/chatterbox-fork-agent-out: /tmp/embry-live-e2e/rung4-20260708T-focused-interrupt/rung4-live-interrupt-mapped.json. Brave Search cross-checks saved at /tmp/chatterbox-brave-whisper-auth.json, /tmp/chatterbox-brave-chrome-audio.json, and /tmp/chatterbox-brave-pipewire-webrtc.json confirmed docker-whisper bearer-key behavior, Chrome autoplay test flags/user-gesture constraints, and PipeWire pw-play/pw-record monitor tooling.
+- 2026-07-10: Embry wake/listen authority is now the Unix/PipeWire RealtimeSTT receipt path, not Chrome/browser microphone capture. The live UX Lab listener endpoint `/api/projects/embry-voice/listener/latest` returned `usable_for_live_turn=true`, `authority=unix_pipewire_realtimestt_receipt`, `run_id=20260709T142845Z-unix-listener-f14f8cd2`, `wake_detected=true`, final transcript "Embry the capital and France is Paris.", and turn text "the capital and France is Paris." Focused Embry voice-control receipt `/mnt/storage12tb/skills/embry-voice-control/outputs/e2e/listener-turn-live/20260710T120528Z-listener-turn-61a5c2a6/receipt.json` has `mocked=false`, `used_ui=false`, `used_browser_mic=false`, `live=true`, `ok=true`, and answer "The capital of France is Paris."; it proves listener receipt -> live-turn -> memory/Tau answer -> Chatterbox audio authority for that static query. Browser click proof on `http://localhost:3002/#embry-voice` rendered the same answer in the shared Chat UX with embedded audio (`/tmp/embry-voice-listen-click-unix-receipt.png`). Remaining boundaries: continuous hot mic wake loop, browser mic/WebRTC, speaker ID/diarization for this turn, full Chat UX event lineage, orb sync, replay, interruption, and the 200+ stress suite.
 
 ## Recent Decisions
 
@@ -100,13 +101,15 @@
 | 2026-07-08 | Embry stress tests must be generated from source-backed oracles, not demos | The matrix now has 300 cases with per-row oracle, required receipts, answerability policy, and Tau-only direct-skill constraints. |
 | 2026-07-08 | No Embry conversation test may be flat or neutral | Every matrix row now requires a conversation arc, steering strategy, `$memory` intent tone, inline emotion tags, pause policy, and interruption policy. |
 | 2026-07-08 | Use focused proof receipts before unified Embry voice-loop claims | The 2026-07-08 pass showed each gate can be proven independently, but the full-loop claim still needs one shared turn_id/event-spine receipt tying browser/RealtimeSTT, speaker gate, memory/Tau, Chatterbox, Chat UX, orb, replay, and interruption together. |
+| 2026-07-10 | Use Unix/PipeWire RealtimeSTT as the first-class listener path | Chrome mic/WebRTC remains useful as a diagnostic, but it has been too brittle for the wake/listen proof. The authoritative path for starting the 200+ Embry tests is a local audio/RealtimeSTT receipt consumed by the Embry voice-control live-turn adapter. |
 
 ## Open Questions
 
 - [ ] What are the key architectural decisions?
 - [ ] What are the known issues?
 - [ ] Should the next Chatterbox fork patch prioritize P0 security/concurrency fixes before Embry subagent conversation testing?
-- [ ] Should browser voice input use a PipeWire monitor/virtual source bridge instead of acoustic browser microphone capture?
+- [x] Should browser voice input use a PipeWire monitor/virtual source bridge instead of acoustic browser microphone capture? Yes for the current proof lane: Unix/PipeWire RealtimeSTT receipts are the authority; browser mic/WebRTC is diagnostic until it has stable capture and transcript receipts.
+- [ ] What service contract should replace "latest receipt" polling for the continuous hot-mic wake loop before the 200+ stress suite?
 - [ ] Which Embry one-at-a-time/personality variant should become the default, and what human-review rubric should gate voice personality?
 - [x] Should Embry voice route personal-memory and SPARTA QRA questions through a stricter answerability gate before Tau/Chatterbox, so unrelated `/answer` results are clarified or deflected instead of spoken? Runtime enforcement now exists at `/tau/voice-render`; upstream memory answer quality remains open.
 
@@ -149,6 +152,7 @@
 | scripts/prove_embry_chat_ux_lineage.py | Browser receipt for shared Chat UX text/audio/entity underline lineage. |
 | scripts/prove_embry_chat_ux_replay_audio.py | Browser media receipt for shared Chat UX session replay audio progress and completion. |
 | scripts/smoke_browser_webrtc_transport.py | Browser getUserMedia/WebRTC-to-WebSocket PCM transport proof with real microphone devices and optional local playback fixture. |
+| /home/graham/workspace/experiments/agent-skills/skills/embry-voice-control/run.sh | Embry voice-control skill entrypoint for focused listener/live-turn checks that consume Unix/PipeWire RealtimeSTT receipts. |
 
 ## Infrastructure State
 

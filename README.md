@@ -17,6 +17,32 @@ PCM stream / WAV receipts
 Chatterbox remains the renderer. Memory, QRA trust, search/tool use, reasoning,
 and emotional steering decisions belong to the coordinator and memory pipeline.
 
+## Current Embry Listener Authority
+
+As of 2026-07-10, the first-class Embry wake/listen proof path is the local
+Unix/PipeWire RealtimeSTT receipt path, not Chrome microphone capture:
+
+```text
+Unix/PipeWire audio capture -> RealtimeSTT transcript receipt ->
+Embry voice-control live-turn adapter -> memory/Tau answer ->
+Chatterbox audio authority -> shared Chat UX render
+```
+
+Browser `getUserMedia` / WebRTC remains a diagnostic path. It can prove browser
+transport and UI permission behavior, but it is too brittle to be the authority
+for the 200+ Embry conversation stress suite until it has stable capture,
+transcript, and turn-lineage receipts.
+
+Current focused evidence:
+
+| Gate | Status | Evidence |
+| --- | --- | --- |
+| Unix/PipeWire RealtimeSTT wake transcript | Passing for focused static query | UX Lab listener endpoint returned `usable_for_live_turn=true`, `authority=unix_pipewire_realtimestt_receipt`, `wake_detected=true`, final transcript `Embry the capital and France is Paris.` |
+| Listener receipt -> live turn -> memory/Tau -> Chatterbox | Passing for focused static query | `/mnt/storage12tb/skills/embry-voice-control/outputs/e2e/listener-turn-live/20260710T120528Z-listener-turn-61a5c2a6/receipt.json` has `mocked=false`, `live=true`, `used_browser_mic=false`, `used_ui=false`, answer `The capital of France is Paris.`, and Chatterbox audio authority. |
+| Shared Chat UX consumption | Passing for focused click path | Browser click proof at `http://localhost:3002/#embry-voice` rendered the same Paris answer with embedded audio; screenshot `/tmp/embry-voice-listen-click-unix-receipt.png`. |
+| Browser mic/WebRTC | Diagnostic only | Do not use it as the suite authority until stable browser PCM -> RealtimeSTT final transcript receipts exist. |
+| Continuous hot mic, speaker ID, replay, interruption, 200+ suite | Not yet proven by this focused rung | These require a shared event spine with one turn id across listener, memory/Tau, Chatterbox, Chat UX, orb, replay, and interruption receipts. |
+
 ## Fork Additions
 
 | Area | Current implementation |
