@@ -74,9 +74,6 @@ tasks:
     cwd: /tmp/agent-skills-embry-event-spine
     agent: embry-chatterbox-voice
     depends_on: []
-    skills:
-      - embry-voice-control
-      - best-practices-python
     dirty_worktree_policy: isolated_worktree
     apply_to_source: true
     commit_on_success: true
@@ -162,9 +159,6 @@ tasks:
     agent: embry-chatterbox-voice
     depends_on:
       - '1.2'
-    skills:
-      - embry-voice-control
-      - best-practices-python
     dirty_worktree_policy: isolated_worktree
     apply_to_source: true
     commit_on_success: true
@@ -216,9 +210,6 @@ tasks:
     agent: embry-chatterbox-voice
     depends_on:
       - '1.2'
-    skills:
-      - best-practices-python
-      - best-practices-chatterbox-agent
     dirty_worktree_policy: isolated_worktree
     apply_to_source: true
     commit_on_success: true
