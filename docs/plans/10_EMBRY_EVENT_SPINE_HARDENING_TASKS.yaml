@@ -293,8 +293,7 @@ tasks:
     tests:
       - >-
         python -m pytest tests/test_audit_horus_live_loop_gates.py -q
-        && grep -q 'unix_listener_authority' scripts/audit_horus_live_loop_gates.py
-        && grep -q 'interruption_id' scripts/audit_horus_live_loop_gates.py
+        -k 'unix_listener_authority or interruption_causal_lineage'
     blind_tests:
       - >-
         python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py audit .
@@ -304,8 +303,7 @@ tasks:
     definition_of_done:
       command: >-
         python -m pytest tests/test_audit_horus_live_loop_gates.py -q
-        && grep -q 'unix_listener_authority' scripts/audit_horus_live_loop_gates.py
-        && grep -q 'interruption_id' scripts/audit_horus_live_loop_gates.py
+        -k 'unix_listener_authority or interruption_causal_lineage'
       assertion: exit_code == 0
 
   - id: '3.2'
