@@ -224,7 +224,6 @@ tasks:
     read_context:
       - proofs/embry_pipewire_ingress/run_pipewire_realtimestt_ingress.py
       - proofs/embry_pipewire_ingress/README.md
-      - /tmp/agent-skills-embry-harness-promote/skills/embry-voice-control/references/endpoint-contract.md
     prompt: >-
       Update the existing PipeWire RealtimeSTT proof publisher to omit canonical
       sequence numbers when publishing listener events and to persist the event ID
@@ -292,7 +291,10 @@ tasks:
       - Add interruption tests that reject unrelated sessions and same-turn-only proof.
       - Update requirements/status documentation without claiming the full loop.
     tests:
-      - python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+      - >-
+        python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+        && grep -q 'unix_listener_authority' scripts/audit_horus_live_loop_gates.py
+        && grep -q 'interruption_id' scripts/audit_horus_live_loop_gates.py
     blind_tests:
       - >-
         python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py audit .
@@ -300,7 +302,10 @@ tasks:
       Browser evidence is diagnostic-only, Unix listener evidence is authoritative,
       receipt content matches manifest hashes/lineage, and interruption spans old/new turns.
     definition_of_done:
-      command: python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+      command: >-
+        python -m pytest tests/test_audit_horus_live_loop_gates.py -q
+        && grep -q 'unix_listener_authority' scripts/audit_horus_live_loop_gates.py
+        && grep -q 'interruption_id' scripts/audit_horus_live_loop_gates.py
       assertion: exit_code == 0
 
   - id: '3.2'
