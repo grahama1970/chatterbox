@@ -71,7 +71,7 @@ tasks:
     runner: code-runner
     backend: gpt-5.3-codex
     mode: iterative
-    cwd: /tmp/agent-skills-embry-event-spine
+    cwd: /tmp/agent-skills-embry-harness-promote
     agent: embry-chatterbox-voice
     depends_on: []
     dirty_worktree_policy: isolated_worktree
@@ -126,7 +126,7 @@ tasks:
     runner: local
     backend: ''
     mode: ''
-    cwd: /tmp/agent-skills-embry-event-spine
+    cwd: /tmp/agent-skills-embry-harness-promote
     agent: general-purpose
     depends_on:
       - '1.1'
@@ -153,7 +153,7 @@ tasks:
     runner: code-runner
     backend: gpt-5.3-codex
     mode: iterative
-    cwd: /tmp/agent-skills-embry-event-spine
+    cwd: /tmp/agent-skills-embry-harness-promote
     agent: embry-chatterbox-voice
     depends_on:
       - '1.2'
@@ -220,7 +220,7 @@ tasks:
     read_context:
       - proofs/embry_pipewire_ingress/run_pipewire_realtimestt_ingress.py
       - proofs/embry_pipewire_ingress/README.md
-      - /tmp/agent-skills-embry-event-spine/skills/embry-voice-control/references/endpoint-contract.md
+      - /tmp/agent-skills-embry-harness-promote/skills/embry-voice-control/references/endpoint-contract.md
     prompt: >-
       Update the existing PipeWire RealtimeSTT proof publisher to omit canonical
       sequence numbers when publishing listener events and to persist the event ID
