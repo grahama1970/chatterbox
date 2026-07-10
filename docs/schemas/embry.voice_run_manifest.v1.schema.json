@@ -42,7 +42,7 @@
     "receipt": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["kind", "path", "session_id", "turn_id"],
+      "required": ["kind", "path", "sha256", "session_id", "turn_id"],
       "properties": {
         "kind": {"type": "string", "minLength": 1},
         "path": {
@@ -50,6 +50,7 @@
           "minLength": 1,
           "pattern": "^[^*?\\[]+$"
         },
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "session_id": {"type": "string", "minLength": 1},
         "turn_id": {"type": "string", "minLength": 1},
         "expected_transcript": {"type": "string", "minLength": 1}

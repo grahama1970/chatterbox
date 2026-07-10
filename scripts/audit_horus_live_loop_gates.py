@@ -10,6 +10,7 @@ fields needed for that gate.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -20,8 +21,7 @@ from typing import Any
 
 RECEIPT_ROLES = {
     "horus_rung7": ("speaker_gate", "primary_enrollment"),
-    "browser_webrtc": ("listener", "browser_webrtc"),
-    "browser_realtimestt": ("listener", "browser_realtimestt"),
+    "unix_listener_authority": ("listener", "unix_listener_authority"),
     "continuous_loop": ("listener", "continuous_loop"),
     "listener_memory_tau_qra": ("memory", "qra_route"),
     "tau_voice_render": ("chatterbox", "tau_voice_render"),
@@ -42,6 +42,14 @@ def load_json(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:  # noqa: BLE001
         return {"__load_error__": f"{type(exc).__name__}: {exc}"}
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def normalize_text(value: str) -> str:
@@ -72,6 +80,8 @@ def load_manifest(path: Path) -> dict[str, Any]:
                 raise ValueError(f"manifest_receipt_path_invalid:{category}:{receipt_path}")
             if entry.get("session_id") != manifest["session_id"]:
                 raise ValueError(f"manifest_receipt_session_mismatch:{category}:{entry.get('kind')}")
+            if not entry.get("sha256"):
+                raise ValueError(f"manifest_receipt_sha256_missing:{category}:{entry.get('kind')}")
     return manifest
 
 
@@ -93,6 +103,38 @@ def same_lineage(*entries: dict[str, Any]) -> bool:
     sessions = {entry.get("session_id") for entry in entries}
     turns = {entry.get("turn_id") for entry in entries}
     return None not in sessions and None not in turns and len(sessions) == 1 and len(turns) == 1
+
+
+def receipt_matches_manifest(entry: dict[str, Any], receipt: dict[str, Any]) -> bool:
+    """Require hash and payload lineage to match the declared manifest entry."""
+    path = Path(str(entry.get("path") or ""))
+    return (
+        path.is_file()
+        and sha256_file(path) == entry.get("sha256")
+        and receipt.get("session_id") == entry.get("session_id")
+        and receipt.get("turn_id") == entry.get("turn_id")
+    )
+
+
+def interruption_causal_lineage(
+    cancel_entry: dict[str, Any],
+    overlap_entry: dict[str, Any],
+    cancel: dict[str, Any],
+    overlap: dict[str, Any],
+) -> bool:
+    """Validate one interruption spanning distinct old and new turns."""
+    interruption_id = cancel.get("interruption_id")
+    return (
+        cancel_entry.get("session_id") == overlap_entry.get("session_id")
+        and cancel.get("session_id") == cancel_entry.get("session_id")
+        and overlap.get("session_id") == overlap_entry.get("session_id")
+        and isinstance(interruption_id, str)
+        and bool(interruption_id)
+        and interruption_id == overlap.get("interruption_id")
+        and cancel.get("old_turn_id") == cancel_entry.get("turn_id")
+        and overlap.get("new_turn_id") == overlap_entry.get("turn_id")
+        and cancel.get("old_turn_id") != overlap.get("new_turn_id")
+    )
 
 
 def exists_file(path_value: Any) -> bool:
@@ -155,6 +197,10 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     paths = {key: Path(str(entry["path"])) for key, entry in entries.items()}
     receipts = {key: load_json(path) if path.exists() else {"__missing__": True} for key, path in paths.items()}
 
+    for role, entry in entries.items():
+        if not receipt_matches_manifest(entry, receipts[role]):
+            receipts[role] = {"__manifest_mismatch__": True}
+
     gates: list[dict[str, Any]] = []
 
     horus = receipts["horus_rung7"]
@@ -189,38 +235,26 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         },
     ))
 
-    browser = receipts["browser_webrtc"]
-    browser_rstt = receipts["browser_realtimestt"]
+    listener = receipts["unix_listener_authority"]
     failures = []
-    check(paths["browser_webrtc"].exists(), failures, "receipt_exists")
-    check(ok_live_unmocked(browser), failures, "browser_transport_ok_live_unmocked")
-    check((browser.get("transport") or {}).get("chunks_received", 0) > 0, failures, "chunks_received_positive")
-    check((browser.get("transport") or {}).get("binary_bytes_received", 0) > 0, failures, "binary_bytes_received_positive")
-    check((browser.get("transport") or {}).get("duration_seconds", 0) >= 2.0, failures, "duration_at_least_2s")
-    check(exists_file((browser.get("artifacts") or {}).get("wav")), failures, "captured_wav_exists")
-    check(paths["browser_realtimestt"].exists(), failures, "browser_realtimestt_receipt_exists")
-    check(ok_live_unmocked(browser_rstt), failures, "browser_realtimestt_ok_live_unmocked")
-    check((browser_rstt.get("transcript") or {}).get("text") not in {None, ""}, failures, "browser_realtimestt_transcript_present")
+    check(paths["unix_listener_authority"].exists(), failures, "receipt_exists")
+    check(ok_live_unmocked(listener), failures, "unix_listener_ok_live_unmocked")
+    check(listener.get("listener_authority") == "unix_pipewire_realtimestt", failures, "unix_listener_authority")
+    check((listener.get("captured_audio") or {}).get("captured_audio_non_silent") is True, failures, "captured_pcm_non_silent")
+    check((listener.get("realtimestt") or {}).get("final_transcript_events"), failures, "realtimestt_final_event_present")
     transcript_score = transcript_similarity(
-        get_path(browser_rstt, "transcript", "text"),
-        entries["browser_realtimestt"].get("expected_transcript"),
+        get_path(listener, "transcript", "final"),
+        entries["unix_listener_authority"].get("expected_transcript"),
     )
-    check(transcript_score >= 0.75, failures, "browser_realtimestt_transcript_quality")
+    check(transcript_score >= 0.75, failures, "unix_listener_transcript_quality")
     gates.append(gate(
-        "browser mic/WebRTC",
-        [paths["browser_webrtc"], paths["browser_realtimestt"]],
+        "Unix/PipeWire RealtimeSTT listener authority",
+        [paths["unix_listener_authority"]],
         failures,
         {
-            "chunks_received": get_path(browser, "transport", "chunks_received"),
-            "binary_bytes_received": get_path(browser, "transport", "binary_bytes_received"),
-            "duration_seconds": get_path(browser, "transport", "duration_seconds"),
-            "captured_wav": get_path(browser, "artifacts", "wav"),
-            "audio_device_label": get_path(browser, "inputs", "audio_device_label"),
-            "echo_cancellation": get_path(browser, "inputs", "echo_cancellation"),
-            "noise_suppression": get_path(browser, "inputs", "noise_suppression"),
-            "auto_gain_control": get_path(browser, "inputs", "auto_gain_control"),
-            "realtimestt_transcript": get_path(browser_rstt, "transcript", "text"),
-            "expected_transcript": entries["browser_realtimestt"].get("expected_transcript"),
+            "listener_authority": listener.get("listener_authority"),
+            "realtimestt_transcript": get_path(listener, "transcript", "final"),
+            "expected_transcript": entries["unix_listener_authority"].get("expected_transcript"),
             "transcript_similarity": transcript_score,
         },
     ))
@@ -357,7 +391,11 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     check(paths["overlap_control"].exists(), failures, "overlap_receipt_exists")
     check(ok_live_unmocked(overlap), failures, "overlap_ok_live_unmocked")
     check(exists_file(get_path(overlap, "artifacts", "tau_voice_render")), failures, "overlap_tau_voice_render_receipt_exists")
-    check(same_lineage(entries["stream_cancel"], entries["overlap_control"]), failures, "interruption_receipts_same_turn_lineage")
+    check(
+        interruption_causal_lineage(entries["stream_cancel"], entries["overlap_control"], cancel, overlap),
+        failures,
+        "interruption_causal_lineage",
+    )
     gates.append(gate(
         "interruption",
         [paths["stream_cancel"], paths["overlap_control"]],
@@ -396,9 +434,10 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             ],
             "does_not_prove": [
                 "A PASS in this audit does not create new live evidence; it validates existing receipts.",
-                "The strict Chatterbox-from-live-STT gate fails unless browser/WebRTC RealtimeSTT transcript and Chatterbox render both pass.",
+                "Browser microphone/WebRTC evidence is diagnostic only and cannot promote or block suite readiness.",
             ],
         },
+        "diagnostics": {"browser_microphone_webrtc": "not_evaluated_for_suite_readiness"},
     }
     return receipt
 
