@@ -135,7 +135,7 @@ tasks:
       - '1.1'
     command: >-
       python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
-      && python scripts/check_mock_evidence_claims.py
+      && python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py journal .
     implementation:
       - Run the focused repository tests without modifying production files.
       - Preserve the machine-readable pytest output in the orchestration session.
@@ -148,6 +148,7 @@ tasks:
     definition_of_done:
       command: >-
         python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
+        && python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py journal .
       assertion: exit_code == 0
 
   - id: '1.3'
