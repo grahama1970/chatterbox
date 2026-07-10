@@ -82,7 +82,6 @@ tasks:
     allowlist:
       - skills/embry-voice-control/src/embry_voice_control/event_journal.py
       - skills/embry-voice-control/src/embry_voice_control/listener_service.py
-      - skills/embry-voice-control/scripts/sanity_event_spine_hardening.py
       - skills/embry-voice-control/tests/test_event_journal.py
       - skills/embry-voice-control/references/endpoint-contract.md
       - skills/embry-voice-control/SKILL.md
@@ -103,7 +102,6 @@ tasks:
     implementation:
       - Update event_journal.py schema/migrations and transaction methods.
       - Update listener_service.py request/response contracts and claim/ack routes.
-      - Add a focused journal-hardening live receipt runner that composes the existing RealtimeSTT proof.
       - Update focused tests and endpoint-contract documentation only.
       - Keep SQLite WAL as the sole operational authority.
     tests:
@@ -149,6 +147,57 @@ tasks:
         python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
       assertion: exit_code == 0
 
+  - id: '1.3'
+    title: Add the focused journal hardening live receipt runner
+    lane: journal
+    runner: code-runner
+    backend: gpt-5.3-codex
+    mode: iterative
+    cwd: /tmp/agent-skills-embry-event-spine
+    agent: embry-chatterbox-voice
+    depends_on:
+      - '1.2'
+    dirty_worktree_policy: isolated_worktree
+    apply_to_source: true
+    commit_on_success: true
+    rollback_on_failure: true
+    max_rounds: 3
+    allowlist:
+      - skills/embry-voice-control/scripts/sanity_event_spine_hardening.py
+      - skills/embry-voice-control/tests/test_event_spine_hardening_runner.py
+      - skills/embry-voice-control/references/endpoint-contract.md
+    read_context:
+      - skills/embry-voice-control/src/embry_voice_control/event_journal.py
+      - skills/embry-voice-control/src/embry_voice_control/listener_service.py
+      - skills/embry-voice-control/tests/test_event_journal.py
+    prompt: >-
+      Add one focused non-UI sanity runner that composes the existing RealtimeSTT
+      PipeWire proof and the Embry journal service. It must use a fresh SQLite file,
+      exercise restart recovery and consumer claim/ack, write receipt.json and
+      run-manifest.json under the requested output directory, preserve immutable
+      hashes, and state physical_hot_mic=false. Do not implement a listener daemon,
+      Memory/Tau, Chatterbox rendering, or downstream projections.
+    implementation:
+      - Create the runner and its focused deterministic tests.
+      - Document only the new command and receipt boundary.
+      - Fail closed when service-assigned sequences or causal fields are absent.
+    tests:
+      - >-
+        python -m pytest
+        skills/embry-voice-control/tests/test_event_spine_hardening_runner.py -q
+    blind_tests:
+      - >-
+        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
+        verify-task 1.3 skills/embry-voice-control --domain skills
+    gate: >-
+      The runner emits deterministic narrow receipts and cannot claim physical
+      microphone or downstream voice-loop coverage.
+    definition_of_done:
+      command: >-
+        python -m pytest
+        skills/embry-voice-control/tests/test_event_spine_hardening_runner.py -q
+      assertion: exit_code == 0
+
   - id: '2.1'
     title: Remove producer-selected sequence numbers from RealtimeSTT publication
     lane: publisher
@@ -158,7 +207,7 @@ tasks:
     cwd: /home/graham/workspace/experiments/RealtimeSTT
     agent: embry-chatterbox-voice
     depends_on:
-      - '1.2'
+      - '1.3'
     dirty_worktree_policy: isolated_worktree
     apply_to_source: true
     commit_on_success: true
@@ -209,7 +258,7 @@ tasks:
     cwd: /home/graham/workspace/experiments/chatterbox
     agent: embry-chatterbox-voice
     depends_on:
-      - '1.2'
+      - '1.3'
     dirty_worktree_policy: isolated_worktree
     apply_to_source: true
     commit_on_success: true
