@@ -98,7 +98,9 @@ tasks:
       receipt_hash fields. Add durable consumer registration, claim, ack, cursor,
       and idempotency state with restart-safe semantics. Preserve exact duplicate
       event idempotency and fail closed on conflicting event IDs. Do not edit any
-      unrelated skill or agent files.
+      unrelated skill or agent files. Expose append_event, claim_events,
+      ack_event, and consumer_offset as the focused journal API; append_event
+      accepts no producer sequence and returns the canonical stored event.
     implementation:
       - Update event_journal.py schema/migrations and transaction methods.
       - Update listener_service.py request/response contracts and claim/ack routes.
@@ -109,8 +111,7 @@ tasks:
         python -m pytest skills/embry-voice-control/tests/test_event_journal.py -q
     blind_tests:
       - >-
-        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
-        verify-task 1.1 skills/embry-voice-control --domain skills
+        python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py journal .
     gate: >-
       Concurrent publishers cannot create duplicate or non-contiguous canonical
       sequences, and a restarted consumer cannot execute an acknowledged event again.
@@ -137,8 +138,7 @@ tasks:
       - Preserve the machine-readable pytest output in the orchestration session.
     tests:
       - >-
-        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
-        verify-task 1.1 skills/embry-voice-control --domain skills
+        python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py journal .
     gate: >-
       Tests cover concurrent append allocation, exact duplicate replay, conflicting
       event rejection, claim expiry, ack idempotency, and restart cursor recovery.
@@ -187,8 +187,7 @@ tasks:
         skills/embry-voice-control/tests/test_event_spine_hardening_runner.py -q
     blind_tests:
       - >-
-        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
-        verify-task 1.3 skills/embry-voice-control --domain skills
+        python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py runner .
     gate: >-
       The runner emits deterministic narrow receipts and cannot claim physical
       microphone or downstream voice-loop coverage.
@@ -238,8 +237,7 @@ tasks:
         -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
     blind_tests:
       - >-
-        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
-        verify-task 2.1 proofs/embry_pipewire_ingress --domain python
+        python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py publisher .
     gate: >-
       The publisher cannot force an arbitrary canonical sequence and records the
       service-assigned identity for every delivered callback.
@@ -293,8 +291,7 @@ tasks:
       - python -m pytest tests/test_audit_horus_live_loop_gates.py -q
     blind_tests:
       - >-
-        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
-        verify-task 3.1 scripts/audit_horus_live_loop_gates.py --domain python
+        python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py audit .
     gate: >-
       Browser evidence is diagnostic-only, Unix listener evidence is authoritative,
       receipt content matches manifest hashes/lineage, and interruption spans old/new turns.
@@ -318,8 +315,7 @@ tasks:
       - Confirm no latest-glob receipt discovery remains in the readiness path.
     tests:
       - >-
-        /home/graham/workspace/experiments/agent-skills/skills/test-lab/run.sh
-        verify-task 3.1 scripts/audit_horus_live_loop_gates.py --domain python
+        python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py audit .
     gate: >-
       Missing Unix authority, mismatched hashes, cross-session lineage, or fixture
       interruption evidence deterministically leaves the gate failed.
