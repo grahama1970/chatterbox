@@ -236,8 +236,7 @@ tasks:
       - Fail when the service response lacks an assigned sequence or event ID.
     tests:
       - >-
-        /home/graham/workspace/experiments/RealtimeSTT/.venv-fastapi/bin/python
-        -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
+        python -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
     blind_tests:
       - >-
         python /home/graham/workspace/experiments/agent-skills/skills/test-lab/tests/embry-event-spine/verify_contract.py publisher .
@@ -246,8 +245,7 @@ tasks:
       service-assigned identity for every delivered callback.
     definition_of_done:
       command: >-
-        /home/graham/workspace/experiments/RealtimeSTT/.venv-fastapi/bin/python
-        -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
+        python -m pytest proofs/embry_pipewire_ingress/tests/test_event_publisher.py -q
       assertion: exit_code == 0
 
   - id: '3.1'
@@ -269,7 +267,6 @@ tasks:
       - scripts/audit_horus_live_loop_gates.py
       - tests/test_audit_horus_live_loop_gates.py
       - docs/schemas/embry.voice_run_manifest.v1.schema.json
-      - docs/schemas/embry.voice_run_manifest.v2.schema.json
       - docs/VOICE_CHAT_REQUIREMENTS.md
       - docs/EMBRY_HORUS_E2E_STATUS_AUDIT.json
     read_context:
