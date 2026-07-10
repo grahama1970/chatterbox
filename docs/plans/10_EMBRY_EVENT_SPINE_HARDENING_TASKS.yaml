@@ -101,6 +101,9 @@ tasks:
       unrelated skill or agent files. Expose append_event, claim_events,
       ack_event, and consumer_offset as the focused journal API; append_event
       accepts no producer sequence and returns the canonical stored event.
+      claim_events accepts consumer name, optional session_id, limit, and
+      lease_seconds so claims are exclusive until expiry; ack_event accepts the
+      consumer name and event ID and is idempotent.
     implementation:
       - Update event_journal.py schema/migrations and transaction methods.
       - Update listener_service.py request/response contracts and claim/ack routes.
