@@ -129,6 +129,7 @@ class SynthesisBatchRequest(RenderPlanRequest):
     pace: str | None = Field(default=None, max_length=80)
     pause_strategy: str | None = Field(default=None, max_length=120)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
+    delivery_arc: list[dict[str, str]] | None = None
     include_completion_cue: bool = True
     stream: bool = False
     crossfade_ms: int = Field(default=20, ge=0, le=250)
@@ -1253,6 +1254,17 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         pace=tau_voice_delivery.get("pace"),
         pause_strategy=tau_voice_delivery.get("pause_strategy"),
         voice_delivery=tau_voice_delivery,
+        delivery_arc=[
+            {
+                "stage": effective_delivery_stage(
+                    tone=chunk.tone or request.tone or request.voice_delivery.get("tone"),
+                    delivery_stage=chunk.delivery_stage,
+                ),
+                "tone": chunk.tone or request.tone or request.voice_delivery.get("tone") or "neutral_warm",
+                "role": f"tau_chunk_{index}",
+            }
+            for index, chunk in enumerate(request.speakable_chunks, 1)
+        ],
         label=label,
         include_completion_cue=request.include_completion_cue,
         crossfade_ms=request.crossfade_ms,
@@ -1642,6 +1654,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         max_chars=request.max_chars,
         pause_after_ms=request.pause_after_ms,
         completion_cue=request.completion_cue,
+        arc=request.delivery_arc,
     )
     latency_event(batch_events, "render_plan_ready", started_total, chunk_count=plan["chunk_count"])
     ref_audio_path = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)

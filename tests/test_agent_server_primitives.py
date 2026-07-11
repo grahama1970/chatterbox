@@ -275,6 +275,9 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
     assert batch.delivery_stage == "satisfied"
     assert batch.pace == "measured"
     assert batch.pause_strategy == "short_answer_no_filler"
+    assert batch.delivery_arc == [
+        {"stage": "satisfied", "tone": "memory_confident", "role": "tau_chunk_1"}
+    ]
     assert batch.voice_delivery["source"] == "memory_intent"
     assert batch.use_blessed_qra_cache is True
     assert batch.blessed_qra_memory_key == "qra-si-answer"
@@ -282,6 +285,28 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
     assert receipt["voice_delivery"]["source"] == "memory_intent"
     assert receipt["mapped_batch"]["tone"] == "memory_confident"
     assert receipt["mapped_batch"]["delivery_stage"] == "satisfied"
+
+
+def test_tau_voice_render_preserves_chunk_tone_arc() -> None:
+    chunks = [
+        ("Concerned opening.", "careful_concerned", "slightly_concerned"),
+        ("Grounded explanation.", "memory_confident", "satisfied"),
+        ("Happy close.", "playful_light", "positive"),
+    ]
+    request = TauVoiceRenderRequest(
+        conversation_id="conv-tone-arc",
+        turn_id="turn-tone-arc",
+        speakable_chunks=[
+            {"text": text, "text_sha256": server.sha256_text(text), "tone": tone}
+            for text, tone, _stage in chunks
+        ],
+    )
+
+    batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
+
+    assert receipt["ok"] is True
+    assert [item["tone"] for item in batch.delivery_arc] == [item[1] for item in chunks]
+    assert [item["stage"] for item in batch.delivery_arc] == [item[2] for item in chunks]
 
 
 def test_tau_voice_render_request_fails_closed_on_hash_mismatch() -> None:

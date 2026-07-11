@@ -1,0 +1,42 @@
+{
+  "schema": "embry.audio_e2e_source_policy.v1",
+  "countable_source_classes": {
+    "physical_live_horus": {
+      "physical_human": true,
+      "prerecorded": false,
+      "qualification_receipt_required": false,
+      "synthetic": false,
+      "voice_clone": false
+    },
+    "qualified_horus_clone": {
+      "physical_human": false,
+      "prerecorded": true,
+      "qualification_receipt_required": true,
+      "synthetic": true,
+      "voice_clone": true
+    },
+    "recorded_physical_horus": {
+      "physical_human": true,
+      "prerecorded": true,
+      "qualification_receipt_required": true,
+      "synthetic": false,
+      "voice_clone": false
+    }
+  },
+  "forbidden_counted_sources": [
+    "browser_microphone",
+    "generic_tts",
+    "mocked_transcript",
+    "source_wav_direct_to_realtimestt",
+    "typed_prompt",
+    "typed_transcript"
+  ],
+  "input_authority": "unix_pipewire_realtimestt",
+  "requirements": {
+    "captured_audio_hash_required": true,
+    "listener_final_event_required": true,
+    "non_silent_pcm_required": true,
+    "source_class_disclosure_required": true,
+    "speaker_verification_required": true
+  }
+}
