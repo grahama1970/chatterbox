@@ -46,6 +46,9 @@ def test_build_receipt_fails_without_audio_progress() -> None:
         visible_text="Embry Voice",
         events=[{"ev": "play", "t": 1000, "currentTime": 0, "duration": 5.0, "src": "/a.wav"}],
         screenshot_path=Path("/tmp/replay-audio.png"),
+        session_title="Embry / Horus voice",
+        session_title_count=1,
+        replay_button_count=1,
     )
 
     assert receipt["ok"] is False
@@ -69,9 +72,31 @@ def test_build_receipt_passes_with_browser_media_events() -> None:
             {"ev": "ended", "t": 4000, "currentTime": 3.0, "duration": 3.0, "src": "/a.wav"},
         ],
         screenshot_path=Path("/tmp/replay-audio.png"),
+        session_title="Embry / Horus voice",
+        session_title_count=1,
+        replay_button_count=1,
     )
 
     assert receipt["ok"] is True
     assert receipt["audible_playback_receipt"]["playback_started"] is True
     assert receipt["audible_playback_receipt"]["current_time_advanced"] is True
     assert receipt["failed_gates"] == []
+
+
+def test_build_receipt_fails_when_replay_button_is_not_unique() -> None:
+    receipt = build_receipt(
+        run_id="test",
+        url="http://localhost:3002/#embry-voice",
+        headed=False,
+        wait_ms=1000,
+        min_advanced_seconds=1.0,
+        audio_count=0,
+        visible_text="Embry Voice",
+        events=[],
+        screenshot_path=Path("/tmp/replay-audio.png"),
+        session_title="Embry / Horus voice",
+        session_title_count=1,
+        replay_button_count=2,
+    )
+
+    assert "canonical_session_replay_button_not_unique" in receipt["failed_gates"]

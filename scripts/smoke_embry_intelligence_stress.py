@@ -3234,6 +3234,36 @@ def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
         handle.write(json.dumps(payload, sort_keys=True) + "\n")
 
 
+def failure_signature(case: dict[str, Any]) -> tuple[str, ...] | None:
+    gates = tuple(sorted(str(gate) for gate in case.get("failed_gates") or []))
+    return gates or None
+
+
+def blocked_matrix_case(
+    session: dict[str, Any],
+    *,
+    route: str,
+    signature: tuple[str, ...],
+    triggering_case_ids: list[str],
+) -> dict[str, Any]:
+    return {
+        "id": session["id"],
+        "matrix_session": session,
+        "query": str(session.get("question") or ""),
+        "route": route,
+        "ok": False,
+        "mocked": False,
+        "live": False,
+        "execution_status": "blocked_by_systemic_failure",
+        "failed_gates": ["blocked_by_systemic_failure"],
+        "systemic_failure": {
+            "family": route,
+            "signature": list(signature),
+            "triggering_case_ids": triggering_case_ids,
+        },
+    }
+
+
 def render_spoken_failures(
     *,
     cases: list[dict[str, Any]],
@@ -3333,7 +3363,10 @@ def main() -> int:
     parser.add_argument("--matrix-difficulty")
     parser.add_argument("--matrix-offset", default=0, type=int)
     parser.add_argument("--matrix-limit", type=int)
+    parser.add_argument("--systemic-failure-threshold", default=3, type=int)
     args = parser.parse_args()
+    if args.systemic_failure_threshold < 1:
+        parser.error("--systemic-failure-threshold must be at least 1")
 
     started = time.perf_counter()
     out_dir = args.out_dir.resolve()
@@ -3351,24 +3384,44 @@ def main() -> int:
         )
         events_path = out_dir / "matrix-case-events.jsonl"
         cases = []
+        route_failures: dict[str, dict[tuple[str, ...], list[str]]] = {}
+        open_breakers: dict[str, tuple[str, ...]] = {}
         for sequence, session in enumerate(selected, start=1):
-            case = run_matrix_session(
-                session,
-                memory_url=args.memory_url,
-                brave_script=args.brave_script,
-                tau_runner=args.tau_runner,
-                tau_root=args.tau_root,
-                agent_root=args.agent_root,
-                chatterbox_url=args.chatterbox_url,
-                skill_root=args.skill_root,
-                timeout_s=args.timeout_s,
-            )
+            route = str(session.get("route") or "")
+            blocked_signature = open_breakers.get(route)
+            if blocked_signature is not None:
+                case = blocked_matrix_case(
+                    session,
+                    route=route,
+                    signature=blocked_signature,
+                    triggering_case_ids=route_failures[route][blocked_signature],
+                )
+            else:
+                case = run_matrix_session(
+                    session,
+                    memory_url=args.memory_url,
+                    brave_script=args.brave_script,
+                    tau_runner=args.tau_runner,
+                    tau_root=args.tau_root,
+                    agent_root=args.agent_root,
+                    chatterbox_url=args.chatterbox_url,
+                    skill_root=args.skill_root,
+                    timeout_s=args.timeout_s,
+                )
+                signature = failure_signature(case)
+                if signature is not None:
+                    matching = route_failures.setdefault(route, {}).setdefault(signature, [])
+                    matching.append(str(case.get("id")))
+                    if len(matching) >= args.systemic_failure_threshold:
+                        open_breakers[route] = signature
             case["sequence"] = sequence
             cases.append(case)
             append_jsonl(
                 events_path,
                 {
-                    "type": "matrix_case_completed",
+                    "type": "matrix_case_blocked"
+                    if case.get("execution_status") == "blocked_by_systemic_failure"
+                    else "matrix_case_completed",
                     "sequence": sequence,
                     "id": case.get("id"),
                     "ok": case.get("ok"),
@@ -3385,6 +3438,16 @@ def main() -> int:
             "offset": args.matrix_offset,
             "limit": args.matrix_limit,
             "selected_count": len(selected),
+            "executed_count": sum(
+                case.get("execution_status") != "blocked_by_systemic_failure" for case in cases
+            ),
+            "blocked_count": sum(
+                case.get("execution_status") == "blocked_by_systemic_failure" for case in cases
+            ),
+            "systemic_failure_threshold": args.systemic_failure_threshold,
+            "open_breakers": {
+                route: list(signature) for route, signature in sorted(open_breakers.items())
+            },
             "events_jsonl": str(events_path),
         }
     else:

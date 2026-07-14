@@ -1,13 +1,37 @@
 from scripts.build_embry_stress_session_matrix import build_matrix
 from scripts.smoke_embry_intelligence_stress import (
+    blocked_matrix_case,
     classify_answer,
     classify_matrix_answer,
     classify_speaker_resolution,
     classify_voice_delivery_intent,
+    failure_signature,
     run_matrix_session,
     select_matrix_sessions,
     speaker_resolution_payload,
 )
+
+
+def test_systemic_failure_signature_is_order_independent() -> None:
+    assert failure_signature({"failed_gates": ["gate_b", "gate_a"]}) == (
+        "gate_a",
+        "gate_b",
+    )
+    assert failure_signature({"failed_gates": []}) is None
+
+
+def test_blocked_matrix_case_preserves_triggering_failure() -> None:
+    case = blocked_matrix_case(
+        {"id": "case-4", "question": "question", "route": "memory.persona_memory"},
+        route="memory.persona_memory",
+        signature=("persona_memory_answer_wrong_or_unrelated",),
+        triggering_case_ids=["case-1", "case-2", "case-3"],
+    )
+
+    assert case["execution_status"] == "blocked_by_systemic_failure"
+    assert case["live"] is False
+    assert case["failed_gates"] == ["blocked_by_systemic_failure"]
+    assert case["systemic_failure"]["triggering_case_ids"] == ["case-1", "case-2", "case-3"]
 
 
 def answer_payload(text: str, *, can_answer: bool = True) -> dict:

@@ -26,6 +26,9 @@ def test_lineage_receipt_fails_when_audio_and_message_lack_turn_ids() -> None:
             }
         ],
         screenshot_path=Path("/tmp/lineage.png"),
+        session_title="Embry / Horus voice",
+        session_title_count=1,
+        replay_button_count=1,
     )
 
     assert receipt["ok"] is False
@@ -60,9 +63,28 @@ def test_lineage_receipt_passes_when_same_turn_and_entities_are_rendered() -> No
             }
         ],
         screenshot_path=Path("/tmp/lineage.png"),
+        session_title="Embry / Horus voice",
+        session_title_count=1,
+        replay_button_count=1,
     )
 
     assert receipt["ok"] is True
     assert receipt["lineage_ready"] is True
     assert receipt["entity_underlines_ready"] is True
     assert receipt["failed_gates"] == []
+
+
+def test_lineage_receipt_fails_when_canonical_session_is_ambiguous() -> None:
+    receipt = build_receipt(
+        run_id="test",
+        url="http://localhost:3002/#embry-voice",
+        chat_messages=[],
+        audio_artifacts=[],
+        screenshot_path=Path("/tmp/lineage.png"),
+        session_title="Embry / Horus voice",
+        session_title_count=2,
+        replay_button_count=0,
+    )
+
+    assert "canonical_session_row_not_unique" in receipt["failed_gates"]
+    assert "canonical_session_replay_button_not_unique" in receipt["failed_gates"]

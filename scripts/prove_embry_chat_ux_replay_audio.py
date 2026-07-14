@@ -18,6 +18,7 @@ DEFAULT_URL = "http://localhost:3002/#embry-voice"
 DEFAULT_OUT_ROOT = Path("/tmp/chatterbox-fork-agent-out/embry-chat-ux-replay-audio")
 DEFAULT_LATEST = DEFAULT_OUT_ROOT / "latest" / "receipt.json"
 DEFAULT_CHROMIUM = "/snap/bin/chromium"
+DEFAULT_SESSION_TITLE = "Embry / Horus voice"
 
 
 def _utc_run_id() -> str:
@@ -88,9 +89,16 @@ def build_receipt(
     visible_text: str,
     events: list[dict[str, Any]],
     screenshot_path: Path,
+    session_title: str,
+    session_title_count: int,
+    replay_button_count: int,
 ) -> dict[str, Any]:
     audible_playback = summarize_audio_events(events, min_advanced_seconds=min_advanced_seconds)
     failed_gates: list[str] = []
+    if session_title_count != 1:
+        failed_gates.append("canonical_session_row_not_unique")
+    if replay_button_count != 1:
+        failed_gates.append("canonical_session_replay_button_not_unique")
     if audio_count <= 0:
         failed_gates.append("audio_elements_not_present")
     if not audible_playback["playback_started"]:
@@ -114,6 +122,9 @@ def build_receipt(
         "live": True,
         "used_ui": True,
         "url": url,
+        "selected_session_title": session_title,
+        "selected_session_title_count": session_title_count,
+        "selected_session_replay_button_count": replay_button_count,
         "headed": headed,
         "wait_ms": wait_ms,
         "min_advanced_seconds": min_advanced_seconds,
@@ -151,6 +162,7 @@ def run_probe(
     wait_ms: int,
     min_advanced_seconds: float,
     chromium: str,
+    session_title: str,
 ) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     screenshot_path = out_dir / "replay-audio.png"
@@ -188,8 +200,15 @@ def run_probe(
               document.querySelectorAll('audio').forEach(hook);
             }"""
         )
-        page.get_by_role("button", name="Replay").click(timeout=10000)
-        page.wait_for_timeout(wait_ms)
+        title = page.get_by_text(session_title, exact=True)
+        session_title_count = title.count()
+        replay_button = title.locator("xpath=../..").locator(
+            '[data-qid="embry-voice:session-play"]'
+        )
+        replay_button_count = replay_button.count() if session_title_count == 1 else 0
+        if replay_button_count == 1:
+            replay_button.click(timeout=10000)
+            page.wait_for_timeout(wait_ms)
         audio_count = page.locator("audio").count()
         events = page.evaluate("window.__embryAudioEvents || []")
         visible_text = page.locator("body").inner_text(timeout=5000)
@@ -206,6 +225,9 @@ def run_probe(
         visible_text=visible_text,
         events=events,
         screenshot_path=screenshot_path,
+        session_title=session_title,
+        session_title_count=session_title_count,
+        replay_button_count=replay_button_count,
     )
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     DEFAULT_LATEST.parent.mkdir(parents=True, exist_ok=True)
@@ -222,6 +244,7 @@ def main() -> int:
     parser.add_argument("--wait-ms", type=int, default=9000)
     parser.add_argument("--min-advanced-seconds", type=float, default=1.0)
     parser.add_argument("--chromium", default=DEFAULT_CHROMIUM)
+    parser.add_argument("--session-title", default=DEFAULT_SESSION_TITLE)
     args = parser.parse_args()
 
     receipt = run_probe(
@@ -231,6 +254,7 @@ def main() -> int:
         wait_ms=args.wait_ms,
         min_advanced_seconds=args.min_advanced_seconds,
         chromium=args.chromium,
+        session_title=args.session_title,
     )
     print(receipt)
     payload = json.loads(receipt.read_text(encoding="utf-8"))

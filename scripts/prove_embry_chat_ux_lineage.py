@@ -17,6 +17,7 @@ DEFAULT_URL = "http://localhost:3002/#embry-voice"
 DEFAULT_OUT_ROOT = Path("/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage")
 DEFAULT_LATEST = DEFAULT_OUT_ROOT / "latest" / "receipt.json"
 DEFAULT_CHROMIUM = "/snap/bin/chromium"
+DEFAULT_SESSION_TITLE = "Embry / Horus voice"
 
 
 def _utc_run_id() -> str:
@@ -30,6 +31,9 @@ def build_receipt(
     chat_messages: list[dict[str, Any]],
     audio_artifacts: list[dict[str, Any]],
     screenshot_path: Path,
+    session_title: str,
+    session_title_count: int,
+    replay_button_count: int,
 ) -> dict[str, Any]:
     assistant_messages = [
         message for message in chat_messages if message.get("qid") == "shared-chat:message:assistant"
@@ -51,6 +55,10 @@ def build_receipt(
     ]
 
     failed_gates: list[str] = []
+    if session_title_count != 1:
+        failed_gates.append("canonical_session_row_not_unique")
+    if replay_button_count != 1:
+        failed_gates.append("canonical_session_replay_button_not_unique")
     if not assistant_messages:
         failed_gates.append("shared_chat_assistant_message_missing")
     if not audio_artifacts:
@@ -81,6 +89,9 @@ def build_receipt(
         "live": True,
         "used_ui": True,
         "url": url,
+        "selected_session_title": session_title,
+        "selected_session_title_count": session_title_count,
+        "selected_session_replay_button_count": replay_button_count,
         "screenshot": str(screenshot_path),
         "chat_message_count": len(chat_messages),
         "assistant_message_count": len(assistant_messages),
@@ -113,7 +124,7 @@ def build_receipt(
     }
 
 
-def run_probe(*, url: str, out_dir: Path, chromium: str) -> Path:
+def run_probe(*, url: str, out_dir: Path, chromium: str, session_title: str) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     screenshot_path = out_dir / "lineage.png"
     receipt_path = out_dir / "receipt.json"
@@ -125,8 +136,15 @@ def run_probe(*, url: str, out_dir: Path, chromium: str) -> Path:
         )
         page = browser.new_page(viewport={"width": 1600, "height": 1000})
         page.goto(url, wait_until="networkidle", timeout=20000)
-        page.get_by_role("button", name="Replay").click(timeout=10000)
-        page.wait_for_timeout(2500)
+        title = page.get_by_text(session_title, exact=True)
+        session_title_count = title.count()
+        replay_button = title.locator("xpath=../..").locator(
+            '[data-qid="embry-voice:session-play"]'
+        )
+        replay_button_count = replay_button.count() if session_title_count == 1 else 0
+        if replay_button_count == 1:
+            replay_button.click(timeout=10000)
+            page.wait_for_timeout(2500)
         payload = page.evaluate(
             """() => {
               const attrMap = (el) => Object.fromEntries([...el.attributes].map((a) => [a.name, a.value]));
@@ -174,6 +192,9 @@ def run_probe(*, url: str, out_dir: Path, chromium: str) -> Path:
         chat_messages=payload["chatMessages"],
         audio_artifacts=payload["audioArtifacts"],
         screenshot_path=screenshot_path,
+        session_title=session_title,
+        session_title_count=session_title_count,
+        replay_button_count=replay_button_count,
     )
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     DEFAULT_LATEST.parent.mkdir(parents=True, exist_ok=True)
@@ -187,9 +208,15 @@ def main() -> int:
     parser.add_argument("--out-root", type=Path, default=DEFAULT_OUT_ROOT)
     parser.add_argument("--run-id", default=_utc_run_id())
     parser.add_argument("--chromium", default=DEFAULT_CHROMIUM)
+    parser.add_argument("--session-title", default=DEFAULT_SESSION_TITLE)
     args = parser.parse_args()
 
-    receipt = run_probe(url=args.url, out_dir=args.out_root / args.run_id, chromium=args.chromium)
+    receipt = run_probe(
+        url=args.url,
+        out_dir=args.out_root / args.run_id,
+        chromium=args.chromium,
+        session_title=args.session_title,
+    )
     print(receipt)
     payload = json.loads(receipt.read_text(encoding="utf-8"))
     return 0 if payload["ok"] else 1
