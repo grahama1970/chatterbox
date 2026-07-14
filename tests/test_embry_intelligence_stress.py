@@ -81,6 +81,23 @@ def test_memory_miss_allows_no_answer() -> None:
     assert failed == []
 
 
+def test_memory_miss_allows_deterministic_human_readable_refusal() -> None:
+    failed = classify_answer(
+        {"kind": "memory_miss"},
+        {
+            "ok_http": True,
+            "json": {
+                "can_answer": False,
+                "answer_type": "insufficient_memory_evidence",
+                "final_response": "I do not have enough grounded memory evidence to answer that request.",
+                "sources": [],
+            },
+        },
+    )
+
+    assert failed == []
+
+
 def test_matrix_answer_rejects_persona_memory_from_skill_collection() -> None:
     failed = classify_matrix_answer(
         {"route": "memory.persona_memory", "question": "What did Horus last ask Embry about voice testing?"},

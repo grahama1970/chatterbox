@@ -80,6 +80,7 @@ def test_build_receipt_passes_with_browser_media_events() -> None:
     assert receipt["ok"] is True
     assert receipt["audible_playback_receipt"]["playback_started"] is True
     assert receipt["audible_playback_receipt"]["current_time_advanced"] is True
+    assert receipt["browser_audio_output_disabled"] is True
     assert receipt["failed_gates"] == []
 
 

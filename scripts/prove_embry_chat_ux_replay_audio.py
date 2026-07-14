@@ -121,6 +121,7 @@ def build_receipt(
         "mocked": False,
         "live": True,
         "used_ui": True,
+        "browser_audio_output_disabled": True,
         "url": url,
         "selected_session_title": session_title,
         "selected_session_title_count": session_title_count,
@@ -171,7 +172,10 @@ def run_probe(
         browser = playwright.chromium.launch(
             headless=not headed,
             executable_path=chromium if Path(chromium).exists() else None,
-            args=["--autoplay-policy=no-user-gesture-required"],
+            args=[
+                "--autoplay-policy=no-user-gesture-required",
+                "--disable-audio-output",
+            ],
         )
         page = browser.new_page(viewport={"width": 1600, "height": 1000})
         page.goto(url, wait_until="networkidle", timeout=20000)

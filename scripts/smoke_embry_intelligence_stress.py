@@ -181,7 +181,12 @@ def classify_answer(case: dict[str, Any], answer: dict[str, Any]) -> list[str]:
             failed.append("persona_memory_answer_wrong_or_unrelated")
     elif case["kind"] == "memory_miss":
         payload = answer.get("json") if isinstance(answer.get("json"), dict) else {}
-        if payload.get("can_answer") is True or bool(text):
+        fail_closed_answer = (
+            payload.get("can_answer") is False
+            and payload.get("answer_type") == "insufficient_memory_evidence"
+            and not answer_sources(answer)
+        )
+        if not fail_closed_answer and (payload.get("can_answer") is True or bool(text)):
             failed.append("memory_miss_should_not_answer_unrelated_record")
     return failed
 
