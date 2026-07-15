@@ -12,6 +12,7 @@ repo_root="${CHATTERBOX_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && p
 out_dir="${CHATTERBOX_OUT_DIR_HOST:-/tmp/chatterbox-fork-agent-out}"
 ref_audio="${CHATTERBOX_REF_AUDIO_HOST:-/home/graham/workspace/experiments/agent-skills/skills/persona-dream/voice_clone_candidates/embry_kling_clone_candidate.wav}"
 device="${CHATTERBOX_DEVICE:-cuda}"
+python_bin="${CHATTERBOX_PYTHON:-python3}"
 asr_url="${CHATTERBOX_ASR_OPENAI_BASE_URL:-http://whisper:9000}"
 diarization_python="${CHATTERBOX_DIARIZATION_PYTHON:-/opt/chatterbox-diarization-venv/bin/python}"
 hf_token="${HF_TOKEN:-}"
@@ -36,6 +37,7 @@ Environment overrides:
   CHATTERBOX_REPO_ROOT           default: ${repo_root}
   CHATTERBOX_OUT_DIR_HOST        default: ${out_dir}
   CHATTERBOX_REF_AUDIO_HOST      default: ${ref_audio}
+  CHATTERBOX_PYTHON              default: ${python_bin}
   CHATTERBOX_ASR_OPENAI_BASE_URL default: ${asr_url}
   CHATTERBOX_DIARIZATION_PYTHON  default: ${diarization_python}
   HF_TOKEN                       optional; used for gated pyannote model access
@@ -85,6 +87,7 @@ echo "host_port=$host_port"
 echo "repo_root=$repo_root"
 echo "out_dir=$out_dir"
 echo "ref_audio=$ref_audio"
+echo "python_bin=$python_bin"
 echo "asr_url=$asr_url"
 echo "diarization_python=$diarization_python"
 if [[ -n "$hf_token" ]]; then
@@ -136,7 +139,7 @@ docker run -d \
   --gpus all \
   --name "$chatterbox_container" \
   --network "$network" \
-  --entrypoint python3.11 \
+  --entrypoint "$python_bin" \
   -p "127.0.0.1:${host_port}:${container_port}" \
   "${docker_env[@]}" \
   -v "${repo_root}:/work:ro" \
