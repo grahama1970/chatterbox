@@ -1,0 +1,58 @@
+{
+  "schema": "chatterbox.physical_listener_ingress.v1",
+  "status": "pass",
+  "ok": true,
+  "live": true,
+  "mocked": false,
+  "capture": {
+    "sink": "Jabra SPEAK 510 Analog Stereo",
+    "source": "HD Pro Webcam C920 Analog Stereo",
+    "source_volume": 0.5,
+    "native_channels": 2,
+    "native_sample_rate": 48000,
+    "pw_play_exit_code": 0,
+    "pw_record_exit_code": 1,
+    "pw_record_termination": "controlled SIGINT after post-roll",
+    "converted_channels": 1,
+    "converted_sample_rate": 16000,
+    "converted_duration_seconds": 12.458688,
+    "mean_volume_db": -23.5,
+    "max_volume_db": -4.4,
+    "captured_wav": "logs/e2e-all-features-20260717/physical-listener-native-stereo-gain050-probe/c920-downmixed-mono-16k.wav",
+    "captured_wav_sha256": "a25bf5b76228e72ebadc73708cb734094b7367080e6efa0feaf20007b7c2bd8f"
+  },
+  "direct_whisper": {
+    "http_status": 200,
+    "transcript": "When should C78, software, firmware, and information integrity are in capability for significant events, be used in satellite operations.",
+    "wer": 0.2105,
+    "max_wer": 0.35,
+    "acceptance_ok": true,
+    "repeated_ngram_hits": []
+  },
+  "realtimestt": {
+    "receipt": "logs/e2e-all-features-20260717/physical-listener-native-stereo-gain050-probe/realtimestt-automatic-vad.json",
+    "ok": true,
+    "live": true,
+    "mocked": false,
+    "automatic_vad": true,
+    "chunk_ms": 20,
+    "trailing_silence_ms": 1800,
+    "chunk_count": 623,
+    "transcript_wer": 0.2105,
+    "max_wer": 0.35,
+    "failed_gates": []
+  },
+  "claims": {
+    "proves": [
+      "physical C920 microphone captured Jabra speaker playback without clipping",
+      "the physical capture crossed the RealtimeSTT external-audio and automatic-VAD boundary",
+      "live ASR produced a transcript within the configured semantic acceptance threshold"
+    ],
+    "does_not_prove": [
+      "wake-word activation",
+      "speaker identity or personal-memory authorization",
+      "audible interruption or stale-audio suppression",
+      "Chat UX synchronization or replay"
+    ]
+  }
+}

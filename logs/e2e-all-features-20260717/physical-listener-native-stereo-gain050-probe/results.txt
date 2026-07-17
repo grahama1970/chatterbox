@@ -1,0 +1,6 @@
+started=2026-07-17T14:29:54Z
+ended=2026-07-17T14:30:06Z
+pw_play_exit_code=0
+pw_record_exit_code=1
+ffmpeg_convert_exit_code=0
+asr_http=200
