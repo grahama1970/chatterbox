@@ -87,7 +87,8 @@ def child_env(args: argparse.Namespace) -> dict[str, str]:
 
 
 def host_to_container_out(path: Path) -> str:
-    out_root = Path("/tmp/chatterbox-fork-agent-out")
+    default_out_root = Path(__file__).resolve().parents[1] / "logs"
+    out_root = Path(os.getenv("CHATTERBOX_OUT_DIR_HOST", str(default_out_root))).resolve()
     resolved = path.resolve()
     try:
         rel = resolved.relative_to(out_root)

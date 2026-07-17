@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -63,7 +64,8 @@ def post_json(url: str, payload: dict[str, Any], timeout_s: int) -> dict[str, An
 
 
 def host_to_container_out(path: Path) -> str:
-    out_root = Path("/tmp/chatterbox-fork-agent-out")
+    default_out_root = Path(__file__).resolve().parents[1] / "logs"
+    out_root = Path(os.getenv("CHATTERBOX_OUT_DIR_HOST", str(default_out_root))).resolve()
     resolved = path.resolve()
     try:
         rel = resolved.relative_to(out_root)

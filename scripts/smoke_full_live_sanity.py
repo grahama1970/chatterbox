@@ -40,8 +40,12 @@ DEFAULT_TEXT = (
 def run_cmd(cmd: list[str], *, timeout: int) -> dict[str, Any]:
     started = time.perf_counter()
     env = os.environ.copy()
+    repo_path = str(Path.cwd())
     src_path = str(Path.cwd() / "src")
-    env["PYTHONPATH"] = f"{src_path}{os.pathsep}{env['PYTHONPATH']}" if env.get("PYTHONPATH") else src_path
+    python_paths = [repo_path, src_path]
+    if env.get("PYTHONPATH"):
+        python_paths.append(env["PYTHONPATH"])
+    env["PYTHONPATH"] = os.pathsep.join(python_paths)
     result = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout, env=env)
     return {
         "cmd": cmd,
@@ -228,7 +232,10 @@ def main() -> int:
     parser.add_argument("--include-listener-rung7", action="store_true")
     parser.add_argument("--listener-fixture", type=Path, default=Path("tests/fixtures/conversation_ladder/rung1_simple.wav"))
     parser.add_argument("--listener-expected-transcript", default="Hello, I am testing the listener.")
+    parser.add_argument("--asr-openai-base-url", default="http://127.0.0.1:9000")
+    parser.add_argument("--api-key-env", default="WHISPER_API_KEY")
     parser.add_argument("--include-tau-voice-render", action="store_true")
+    parser.add_argument("--expect-tau-cache-hit", action="store_true")
     parser.add_argument("--include-listener-memory-tau-qra", action="store_true")
     args = parser.parse_args()
 
@@ -376,26 +383,32 @@ def main() -> int:
                     "full-live-sanity-listener-turn",
                     "--out",
                     str(out_dir / "listener-rung7" / "rung7.json"),
+                    "--asr-openai-base-url",
+                    args.asr_openai_base_url,
+                    "--api-key-env",
+                    args.api_key_env,
                 ],
                 240,
             )
         )
     if args.include_tau_voice_render:
+        tau_voice_render_cmd = [
+            py,
+            "scripts/smoke_tau_voice_render.py",
+            "--base-url",
+            base_url,
+            "--out",
+            str(out_dir / "tau-voice-render.json"),
+            "--wait-health-s",
+            str(args.wait_health_s),
+        ]
+        if args.expect_tau_cache_hit:
+            tau_voice_render_cmd.append("--expect-cache-hit")
         commands.append(
             (
                 "tau_voice_render",
                 out_dir / "tau-voice-render.json",
-                [
-                    py,
-                    "scripts/smoke_tau_voice_render.py",
-                    "--base-url",
-                    base_url,
-                    "--out",
-                    str(out_dir / "tau-voice-render.json"),
-                    "--wait-health-s",
-                    str(args.wait_health_s),
-                    "--expect-cache-hit",
-                ],
+                tau_voice_render_cmd,
                 180,
             )
         )

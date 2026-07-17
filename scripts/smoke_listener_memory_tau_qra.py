@@ -84,8 +84,9 @@ def main() -> int:
     parser.add_argument("--memory-k", default=5, type=int)
     parser.add_argument("--memory-timeout-s", default=20, type=int)
     parser.add_argument("--max-input-wer", default=0.25, type=float)
-    parser.add_argument("--host-out-dir", default="/tmp/chatterbox-fork-agent-out", type=Path)
-    parser.add_argument("--ledger", default="/tmp/chatterbox-fork-agent-out/_blessed_qra_ledger.json", type=Path)
+    default_host_out = Path(__file__).resolve().parents[1] / "logs"
+    parser.add_argument("--host-out-dir", default=default_host_out, type=Path)
+    parser.add_argument("--ledger", default=default_host_out / "_blessed_qra_ledger.json", type=Path)
     parser.add_argument("--variant", default="gentle")
     parser.add_argument("--timeout-s", default=420, type=int)
     add_proof_context_arguments(parser)
