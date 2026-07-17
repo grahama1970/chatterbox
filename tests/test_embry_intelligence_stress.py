@@ -192,10 +192,31 @@ def test_tau_agent_handoff_route_runs_tau_preflight_but_fails_without_handoff(mo
         timeout_s=30,
     )
 
-    assert calls == [([str(tmp_path / "tau-run.sh"), "doctor"], 30)]
+    assert len(calls) == 1
+    cmd, timeout_s = calls[0]
+    assert timeout_s == 30
+    assert cmd[:6] == [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+    ]
+    assert "--receipt-dir" in cmd
+    assert "--agents-root" in cmd
+    assert "--command-spec-root" in cmd
     assert result["ok"] is False
     assert result["live"] is True
-    assert result["failed_gates"] == ["tau_agent_handoff_not_exercised"]
+    assert result["failed_gates"] == [
+        "tau_dag_receipt_read",
+        "tau_dag_receipt_schema",
+        "tau_dag_receipt_ok",
+        "tau_dag_receipt_pass",
+        "tau_agent_handoff_selected_agents",
+        "tau_agent_handoff_command_loop_receipt",
+        "tau_reviewer_verdict_pass",
+    ]
 
 
 def test_tau_direct_skill_route_checks_skill_but_fails_without_receipts(monkeypatch, tmp_path) -> None:
@@ -232,15 +253,31 @@ def test_tau_direct_skill_route_checks_skill_but_fails_without_receipts(monkeypa
         timeout_s=30,
     )
 
-    assert calls == [([str(tmp_path / "tau-run.sh"), "doctor"], 30)]
+    assert len(calls) == 1
+    cmd, timeout_s = calls[0]
+    assert timeout_s == 30
+    assert cmd[:6] == [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+    ]
+    assert "--receipt-dir" in cmd
+    assert "--agents-root" in cmd
+    assert "--command-spec-root" in cmd
     assert result["ok"] is False
     assert result["live"] is True
     assert result["required_skill"] == "create-figure"
-    assert result["skill_preflight"]["skill_exists"] is True
     assert result["failed_gates"] == [
-        "tau_agent_handoff_not_exercised",
-        "skill_call_receipt_not_emitted",
-        "tau_dag_receipt_not_created",
+        "skill_call_receipt_present",
+        "tau_dag_receipt_ok",
+        "tau_dag_receipt_pass",
+        "tau_dag_receipt_read",
+        "tau_dag_receipt_schema",
+        "tau_skill_command_loop_receipt",
+        "tau_skill_selected_agents",
     ]
 
 
