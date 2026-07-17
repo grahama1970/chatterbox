@@ -1,0 +1,401 @@
+{
+  "artifacts": {
+    "play_audio": {
+      "bytes": 554958,
+      "channels": 1,
+      "duration_seconds": 11.56,
+      "exists": true,
+      "frame_count": 277440,
+      "path": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/full-live-sanity-final/stream-endpoint/stream.wav",
+      "sample_rate": 24000,
+      "sample_width": 2,
+      "sha256": "7169a221a7f42494d1659f59e1dd77ac736c34ea5aa3f20152ac29c89e6c3c1b"
+    },
+    "receipt": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/browser-mic-getusermedia-gate/browser-webrtc.json",
+    "wav": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/browser-mic-getusermedia-gate/browser-webrtc.wav",
+    "wav_bytes": 1335340,
+    "wav_sha256": "4d416be0bd69cb8fa3aa61d5284e3c68ffa8d6d2eedfb9a7ab29617a39ac803e"
+  },
+  "browser": {
+    "chunksSent": 163,
+    "metadata": {
+      "devicesAfter": [
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Jabra SPEAK 510 Mono"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Cam Link 4K Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "HD Pro Webcam C920 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": false,
+          "kind": "videoinput",
+          "label": ""
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio S/PDIF Out"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Front Headphones"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Speakers"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Jabra SPEAK 510 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "GA102 High Definition Audio Controller Digital Stereo (HDMI)"
+        }
+      ],
+      "devicesBefore": [
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Jabra SPEAK 510 Mono"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Cam Link 4K Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "HD Pro Webcam C920 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": false,
+          "kind": "videoinput",
+          "label": ""
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio S/PDIF Out"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Front Headphones"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Speakers"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Jabra SPEAK 510 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "GA102 High Definition Audio Controller Digital Stereo (HDMI)"
+        }
+      ],
+      "requestedAudioDeviceLabel": "C920",
+      "requestedAudioProcessing": {
+        "autoGainControl": false,
+        "echoCancellation": false,
+        "noiseSuppression": false
+      },
+      "sampleRate": 48000,
+      "secureContext": true,
+      "selectedAudioDevice": {
+        "deviceIdPresent": true,
+        "kind": "audioinput",
+        "label": "HD Pro Webcam C920 Analog Stereo"
+      },
+      "trackConstraints": {
+        "autoGainControl": false,
+        "deviceId": {
+          "exact": "373552d89c36c51978b81bdddc8db633c28c28d78614ecc1cc81bf6170b51840"
+        },
+        "echoCancellation": false,
+        "noiseSuppression": false
+      },
+      "trackSettings": {
+        "autoGainControl": false,
+        "channelCount": 2,
+        "deviceId": "373552d89c36c51978b81bdddc8db633c28c28d78614ecc1cc81bf6170b51840",
+        "echoCancellation": false,
+        "groupId": "736feb0d8b52a265e5d2da9f278f68207e27d98078de5cf21b8d85a6c2343d74",
+        "latency": 0.021333,
+        "noiseSuppression": false,
+        "sampleRate": 48000,
+        "sampleSize": 16,
+        "voiceIsolation": false
+      },
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36"
+    },
+    "status": "done"
+  },
+  "claims": {
+    "does_not_prove": [
+      "remote_peer_to_peer_webrtc_across_networks",
+      "production_browser_ui",
+      "asr_transcription_accuracy",
+      "speaker_identity_or_diarization",
+      "all_browser_vendor_compatibility"
+    ],
+    "proves": [
+      "browser_getusermedia_captured_real_microphone_audio",
+      "browser_sent_pcm_audio_frames_over_websocket_transport",
+      "python_listener_received_auditable_pcm_frames_without_fake_media_flags",
+      "browser_microphone_capture_included_live_speaker_playback_fixture"
+    ]
+  },
+  "elapsed_ms": 15891.228,
+  "ended_at_utc": "2026-07-17T13:55:21Z",
+  "failed_gates": [],
+  "inputs": {
+    "audio_device_label": "C920",
+    "auto_gain_control": false,
+    "capture_seconds": 14.0,
+    "chromium": "/snap/bin/chromium",
+    "echo_cancellation": false,
+    "headless": true,
+    "launch_args": [
+      "--autoplay-policy=no-user-gesture-required"
+    ],
+    "min_chunks": 4,
+    "min_duration_seconds": 1.0,
+    "min_nonzero_ratio": 0.05,
+    "min_rms": 0.0001,
+    "noise_suppression": false,
+    "play_audio": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/full-live-sanity-final/stream-endpoint/stream.wav",
+    "playback_arg": [
+      "--target",
+      "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+      "--volume",
+      "1.0"
+    ],
+    "playback_cmd": "pw-play",
+    "playback_delay_seconds": 0.4
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "playback": {
+    "cmd": [
+      "pw-play",
+      "--target",
+      "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+      "--volume",
+      "1.0",
+      "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/full-live-sanity-final/stream-endpoint/stream.wav"
+    ],
+    "elapsed_ms": 11590.136,
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  },
+  "schema": "chatterbox.browser_webrtc_transport.v1",
+  "started_at_utc": "2026-07-17T13:55:21Z",
+  "transport": {
+    "binary_bytes_received": 2670592,
+    "chunks_received": 163,
+    "done": {
+      "chunksSent": 163,
+      "type": "done"
+    },
+    "duration_seconds": 13.909,
+    "http_origin": "http://127.0.0.1:48905",
+    "max_abs": 1.0,
+    "metadata": {
+      "devicesAfter": [
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Jabra SPEAK 510 Mono"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Cam Link 4K Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "HD Pro Webcam C920 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": false,
+          "kind": "videoinput",
+          "label": ""
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio S/PDIF Out"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Front Headphones"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Speakers"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Jabra SPEAK 510 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "GA102 High Definition Audio Controller Digital Stereo (HDMI)"
+        }
+      ],
+      "devicesBefore": [
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Jabra SPEAK 510 Mono"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "Cam Link 4K Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audioinput",
+          "label": "HD Pro Webcam C920 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": false,
+          "kind": "videoinput",
+          "label": ""
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Default"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio S/PDIF Out"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Front Headphones"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "USB Audio Speakers"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "Jabra SPEAK 510 Analog Stereo"
+        },
+        {
+          "deviceIdPresent": true,
+          "kind": "audiooutput",
+          "label": "GA102 High Definition Audio Controller Digital Stereo (HDMI)"
+        }
+      ],
+      "requestedAudioDeviceLabel": "C920",
+      "requestedAudioProcessing": {
+        "autoGainControl": false,
+        "echoCancellation": false,
+        "noiseSuppression": false
+      },
+      "sampleRate": 48000,
+      "secureContext": true,
+      "selectedAudioDevice": {
+        "deviceIdPresent": true,
+        "kind": "audioinput",
+        "label": "HD Pro Webcam C920 Analog Stereo"
+      },
+      "trackConstraints": {
+        "autoGainControl": false,
+        "deviceId": {
+          "exact": "373552d89c36c51978b81bdddc8db633c28c28d78614ecc1cc81bf6170b51840"
+        },
+        "echoCancellation": false,
+        "noiseSuppression": false
+      },
+      "trackSettings": {
+        "autoGainControl": false,
+        "channelCount": 2,
+        "deviceId": "373552d89c36c51978b81bdddc8db633c28c28d78614ecc1cc81bf6170b51840",
+        "echoCancellation": false,
+        "groupId": "736feb0d8b52a265e5d2da9f278f68207e27d98078de5cf21b8d85a6c2343d74",
+        "latency": 0.021333,
+        "noiseSuppression": false,
+        "sampleRate": 48000,
+        "sampleSize": 16,
+        "voiceIsolation": false
+      },
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36"
+    },
+    "nonzero_ratio": 0.996835,
+    "rms": 0.32095789,
+    "sample_rate": 48000,
+    "samples_received": 667648,
+    "websocket_url": "ws://127.0.0.1:51441"
+  }
+}
