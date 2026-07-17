@@ -1,0 +1,66 @@
+PipeWire 'pipewire-0' [1.0.5, graham@graham-MS-7C60, cookie:3304183599]
+ └─ Clients:
+        32. pipewire                            [1.0.5, graham@graham-MS-7C60, pid:2026795]
+        33. WirePlumber                         [1.0.5, graham@graham-MS-7C60, pid:2026794]
+        35. WirePlumber [export]                [1.0.5, graham@graham-MS-7C60, pid:2026794]
+       108. Plasma PA                           [1.0.5, graham@graham-MS-7C60, pid:2048377]
+       114. xdg-desktop-portal                  [1.0.5, graham@graham-MS-7C60, pid:2050073]
+       129. wpctl                               [1.0.5, graham@graham-MS-7C60, pid:2540179]
+       133. Google Chrome input                 [1.0.5, graham@graham-MS-7C60, pid:2187704]
+       134. audio-control-main                  [1.0.5, graham@graham-MS-7C60, pid:3]
+       135. com_gapls_AudioControl::PulseEvent::pulse-sink-event-loop [1.0.5, graham@graham-MS-7C60, pid:3]
+       136. stream-controller                   [1.0.5, graham@graham-MS-7C60, pid:3]
+       147. pulsectl                            [1.0.5, graham@graham-MS-7C60, pid:3]
+
+Audio
+ ├─ Devices:
+ │      50. alsa_card.usb-Generic_USB_Audio-00  [alsa]
+ │      51. alsa_card.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00 [alsa]
+ │      52. alsa_card.pci-0000_21_00.1          [alsa]
+ │      53. alsa_card.usb-Elgato_Cam_Link_4K_000670BD2A000-03 [alsa]
+ │      54. alsa_card.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02 [alsa]
+ │  
+ ├─ Sinks:
+ │      34. alsa_output.pci-0000_21_00.1.hdmi-stereo [vol: 0.40]
+ │      59. alsa_output.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT_2__sink [vol: 0.40]
+ │      60. alsa_output.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT_1__sink [vol: 1.00]
+ │      61. alsa_output.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT__sink [vol: 1.00]
+ │  *   65. alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo [vol: 0.85]
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │      40. alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo [vol: 0.76]
+ │      42. alsa_input.usb-Elgato_Cam_Link_4K_000670BD2A000-03.analog-stereo [vol: 1.00]
+ │      62. alsa_input.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT_2__source [vol: 1.00]
+ │      63. alsa_input.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT_1__source [vol: 1.00]
+ │      64. alsa_input.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT_0__source [vol: 1.00]
+ │  *   66. alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback [vol: 0.94]
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Video
+ ├─ Devices:
+ │      45. v4l2_device.pci-0000_46_00.1-usb-0_2_1.0 [v4l2]
+ │      46. v4l2_device.pci-0000_23_00.3-usb-0_1.2_1.0.2 [v4l2]
+ │      47. v4l2_device.pci-0000_23_00.3-usb-0_1.2_1.0 [v4l2]
+ │      49. v4l2_device.pci-0000_46_00.1-usb-0_2_1.0.2 [v4l2]
+ │  
+ ├─ Sinks:
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │      55. v4l2_input.pci-0000_23_00.3-usb-0_1.2_1.0
+ │  *   57. v4l2_input.pci-0000_46_00.1-usb-0_2_1.0
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Settings
+ └─ Default Configured Node Names:
+         0. Audio/Sink    alsa_output.usb-Generic_USB_Audio-00.HiFi__hw_ALC1220VBDT__sink
+         1. Audio/Source  alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback

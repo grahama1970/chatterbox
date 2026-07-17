@@ -1,0 +1,17 @@
+{
+  "schema": "surf.webgpt_submit_receipt.v1",
+  "status": "submitted_to_chatgpt",
+  "submitted_to_chatgpt": true,
+  "prepared_prompt_is_transport_proof": false,
+  "input": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-attachment-prompt.md",
+  "submitted_output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.submitted.md",
+  "output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.md",
+  "raw_output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.raw.md",
+  "meta_output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.meta.json",
+  "sentinel": "<<<WEBGPT_DONE:20260717T131248Z:e21c219a>>>",
+  "requested_tab_id": "837359263",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "receipt_at": "2026-07-17T13:13:12Z"
+}

@@ -1,0 +1,16 @@
+{
+    "programs": [
+
+    ],
+    "streams": [
+        {
+            "codec_name": "pcm_s16le",
+            "sample_rate": "48000",
+            "channels": 1
+        }
+    ],
+    "format": {
+        "duration": "13.504000",
+        "size": "1296428"
+    }
+}

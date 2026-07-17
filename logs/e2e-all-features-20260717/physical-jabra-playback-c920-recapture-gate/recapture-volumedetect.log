@@ -1,0 +1,20 @@
+[aist#0:0/pcm_s16le @ 0x56481849e480] Guessed Channel Layout: mono
+Input #0, wav, from 'logs/e2e-all-features-20260717/physical-jabra-playback-c920-recapture-gate/recapture.wav':
+  Duration: 00:00:13.50, bitrate: 768 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+[Parsed_volumedetect_0 @ 0x5648184a5840] n_samples: 0
+Stream mapping:
+  Stream #0:0 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf60.16.100
+  Stream #0:0: Audio: pcm_s16le, 48000 Hz, mono, s16, 768 kb/s
+    Metadata:
+      encoder         : Lavc60.31.102 pcm_s16le
+[out#0/null @ 0x564818477980] video:0kB audio:1266kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown
+size=N/A time=00:00:13.48 bitrate=N/A speed= 908x    
+[Parsed_volumedetect_0 @ 0x5648184aa680] n_samples: 648192
+[Parsed_volumedetect_0 @ 0x5648184aa680] mean_volume: -10.0 dB
+[Parsed_volumedetect_0 @ 0x5648184aa680] max_volume: 0.0 dB
+[Parsed_volumedetect_0 @ 0x5648184aa680] histogram_0db: 1580

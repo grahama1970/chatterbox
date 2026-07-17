@@ -1,0 +1,1 @@
+Read the single attached assessment bundle closely and return only its required deliverable. Treat its immutable goal proof, current blocker, evidence, scope limits, and candid project-agent management instructions as controlling. Do not propose architecture, side quests, or more broad test campaigns.

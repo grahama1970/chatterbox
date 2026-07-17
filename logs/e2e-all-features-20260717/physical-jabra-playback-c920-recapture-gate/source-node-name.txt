@@ -1,0 +1,1 @@
+alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo

@@ -1,0 +1,24 @@
+{
+  "goal_id": "embry-chatterbox-audible-e2e",
+  "goal_lock": "Every Chatterbox feature works through a live non-mocked human-audible end-to-end path with physical playback or recapture and durable receipts.",
+  "current_milestone": "One generated Chatterbox WAV plays through a real Graham-owned physical sink and is recaptured with a durable receipt.",
+  "top_blocker": "Physical Jabra playback returns success, but neither Jabra nor C920 microphone recapture contains transcribable speech.",
+  "blocker_evidence": {
+    "command": "jq -e '(.text // \"\") | length > 0' logs/e2e-all-features-20260717/physical-jabra-playback-c920-recapture-20260717T130600Z/recapture-transcript.json >/dev/null",
+    "cwd": "/home/graham/workspace/experiments/chatterbox"
+  },
+  "required_live_proof": "A durable receipt records named physical sink/source nodes, successful pw-play, intelligible non-empty recapture transcription, and human-audible acceptance.",
+  "allowed_paths": [
+    "scripts/**",
+    "src/chatterbox/**",
+    "logs/**"
+  ],
+  "forbidden_scope": [
+    "docs/**",
+    "tests/**",
+    ".codex/**",
+    "unrelated services",
+    "new architecture"
+  ],
+  "attempt_budget": 2
+}

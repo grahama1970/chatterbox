@@ -1,0 +1,77 @@
+{
+  "schema": "chatterbox.physical_playback_recapture.v1",
+  "status": "pass_current_gate",
+  "mocked": false,
+  "live": true,
+  "started_at_utc": "2026-07-17T13:33:19Z",
+  "ended_at_utc": "2026-07-17T13:33:31Z",
+  "sink": {
+    "id": 65,
+    "node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+    "description": "Jabra SPEAK 510 Analog Stereo",
+    "volume": 1.0,
+    "muted": false
+  },
+  "source": {
+    "id": 40,
+    "node_name": "alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo",
+    "description": "HD Pro Webcam C920 Analog Stereo",
+    "volume": 1.0,
+    "muted": false
+  },
+  "pw_play": {
+    "target": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+    "volume": 1.0,
+    "exit_code": 0
+  },
+  "pw_record": {
+    "target": "alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo",
+    "exit_code": 1,
+    "termination": "SIGINT after one-second post-roll",
+    "controlled_termination": true
+  },
+  "source_audio": {
+    "path": "logs/e2e-all-features-20260717/full-live-sanity-final/stream-endpoint/stream.wav",
+    "sha256": "7169a221a7f42494d1659f59e1dd77ac736c34ea5aa3f20152ac29c89e6c3c1b"
+  },
+  "recapture": {
+    "path": "logs/e2e-all-features-20260717/physical-jabra-playback-c920-recapture-gate/recapture.wav",
+    "sha256": "51b2ad9c8ecf7f60e2e6559fb98211128563a27d84c8b89628aa47af548ce8f1",
+    "bytes": 1296428,
+    "duration_seconds": 13.504,
+    "sample_rate": 48000,
+    "channels": 1,
+    "mean_volume_db": -10.0,
+    "max_volume_db": 0.0
+  },
+  "asr": {
+    "live": true,
+    "mocked": false,
+    "http_status": 200,
+    "transcript_path": "logs/e2e-all-features-20260717/physical-jabra-playback-c920-recapture-gate/recapture-transcript.json",
+    "text": "Okay, I can stream this in short chunks while the rest of the answer is still being prepared. The important part is that the human hair speech, quickly, and the system can still stop between chunks. Anything else you need?",
+    "exact_match_to_source_transcript": true
+  },
+  "human_audible_acceptance": {
+    "accepted": true,
+    "by": "Graham",
+    "response": "I head this",
+    "recorded_at_utc": "2026-07-17T13:46:22Z"
+  },
+  "human_confirmation_replay": {
+    "started_at_utc": "2026-07-17T13:46:10Z",
+    "ended_at_utc": "2026-07-17T13:46:22Z",
+    "target": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+    "volume": 1.0,
+    "exit_code": 0,
+    "result_path": "logs/e2e-all-features-20260717/physical-jabra-playback-c920-recapture-gate/human-confirmation-replay.txt"
+  },
+  "proves": [
+    "the generated Chatterbox WAV was submitted to the named physical Jabra sink",
+    "an independent physical C920 microphone captured intelligible matching speech",
+    "the playback-to-air-to-microphone acoustic path was exercised live"
+  ],
+  "does_not_prove": [
+    "the remaining listener, wake, Chat UX, replay, and interruption goal surfaces"
+  ]
+}
