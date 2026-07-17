@@ -46,3 +46,10 @@ checkpoints/
 
 # Ignore generated sample .wav files
 **/*.wav
+
+# Local runtime output. Keep these paths in the repo so agents do not default
+# to host /tmp for receipts, logs, and resumable state.
+tmp/*
+!tmp/.gitkeep
+logs/*
+!logs/.gitkeep
