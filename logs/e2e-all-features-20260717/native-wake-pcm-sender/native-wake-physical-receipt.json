@@ -1,0 +1,69 @@
+{
+  "schema": "chatterbox.native_wake_physical_receipt.v1",
+  "status": "pass",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "capture": {
+    "source_node": "alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo",
+    "stream_id": "c920-native-wake-20260717T1509Z",
+    "frame_count": 11997,
+    "last_sequence": 11997,
+    "gap_count": 0,
+    "sample_gap_count": 0
+  },
+  "wake": {
+    "event": {
+      "schema": "embry.voice_event.v2",
+      "event_id": "listener.wake_detected.74093dc3523fa10b",
+      "session_id": "physical-container-canary-20260715T202000Z",
+      "turn_id": "listener-turn-000001-81b8947d3d5e",
+      "sequence": 3,
+      "type": "listener.wake_detected",
+      "created_at": "2026-07-17T15:19:03.996620+00:00",
+      "causation_id": "listener.wake_armed.7ee9128eafae4b55",
+      "correlation_id": "physical-container-canary-20260715T202000Z",
+      "producer": "realtimestt.openwakeword",
+      "mocked": false,
+      "live": true,
+      "artifact_hashes": {},
+      "receipt_hash": "sha256:6e1c8a151d088bcb9123f73915a161eeb9754d1dcdf529cbdddac2bf62e15720",
+      "payload": {
+        "asr_text_used_for_wake": false,
+        "native_callback": true,
+        "substring_matcher_used": false,
+        "wake_authority": "openwakeword_native_callback",
+        "wake_model_id": "hey_embry_v1",
+        "wake_model_sha256": "sha256:2ad9cafd125439b11a9b1cfdbf6dbeddfbbb2daa1c25c91266c47543332fe664",
+        "wake_phrase": "Hey Embry",
+        "wake_sensitivity": 0.88
+      }
+    },
+    "inference_count": 4798,
+    "rolling_max": {
+      "hey_embry_v1": 0.00027176737785339355
+    },
+    "configured_sensitivity": 0.88
+  },
+  "journal": {
+    "session_id": "physical-container-canary-20260715T202000Z",
+    "event_count": 3,
+    "sha256": "363a954e9ea1ac3e14dc71668f5b02c97a3661541fe2fb0900239408f7d01e29",
+    "outbox_pending_count": 0,
+    "outbox_delivered_count": 3
+  },
+  "claims": {
+    "proves": [
+      "physical C920 PCM crossed the framed Unix ingress continuously without sequence or sample gaps",
+      "the human utterance triggered the native OpenWakeWord callback",
+      "the native wake event was durably accepted by the listener journal"
+    ],
+    "does_not_prove": [
+      "final ASR transcription",
+      "speaker identity or personal-memory authorization",
+      "Tau response generation",
+      "audible Chatterbox response",
+      "interruption, Chat UX synchronization, or replay"
+    ]
+  }
+}
