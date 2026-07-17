@@ -1,0 +1,1929 @@
+{
+  "acceptance": {
+    "answer_text": "I searched current web results. Paris - Wikipedia. In the late 12th century, Philip... central island, and paved its main thoroughfares. In 1190, he transformed Paris&#x27;s former cathedral school into a student-teacher corporation that would become the University of Paris and would draw students from all of Europe. With 200,000 inhabitants in 1328, Paris, then already the capital of France, was the most... Source: https://en.wikipedia.org/wiki/Paris",
+    "checks": {
+      "answer_mentions_expected": true,
+      "audio_authority_returned": true,
+      "audio_path_returned": true,
+      "listener_final_transcript_seen": true,
+      "listener_receipt_passed": true,
+      "listener_wake_detected": true,
+      "live_turn_http_2xx": true,
+      "live_turn_status_ok": true,
+      "local_playback_played": true,
+      "local_playback_requested": true,
+      "memory_intent_returned": true,
+      "pass": true,
+      "reasoning_steps_returned": true,
+      "receipt_path_returned": true,
+      "response_live": true,
+      "response_not_mocked": true,
+      "tau_boundary_returned": true,
+      "turn_text_sent": true,
+      "used_browser_mic": false,
+      "used_mock_transcript": false,
+      "used_ui": false
+    },
+    "error": null,
+    "expected_answer": "paris",
+    "normalized_answer": "i searched current web results paris wikipedia in the late 12th century philip central island and paved its main thoroughfares in 1190 he transformed paris x27 s former cathedral school into a student teacher corporation that would become the university of paris and would draw students from all of europe with 200 000 inhabitants in 1328 paris then already the capital of france was the most source https en wikipedia org wiki paris",
+    "pass": true,
+    "response_status_code": 200
+  },
+  "base_url": "http://127.0.0.1:3001/api/projects/embry-voice",
+  "claims": {
+    "does_not_prove": [
+      "Browser microphone or WebRTC capture.",
+      "Speaker identity or diarization acceptance.",
+      "Shared Chat UX rendering.",
+      "Orb sync.",
+      "Replay.",
+      "Interruption or barge-in."
+    ],
+    "proves": [
+      "A Unix/PipeWire RealtimeSTT final transcript was converted into a voice-mode live-turn request.",
+      "The configured live-turn endpoint was exercised without browser mic or UI input.",
+      "If acceptance.pass is true, memory/Tau returned the expected answer and Chatterbox returned audio authority."
+    ]
+  },
+  "created_at": "2026-07-17T15:45:15.099525+00:00",
+  "endpoint": "http://127.0.0.1:3001/api/projects/embry-voice/live-turn",
+  "expected_answer": "paris",
+  "listener_final_transcript": "What is the capital of France?",
+  "listener_receipt_path": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/native-wake-timeout-fix/journal-listener-wrapper.json",
+  "live": true,
+  "local_playback": {
+    "command": [
+      "pw-play",
+      "--target",
+      "65",
+      "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav"
+    ],
+    "driver": "pipewire-pw-play",
+    "path": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+    "played": true,
+    "requested": true,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "",
+    "target": "65",
+    "targetArgUsed": true
+  },
+  "mocked": false,
+  "receipt_path": "/mnt/storage12tb/skills/embry-voice-control/outputs/e2e/listener-turn-live/20260717T154344Z-listener-turn-3ad0a7a5/receipt.json",
+  "request_payload": {
+    "chatEnabled": true,
+    "inputMode": "voice",
+    "listenerEvidence": {
+      "browser_webrtc": false,
+      "events_path": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/native-wake-timeout-fix/post-utterance-journal.json",
+      "final_transcript": "What is the capital of France?",
+      "hot_mic": true,
+      "normalized_final_transcript": "what is the capital of france?",
+      "realtime_event_count": 9,
+      "realtimestt": true,
+      "receipt_path": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/native-wake-timeout-fix/journal-listener-wrapper.json",
+      "schema": "embry_voice_control.listener_turn_evidence.v1",
+      "source": "unix_pipewire_realtimestt_listener",
+      "underlying_receipt_path": "/home/graham/workspace/experiments/chatterbox/logs/e2e-all-features-20260717/native-wake-timeout-fix/native-wake-transcript-receipt.json",
+      "wake_detected": true,
+      "wake_word": "Hey Embry"
+    },
+    "replayEnabled": false,
+    "requireInterruptPolicy": true,
+    "requireMemoryIntentVoicePolicy": true,
+    "sessionId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+    "speakerEvidence": {
+      "identity_resolution_required": true,
+      "primary_speaker": true,
+      "source": "unix_listener_rung_pending_speaker_gate",
+      "speaker_gate_status": "not_proven"
+    },
+    "text": "What is the capital of France?",
+    "turnId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+    "voiceEnabled": true
+  },
+  "response_excerpt": {
+    "answerText": "I searched current web results. Paris - Wikipedia. In the late 12th century, Philip... central island, and paved its main thoroughfares. In 1190, he transformed Paris&#x27;s former cathedral school into a student-teacher corporation that would become the University of Paris and would draw students from all of Europe. With 200,000 inhabitants in 1328, Paris, then already the capital of France, was the most... Source: https://en.wikipedia.org/wiki/Paris",
+    "answerTextHash": "1cd0be547473d93ac818c25ceb64d2181df89337e9d612f5833e2b09f9f94e3b",
+    "audioAuthority": {
+      "artifactId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+      "authority": "server-chatterbox-wav-envelope-v1",
+      "durationMs": 40160,
+      "envelope": {
+        "durationMs": 40160,
+        "frameMs": 16,
+        "frames": {
+          "_type": "list",
+          "count": 2510,
+          "first": [
+            {
+              "bass": "<max-depth>",
+              "level": "<max-depth>",
+              "mid": "<max-depth>",
+              "peak": "<max-depth>",
+              "rms": "<max-depth>",
+              "t": "<max-depth>",
+              "treble": "<max-depth>"
+            },
+            {
+              "bass": "<max-depth>",
+              "level": "<max-depth>",
+              "mid": "<max-depth>",
+              "peak": "<max-depth>",
+              "rms": "<max-depth>",
+              "t": "<max-depth>",
+              "treble": "<max-depth>"
+            },
+            {
+              "bass": "<max-depth>",
+              "level": "<max-depth>",
+              "mid": "<max-depth>",
+              "peak": "<max-depth>",
+              "rms": "<max-depth>",
+              "t": "<max-depth>",
+              "treble": "<max-depth>"
+            },
+            {
+              "bass": "<max-depth>",
+              "level": "<max-depth>",
+              "mid": "<max-depth>",
+              "peak": "<max-depth>",
+              "rms": "<max-depth>",
+              "t": "<max-depth>",
+              "treble": "<max-depth>"
+            }
+          ]
+        },
+        "interruptPolicy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "interrupt_policy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "pauseStrategy": "chunk_pause_150_350ms",
+        "pause_strategy": "chunk_pause_150_350ms",
+        "sampleRate": 16000,
+        "stats": {
+          "peakP95": 0.216003,
+          "rmsP10": 0.000107,
+          "rmsP95": 0.077359
+        },
+        "version": 1,
+        "voicePolicy": {
+          "chatterboxTags": [],
+          "chatterbox_tags": [],
+          "conversation_tone": "memory_confident",
+          "cuePolicy": "memory_intent_no_literal_tag",
+          "cueReason": "Derived from memory.intent",
+          "cue_policy": "memory_intent_no_literal_tag",
+          "cue_reason": "Derived from memory.intent",
+          "deliveryStage": "satisfied",
+          "delivery_stage": "satisfied",
+          "emotionTags": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "emotion_tags": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "intentPolicySource": "memory.intent",
+          "intent_policy_source": "memory.intent",
+          "interruptPolicy": {
+            "acknowledgementText": "<max-depth>",
+            "acknowledgementTone": "<max-depth>",
+            "acknowledgement_text": "<max-depth>",
+            "acknowledgement_tone": "<max-depth>",
+            "bargeInAction": "<max-depth>",
+            "barge_in_action": "<max-depth>",
+            "duckOnUserSpeech": "<max-depth>",
+            "duck_on_user_speech": "<max-depth>",
+            "interruptible": "<max-depth>",
+            "newTurnWins": "<max-depth>",
+            "new_turn_wins": "<max-depth>",
+            "skipStaleChunks": "<max-depth>",
+            "skip_stale_chunks": "<max-depth>"
+          },
+          "interrupt_policy": {
+            "acknowledgementText": "<max-depth>",
+            "acknowledgementTone": "<max-depth>",
+            "acknowledgement_text": "<max-depth>",
+            "acknowledgement_tone": "<max-depth>",
+            "bargeInAction": "<max-depth>",
+            "barge_in_action": "<max-depth>",
+            "duckOnUserSpeech": "<max-depth>",
+            "duck_on_user_speech": "<max-depth>",
+            "interruptible": "<max-depth>",
+            "newTurnWins": "<max-depth>",
+            "new_turn_wins": "<max-depth>",
+            "skipStaleChunks": "<max-depth>",
+            "skip_stale_chunks": "<max-depth>"
+          },
+          "memoryVoiceDelivery": {
+            "confidence": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "delivery_stage_source": "<max-depth>",
+            "evidence": "<max-depth>",
+            "pace": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "requested_delivery_stage": "<max-depth>",
+            "requested_tone": "<max-depth>",
+            "schema": "<max-depth>",
+            "source": "<max-depth>",
+            "tone": "<max-depth>",
+            "wait_activity": "<max-depth>"
+          },
+          "memory_voice_delivery": {
+            "confidence": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "delivery_stage_source": "<max-depth>",
+            "evidence": "<max-depth>",
+            "pace": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "requested_delivery_stage": "<max-depth>",
+            "requested_tone": "<max-depth>",
+            "schema": "<max-depth>",
+            "source": "<max-depth>",
+            "tone": "<max-depth>",
+            "wait_activity": "<max-depth>"
+          },
+          "pace": "measured",
+          "pauseStrategy": "chunk_pause_150_350ms",
+          "pause_strategy": "chunk_pause_150_350ms",
+          "schema": "ux_lab.embry_voice.delivery_policy.v1",
+          "tone": "memory_confident"
+        },
+        "voice_policy": {
+          "chatterboxTags": [],
+          "chatterbox_tags": [],
+          "conversation_tone": "memory_confident",
+          "cuePolicy": "memory_intent_no_literal_tag",
+          "cueReason": "Derived from memory.intent",
+          "cue_policy": "memory_intent_no_literal_tag",
+          "cue_reason": "Derived from memory.intent",
+          "deliveryStage": "satisfied",
+          "delivery_stage": "satisfied",
+          "emotionTags": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "emotion_tags": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "intentPolicySource": "memory.intent",
+          "intent_policy_source": "memory.intent",
+          "interruptPolicy": {
+            "acknowledgementText": "<max-depth>",
+            "acknowledgementTone": "<max-depth>",
+            "acknowledgement_text": "<max-depth>",
+            "acknowledgement_tone": "<max-depth>",
+            "bargeInAction": "<max-depth>",
+            "barge_in_action": "<max-depth>",
+            "duckOnUserSpeech": "<max-depth>",
+            "duck_on_user_speech": "<max-depth>",
+            "interruptible": "<max-depth>",
+            "newTurnWins": "<max-depth>",
+            "new_turn_wins": "<max-depth>",
+            "skipStaleChunks": "<max-depth>",
+            "skip_stale_chunks": "<max-depth>"
+          },
+          "interrupt_policy": {
+            "acknowledgementText": "<max-depth>",
+            "acknowledgementTone": "<max-depth>",
+            "acknowledgement_text": "<max-depth>",
+            "acknowledgement_tone": "<max-depth>",
+            "bargeInAction": "<max-depth>",
+            "barge_in_action": "<max-depth>",
+            "duckOnUserSpeech": "<max-depth>",
+            "duck_on_user_speech": "<max-depth>",
+            "interruptible": "<max-depth>",
+            "newTurnWins": "<max-depth>",
+            "new_turn_wins": "<max-depth>",
+            "skipStaleChunks": "<max-depth>",
+            "skip_stale_chunks": "<max-depth>"
+          },
+          "memoryVoiceDelivery": {
+            "confidence": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "delivery_stage_source": "<max-depth>",
+            "evidence": "<max-depth>",
+            "pace": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "requested_delivery_stage": "<max-depth>",
+            "requested_tone": "<max-depth>",
+            "schema": "<max-depth>",
+            "source": "<max-depth>",
+            "tone": "<max-depth>",
+            "wait_activity": "<max-depth>"
+          },
+          "memory_voice_delivery": {
+            "confidence": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "delivery_stage_source": "<max-depth>",
+            "evidence": "<max-depth>",
+            "pace": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "requested_delivery_stage": "<max-depth>",
+            "requested_tone": "<max-depth>",
+            "schema": "<max-depth>",
+            "source": "<max-depth>",
+            "tone": "<max-depth>",
+            "wait_activity": "<max-depth>"
+          },
+          "pace": "measured",
+          "pauseStrategy": "chunk_pause_150_350ms",
+          "pause_strategy": "chunk_pause_150_350ms",
+          "schema": "ux_lab.embry_voice.delivery_policy.v1",
+          "tone": "memory_confident"
+        }
+      },
+      "localPlayback": null,
+      "path": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+      "sha256": "70fd4359b472f0cb84b18b6b99c4c02e221be5570c116939298e5e8e4ce880c0",
+      "url": "/chatterbox-artifacts/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav"
+    },
+    "audioPath": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+    "audioUrl": "/chatterbox-artifacts/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+    "backend": "tau-memory-chatterbox",
+    "chatterbox_tags": [],
+    "conversation_tone": "memory_confident",
+    "cue_policy": "memory_intent_no_literal_tag",
+    "deliveryStage": "satisfied",
+    "delivery_stage": "satisfied",
+    "emotion_tags": [
+      "memory_confident",
+      "grounded"
+    ],
+    "entities": [],
+    "entityContext": {
+      "agent_contract": {
+        "authoritative_paths": [
+          "proof_packet.assertions",
+          "nodes.anchors",
+          "nodes.validated_context",
+          "nodes.suppressed"
+        ],
+        "ignore_for_grounding": [
+          "display_summary",
+          "candidate_nodes",
+          "guess_nodes",
+          "rationale.summary"
+        ],
+        "llm_generated_fields_are_never_authoritative": true,
+        "use_for_grounding": [
+          "proof_packet.assertions"
+        ]
+      },
+      "agent_decision": {
+        "grounding_source": "proof_packet.assertions",
+        "needs_clarification": false,
+        "needs_retry": true,
+        "primary_entity_id": null,
+        "reason": "no_entities_found",
+        "safe_to_answer": false,
+        "suggested_action": "retry_with_more_context"
+      },
+      "candidate_nodes": {
+        "controls": [],
+        "not_usable_for": [
+          "grounding",
+          "proof",
+          "approval",
+          "answer_authority",
+          "evidence_gate"
+        ],
+        "proof_role": "none",
+        "qras": [],
+        "requires_user_confirmation": true,
+        "status": "candidate_only",
+        "usable_for": [
+          "suggestions",
+          "related_results",
+          "did_you_mean"
+        ]
+      },
+      "counts": {
+        "anchors": 0,
+        "candidate_controls": 0,
+        "candidate_qras": 0,
+        "context_terms": 1,
+        "media_timecodes": 0,
+        "suppressed": 0,
+        "unsupported": 0,
+        "validated_context": 0
+      },
+      "grounding_ok": true,
+      "media_timecodes": [],
+      "nodes": {
+        "anchors": [],
+        "context_terms": [
+          {
+            "id": "<max-depth>",
+            "mention": "<max-depth>",
+            "metadata": "<max-depth>",
+            "node_kind": "<max-depth>",
+            "proof_role": "<max-depth>",
+            "span": "<max-depth>",
+            "status": "<max-depth>"
+          }
+        ],
+        "suppressed": [],
+        "unsupported": [],
+        "validated_context": []
+      },
+      "ok": true,
+      "proof_packet": {
+        "assertions": [],
+        "authoritative": true,
+        "generated_by": "deterministic_extractor",
+        "llm_used": false,
+        "primary_entity_id": null,
+        "query_text": "What is the capital of France?"
+      },
+      "query_text": "What is the capital of France?",
+      "view": "agent"
+    },
+    "intent_policy_source": "memory.intent",
+    "interruptPolicy": {
+      "acknowledgementText": "Okay, stopping that.",
+      "acknowledgementTone": "interrupted",
+      "acknowledgement_text": "Okay, stopping that.",
+      "acknowledgement_tone": "interrupted",
+      "bargeInAction": "cancel_old_turn",
+      "barge_in_action": "cancel_old_turn",
+      "duckOnUserSpeech": true,
+      "duck_on_user_speech": true,
+      "interruptible": true,
+      "newTurnWins": true,
+      "new_turn_wins": true,
+      "skipStaleChunks": true,
+      "skip_stale_chunks": true
+    },
+    "interrupt_policy": {
+      "acknowledgementText": "Okay, stopping that.",
+      "acknowledgementTone": "interrupted",
+      "acknowledgement_text": "Okay, stopping that.",
+      "acknowledgement_tone": "interrupted",
+      "bargeInAction": "cancel_old_turn",
+      "barge_in_action": "cancel_old_turn",
+      "duckOnUserSpeech": true,
+      "duck_on_user_speech": true,
+      "interruptible": true,
+      "newTurnWins": true,
+      "new_turn_wins": true,
+      "skipStaleChunks": true,
+      "skip_stale_chunks": true
+    },
+    "live": true,
+    "memory": {
+      "action": "QUERY",
+      "answer": {
+        "answer_type": "insufficient_memory_evidence",
+        "can_answer": false,
+        "confidence": 0,
+        "degraded": false,
+        "fallback_used": false,
+        "final_response": "I do not have enough grounded memory evidence to answer that request.",
+        "final_response_origin": "deterministic_refusal",
+        "intent_action": null,
+        "non_claims": [
+          "Deterministic memory logic owns can_answer, answer_type, source_answer, recall, and sources.",
+          "No SciLLM final response is requested when grounded memory evidence is insufficient."
+        ],
+        "ok": true,
+        "query": "What is the capital of France?",
+        "recall": {
+          "answer_candidate_count": 0,
+          "collections": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "filtered_route_readiness_count": 0,
+          "found": false,
+          "item_count": 0,
+          "scope": "embry_voice",
+          "threshold": 0.3
+        },
+        "schema": "memory.answer.v1",
+        "source_answer": "I do not have enough grounded memory evidence to answer that request.",
+        "sources": []
+      },
+      "entity_context": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "ignore_for_grounding": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "<max-depth>"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": false,
+          "needs_retry": true,
+          "primary_entity_id": null,
+          "reason": "no_entities_found",
+          "safe_to_answer": false,
+          "suggested_action": "retry_with_more_context"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 1,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 0,
+          "validated_context": 0
+        },
+        "grounding_ok": true,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [
+            "<max-depth>"
+          ],
+          "suppressed": [],
+          "unsupported": [],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "What is the capital of France?"
+        },
+        "query_text": "What is the capital of France?",
+        "view": "agent"
+      },
+      "errors": [
+        "recall: Memory daemon timeout after 15000ms on /recall"
+      ],
+      "intent": {
+        "action": "QUERY",
+        "allowed_tools": [],
+        "candidate_intents": [],
+        "clarify_kind": null,
+        "classifier_source": "deterministic_problem_query",
+        "confidence": 0.8,
+        "content_type": "markdown",
+        "depth": 1,
+        "disallowed_tools": [],
+        "entities": [],
+        "entity_context": {
+          "agent_contract": {
+            "authoritative_paths": "<max-depth>",
+            "ignore_for_grounding": "<max-depth>",
+            "llm_generated_fields_are_never_authoritative": "<max-depth>",
+            "use_for_grounding": "<max-depth>"
+          },
+          "agent_decision": {
+            "grounding_source": "<max-depth>",
+            "needs_clarification": "<max-depth>",
+            "needs_retry": "<max-depth>",
+            "primary_entity_id": "<max-depth>",
+            "reason": "<max-depth>",
+            "safe_to_answer": "<max-depth>",
+            "suggested_action": "<max-depth>"
+          },
+          "candidate_nodes": {
+            "controls": "<max-depth>",
+            "not_usable_for": "<max-depth>",
+            "proof_role": "<max-depth>",
+            "qras": "<max-depth>",
+            "requires_user_confirmation": "<max-depth>",
+            "status": "<max-depth>",
+            "usable_for": "<max-depth>"
+          },
+          "counts": {
+            "anchors": "<max-depth>",
+            "candidate_controls": "<max-depth>",
+            "candidate_qras": "<max-depth>",
+            "context_terms": "<max-depth>",
+            "media_timecodes": "<max-depth>",
+            "suppressed": "<max-depth>",
+            "unsupported": "<max-depth>",
+            "validated_context": "<max-depth>"
+          },
+          "executed_by": "intent_always_on",
+          "grounding_ok": true,
+          "media_timecodes": [],
+          "nodes": {
+            "anchors": "<max-depth>",
+            "context_terms": "<max-depth>",
+            "suppressed": "<max-depth>",
+            "unsupported": "<max-depth>",
+            "validated_context": "<max-depth>"
+          },
+          "ok": true,
+          "proof_packet": {
+            "assertions": "<max-depth>",
+            "authoritative": "<max-depth>",
+            "generated_by": "<max-depth>",
+            "llm_used": "<max-depth>",
+            "primary_entity_id": "<max-depth>",
+            "query_text": "<max-depth>"
+          },
+          "query_text": "What is the capital of France?",
+          "route": "/extract-entities",
+          "view": "agent"
+        },
+        "eta_interruption": {
+          "event_type": "eta_interruption",
+          "expected_wait_ms": 3000,
+          "factual_answer_generated": false,
+          "keeps_existing_work_alive": true,
+          "phrase": "I'm still working; about 3 seconds left.",
+          "prediction_source": "execution_runs",
+          "remaining_wait_ms": 3000,
+          "route": "QUERY",
+          "schema": "embry.chatterbox.eta_interruption.v1",
+          "should_start_hum": false,
+          "task_type": "knowledge"
+        },
+        "expand_hops": 1,
+        "frameworks": [],
+        "grounding": {
+          "evidence_source": "no_config",
+          "target_resolved": true
+        },
+        "identity_prompt": null,
+        "invalid_terms": [],
+        "k": 12,
+        "keywords": [
+          "capital",
+          "france"
+        ],
+        "lanes": [
+          "bm25",
+          "dense"
+        ],
+        "matched_persona_aliases": [],
+        "perspective": null,
+        "planner_only": true,
+        "query_plan": null,
+        "query_type": "knowledge",
+        "question_domains": [],
+        "question_kind": null,
+        "reason": null,
+        "recall_profile": "general_memory_recall",
+        "recall_profile_confidence": 0.5,
+        "recall_profile_source": "fallback",
+        "recall_profile_spec": {
+          "clarify_policy": "default",
+          "collections": null,
+          "depth": 1,
+          "description": "Default metadata profile for broad memory recall.",
+          "hard_filters": null,
+          "k": 12,
+          "min_grounding": 0.7,
+          "name": "general_memory_recall",
+          "required_artifacts": [],
+          "reranker_mode": "off",
+          "weights": {
+            "bm25": "<max-depth>",
+            "freshness": "<max-depth>",
+            "graph_multihop": "<max-depth>",
+            "semantic": "<max-depth>"
+          }
+        },
+        "recommended_skills": [],
+        "render_style_id": "plain_answer",
+        "required_artifacts": [],
+        "reranker_mode": "off",
+        "response_mode": null,
+        "rewritten_query": "What is the capital of France?",
+        "scene_action_id": null,
+        "scope": "brandon_bailey",
+        "skill_chain": [],
+        "slots": {
+          "arango_data_requested": false,
+          "document_name": null,
+          "page": null,
+          "page_image_requested": false,
+          "payload_reference": false,
+          "proof_requested": false,
+          "qdrant_similarity_requested": false,
+          "requested_artifacts": [],
+          "similarity_scope": null,
+          "table_requested": false
+        },
+        "speaker_resolution": null,
+        "suggestions": [],
+        "target_node_id": null,
+        "tier1": [],
+        "tool_calls": [
+          {
+            "args": "<max-depth>",
+            "endpoint": "<max-depth>",
+            "method": "<max-depth>",
+            "name": "<max-depth>",
+            "produces": "<max-depth>"
+          }
+        ],
+        "top_intents": [],
+        "ui_action": null,
+        "valid_entities": [],
+        "voice_delivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "wait_control": {
+          "event_type": "wait_control",
+          "expected_wait_ms": 3000,
+          "prediction_source": "execution_runs",
+          "remaining_wait_ms": 3000,
+          "route": "QUERY",
+          "schema": "embry.chatterbox.wait_control.v1",
+          "task_type": "knowledge",
+          "wait_decision": {
+            "decision": "<max-depth>",
+            "factual_answer_generated": "<max-depth>",
+            "phrase": "<max-depth>",
+            "phrase_key": "<max-depth>",
+            "should_start_hum": "<max-depth>"
+          }
+        },
+        "wait_estimate": {
+          "expected_wait_ms": 3000,
+          "keeps_existing_work_alive": true,
+          "latency_stats": {
+            "date_range": "<max-depth>",
+            "percentiles": "<max-depth>",
+            "prediction_source": "<max-depth>",
+            "recommended_timeout_ms": "<max-depth>",
+            "route_key": "<max-depth>",
+            "sample_count": "<max-depth>"
+          },
+          "prediction_source": "execution_runs",
+          "remaining_wait_ms": 3000,
+          "route": "QUERY",
+          "route_key": "memory_endpoint|intent|query|any_question_kind|general_memory_recall|any_response_mode|no_tool",
+          "running_job": {},
+          "schema": "memory.wait_prediction.v1",
+          "task_type": "knowledge"
+        },
+        "wait_events": [
+          {
+            "event_type": "<max-depth>",
+            "keeps_existing_work_alive": "<max-depth>",
+            "route": "<max-depth>"
+          },
+          {
+            "event_type": "<max-depth>",
+            "expected_wait_ms": "<max-depth>",
+            "prediction_source": "<max-depth>",
+            "remaining_wait_ms": "<max-depth>",
+            "route": "<max-depth>",
+            "schema": "<max-depth>",
+            "task_type": "<max-depth>",
+            "wait_decision": "<max-depth>"
+          },
+          {
+            "event_type": "<max-depth>",
+            "expected_wait_ms": "<max-depth>",
+            "factual_answer_generated": "<max-depth>",
+            "keeps_existing_work_alive": "<max-depth>",
+            "phrase": "<max-depth>",
+            "prediction_source": "<max-depth>",
+            "remaining_wait_ms": "<max-depth>",
+            "route": "<max-depth>",
+            "schema": "<max-depth>",
+            "should_start_hum": "<max-depth>",
+            "task_type": "<max-depth>"
+          }
+        ]
+      },
+      "raw_answer_text": "",
+      "recall": null,
+      "research": {
+        "called": true,
+        "error": null,
+        "live": true,
+        "mocked": false,
+        "query": "What is the capital of France?",
+        "result_count": 5,
+        "results": [
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          }
+        ],
+        "status": "ok"
+      },
+      "static_answer": null
+    },
+    "mocked": false,
+    "pauseStrategy": "chunk_pause_150_350ms",
+    "pause_strategy": "chunk_pause_150_350ms",
+    "reasoningSteps": [
+      {
+        "branch": "embry-voice",
+        "detail": "1 structured entity span(s) from memory.extract-entities",
+        "disclosureVariant": "thinking",
+        "icon": "search",
+        "id": "extracting-entities",
+        "label": "Extract entities",
+        "status": "completed"
+      },
+      {
+        "branch": "embry-voice",
+        "detail": "memory.intent action QUERY",
+        "disclosureVariant": "thinking",
+        "icon": "memory",
+        "id": "finalizing-intent",
+        "label": "Memory intent",
+        "status": "completed"
+      },
+      {
+        "branch": "embry-voice",
+        "detail": "brave-search returned 5 current web result(s) via memory.answer miss fallback",
+        "disclosureVariant": "thinking",
+        "icon": "search",
+        "id": "brave-search",
+        "label": "Brave search",
+        "status": "completed"
+      },
+      {
+        "branch": "embry-voice",
+        "detail": "memory.answer returned a response candidate",
+        "disclosureVariant": "thinking",
+        "icon": "search",
+        "id": "looking-in-memory",
+        "label": "Memory recall",
+        "status": "completed"
+      },
+      {
+        "branch": "embry-voice",
+        "detail": "Tau used memory.answer miss fallback evidence from brave-search",
+        "disclosureVariant": "thinking",
+        "icon": "check",
+        "id": "answering",
+        "label": "Tau response",
+        "status": "completed"
+      },
+      {
+        "branch": "embry-voice",
+        "detail": "Rendered /home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+        "disclosureVariant": "thinking",
+        "icon": "mic",
+        "id": "embry-chatterbox-render",
+        "label": "Chatterbox voice",
+        "status": "completed"
+      }
+    ],
+    "recallItems": [],
+    "receiptPath": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.json",
+    "receiptUrl": "/chatterbox-artifacts/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.json",
+    "research": {
+      "brave_search": {
+        "called": true,
+        "error": null,
+        "live": true,
+        "mocked": false,
+        "query": "What is the capital of France?",
+        "result_count": 5,
+        "results": [
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          },
+          {
+            "snippet": "<max-depth>",
+            "title": "<max-depth>",
+            "url": "<max-depth>"
+          }
+        ],
+        "status": "ok"
+      }
+    },
+    "status": "ok",
+    "tauBoundary": "memory.intent",
+    "tone": "memory_confident",
+    "ttsRenderText": "I searched current web results. Paris - Wikipedia. In the late 12th century, Philip... central island, and paved its main thoroughfares. In 1190, he transformed Paris&#x27;s former cathedral school into a student-teacher corporation that would become the University of Paris and would draw students from all of Europe. With 200,000 inhabitants in 1328, Paris, then already the capital of France, was the most... Source: https://en.wikipedia.org/wiki/Paris",
+    "ttsRenderTextHash": "1cd0be547473d93ac818c25ceb64d2181df89337e9d612f5833e2b09f9f94e3b",
+    "turnAuthority": {
+      "assistantText": "I searched current web results. Paris - Wikipedia. In the late 12th century, Philip... central island, and paved its main thoroughfares. In 1190, he transformed Paris&#x27;s former cathedral school into a student-teacher corporation that would become the University of Paris and would draw students from all of Europe. With 200,000 inhabitants in 1328, Paris, then already the capital of France, was the most... Source: https://en.wikipedia.org/wiki/Paris",
+      "audioArtifacts": [
+        {
+          "artifactId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+          "authority": "server-chatterbox-wav-envelope-v1",
+          "durationMs": 40160,
+          "envelope": {
+            "durationMs": "<max-depth>",
+            "frameMs": "<max-depth>",
+            "frames": "<max-depth>",
+            "interruptPolicy": "<max-depth>",
+            "interrupt_policy": "<max-depth>",
+            "pauseStrategy": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "sampleRate": "<max-depth>",
+            "stats": "<max-depth>",
+            "version": "<max-depth>",
+            "voicePolicy": "<max-depth>",
+            "voice_policy": "<max-depth>"
+          },
+          "localPlayback": null,
+          "path": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+          "sha256": "70fd4359b472f0cb84b18b6b99c4c02e221be5570c116939298e5e8e4ce880c0",
+          "url": "/chatterbox-artifacts/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav"
+        }
+      ],
+      "audioAuthority": {
+        "artifactId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+        "authority": "server-chatterbox-wav-envelope-v1",
+        "durationMs": 40160,
+        "envelope": {
+          "durationMs": 40160,
+          "frameMs": 16,
+          "frames": {
+            "_type": "list",
+            "count": 2510,
+            "first": [
+              "<max-depth>",
+              "<max-depth>",
+              "<max-depth>",
+              "<max-depth>"
+            ]
+          },
+          "interruptPolicy": {
+            "acknowledgementText": "<max-depth>",
+            "acknowledgementTone": "<max-depth>",
+            "acknowledgement_text": "<max-depth>",
+            "acknowledgement_tone": "<max-depth>",
+            "bargeInAction": "<max-depth>",
+            "barge_in_action": "<max-depth>",
+            "duckOnUserSpeech": "<max-depth>",
+            "duck_on_user_speech": "<max-depth>",
+            "interruptible": "<max-depth>",
+            "newTurnWins": "<max-depth>",
+            "new_turn_wins": "<max-depth>",
+            "skipStaleChunks": "<max-depth>",
+            "skip_stale_chunks": "<max-depth>"
+          },
+          "interrupt_policy": {
+            "acknowledgementText": "<max-depth>",
+            "acknowledgementTone": "<max-depth>",
+            "acknowledgement_text": "<max-depth>",
+            "acknowledgement_tone": "<max-depth>",
+            "bargeInAction": "<max-depth>",
+            "barge_in_action": "<max-depth>",
+            "duckOnUserSpeech": "<max-depth>",
+            "duck_on_user_speech": "<max-depth>",
+            "interruptible": "<max-depth>",
+            "newTurnWins": "<max-depth>",
+            "new_turn_wins": "<max-depth>",
+            "skipStaleChunks": "<max-depth>",
+            "skip_stale_chunks": "<max-depth>"
+          },
+          "pauseStrategy": "chunk_pause_150_350ms",
+          "pause_strategy": "chunk_pause_150_350ms",
+          "sampleRate": 16000,
+          "stats": {
+            "peakP95": "<max-depth>",
+            "rmsP10": "<max-depth>",
+            "rmsP95": "<max-depth>"
+          },
+          "version": 1,
+          "voicePolicy": {
+            "chatterboxTags": "<max-depth>",
+            "chatterbox_tags": "<max-depth>",
+            "conversation_tone": "<max-depth>",
+            "cuePolicy": "<max-depth>",
+            "cueReason": "<max-depth>",
+            "cue_policy": "<max-depth>",
+            "cue_reason": "<max-depth>",
+            "deliveryStage": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "emotionTags": "<max-depth>",
+            "emotion_tags": "<max-depth>",
+            "intentPolicySource": "<max-depth>",
+            "intent_policy_source": "<max-depth>",
+            "interruptPolicy": "<max-depth>",
+            "interrupt_policy": "<max-depth>",
+            "memoryVoiceDelivery": "<max-depth>",
+            "memory_voice_delivery": "<max-depth>",
+            "pace": "<max-depth>",
+            "pauseStrategy": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "schema": "<max-depth>",
+            "tone": "<max-depth>"
+          },
+          "voice_policy": {
+            "chatterboxTags": "<max-depth>",
+            "chatterbox_tags": "<max-depth>",
+            "conversation_tone": "<max-depth>",
+            "cuePolicy": "<max-depth>",
+            "cueReason": "<max-depth>",
+            "cue_policy": "<max-depth>",
+            "cue_reason": "<max-depth>",
+            "deliveryStage": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "emotionTags": "<max-depth>",
+            "emotion_tags": "<max-depth>",
+            "intentPolicySource": "<max-depth>",
+            "intent_policy_source": "<max-depth>",
+            "interruptPolicy": "<max-depth>",
+            "interrupt_policy": "<max-depth>",
+            "memoryVoiceDelivery": "<max-depth>",
+            "memory_voice_delivery": "<max-depth>",
+            "pace": "<max-depth>",
+            "pauseStrategy": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "schema": "<max-depth>",
+            "tone": "<max-depth>"
+          }
+        },
+        "localPlayback": null,
+        "path": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav",
+        "sha256": "70fd4359b472f0cb84b18b6b99c4c02e221be5570c116939298e5e8e4ce880c0",
+        "url": "/chatterbox-artifacts/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.wav"
+      },
+      "createdAt": "2026-07-17T15:43:44.874Z",
+      "interruptPolicy": {
+        "acknowledgementText": "Okay, stopping that.",
+        "acknowledgementTone": "interrupted",
+        "acknowledgement_text": "Okay, stopping that.",
+        "acknowledgement_tone": "interrupted",
+        "bargeInAction": "cancel_old_turn",
+        "barge_in_action": "cancel_old_turn",
+        "duckOnUserSpeech": true,
+        "duck_on_user_speech": true,
+        "interruptible": true,
+        "newTurnWins": true,
+        "new_turn_wins": true,
+        "skipStaleChunks": true,
+        "skip_stale_chunks": true
+      },
+      "live": true,
+      "memoryFirst": true,
+      "memoryTrace": {
+        "answer": {
+          "answer_type": "insufficient_memory_evidence",
+          "can_answer": false,
+          "confidence": 0,
+          "degraded": false,
+          "fallback_used": false,
+          "final_response": "I do not have enough grounded memory evidence to answer that request.",
+          "final_response_origin": "deterministic_refusal",
+          "intent_action": null,
+          "non_claims": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "ok": true,
+          "query": "What is the capital of France?",
+          "recall": {
+            "answer_candidate_count": "<max-depth>",
+            "collections": "<max-depth>",
+            "filtered_route_readiness_count": "<max-depth>",
+            "found": "<max-depth>",
+            "item_count": "<max-depth>",
+            "scope": "<max-depth>",
+            "threshold": "<max-depth>"
+          },
+          "schema": "memory.answer.v1",
+          "source_answer": "I do not have enough grounded memory evidence to answer that request.",
+          "sources": []
+        },
+        "entity_context": {
+          "agent_contract": {
+            "authoritative_paths": "<max-depth>",
+            "ignore_for_grounding": "<max-depth>",
+            "llm_generated_fields_are_never_authoritative": "<max-depth>",
+            "use_for_grounding": "<max-depth>"
+          },
+          "agent_decision": {
+            "grounding_source": "<max-depth>",
+            "needs_clarification": "<max-depth>",
+            "needs_retry": "<max-depth>",
+            "primary_entity_id": "<max-depth>",
+            "reason": "<max-depth>",
+            "safe_to_answer": "<max-depth>",
+            "suggested_action": "<max-depth>"
+          },
+          "candidate_nodes": {
+            "controls": "<max-depth>",
+            "not_usable_for": "<max-depth>",
+            "proof_role": "<max-depth>",
+            "qras": "<max-depth>",
+            "requires_user_confirmation": "<max-depth>",
+            "status": "<max-depth>",
+            "usable_for": "<max-depth>"
+          },
+          "counts": {
+            "anchors": "<max-depth>",
+            "candidate_controls": "<max-depth>",
+            "candidate_qras": "<max-depth>",
+            "context_terms": "<max-depth>",
+            "media_timecodes": "<max-depth>",
+            "suppressed": "<max-depth>",
+            "unsupported": "<max-depth>",
+            "validated_context": "<max-depth>"
+          },
+          "grounding_ok": true,
+          "media_timecodes": [],
+          "nodes": {
+            "anchors": "<max-depth>",
+            "context_terms": "<max-depth>",
+            "suppressed": "<max-depth>",
+            "unsupported": "<max-depth>",
+            "validated_context": "<max-depth>"
+          },
+          "ok": true,
+          "proof_packet": {
+            "assertions": "<max-depth>",
+            "authoritative": "<max-depth>",
+            "generated_by": "<max-depth>",
+            "llm_used": "<max-depth>",
+            "primary_entity_id": "<max-depth>",
+            "query_text": "<max-depth>"
+          },
+          "query_text": "What is the capital of France?",
+          "view": "agent"
+        },
+        "intent": {
+          "action": "QUERY",
+          "allowed_tools": [],
+          "candidate_intents": [],
+          "clarify_kind": null,
+          "classifier_source": "deterministic_problem_query",
+          "confidence": 0.8,
+          "content_type": "markdown",
+          "depth": 1,
+          "disallowed_tools": [],
+          "entities": [],
+          "entity_context": {
+            "agent_contract": "<max-depth>",
+            "agent_decision": "<max-depth>",
+            "candidate_nodes": "<max-depth>",
+            "counts": "<max-depth>",
+            "executed_by": "<max-depth>",
+            "grounding_ok": "<max-depth>",
+            "media_timecodes": "<max-depth>",
+            "nodes": "<max-depth>",
+            "ok": "<max-depth>",
+            "proof_packet": "<max-depth>",
+            "query_text": "<max-depth>",
+            "route": "<max-depth>",
+            "view": "<max-depth>"
+          },
+          "eta_interruption": {
+            "event_type": "<max-depth>",
+            "expected_wait_ms": "<max-depth>",
+            "factual_answer_generated": "<max-depth>",
+            "keeps_existing_work_alive": "<max-depth>",
+            "phrase": "<max-depth>",
+            "prediction_source": "<max-depth>",
+            "remaining_wait_ms": "<max-depth>",
+            "route": "<max-depth>",
+            "schema": "<max-depth>",
+            "should_start_hum": "<max-depth>",
+            "task_type": "<max-depth>"
+          },
+          "expand_hops": 1,
+          "frameworks": [],
+          "grounding": {
+            "evidence_source": "<max-depth>",
+            "target_resolved": "<max-depth>"
+          },
+          "identity_prompt": null,
+          "invalid_terms": [],
+          "k": 12,
+          "keywords": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "lanes": [
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "matched_persona_aliases": [],
+          "perspective": null,
+          "planner_only": true,
+          "query_plan": null,
+          "query_type": "knowledge",
+          "question_domains": [],
+          "question_kind": null,
+          "reason": null,
+          "recall_profile": "general_memory_recall",
+          "recall_profile_confidence": 0.5,
+          "recall_profile_source": "fallback",
+          "recall_profile_spec": {
+            "clarify_policy": "<max-depth>",
+            "collections": "<max-depth>",
+            "depth": "<max-depth>",
+            "description": "<max-depth>",
+            "hard_filters": "<max-depth>",
+            "k": "<max-depth>",
+            "min_grounding": "<max-depth>",
+            "name": "<max-depth>",
+            "required_artifacts": "<max-depth>",
+            "reranker_mode": "<max-depth>",
+            "weights": "<max-depth>"
+          },
+          "recommended_skills": [],
+          "render_style_id": "plain_answer",
+          "required_artifacts": [],
+          "reranker_mode": "off",
+          "response_mode": null,
+          "rewritten_query": "What is the capital of France?",
+          "scene_action_id": null,
+          "scope": "brandon_bailey",
+          "skill_chain": [],
+          "slots": {
+            "arango_data_requested": "<max-depth>",
+            "document_name": "<max-depth>",
+            "page": "<max-depth>",
+            "page_image_requested": "<max-depth>",
+            "payload_reference": "<max-depth>",
+            "proof_requested": "<max-depth>",
+            "qdrant_similarity_requested": "<max-depth>",
+            "requested_artifacts": "<max-depth>",
+            "similarity_scope": "<max-depth>",
+            "table_requested": "<max-depth>"
+          },
+          "speaker_resolution": null,
+          "suggestions": [],
+          "target_node_id": null,
+          "tier1": [],
+          "tool_calls": [
+            "<max-depth>"
+          ],
+          "top_intents": [],
+          "ui_action": null,
+          "valid_entities": [],
+          "voice_delivery": {
+            "confidence": "<max-depth>",
+            "delivery_stage": "<max-depth>",
+            "delivery_stage_source": "<max-depth>",
+            "evidence": "<max-depth>",
+            "pace": "<max-depth>",
+            "pause_strategy": "<max-depth>",
+            "requested_delivery_stage": "<max-depth>",
+            "requested_tone": "<max-depth>",
+            "schema": "<max-depth>",
+            "source": "<max-depth>",
+            "tone": "<max-depth>",
+            "wait_activity": "<max-depth>"
+          },
+          "wait_control": {
+            "event_type": "<max-depth>",
+            "expected_wait_ms": "<max-depth>",
+            "prediction_source": "<max-depth>",
+            "remaining_wait_ms": "<max-depth>",
+            "route": "<max-depth>",
+            "schema": "<max-depth>",
+            "task_type": "<max-depth>",
+            "wait_decision": "<max-depth>"
+          },
+          "wait_estimate": {
+            "expected_wait_ms": "<max-depth>",
+            "keeps_existing_work_alive": "<max-depth>",
+            "latency_stats": "<max-depth>",
+            "prediction_source": "<max-depth>",
+            "remaining_wait_ms": "<max-depth>",
+            "route": "<max-depth>",
+            "route_key": "<max-depth>",
+            "running_job": "<max-depth>",
+            "schema": "<max-depth>",
+            "task_type": "<max-depth>"
+          },
+          "wait_events": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ]
+        },
+        "recall": null,
+        "research": {
+          "called": true,
+          "error": null,
+          "live": true,
+          "mocked": false,
+          "query": "What is the capital of France?",
+          "result_count": 5,
+          "results": [
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>",
+            "<max-depth>"
+          ],
+          "status": "ok"
+        }
+      },
+      "mocked": false,
+      "pauseStrategy": "chunk_pause_150_350ms",
+      "personaId": "embry",
+      "receiptPath": "/home/graham/workspace/experiments/chatterbox/logs/ux-lab-embry-live/2026-07-17T15-43-44-874Z-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5-embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5.json",
+      "sessionId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+      "simultaneousTextVoice": true,
+      "tauTrace": {
+        "action": "QUERY",
+        "boundary": "memory.intent"
+      },
+      "turnId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+      "userText": "What is the capital of France?",
+      "voicePolicy": {
+        "chatterboxTags": [],
+        "chatterbox_tags": [],
+        "conversation_tone": "memory_confident",
+        "cuePolicy": "memory_intent_no_literal_tag",
+        "cueReason": "Derived from memory.intent",
+        "cue_policy": "memory_intent_no_literal_tag",
+        "cue_reason": "Derived from memory.intent",
+        "deliveryStage": "satisfied",
+        "delivery_stage": "satisfied",
+        "emotionTags": [
+          "memory_confident",
+          "grounded"
+        ],
+        "emotion_tags": [
+          "memory_confident",
+          "grounded"
+        ],
+        "intentPolicySource": "memory.intent",
+        "intent_policy_source": "memory.intent",
+        "interruptPolicy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "interrupt_policy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "memoryVoiceDelivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "memory_voice_delivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "pace": "measured",
+        "pauseStrategy": "chunk_pause_150_350ms",
+        "pause_strategy": "chunk_pause_150_350ms",
+        "schema": "ux_lab.embry_voice.delivery_policy.v1",
+        "tone": "memory_confident"
+      }
+    },
+    "turnId": "embry-listener-turn-20260717T154344Z-listener-turn-3ad0a7a5",
+    "voiceEnvelope": {
+      "durationMs": 40160,
+      "frameMs": 16,
+      "frames": {
+        "_type": "list",
+        "count": 2510,
+        "first": [
+          {
+            "bass": 0,
+            "level": 0,
+            "mid": 0,
+            "peak": 0.0001,
+            "rms": 0,
+            "t": 0,
+            "treble": 0
+          },
+          {
+            "bass": 0.0002,
+            "level": 0.0003,
+            "mid": 0.0003,
+            "peak": 0.0011,
+            "rms": 0,
+            "t": 0.016,
+            "treble": 0.0008
+          },
+          {
+            "bass": 0.0005,
+            "level": 0.0006,
+            "mid": 0.0006,
+            "peak": 0.0011,
+            "rms": 0.0003,
+            "t": 0.032,
+            "treble": 0.0032
+          },
+          {
+            "bass": 0.0006,
+            "level": 0.0008,
+            "mid": 0.0008,
+            "peak": 0.0021,
+            "rms": 0.0002,
+            "t": 0.048,
+            "treble": 0.0035
+          }
+        ]
+      },
+      "interruptPolicy": {
+        "acknowledgementText": "Okay, stopping that.",
+        "acknowledgementTone": "interrupted",
+        "acknowledgement_text": "Okay, stopping that.",
+        "acknowledgement_tone": "interrupted",
+        "bargeInAction": "cancel_old_turn",
+        "barge_in_action": "cancel_old_turn",
+        "duckOnUserSpeech": true,
+        "duck_on_user_speech": true,
+        "interruptible": true,
+        "newTurnWins": true,
+        "new_turn_wins": true,
+        "skipStaleChunks": true,
+        "skip_stale_chunks": true
+      },
+      "interrupt_policy": {
+        "acknowledgementText": "Okay, stopping that.",
+        "acknowledgementTone": "interrupted",
+        "acknowledgement_text": "Okay, stopping that.",
+        "acknowledgement_tone": "interrupted",
+        "bargeInAction": "cancel_old_turn",
+        "barge_in_action": "cancel_old_turn",
+        "duckOnUserSpeech": true,
+        "duck_on_user_speech": true,
+        "interruptible": true,
+        "newTurnWins": true,
+        "new_turn_wins": true,
+        "skipStaleChunks": true,
+        "skip_stale_chunks": true
+      },
+      "pauseStrategy": "chunk_pause_150_350ms",
+      "pause_strategy": "chunk_pause_150_350ms",
+      "sampleRate": 16000,
+      "stats": {
+        "peakP95": 0.216003,
+        "rmsP10": 0.000107,
+        "rmsP95": 0.077359
+      },
+      "version": 1,
+      "voicePolicy": {
+        "chatterboxTags": [],
+        "chatterbox_tags": [],
+        "conversation_tone": "memory_confident",
+        "cuePolicy": "memory_intent_no_literal_tag",
+        "cueReason": "Derived from memory.intent",
+        "cue_policy": "memory_intent_no_literal_tag",
+        "cue_reason": "Derived from memory.intent",
+        "deliveryStage": "satisfied",
+        "delivery_stage": "satisfied",
+        "emotionTags": [
+          "memory_confident",
+          "grounded"
+        ],
+        "emotion_tags": [
+          "memory_confident",
+          "grounded"
+        ],
+        "intentPolicySource": "memory.intent",
+        "intent_policy_source": "memory.intent",
+        "interruptPolicy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "interrupt_policy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "memoryVoiceDelivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "memory_voice_delivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "pace": "measured",
+        "pauseStrategy": "chunk_pause_150_350ms",
+        "pause_strategy": "chunk_pause_150_350ms",
+        "schema": "ux_lab.embry_voice.delivery_policy.v1",
+        "tone": "memory_confident"
+      },
+      "voice_policy": {
+        "chatterboxTags": [],
+        "chatterbox_tags": [],
+        "conversation_tone": "memory_confident",
+        "cuePolicy": "memory_intent_no_literal_tag",
+        "cueReason": "Derived from memory.intent",
+        "cue_policy": "memory_intent_no_literal_tag",
+        "cue_reason": "Derived from memory.intent",
+        "deliveryStage": "satisfied",
+        "delivery_stage": "satisfied",
+        "emotionTags": [
+          "memory_confident",
+          "grounded"
+        ],
+        "emotion_tags": [
+          "memory_confident",
+          "grounded"
+        ],
+        "intentPolicySource": "memory.intent",
+        "intent_policy_source": "memory.intent",
+        "interruptPolicy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "interrupt_policy": {
+          "acknowledgementText": "Okay, stopping that.",
+          "acknowledgementTone": "interrupted",
+          "acknowledgement_text": "Okay, stopping that.",
+          "acknowledgement_tone": "interrupted",
+          "bargeInAction": "cancel_old_turn",
+          "barge_in_action": "cancel_old_turn",
+          "duckOnUserSpeech": true,
+          "duck_on_user_speech": true,
+          "interruptible": true,
+          "newTurnWins": true,
+          "new_turn_wins": true,
+          "skipStaleChunks": true,
+          "skip_stale_chunks": true
+        },
+        "memoryVoiceDelivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "memory_voice_delivery": {
+          "confidence": 0.8,
+          "delivery_stage": "satisfied",
+          "delivery_stage_source": "tone_mapping",
+          "evidence": {
+            "clarify_kind": "<max-depth>",
+            "classifier_source": "<max-depth>",
+            "intent_action": "<max-depth>",
+            "listener": "<max-depth>",
+            "speaker_id": "<max-depth>",
+            "speaker_status": "<max-depth>"
+          },
+          "pace": null,
+          "pause_strategy": null,
+          "requested_delivery_stage": null,
+          "requested_tone": null,
+          "schema": "memory.voice_delivery.v1",
+          "source": "memory_intent",
+          "tone": "memory_confident",
+          "wait_activity": null
+        },
+        "pace": "measured",
+        "pauseStrategy": "chunk_pause_150_350ms",
+        "pause_strategy": "chunk_pause_150_350ms",
+        "schema": "ux_lab.embry_voice.delivery_policy.v1",
+        "tone": "memory_confident"
+      }
+    },
+    "voicePolicy": {
+      "chatterboxTags": [],
+      "chatterbox_tags": [],
+      "conversation_tone": "memory_confident",
+      "cuePolicy": "memory_intent_no_literal_tag",
+      "cueReason": "Derived from memory.intent",
+      "cue_policy": "memory_intent_no_literal_tag",
+      "cue_reason": "Derived from memory.intent",
+      "deliveryStage": "satisfied",
+      "delivery_stage": "satisfied",
+      "emotionTags": [
+        "memory_confident",
+        "grounded"
+      ],
+      "emotion_tags": [
+        "memory_confident",
+        "grounded"
+      ],
+      "intentPolicySource": "memory.intent",
+      "intent_policy_source": "memory.intent",
+      "interruptPolicy": {
+        "acknowledgementText": "Okay, stopping that.",
+        "acknowledgementTone": "interrupted",
+        "acknowledgement_text": "Okay, stopping that.",
+        "acknowledgement_tone": "interrupted",
+        "bargeInAction": "cancel_old_turn",
+        "barge_in_action": "cancel_old_turn",
+        "duckOnUserSpeech": true,
+        "duck_on_user_speech": true,
+        "interruptible": true,
+        "newTurnWins": true,
+        "new_turn_wins": true,
+        "skipStaleChunks": true,
+        "skip_stale_chunks": true
+      },
+      "interrupt_policy": {
+        "acknowledgementText": "Okay, stopping that.",
+        "acknowledgementTone": "interrupted",
+        "acknowledgement_text": "Okay, stopping that.",
+        "acknowledgement_tone": "interrupted",
+        "bargeInAction": "cancel_old_turn",
+        "barge_in_action": "cancel_old_turn",
+        "duckOnUserSpeech": true,
+        "duck_on_user_speech": true,
+        "interruptible": true,
+        "newTurnWins": true,
+        "new_turn_wins": true,
+        "skipStaleChunks": true,
+        "skip_stale_chunks": true
+      },
+      "memoryVoiceDelivery": {
+        "confidence": 0.8,
+        "delivery_stage": "satisfied",
+        "delivery_stage_source": "tone_mapping",
+        "evidence": {
+          "clarify_kind": null,
+          "classifier_source": "deterministic_problem_query",
+          "intent_action": "QUERY",
+          "listener": {},
+          "speaker_id": null,
+          "speaker_status": null
+        },
+        "pace": null,
+        "pause_strategy": null,
+        "requested_delivery_stage": null,
+        "requested_tone": null,
+        "schema": "memory.voice_delivery.v1",
+        "source": "memory_intent",
+        "tone": "memory_confident",
+        "wait_activity": null
+      },
+      "memory_voice_delivery": {
+        "confidence": 0.8,
+        "delivery_stage": "satisfied",
+        "delivery_stage_source": "tone_mapping",
+        "evidence": {
+          "clarify_kind": null,
+          "classifier_source": "deterministic_problem_query",
+          "intent_action": "QUERY",
+          "listener": {},
+          "speaker_id": null,
+          "speaker_status": null
+        },
+        "pace": null,
+        "pause_strategy": null,
+        "requested_delivery_stage": null,
+        "requested_tone": null,
+        "schema": "memory.voice_delivery.v1",
+        "source": "memory_intent",
+        "tone": "memory_confident",
+        "wait_activity": null
+      },
+      "pace": "measured",
+      "pauseStrategy": "chunk_pause_150_350ms",
+      "pause_strategy": "chunk_pause_150_350ms",
+      "schema": "ux_lab.embry_voice.delivery_policy.v1",
+      "tone": "memory_confident"
+    }
+  },
+  "response_status_code": 200,
+  "run_id": "20260717T154344Z-listener-turn-3ad0a7a5",
+  "schema": "embry_voice_control.listener_turn_live_receipt.v1",
+  "turn_text": "What is the capital of France?",
+  "used_browser_mic": false,
+  "used_mock_transcript": false,
+  "used_ui": false
+}
