@@ -1,0 +1,104 @@
+{
+  "schema": "chatterbox.native_wake_transcript_receipt.v1",
+  "status": "pass",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "session_id": "physical-container-canary-20260717T1531Z",
+  "turn_id": "listener-turn-000001-1ce1869df144",
+  "chain": [
+    {
+      "sequence": 3,
+      "type": "listener.wake_detected",
+      "event_id": "listener.wake_detected.3e1084c179d27e04",
+      "turn_id": "listener-turn-000001-1ce1869df144",
+      "created_at": "2026-07-17T15:33:59.462710+00:00",
+      "payload": {
+        "asr_text_used_for_wake": false,
+        "native_callback": true,
+        "substring_matcher_used": false,
+        "wake_authority": "openwakeword_native_callback",
+        "wake_model_id": "hey_embry_v1",
+        "wake_model_sha256": "sha256:2ad9cafd125439b11a9b1cfdbf6dbeddfbbb2daa1c25c91266c47543332fe664",
+        "wake_phrase": "Hey Embry",
+        "wake_sensitivity": 0.88
+      }
+    },
+    {
+      "sequence": 4,
+      "type": "listener.audio_turn_started",
+      "event_id": "listener.audio_turn_started.02a5c0d4d3499178",
+      "turn_id": "listener-turn-000001-1ce1869df144",
+      "created_at": "2026-07-17T15:33:59.718451+00:00",
+      "payload": {
+        "wake_authority": "openwakeword_native_callback"
+      }
+    },
+    {
+      "sequence": 14,
+      "type": "listener.final_transcript",
+      "event_id": "listener.final_transcript.089ab7775a02a876",
+      "turn_id": "listener-turn-000001-1ce1869df144",
+      "created_at": "2026-07-17T15:34:02.281599+00:00",
+      "payload": {
+        "asr_text_used_for_wake": false,
+        "text": "What is the capital of France?",
+        "wake_authority": "openwakeword_native_callback",
+        "wake_event_id": "listener.wake_detected.3e1084c179d27e04"
+      }
+    },
+    {
+      "sequence": 15,
+      "type": "listener.receipt_written",
+      "event_id": "listener.receipt_written.1c6caf4f7fc14712",
+      "turn_id": "listener-turn-000001-1ce1869df144",
+      "created_at": "2026-07-17T15:34:02.341634+00:00",
+      "payload": {
+        "event_schema": "embry.voice_event.v2",
+        "final_transcript_event_id": "listener.final_transcript.089ab7775a02a876",
+        "source_node": "alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo",
+        "stream_id": "c920-timeout-fix-20260717T1531Z"
+      }
+    }
+  ],
+  "runtime": {
+    "completed_turn_count": 1,
+    "last_transcript": "What is the capital of France?",
+    "active_turn": null,
+    "pcm": {
+      "socket_path": "/run/embry/audio/realtimestt-pcm.sock",
+      "bound": true,
+      "connected": true,
+      "frame_count": 5705,
+      "last_sequence": 5705,
+      "gap_count": 0,
+      "sample_gap_count": 0,
+      "last_error": null,
+      "stream_id": "c920-timeout-fix-20260717T1531Z",
+      "source_node": "alsa_input.usb-046d_HD_Pro_Webcam_C920_9947BA2F-02.analog-stereo"
+    },
+    "outbox": {
+      "path": "/var/lib/embry-realtimestt/outbox.sqlite3",
+      "pending_count": 0,
+      "delivered_count": 18,
+      "last_error": null
+    }
+  },
+  "journal": {
+    "event_count": 15,
+    "sha256": "a79520f1ccb32a9f7625f13649a4e341067e2c2e9c7242263b9db7fccf5e5bc7"
+  },
+  "claims": {
+    "proves": [
+      "a human continuous wake-plus-question utterance triggered native OpenWakeWord",
+      "the same turn entered recording and produced the exact final transcript What is the capital of France?",
+      "the final transcript and receipt were durably sequenced in the listener journal"
+    ],
+    "does_not_prove": [
+      "speaker identity or personal-memory authorization",
+      "Tau or memory answer generation",
+      "audible Chatterbox response",
+      "interruption, Chat UX synchronization, or replay"
+    ]
+  }
+}
