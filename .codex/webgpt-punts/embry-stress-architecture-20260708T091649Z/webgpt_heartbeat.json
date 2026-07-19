@@ -1,0 +1,13 @@
+{
+  "schema": "surf.webgpt_heartbeat.v1",
+  "updated_at": "2026-07-08T09:25:09Z",
+  "submitted_at": "2026-07-08T09:18:05Z",
+  "last_browser_observation_at": "2026-07-08T09:25:09Z",
+  "phase": "completed",
+  "page_state": "response_detected",
+  "last_artifact_written": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-stress-architecture-20260708T091649Z/response.raw.md",
+  "next_expected_artifact": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-stress-architecture-20260708T091649Z/meta.json",
+  "timeout_remaining_seconds": 0,
+  "sentinel": "<<<WEBGPT_DONE:20260708T091803Z:1540c01e>>>",
+  "prepared_prompt_is_transport_proof": false
+}

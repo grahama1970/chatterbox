@@ -1,0 +1,17 @@
+{
+  "schema": "surf.webgpt_submit_receipt.v1",
+  "status": "submitted_to_chatgpt",
+  "submitted_to_chatgpt": true,
+  "prepared_prompt_is_transport_proof": false,
+  "input": ".ask/embry-audio-runner-live-executor-followup.md",
+  "submitted_output": ".ask/embry-audio-runner-live-executor-followup-response.md.submitted.md",
+  "output": ".ask/embry-audio-runner-live-executor-followup-response.md",
+  "raw_output": ".ask/embry-audio-runner-live-executor-followup-response.raw.md",
+  "meta_output": ".ask/embry-audio-runner-live-executor-followup-response.meta.json",
+  "sentinel": "<<<WEBGPT_DONE:20260711T172717Z:091db26d>>>",
+  "requested_tab_id": "837357645",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "receipt_at": "2026-07-11T17:27:28Z"
+}

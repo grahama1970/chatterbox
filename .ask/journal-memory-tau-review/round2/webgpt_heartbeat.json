@@ -1,0 +1,13 @@
+{
+  "schema": "surf.webgpt_heartbeat.v1",
+  "updated_at": "2026-07-10T20:42:49Z",
+  "submitted_at": "2026-07-10T20:27:44Z",
+  "last_browser_observation_at": "2026-07-10T20:42:49Z",
+  "phase": "completed",
+  "page_state": "response_detected",
+  "last_artifact_written": "/home/graham/workspace/experiments/chatterbox/.ask/journal-memory-tau-review/round2/response.raw.md",
+  "next_expected_artifact": "/home/graham/workspace/experiments/chatterbox/.ask/journal-memory-tau-review/round2/response.meta.json",
+  "timeout_remaining_seconds": 0,
+  "sentinel": "<<<WEBGPT_DONE:20260710T202742Z:b65ea67f>>>",
+  "prepared_prompt_is_transport_proof": false
+}

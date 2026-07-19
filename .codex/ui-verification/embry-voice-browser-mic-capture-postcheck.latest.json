@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-09T16:22:42.639181+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/#embry-voice",
+  "name": "embry-voice-browser-mic-capture-postcheck",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-mic-capture-postcheck/20260709T162207Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-mic-capture-postcheck/20260709T162207Z.read.json"
+}

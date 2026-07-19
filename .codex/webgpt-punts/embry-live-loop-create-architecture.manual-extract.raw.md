@@ -1,0 +1,1 @@
+The local workspace is unavailable here, so I’ll treat your cited paths and commit as authoritative. The next proof should target PipeWire/virtual-source ingress before browser mic, with WAV only as calibration.

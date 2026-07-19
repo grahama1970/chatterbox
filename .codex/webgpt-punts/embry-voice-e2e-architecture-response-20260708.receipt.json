@@ -1,0 +1,17 @@
+{
+  "schema": "surf.webgpt_submit_receipt.v1",
+  "status": "submitted_to_chatgpt",
+  "submitted_to_chatgpt": true,
+  "prepared_prompt_is_transport_proof": false,
+  "input": ".codex/webgpt-punts/embry-voice-e2e-architecture-bundle-20260708.sanitized.md",
+  "submitted_output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.md.submitted.md",
+  "output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.md",
+  "raw_output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.raw.md",
+  "meta_output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.meta.json",
+  "sentinel": "<<<WEBGPT_DONE:20260708T103554Z:3fc3939a>>>",
+  "requested_tab_id": "837357645",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "receipt_at": "2026-07-08T10:36:02Z"
+}

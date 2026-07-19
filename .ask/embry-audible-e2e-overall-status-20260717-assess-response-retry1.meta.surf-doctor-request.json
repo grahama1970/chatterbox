@@ -1,0 +1,91 @@
+{
+  "active_submission_state": "terminal_finalization",
+  "agent_id": "surf-doctor",
+  "allowed_actions": [
+    "preserve_incident",
+    "classify_failure",
+    "read_only_reproduction",
+    "prepare_repair_packet"
+  ],
+  "browser_mutation_authorized": false,
+  "captured_at": "2026-07-17T13:21:39.383803+00:00",
+  "controlled_tab_id": "837359263",
+  "conversation_url": null,
+  "dag_spec": {
+    "max_attempts": 3,
+    "mode": "bounded_dag",
+    "nodes": [
+      "preserve_incident",
+      "classify_failure",
+      "reproduce_or_bound",
+      "prepare_repair"
+    ],
+    "schema": "subagent_dag.v1",
+    "stop_conditions": [
+      "diagnosis_and_repair_packet_written",
+      "same_failure_repeated_twice",
+      "architectural_change_required",
+      "browser_mutation_required"
+    ]
+  },
+  "failure_class": "focus_stolen_despite_no_activate",
+  "forbidden_actions": [
+    "webgpt_resubmit",
+    "tab_activate",
+    "tab_close",
+    "tab_navigate",
+    "page_refresh",
+    "extension_reload"
+  ],
+  "proof_status": "degraded_focus",
+  "requested_tab_id": "837359263",
+  "requested_url": null,
+  "schema": "surf_doctor.incident_request.v1",
+  "sentinel": "<<<WEBGPT_DONE:20260717T131248Z:e21c219a>>>",
+  "source_artifacts": [
+    {
+      "bytes": 4104,
+      "kind": "response_meta",
+      "path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.meta.json",
+      "sha256": "5faa6cad6bdefa599c86e91600ef8ae8a75cf815ea667cb2678db883a33fa6f3"
+    },
+    {
+      "bytes": 1087,
+      "kind": "submit_receipt",
+      "path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.receipt.json",
+      "sha256": "010311b083e61038ad6698bf1a7b5ec7f18045a56df7a43ade70f3f816ad8b3c"
+    },
+    {
+      "bytes": 494,
+      "kind": "submitted_prompt",
+      "path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.submitted.md",
+      "sha256": "45cf3a41f2ba57c7c410dea034391c1cfe0ced3db06597a56a7b44752cd2c430"
+    },
+    {
+      "bytes": 5995,
+      "kind": "raw_response",
+      "path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.raw.md",
+      "sha256": "1789f53c2a4e941df7ce5241f243a4ff7589dc21fd984466b7fd2910244306e1"
+    },
+    {
+      "bytes": 5951,
+      "kind": "clean_response",
+      "path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.md",
+      "sha256": "411c61f44336b35b962991a0ad3c28dd797e28641ba7ed992349aaa210a0764f"
+    },
+    {
+      "bytes": 695,
+      "kind": "heartbeat",
+      "path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.meta.heartbeat.json",
+      "sha256": "18ac9ec9819d16337f4730f9e8aa4388060c5b69102af59f2825218f8c3da3fc"
+    },
+    {
+      "bytes": 310,
+      "kind": "stderr",
+      "path": "/tmp/surf-webgpt-submit-stderr.CkWpP0.log",
+      "sha256": "e08a3ef37d4f3c9b06001e7dd3a97c469c73809ca7d5350d3424a15d3ebfe635"
+    }
+  ],
+  "status": "PENDING_DIAGNOSIS",
+  "submitted_to_chatgpt": true
+}

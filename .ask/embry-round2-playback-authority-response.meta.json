@@ -1,0 +1,16 @@
+{
+  "status": "completed",
+  "output": ".ask/embry-round2-playback-authority-response.md",
+  "raw_output": ".ask/embry-round2-playback-authority-response.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-extract-stderr.VjD7Dy.log",
+  "sentinel": "<<<WEBGPT_DONE:20260711T130346Z:c8f914c5>>>",
+  "requested_tab_id": "837357645",
+  "controlled_tab_id": "837357645",
+  "response_source": "assistant-dom",
+  "raw_contains_sentinel": true,
+  "clean_contains_sentinel": false,
+  "raw_chars": 31316,
+  "clean_chars": 31271,
+  "started_at": "2026-07-11T13:20:01Z",
+  "finished_at": "2026-07-11T13:20:01Z"
+}

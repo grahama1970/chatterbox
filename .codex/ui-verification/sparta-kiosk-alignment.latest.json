@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-08T14:36:05.938370+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/?chatMode=drilldown&entityProof5=1783440079222#sparta-explorer/qras",
+  "name": "sparta-kiosk-alignment",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/sparta-kiosk-alignment/20260708T143531Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/sparta-kiosk-alignment/20260708T143531Z.read.json"
+}

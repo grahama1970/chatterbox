@@ -77,13 +77,102 @@
   },
   "chat_gate_candidate_count": 1,
   "chat_matrix": {
-    "failed_gate_counts": {},
-    "sample_failures": [],
+    "failed_gate_counts": {
+      "assistant_response_plan_v1_not_linked": 2,
+      "chat_render_receipt_v1_not_emitted": 2,
+      "chat_turn_id_matches_response_plan_not_proven": 2,
+      "entity_underline_render_receipt_not_emitted": 2,
+      "extract_entities_receipt_not_linked": 2,
+      "runner_route_not_implemented": 12,
+      "spoken_transcript_entity_underlines_not_proven": 2
+    },
+    "sample_failures": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "assistant_response_plan_v1_not_linked",
+          "chat_render_receipt_v1_not_emitted",
+          "chat_turn_id_matches_response_plan_not_proven"
+        ],
+        "id": "chat_ux_sync-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "UI proof shows shared chat text and four Chatterbox audio sources, but no assistant.response.plan.v1 to chat.render.receipt.v1 lineage receipt proves the chat text and audio share the same turn id."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "extract_entities_receipt_not_linked",
+          "entity_underline_render_receipt_not_emitted",
+          "spoken_transcript_entity_underlines_not_proven"
+        ],
+        "id": "chat_ux_sync-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "UI proof contains text such as horus_lupercal, but no linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "assistant_response_plan_v1_not_linked",
+          "chat_render_receipt_v1_not_emitted",
+          "chat_turn_id_matches_response_plan_not_proven"
+        ],
+        "id": "chat_ux_sync-medium-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "UI proof shows shared chat text and audio sources, but no response-plan to chat-render lineage receipt proves the same turn id."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "extract_entities_receipt_not_linked",
+          "entity_underline_render_receipt_not_emitted",
+          "spoken_transcript_entity_underlines_not_proven"
+        ],
+        "id": "chat_ux_sync-medium-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "No linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      }
+    ],
     "session_count": 20,
     "status_counts": {
-      "failed": 0,
+      "failed": 16,
       "not_run": 0,
-      "passed": 20
+      "passed": 4
     }
   },
   "claims": {
@@ -101,35 +190,91 @@
     ]
   },
   "dom_lineage_probe_evidence": {
-    "blocking_summary": null,
+    "blocking_summary": "live shared Chat DOM lacks turn-id linkage between assistant message/audio and/or entity underline spans in the spoken transcript",
     "boundary": "live_dom_shared_chat_turn_audio_entity_lineage",
     "candidate_count": 1,
     "candidate_paths": [
       "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"
     ],
-    "failed_candidate_count": 0,
-    "passing_candidate_count": 1,
-    "ready": true,
-    "sample_failures": []
+    "failed_candidate_count": 1,
+    "passing_candidate_count": 0,
+    "ready": false,
+    "sample_failures": [
+      {
+        "dom_entity_underlines_ready": false,
+        "dom_lineage_ready": false,
+        "observed": {
+          "assistant_message_count": 1,
+          "assistant_with_audio_count": 1,
+          "assistant_with_entity_span_count": 0,
+          "assistant_with_turn_id_count": 0,
+          "audio_artifact_count": 2,
+          "audio_with_turn_id_count": 0,
+          "chat_message_count": 7
+        },
+        "path": "/tmp/chatterbox-fork-agent-out/embry-chat-ux-lineage/latest/receipt.json"
+      }
+    ]
   },
   "dynamic_replay_candidate_count": 2,
-  "entity_underline_candidate_count": 1,
+  "entity_underline_candidate_count": 0,
   "entity_underline_evidence": {
-    "blocking_summary": null,
+    "blocking_summary": "shared Chat UX still lacks linked $extract-entities and underline-render receipts for entities inside the spoken transcript",
     "boundary": "extract_entities_to_spoken_transcript_underlines",
-    "failed_gate_counts": {},
-    "failed_session_count": 0,
-    "latest_receipt_paths": [],
-    "ready": true,
-    "sample_failures": []
+    "failed_gate_counts": {
+      "entity_underline_render_receipt_not_emitted": 2,
+      "extract_entities_receipt_not_linked": 2,
+      "spoken_transcript_entity_underlines_not_proven": 2
+    },
+    "failed_session_count": 2,
+    "latest_receipt_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"
+    ],
+    "ready": false,
+    "sample_failures": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "extract_entities_receipt_not_linked",
+          "entity_underline_render_receipt_not_emitted",
+          "spoken_transcript_entity_underlines_not_proven"
+        ],
+        "id": "chat_ux_sync-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "UI proof contains text such as horus_lupercal, but no linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "extract_entities_receipt_not_linked",
+          "entity_underline_render_receipt_not_emitted",
+          "spoken_transcript_entity_underlines_not_proven"
+        ],
+        "id": "chat_ux_sync-medium-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "No linked $extract-entities receipt or underline-render receipt proves entity underlines in the spoken transcript."
+      }
+    ]
   },
-  "failed_gates": [],
-  "generated_at_utc": "2026-07-14T23:08:28.335615+00:00",
-  "lineage_candidate_count": 1,
+  "failed_gates": [
+    "assistant_response_plan_to_chat_render_lineage_missing",
+    "chat_matrix_gate:assistant_response_plan_v1_not_linked",
+    "chat_matrix_gate:chat_render_receipt_v1_not_emitted",
+    "chat_matrix_gate:chat_turn_id_matches_response_plan_not_proven",
+    "chat_matrix_gate:entity_underline_render_receipt_not_emitted",
+    "chat_matrix_gate:extract_entities_receipt_not_linked",
+    "chat_matrix_gate:runner_route_not_implemented",
+    "chat_matrix_gate:spoken_transcript_entity_underlines_not_proven",
+    "chat_ux_matrix_has_failures",
+    "extract_entities_underline_render_receipt_missing",
+    "screenshot_markers_do_not_prove_turn_lineage"
+  ],
+  "generated_at_utc": "2026-07-08T09:08:16.917318+00:00",
+  "lineage_candidate_count": 0,
   "live": true,
   "live_unmocked_candidate_count": 2,
   "mocked": false,
-  "ok": true,
+  "ok": false,
   "proof_candidate_count": 4,
   "proof_candidates": [
     {
@@ -225,19 +370,20 @@
           "ended_event_count": 2,
           "ended_or_played_to_expected_offset": true,
           "error_event_count": 0,
-          "event_count": 40,
+          "event_count": 54,
           "max_current_time_seconds": 5.418,
           "max_duration_seconds": 5.418,
-          "play_event_count": 2,
+          "play_event_count": 3,
           "playback_started": true,
-          "playing_event_count": 2,
+          "playing_event_count": 3,
           "playing_event_seen": true,
           "srcs": [
             "http://localhost:3002/chatterbox-artifacts/tau_voice_render_smoke/finished_response.wav",
+            "http://localhost:3002/chatterbox-artifacts/voice-chat-e2e/fresh-all-audible-20260707T155951Z/S03-unknown-speaker/identity-clarification-render.wav",
             "http://localhost:3002/chatterbox-artifacts/voice-chat-e2e/fresh-all-audible-20260707T155951Z/S05-female-distractor/overlap.wav"
           ],
-          "timeupdate_event_count": 28,
-          "waiting_or_stalled_event_count": 2
+          "timeupdate_event_count": 37,
+          "waiting_or_stalled_event_count": 3
         },
         "audible_playback_present": true,
         "audio_artifact_id": null,
@@ -257,9 +403,9 @@
     {
       "audible_session_replay": false,
       "chat_gate_pass": false,
-      "dom_entity_underlines_ready": true,
+      "dom_entity_underlines_ready": false,
       "dom_lineage_probe": true,
-      "dom_lineage_ready": true,
+      "dom_lineage_ready": false,
       "dynamic_replay_basic": false,
       "exists": true,
       "extract_entities_underlines": false,
@@ -275,10 +421,10 @@
         "dom_lineage_counts": {
           "assistant_message_count": 1,
           "assistant_with_audio_count": 1,
-          "assistant_with_entity_span_count": 1,
-          "assistant_with_turn_id_count": 1,
-          "audio_artifact_count": 1,
-          "audio_with_turn_id_count": 1,
+          "assistant_with_entity_span_count": 0,
+          "assistant_with_turn_id_count": 0,
+          "audio_artifact_count": 2,
+          "audio_with_turn_id_count": 0,
           "chat_message_count": 7
         },
         "extract_entities_present": false,
@@ -293,25 +439,97 @@
     }
   ],
   "response_plan_lineage_evidence": {
-    "blocking_summary": null,
+    "blocking_summary": "shared Chat UX still lacks a receipt linking assistant response plan, chat render, spoken text, and Chatterbox audio artifact under the same turn_id",
     "boundary": "assistant.response.plan.v1_to_chat.render.receipt.v1",
-    "failed_gate_counts": {},
-    "failed_session_count": 0,
-    "latest_receipt_paths": [],
-    "ready": true,
-    "sample_failures": []
+    "failed_gate_counts": {
+      "assistant_response_plan_v1_not_linked": 2,
+      "chat_render_receipt_v1_not_emitted": 2,
+      "chat_turn_id_matches_response_plan_not_proven": 2
+    },
+    "failed_session_count": 2,
+    "latest_receipt_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json"
+    ],
+    "ready": false,
+    "sample_failures": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "assistant_response_plan_v1_not_linked",
+          "chat_render_receipt_v1_not_emitted",
+          "chat_turn_id_matches_response_plan_not_proven"
+        ],
+        "id": "chat_ux_sync-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "UI proof shows shared chat text and four Chatterbox audio sources, but no assistant.response.plan.v1 to chat.render.receipt.v1 lineage receipt proves the chat text and audio share the same turn id."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "assistant_response_plan_v1_not_linked",
+          "chat_render_receipt_v1_not_emitted",
+          "chat_turn_id_matches_response_plan_not_proven"
+        ],
+        "id": "chat_ux_sync-medium-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013912Z-chat-ux-gate-audit/audit.json",
+        "observed": "UI proof shows shared chat text and audio sources, but no response-plan to chat-render lineage receipt proves the same turn id."
+      }
+    ]
   },
   "runner_route_evidence": {
-    "blocking_summary": null,
+    "blocking_summary": "advanced, adversarial, or soak Chat UX sync scenarios still have no live runner route",
     "boundary": "chat_ux_sync_runner_routes",
-    "failed_gate_counts": {},
-    "failed_session_count": 0,
-    "latest_receipt_paths": [],
-    "ready": true,
-    "sample_failures": []
+    "failed_gate_counts": {
+      "runner_route_not_implemented": 12
+    },
+    "failed_session_count": 12,
+    "latest_receipt_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T022636Z-matrix-adversarial-routes-32-47/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024412Z-matrix-soak-routes-32-47/receipt.json"
+    ],
+    "ready": false,
+    "sample_failures": [
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "chat_ux_sync-advanced-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T020917Z-matrix-advanced-routes-32-47/receipt.json",
+        "observed": "The advanced matrix runner has no live Chat UX route implementation for this case; this row is receipt-backed as an unimplemented runner path, not a UI proof."
+      }
+    ]
   },
   "schema": "chatterbox.embry_chat_ux_sync_evidence_audit.v1",
-  "screenshot_marker_count": 32,
+  "screenshot_marker_count": 16,
   "screenshot_markers": [
     {
       "marker_path": ".codex/ui-verification/embry-voice-actual-route-update.latest.json",
@@ -344,82 +562,12 @@
       "url": "http://localhost:3002/#embry-voice"
     },
     {
-      "marker_path": ".codex/ui-verification/embry-voice-browser-listener-focused-fix-route.latest.json",
-      "name": "embry-voice-browser-listener-focused-fix-route",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-listener-focused-fix-route/20260709T204422Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-listener-focused-fix-route/20260709T204422Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/?embryVoiceVerify=20260709T2045#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-browser-listener-focused-fix.latest.json",
-      "name": "embry-voice-browser-listener-focused-fix",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-listener-focused-fix/20260709T204343Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-listener-focused-fix/20260709T204343Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-browser-mic-capture-postcheck.latest.json",
-      "name": "embry-voice-browser-mic-capture-postcheck",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-mic-capture-postcheck/20260709T162207Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-mic-capture-postcheck/20260709T162207Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-browser-mic-capture-precheck.latest.json",
-      "name": "embry-voice-browser-mic-capture-precheck",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-mic-capture-precheck/20260709T161632Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-mic-capture-precheck/20260709T161632Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-browser-pcm-transcript-stop-flush.latest.json",
-      "name": "embry-voice-browser-pcm-transcript-stop-flush",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-pcm-transcript-stop-flush/20260709T163441Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-pcm-transcript-stop-flush/20260709T163441Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
       "marker_path": ".codex/ui-verification/embry-voice-browser-quality-webcam.latest.json",
       "name": "embry-voice-browser-quality-webcam",
       "proof_scope": "screenshot_or_page_snapshot_only",
       "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-quality-webcam/20260705T134329Z.read.json",
       "read_json_exists": true,
       "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-quality-webcam/20260705T134329Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-causal-chatterbox-render.latest.json",
-      "name": "embry-voice-causal-chatterbox-render",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-causal-chatterbox-render/20260711T013623Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-causal-chatterbox-render/20260711T013623Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-component-passfail-status.latest.json",
-      "name": "embry-voice-component-passfail-status",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-component-passfail-status/20260709T152529Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-component-passfail-status/20260709T152529Z.png",
       "screenshot_exists": true,
       "url": "http://localhost:3002/#embry-voice"
     },
@@ -434,46 +582,6 @@
       "url": "http://localhost:3002/#embry-voice"
     },
     {
-      "marker_path": ".codex/ui-verification/embry-voice-current-component-table.latest.json",
-      "name": "embry-voice-current-component-table",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-current-component-table/20260709T161109Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-current-component-table/20260709T161109Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-event-journal-rung-headless.latest.json",
-      "name": "embry-voice-event-journal-rung-headless",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-event-journal-rung-headless/20260710T143130Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-event-journal-rung-headless/20260710T143130Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-event-journal-rung-v2.latest.json",
-      "name": "embry-voice-event-journal-rung-v2",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-event-journal-rung-v2/20260710T142928Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-event-journal-rung-v2/20260710T142928Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-event-journal-rung.latest.json",
-      "name": "embry-voice-event-journal-rung",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-event-journal-rung/20260710T142753Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-event-journal-rung/20260710T142753Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
       "marker_path": ".codex/ui-verification/embry-voice-event-spine.latest.json",
       "name": "embry-voice-event-spine",
       "proof_scope": "screenshot_or_page_snapshot_only",
@@ -484,16 +592,6 @@
       "url": "http://localhost:3002/#architecture"
     },
     {
-      "marker_path": ".codex/ui-verification/embry-voice-journal-memory-tau.latest.json",
-      "name": "embry-voice-journal-memory-tau",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-journal-memory-tau/20260710T215609Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-journal-memory-tau/20260710T215609Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
       "marker_path": ".codex/ui-verification/embry-voice-orb-replay.latest.json",
       "name": "embry-voice-orb-replay",
       "proof_scope": "screenshot_or_page_snapshot_only",
@@ -502,26 +600,6 @@
       "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.png",
       "screenshot_exists": true,
       "url": "http://127.0.0.1:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-release-replay-endpoint-fix.latest.json",
-      "name": "embry-voice-release-replay-endpoint-fix",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-release-replay-endpoint-fix/20260709T153206Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-release-replay-endpoint-fix/20260709T153206Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-round2-preimplementation.latest.json",
-      "name": "embry-voice-round2-preimplementation",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-round2-preimplementation/20260711T132430Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-round2-preimplementation/20260711T132430Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
     },
     {
       "marker_path": ".codex/ui-verification/embry-voice-shared-chat-receipts.latest.json",
@@ -594,26 +672,6 @@
       "url": "http://localhost:3002/#embry-voice"
     },
     {
-      "marker_path": ".codex/ui-verification/embry-voice-webgpt-reassessment.latest.json",
-      "name": "embry-voice-webgpt-reassessment",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-webgpt-reassessment/20260710T145710Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-webgpt-reassessment/20260710T145710Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
-      "marker_path": ".codex/ui-verification/embry-voice-webgpt-unblock-default-main.latest.json",
-      "name": "embry-voice-webgpt-unblock-default-main",
-      "proof_scope": "screenshot_or_page_snapshot_only",
-      "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-webgpt-unblock-default-main/20260710T132115Z.read.json",
-      "read_json_exists": true,
-      "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-webgpt-unblock-default-main/20260710T132115Z.png",
-      "screenshot_exists": true,
-      "url": "http://localhost:3002/#embry-voice"
-    },
-    {
       "marker_path": ".codex/ui-verification/embry-voice-working-interface.latest.json",
       "name": "embry-voice-working-interface",
       "proof_scope": "screenshot_or_page_snapshot_only",
@@ -634,5 +692,5 @@
       "url": "http://localhost:3002/#embry-voice"
     }
   ],
-  "status": "passed"
+  "status": "failed"
 }

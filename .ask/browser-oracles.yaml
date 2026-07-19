@@ -1,8 +1,3 @@
-# Chatterbox / Embry WebGPT reviewer binding.
-# Name: embry
-# Tab id: 837357648
-# URL: https://chatgpt.com/g/g-p-6a4aa54fcdac8191bb444763f4770254-embry/c/6a4aa554-5fc0-83ea-99a7-8d0caf4593b1
-# Desktop: 2
 version: 1
 webgpt:
   default: embry

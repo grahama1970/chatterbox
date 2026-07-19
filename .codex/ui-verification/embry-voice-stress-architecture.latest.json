@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-08T00:26:23.278230+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/#architecture",
+  "name": "embry-voice-stress-architecture",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-stress-architecture/20260708T002548Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-stress-architecture/20260708T002548Z.read.json"
+}

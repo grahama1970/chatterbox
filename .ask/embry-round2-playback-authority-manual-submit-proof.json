@@ -1,0 +1,14 @@
+{
+  "schema": "surf.webgpt_manual_exact_tab_proof.v1",
+  "live": true,
+  "mocked": false,
+  "tab_id": "837357645",
+  "url": "https://chatgpt.com/g/g-p-6a4aa54fcdac8191bb444763f4770254-embry/c/6a50f056-2df4-83ea-9c44-dbcef24a9927",
+  "user_message_count": 5,
+  "assistant_message_count": 5,
+  "current_user_contains_sentinel": true,
+  "current_assistant_contains_sentinel": true,
+  "current_user_chars": 5007,
+  "current_assistant_chars": 31315,
+  "stop_button_present": false
+}

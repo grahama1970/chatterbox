@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-09T15:32:41.185982+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/#embry-voice",
+  "name": "embry-voice-release-replay-endpoint-fix",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-release-replay-endpoint-fix/20260709T153206Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-release-replay-endpoint-fix/20260709T153206Z.read.json"
+}

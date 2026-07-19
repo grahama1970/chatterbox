@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-08T13:37:43.235501+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/#architecture",
+  "name": "embry_voice_native_turn_spine_200_plus_e2e_harness",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry_voice_native_turn_spine_200_plus_e2e_harness/20260708T133708Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry_voice_native_turn_spine_200_plus_e2e_harness/20260708T133708Z.read.json"
+}

@@ -1,0 +1,161 @@
+name: "Embry Skill-Backed Stress Harness"
+components:
+  - id: stress_generator
+    label: "Stress Generator"
+    tech: "embry.stress_case.v1"
+    latency: "intended"
+    color: amber
+    files:
+      - docs/EMBRY_STRESS_SESSION_MATRIX.json
+      - scripts/build_embry_stress_session_matrix.py
+
+  - id: verdict_engine
+    label: "Verdict Engine"
+    tech: "journal-derived pass/fail"
+    latency: "intended"
+    color: amber
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+
+  - id: event_journal
+    label: "Event Journal"
+    tech: "append-only receipt spine"
+    latency: "intended"
+    color: blue
+    files:
+      - scripts/embry_event_journal.py
+      - schemas/embry_event_v1.schema.json
+
+  - id: chat_ingress
+    label: "Chat Ingress"
+    tech: "deterministic text turns"
+    latency: "partial"
+    color: purple
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+
+  - id: realtime_stt
+    label: "RealtimeSTT"
+    tech: "VAD/ASR audio ingress"
+    latency: "partial"
+    color: blue
+    files:
+      - scripts/smoke_realtimestt_listener_bridge.py
+      - scripts/smoke_continuous_voice_loop.py
+
+  - id: memory
+    label: "Memory"
+    tech: "identity/recall/answerability/tone"
+    latency: "failing-partial"
+    color: red
+    files:
+      - scripts/smoke_embry_memory_answerability_ledger.py
+      - scripts/smoke_embry_speaker_identity_ledger.py
+
+  - id: tau_router
+    label: "Tau Router"
+    tech: "route decision + response plan"
+    latency: "partial"
+    color: amber
+    files:
+      - scripts/smoke_tau_voice_render.py
+
+  - id: skill_gateway
+    label: "Skill Gateway"
+    tech: "Tau-authorized skill calls"
+    latency: "missing"
+    color: red
+    files:
+      - /home/graham/workspace/experiments/agent-skills/skills/tau/SKILL.md
+      - /home/graham/workspace/experiments/agent-skills/skills/best-practices-skills/SKILL.md
+
+  - id: agent_skills
+    label: "Agent Skills"
+    tech: "skill.call.receipt.v1"
+    latency: "partial"
+    color: purple
+    files:
+      - /home/graham/workspace/experiments/agent-skills/skills/brave-search/SKILL.md
+      - /home/graham/workspace/experiments/agent-skills/skills/create-figure/SKILL.md
+      - /home/graham/workspace/experiments/agent-skills/skills/analytics/SKILL.md
+      - /home/graham/workspace/experiments/agent-skills/skills/create-evidence-case/SKILL.md
+
+  - id: brave_search
+    label: "Brave Search"
+    tech: "live source receipts"
+    latency: "partial"
+    color: blue
+    files:
+      - /home/graham/workspace/experiments/agent-skills/skills/brave-search/SKILL.md
+
+  - id: chatterbox
+    label: "Chatterbox"
+    tech: "/tau/voice-render"
+    latency: "implemented-partial"
+    color: green
+    files:
+      - src/chatterbox/agent/server.py
+      - scripts/smoke_embry_answerability_runtime_block.py
+      - scripts/smoke_tau_voice_render.py
+
+  - id: shared_chat_ux
+    label: "Shared Chat UX"
+    tech: "journal renderer"
+    latency: "incomplete"
+    color: purple
+    files:
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/embry-voice/EmbryVoiceLabRoute.tsx
+
+  - id: orb
+    label: "Embry Orb"
+    tech: "audio envelope subscriber"
+    latency: "missing"
+    color: red
+    files:
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/embry-voice/EmbryVoiceOrb.tsx
+
+  - id: replay_runner
+    label: "Replay Runner"
+    tech: "journal + artifact replay"
+    latency: "intended"
+    color: amber
+    files:
+      - docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md
+
+connections:
+  - from: stress_generator
+    to: verdict_engine
+  - from: chat_ingress
+    to: event_journal
+  - from: realtime_stt
+    to: event_journal
+  - from: event_journal
+    to: memory
+  - from: memory
+    to: event_journal
+  - from: memory
+    to: tau_router
+  - from: tau_router
+    to: skill_gateway
+  - from: skill_gateway
+    to: agent_skills
+  - from: brave_search
+    to: event_journal
+  - from: agent_skills
+    to: event_journal
+  - from: tau_router
+    to: event_journal
+  - from: event_journal
+    to: chatterbox
+  - from: chatterbox
+    to: event_journal
+  - from: event_journal
+    to: shared_chat_ux
+  - from: chatterbox
+    to: orb
+  - from: orb
+    to: event_journal
+  - from: event_journal
+    to: replay_runner
+  - from: event_journal
+    to: verdict_engine

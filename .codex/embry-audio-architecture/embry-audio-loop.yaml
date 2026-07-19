@@ -1,0 +1,84 @@
+name: "Embry Chatterbox Audio Authority Failure Boundary"
+components:
+  - id: chat_ux
+    label: Embry Voice Chat UX
+    tech: "React shared chat route #embry-voice"
+    latency: "user action"
+    color: purple
+    files:
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/embry-voice/EmbryVoiceLabRoute.tsx
+
+  - id: direct_speak_api
+    label: Direct Speak API
+    tech: "UX Lab Express /api/projects/embry-voice/direct-speak"
+    latency: "render request"
+    color: amber
+    files:
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/server/index.ts
+
+  - id: chatterbox
+    label: Embry Chatterbox Voice Agent
+    tech: "Chatterbox renderer via embry-chatterbox-voice"
+    latency: "seconds"
+    color: amber
+    files:
+      - /home/graham/workspace/experiments/agent-skills/agents/embry-chatterbox-voice
+      - /home/graham/workspace/experiments/chatterbox
+
+  - id: artifact_store
+    label: WAV Artifact Store
+    tech: "/tmp/chatterbox-fork-agent-out/ux-lab-embry-direct"
+    latency: "file copy"
+    color: green
+    files:
+      - /tmp/chatterbox-fork-agent-out/ux-lab-embry-direct
+
+  - id: browser_audio
+    label: Browser Audio Element
+    tech: "HTMLAudioElement appended by EmbryVoiceLabRoute"
+    latency: "playback"
+    color: purple
+    files:
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/embry-voice/EmbryVoiceLabRoute.tsx
+
+  - id: orb_analyser
+    label: Orb WebAudio Analyser
+    tech: "createMediaElementSource -> AnalyserNode -> EmbryVoiceOrb"
+    latency: "animation frame"
+    color: blue
+    files:
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/hooks/useEmbryPlaybackAudioLevel.ts
+      - /home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/embry-voice/EmbryVoiceOrb.tsx
+
+  - id: speaker_sink
+    label: Physical Speaker Sink
+    tech: "PipeWire output sink, e.g. Jabra SPEAK 510"
+    latency: "system audio"
+    color: red
+    files:
+      - /usr/bin/wpctl
+      - /usr/bin/pw-play
+
+  - id: listener_capture
+    label: RealtimeSTT Listener Capture
+    tech: "microphone or loopback input"
+    latency: "not proven"
+    color: red
+    files:
+      - /home/graham/workspace/experiments/RealtimeSTT
+
+connections:
+  - from: chat_ux
+    to: direct_speak_api
+  - from: direct_speak_api
+    to: chatterbox
+  - from: chatterbox
+    to: artifact_store
+  - from: artifact_store
+    to: browser_audio
+  - from: browser_audio
+    to: orb_analyser
+  - from: browser_audio
+    to: speaker_sink
+  - from: speaker_sink
+    to: listener_capture

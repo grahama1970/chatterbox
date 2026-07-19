@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-09T13:57:21.210946+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/#tau/dag",
+  "name": "embry-tau-dag-wrapper",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-tau-dag-wrapper/20260709T135646Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry-tau-dag-wrapper/20260709T135646Z.read.json"
+}

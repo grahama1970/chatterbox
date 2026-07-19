@@ -1,0 +1,13 @@
+{
+  "schema": "surf.webgpt_heartbeat.v1",
+  "updated_at": "2026-07-11T17:35:57Z",
+  "submitted_at": "2026-07-11T17:27:19Z",
+  "last_browser_observation_at": "2026-07-11T17:35:57Z",
+  "phase": "completed",
+  "page_state": "response_detected",
+  "last_artifact_written": ".ask/embry-audio-runner-live-executor-followup-response.raw.md",
+  "next_expected_artifact": ".ask/embry-audio-runner-live-executor-followup-response.meta.json",
+  "timeout_remaining_seconds": 0,
+  "sentinel": "<<<WEBGPT_DONE:20260711T172717Z:091db26d>>>",
+  "prepared_prompt_is_transport_proof": false
+}

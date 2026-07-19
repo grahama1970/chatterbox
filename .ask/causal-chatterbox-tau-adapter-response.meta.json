@@ -1,0 +1,46 @@
+{
+  "status": "failed",
+  "failure": "prompt_path_preflight_failed",
+  "input": ".ask/causal-chatterbox-tau-adapter-blocker.md",
+  "submitted_output": ".ask/causal-chatterbox-tau-adapter-response.md.submitted.md",
+  "output": ".ask/causal-chatterbox-tau-adapter-response.md",
+  "raw_output": ".ask/causal-chatterbox-tau-adapter-response.raw.md",
+  "stderr_log": "/dev/null",
+  "sentinel": "<<<WEBGPT_DONE:20260711T010931Z:b0ce9aac>>>",
+  "prompt_path_preflight": {
+    "schema": "surf.webgpt_prompt_preflight.v1",
+    "status": "fail",
+    "reason": "web_review_bundle_unreadable",
+    "safe_default": "provide_concatenated_text_or_small_zip",
+    "local_paths": [
+      {
+        "path": "/tmp/embry-causal-render/listener/receipt.json",
+        "exists_locally": true
+      },
+      {
+        "path": "/tmp/embry-causal-render/speaker-verification.json",
+        "exists_locally": true
+      },
+      {
+        "path": "/tmp/embry-causal-render/journal-memory-tau/tau-run/command-loop/command-loop-step-001.receipt.json",
+        "exists_locally": true
+      },
+      {
+        "path": "/tmp/embry-causal-render/journal-memory-tau-r2/tau-run/command-loop/command-loop-step-001.receipt.json",
+        "exists_locally": true
+      },
+      {
+        "path": "/home/graham/workspace/experiments/agent-skills/skills/embry-voice-control",
+        "exists_locally": true
+      }
+    ],
+    "browser_submit_allowed": false,
+    "agent_action": "Concatenate readable text into one markdown file or attach a small zip (<=5 files)."
+  },
+  "started_at": "2026-07-11T01:09:31Z",
+  "finished_at": "2026-07-11T01:09:31Z",
+  "agent_diagnosis": "Surf did not map this result to a known agent-facing diagnosis.",
+  "agent_action": "Inspect status, failure, stderr_log, receipt_output, raw_output, and meta_output before retrying.",
+  "proof_status": "unknown_failure",
+  "submitted_to_chatgpt": false
+}

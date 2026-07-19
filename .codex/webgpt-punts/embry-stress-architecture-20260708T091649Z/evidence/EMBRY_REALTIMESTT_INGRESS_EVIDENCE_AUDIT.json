@@ -1,0 +1,1483 @@
+{
+  "browser_device_ingress": {
+    "blocking_summary": "browser getUserMedia ingress is device-sensitive: at least one browser capture receipt failed while another browser capture receipt passed",
+    "boundary": "browser_getusermedia_device_to_realtimestt",
+    "candidate_count": 3,
+    "failed_candidate_count": 2,
+    "failed_gate_counts": {
+      "listener_transcript_present": 2,
+      "realtimestt_listener_ok": 2
+    },
+    "passing_candidate_count": 1,
+    "ready": false,
+    "sample_failures": [
+      {
+        "captured_audio_rms": null,
+        "claims_does_not_prove": [
+          "remote_browser_peer_to_peer_transport",
+          "perfect_multi_speaker_overlap_separation",
+          "all_factory_floor_noise_conditions",
+          "subjective_voice_quality",
+          "production_memory_policy_for_every_overlap_phrase"
+        ],
+        "failed_gates": [
+          "realtimestt_listener_ok",
+          "listener_transcript_present"
+        ],
+        "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-20260705T132832Z/continuous-voice-loop.json",
+        "transcript_present": false
+      },
+      {
+        "captured_audio_rms": null,
+        "claims_does_not_prove": [
+          "remote_browser_peer_to_peer_transport",
+          "perfect_multi_speaker_overlap_separation",
+          "all_factory_floor_noise_conditions",
+          "subjective_voice_quality",
+          "production_memory_policy_for_every_overlap_phrase"
+        ],
+        "failed_gates": [
+          "realtimestt_listener_ok",
+          "listener_transcript_present"
+        ],
+        "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-raw-20260705T133055Z/continuous-voice-loop.json",
+        "transcript_present": false
+      }
+    ]
+  },
+  "claims": {
+    "does_not_prove": [
+      "speaker identity correctness",
+      "memory/Tau answerability",
+      "Chatterbox output quality",
+      "Chat UX synchronization"
+    ],
+    "proves": [
+      "current_factory_loopback_pipewire_monitor_realtimestt_slice_passes"
+    ]
+  },
+  "current_factory_loopback_passing_candidate_count": 4,
+  "current_factory_loopback_passing_candidates": [
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 510,
+      "captured_audio_sha256": "7aa69f7d2112826a51175b617f63ad35f36954b1b8abeb316c140b0f404d4069",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "record_target": "64",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on cartback.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    }
+  ],
+  "current_factory_matrix": {
+    "by_difficulty": {
+      "advanced": {
+        "failed": 4,
+        "not_run": 0,
+        "passed": 0
+      },
+      "adversarial": {
+        "failed": 4,
+        "not_run": 0,
+        "passed": 0
+      },
+      "medium": {
+        "failed": 4,
+        "not_run": 0,
+        "passed": 0
+      },
+      "simple": {
+        "failed": 4,
+        "not_run": 0,
+        "passed": 0
+      },
+      "soak": {
+        "failed": 4,
+        "not_run": 0,
+        "passed": 0
+      }
+    },
+    "failed_gate_counts": {
+      "asr_final_transcript_present": 2,
+      "capture_captured_audio_rms": 6,
+      "realtimestt_command_ok": 2,
+      "realtimestt_receipt_ok": 2,
+      "rung7_receipt_ok": 2,
+      "runner_route_not_implemented": 12,
+      "speaker_memory_recall_found": 2,
+      "speaker_resolution_known_horus": 2
+    },
+    "failed_sessions": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
+        ],
+        "id": "factory_noise-simple-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
+        ],
+        "id": "factory_noise-simple-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory; the female-nearby memory question remains unproven."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "capture_captured_audio_rms"
+        ],
+        "id": "factory_noise-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current Jabra source 67 run captured RMS 6, so the compliance question through the Jabra speaker/mic path failed at the audio capture boundary."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "capture_captured_audio_rms"
+        ],
+        "id": "factory_noise-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio played, so the research question through that microphone path failed at capture."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
+        ],
+        "id": "factory_noise-medium-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
+        ],
+        "id": "factory_noise-medium-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "capture_captured_audio_rms"
+        ],
+        "id": "factory_noise-medium-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current Jabra source 67 run captured RMS 6, so the compliance question through the Jabra speaker/mic path failed at the audio capture boundary."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "capture_captured_audio_rms"
+        ],
+        "id": "factory_noise-medium-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio played, so the research question through that microphone path failed at capture."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-advanced-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-advanced-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-advanced-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "advanced",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-advanced-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+        "observed": "The advanced matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-adversarial-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-adversarial-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-adversarial-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "adversarial",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-adversarial-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+        "observed": "The adversarial matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-soak-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-soak-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-soak-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      },
+      {
+        "difficulty": "soak",
+        "failed_gates": [
+          "runner_route_not_implemented"
+        ],
+        "id": "factory_noise-soak-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+        "observed": "The soak matrix runner has no live RealtimeSTT factory-capture route implementation for this case; this is a receipt-backed runner gap, not an audio ingress proof."
+      }
+    ],
+    "session_count": 20,
+    "status_counts": {
+      "failed": 20,
+      "not_run": 0,
+      "passed": 0
+    }
+  },
+  "current_source_identity_candidate_count": 4,
+  "current_source_identity_candidates": [
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 510,
+      "captured_audio_sha256": "7aa69f7d2112826a51175b617f63ad35f36954b1b8abeb316c140b0f404d4069",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "record_target": "64",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on cartback.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    }
+  ],
+  "factory_gate_blockers": {
+    "blocking_summary": "factory/noisy ingress scenarios still fail at capture, ASR transcript, rung7, speaker resolution, memory recall, or unimplemented runner-route gates",
+    "boundary": "factory_noise_audio_capture_to_realtimestt_rung7",
+    "failed_gate_counts": {
+      "asr_final_transcript_present": 2,
+      "capture_captured_audio_rms": 6,
+      "realtimestt_command_ok": 2,
+      "realtimestt_receipt_ok": 2,
+      "rung7_receipt_ok": 2,
+      "runner_route_not_implemented": 12,
+      "speaker_memory_recall_found": 2,
+      "speaker_resolution_known_horus": 2
+    },
+    "failed_session_count": 20,
+    "latest_receipt_paths": [
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T021302Z-matrix-advanced-routes-48-63/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T023001Z-matrix-adversarial-routes-48-63/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T024716Z-matrix-soak-routes-48-63/receipt.json",
+      "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+      "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+      "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+      "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json"
+    ],
+    "ready": false,
+    "sample_failures": [
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
+        ],
+        "id": "factory_noise-simple-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
+        ],
+        "id": "factory_noise-simple-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory; the female-nearby memory question remains unproven."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "capture_captured_audio_rms"
+        ],
+        "id": "factory_noise-simple-03",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-67/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current Jabra source 67 run captured RMS 6, so the compliance question through the Jabra speaker/mic path failed at the audio capture boundary."
+      },
+      {
+        "difficulty": "simple",
+        "failed_gates": [
+          "capture_captured_audio_rms"
+        ],
+        "id": "factory_noise-simple-04",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/fresh-s06-webcam-20260707T143939Z/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "HD webcam/source-34 style capture recorded a zero-RMS WAV while the stress audio played, so the research question through that microphone path failed at capture."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "capture_captured_audio_rms",
+          "asr_final_transcript_present"
+        ],
+        "id": "factory_noise-medium-01",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/voice-chat-e2e-20260707T232441Z-stress-current/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Current factory-stress capture played the Horus/factory WAV through sink 64, but captured RMS was 7, so the ASR path could not prove a QRA question over factory-floor background noise."
+      },
+      {
+        "difficulty": "medium",
+        "failed_gates": [
+          "realtimestt_command_ok",
+          "realtimestt_receipt_ok",
+          "rung7_receipt_ok",
+          "speaker_resolution_known_horus",
+          "speaker_memory_recall_found"
+        ],
+        "id": "factory_noise-medium-02",
+        "latest_receipt": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/factory-source-matrix-20260707T232938Z/source-62/S06-factory-noise/rung8-loopback-listener.json",
+        "observed": "Jabra source 62 captured non-silent audio, but the RealtimeSTT/rung7 path did not resolve Horus or recover speaker-scoped memory."
+      }
+    ]
+  },
+  "failed_gates": [
+    "browser_device_ingress_inconsistent",
+    "current_factory_matrix_has_failures",
+    "factory_gate:asr_final_transcript_present",
+    "factory_gate:capture_captured_audio_rms",
+    "factory_gate:realtimestt_command_ok",
+    "factory_gate:realtimestt_receipt_ok",
+    "factory_gate:rung7_receipt_ok",
+    "factory_gate:runner_route_not_implemented",
+    "factory_gate:speaker_memory_recall_found",
+    "factory_gate:speaker_resolution_known_horus"
+  ],
+  "generated_at_utc": "2026-07-08T08:47:31.112477+00:00",
+  "historical_candidate_count": 14,
+  "historical_candidates": [
+    {
+      "asr_executor_call_count": 0,
+      "captured_audio_exists": null,
+      "captured_audio_path": null,
+      "captured_audio_rms": null,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": false,
+      "live": null,
+      "mocked": null,
+      "ok": null,
+      "path": "/tmp/embry-realtimestt-ingress/20260708T084416Z/receipt.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": null,
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": null,
+      "source_identity_proven": false,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "unknown"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "audio_stats": {
+        "channels": 1,
+        "duration_seconds": 13.822,
+        "non_silent_frame_ratio_250_rms": 0.5896,
+        "non_silent_frame_ratio_5_rms": 0.9986,
+        "peak_abs": 29986,
+        "rms": 2278.773,
+        "rms_dbfs": -23.15,
+        "sample_rate": 16000
+      },
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/embry-realtimestt-ingress/20260708T084416Z/captured.wav",
+      "captured_audio_rms": 2278.773,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "browser_getusermedia_device_capture",
+        "physical_room_microphone_capture",
+        "speaker_identity_correctness",
+        "Tau_memory_routing_from_physical_voice",
+        "Chatterbox_output_from_live_STT"
+      ],
+      "claims_proves": [
+        "controlled_pcm_wav_can_feed_realtimestt_ws_transcribe"
+      ],
+      "events_by_type": {
+        "final": 1,
+        "hello": 1,
+        "ready": 1,
+        "realtime": 40,
+        "status": 11,
+        "timeline": 44
+      },
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "listener_state": "completed",
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T084527Z-cc96850e/listener-webrtc-realtimestt.json",
+      "pipewire_identity": {
+        "capture_backend": "browser_webrtc_pcm16_wav_loopback",
+        "capture_kind": "controlled_pcm_wav",
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "controlled_pcm_wav_over_realtimestt_ws_transcribe",
+      "source_identity_proven": true,
+      "transcript": "Hey guys, welcome to the new demo of my real-time transcription library design to showcase its lightning fast capabilities. As you'll see, speech is transparent.",
+      "transcript_present": true,
+      "transport": "realtimestt_websocket_pcm_wav"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "audio_stats": {
+        "channels": 1,
+        "duration_seconds": 51.925,
+        "non_silent_frame_ratio_250_rms": 0.9403,
+        "non_silent_frame_ratio_5_rms": 0.9996,
+        "peak_abs": 32768,
+        "rms": 3771.259,
+        "rms_dbfs": -18.78,
+        "sample_rate": 16000
+      },
+      "captured_audio_exists": true,
+      "captured_audio_path": "/home/graham/workspace/experiments/RealtimeSTT/tests/unit/audio/asr-reference.wav",
+      "captured_audio_rms": 3771.259,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "browser_getusermedia_device_capture",
+        "physical_room_microphone_capture",
+        "speaker_identity_correctness",
+        "Tau_memory_routing_from_physical_voice",
+        "Chatterbox_output_from_live_STT"
+      ],
+      "claims_proves": [
+        "controlled_pcm_wav_can_feed_realtimestt_ws_transcribe"
+      ],
+      "events_by_type": {
+        "final": 2,
+        "hello": 1,
+        "ready": 1,
+        "realtime": 127,
+        "status": 16,
+        "timeline": 135,
+        "warning": 1
+      },
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "listener_state": "completed",
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083833Z-90a050c0/listener-webrtc-realtimestt.json",
+      "pipewire_identity": {
+        "capture_backend": "browser_webrtc_pcm16_wav_loopback",
+        "capture_kind": "controlled_pcm_wav",
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "controlled_pcm_wav_over_realtimestt_ws_transcribe",
+      "source_identity_proven": true,
+      "transcript": "Hey guys, welcome to the new demo of my real time transcription library designed to showcase its lightning fast capabilities. As you'll see speeches transcribed almost instantly into text, which I think is a pretty cool achievement given the challenges of working with Whisper. I've put a lot of effort into making this tool stable, efficient and easy to use, and I really hope you find it valuable in your projects. The library is completely open source and it would mean a lot to me if you could support it by giving a star on GitHub. Visibility and. Community feedback are key to making it even better and every bit of engagement helps improve its future development. Whether you are working on a small project or something bigger, I hope this tool becomes a helpful resource and sparks some innovation. So feel free to download it, use it in your apps and let me know if you have any feedback. Thanks for watching and I hope you enjoyed the demo.",
+      "transcript_present": true,
+      "transport": "realtimestt_websocket_pcm_wav"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "audio_stats": {
+        "channels": 1,
+        "duration_seconds": 7.936,
+        "non_silent_frame_ratio_250_rms": 0.461,
+        "non_silent_frame_ratio_5_rms": 0.9975,
+        "peak_abs": 1281,
+        "rms": 250.879,
+        "rms_dbfs": -42.32,
+        "sample_rate": 48000
+      },
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/browser-webrtc-horus-loud-20260703T133629Z.wav",
+      "captured_audio_rms": 250.879,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "browser_getusermedia_device_capture",
+        "physical_room_microphone_capture",
+        "speaker_identity_correctness",
+        "Tau_memory_routing_from_physical_voice",
+        "Chatterbox_output_from_live_STT"
+      ],
+      "claims_proves": [],
+      "events_by_type": {
+        "hello": 1,
+        "ready": 1,
+        "status": 3
+      },
+      "exists": true,
+      "failed_gates": [
+        "listener_final_transcript_missing"
+      ],
+      "ingress_proven": false,
+      "listener_state": "no_final_transcript",
+      "live": true,
+      "mocked": false,
+      "ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T082957Z-bb8b5e79/listener-webrtc-realtimestt.json",
+      "pipewire_identity": {
+        "capture_backend": "browser_webrtc_pcm16_wav_loopback",
+        "capture_kind": "controlled_pcm_wav",
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "controlled_pcm_wav_over_realtimestt_ws_transcribe",
+      "source_identity_proven": true,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "realtimestt_websocket_pcm_wav"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "audio_stats": {
+        "channels": 1,
+        "duration_seconds": 7.936,
+        "non_silent_frame_ratio_250_rms": 0.9975,
+        "non_silent_frame_ratio_5_rms": 0.9975,
+        "peak_abs": 22983,
+        "rms": 4543.221,
+        "rms_dbfs": -17.16,
+        "sample_rate": 16000
+      },
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/horus-browser-capture-normalized-20260708T083000Z.wav",
+      "captured_audio_rms": 4543.221,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "browser_getusermedia_device_capture",
+        "physical_room_microphone_capture",
+        "speaker_identity_correctness",
+        "Tau_memory_routing_from_physical_voice",
+        "Chatterbox_output_from_live_STT"
+      ],
+      "claims_proves": [],
+      "events_by_type": {
+        "hello": 1,
+        "ready": 1,
+        "status": 3
+      },
+      "exists": true,
+      "failed_gates": [
+        "listener_final_transcript_missing"
+      ],
+      "ingress_proven": false,
+      "listener_state": "no_final_transcript",
+      "live": true,
+      "mocked": false,
+      "ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083242Z-2ff99fda/listener-webrtc-realtimestt.json",
+      "pipewire_identity": {
+        "capture_backend": "browser_webrtc_pcm16_wav_loopback",
+        "capture_kind": "controlled_pcm_wav",
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "controlled_pcm_wav_over_realtimestt_ws_transcribe",
+      "source_identity_proven": true,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "realtimestt_websocket_pcm_wav"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 510,
+      "captured_audio_sha256": "7aa69f7d2112826a51175b617f63ad35f36954b1b8abeb316c140b0f404d4069",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T074113Z-fresh-rung8-loopback/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "record_target": "64",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on cartback.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T061027Z-factory-loopback-auth-auto/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T045822Z-factory-loopback-current/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/loopback-captured.wav",
+      "captured_audio_rms": 512,
+      "captured_audio_sha256": "cbf47ad7237aa5d4fc267ba2e3a5de37c59e6b06ac6c416aa6516729a826b42a",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/20260708T034407Z-factory-current/S06-factory-noise/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": "ffmpeg-pulse",
+        "capture_kind": "monitor_loopback",
+        "pulse_source": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo.monitor",
+        "record_node_name": "alsa_input.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.mono-fallback",
+        "record_target": "62",
+        "sink_node_name": "alsa_output.usb-0b0e_Jabra_SPEAK_510_USB_501AA5274B1D022000-00.analog-stereo",
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "db199744cb0ca721196ec51b5d0040ddd89b30f0d7d5804bf5077e5b3d186e5d",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He saw tracked weapon carriages, automated artillery, nests of four or even eight automatic cannons shackled together on kart track.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "captured_audio_exists": null,
+      "captured_audio_path": null,
+      "captured_audio_rms": null,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "remote_browser_peer_to_peer_transport",
+        "perfect_multi_speaker_overlap_separation",
+        "all_factory_floor_noise_conditions",
+        "subjective_voice_quality",
+        "production_memory_policy_for_every_overlap_phrase"
+      ],
+      "claims_proves": [
+        "browser_getusermedia_audio_can_feed_realtimestt_external_audio_listener",
+        "speaker_identity_mapping_uses_enrollment_and_memory_evidence_not_pyannote_label_assumption",
+        "memory_or_turn_control_route_can_drive_tau_voice_render_to_chatterbox_output",
+        "known_horus_identity_maps_through_enrollment_and_memory_speaker_resolution",
+        "blessed_qra_cache_hit_is_proven_by_child_listener_memory_tau_qra_probe",
+        "overlap_one_at_a_time_behavior_is_proven_by_child_pyannote_memory_tau_probe",
+        "stream_cancel_child_receipt_records_zero_old_turn_bytes_after_cancel"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-webcam-20260705T134007Z/continuous-voice-loop.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": null,
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "browser_getusermedia_to_realtimestt_to_speaker_memory_tau_chatterbox_receipt_bundle",
+      "source_identity_proven": false,
+      "transcript": "He saw tracked weapon carried, automated artillery, nests with more or even eight automatic cannons shackled together on power path.",
+      "transcript_present": true,
+      "transport": "browser_getusermedia"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "captured_audio_exists": null,
+      "captured_audio_path": null,
+      "captured_audio_rms": null,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "remote_browser_peer_to_peer_transport",
+        "perfect_multi_speaker_overlap_separation",
+        "all_factory_floor_noise_conditions",
+        "subjective_voice_quality",
+        "production_memory_policy_for_every_overlap_phrase"
+      ],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [
+        "realtimestt_listener_ok",
+        "listener_transcript_present"
+      ],
+      "ingress_proven": false,
+      "live": false,
+      "mocked": false,
+      "ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-20260705T132832Z/continuous-voice-loop.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": null,
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "browser_getusermedia_to_realtimestt_to_speaker_memory_tau_chatterbox_receipt_bundle",
+      "source_identity_proven": false,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "browser_getusermedia"
+    },
+    {
+      "asr_executor_call_count": 0,
+      "captured_audio_exists": null,
+      "captured_audio_path": null,
+      "captured_audio_rms": null,
+      "captured_audio_sha256": null,
+      "claims_does_not_prove": [
+        "remote_browser_peer_to_peer_transport",
+        "perfect_multi_speaker_overlap_separation",
+        "all_factory_floor_noise_conditions",
+        "subjective_voice_quality",
+        "production_memory_policy_for_every_overlap_phrase"
+      ],
+      "claims_proves": [],
+      "exists": true,
+      "failed_gates": [
+        "realtimestt_listener_ok",
+        "listener_transcript_present"
+      ],
+      "ingress_proven": false,
+      "live": false,
+      "mocked": false,
+      "ok": false,
+      "path": "/tmp/chatterbox-fork-agent-out/voice-chat-e2e/browser-quality-raw-20260705T133055Z/continuous-voice-loop.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": null,
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": null,
+        "sink_node_name": null,
+        "sink_target": null
+      },
+      "play_audio_sha256": null,
+      "proof_scope": "browser_getusermedia_to_realtimestt_to_speaker_memory_tau_chatterbox_receipt_bundle",
+      "source_identity_proven": false,
+      "transcript": "",
+      "transcript_present": false,
+      "transport": "browser_getusermedia"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/rung8-loopback-20260702T204049Z/loopback-captured.wav",
+      "captured_audio_rms": 1958,
+      "captured_audio_sha256": "bfb3a40c892d54b411cc7e99bf12614d76d152b346a2c7030b650522b19086f3",
+      "claims_does_not_prove": [
+        "physical_room_microphone_capture",
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_monitor_loopback_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/rung8-loopback-20260702T204049Z/rung8-loopback-listener.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": null,
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": "64",
+        "sink_node_name": null,
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "4ffd6f966369d6b3fd81d1d12c5d05e5f85ed98e38d190931632368828f214a5",
+      "proof_scope": null,
+      "source_identity_proven": false,
+      "transcript": "These are track-wrapping arrows, boards are made to that to the left. Next, we'll even aim over the paddles, track with the other paddles. The lumbar forward and high track. The commander has struck over at the enemy over. As his command goes away, leaving the enemy, and without a rush, the unapologetic regimen will blow a punishing exercise, in great pain, and kept them wet in the shot, and serialises the turn to be built so both of those things in the house. Activate.",
+      "transcript_present": true,
+      "transport": "pipewire_monitor_loopback"
+    },
+    {
+      "asr_executor_call_count": 1,
+      "captured_audio_exists": true,
+      "captured_audio_path": "/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/loopback-captured.wav",
+      "captured_audio_rms": 1955,
+      "captured_audio_sha256": "bb16d516ff9670637f0ae891a358f2e0cdaa8715d0c68cdecde60853a265e744",
+      "claims_does_not_prove": [
+        "browser_webrtc_transport",
+        "overlapping_speaker_diarization",
+        "subjective_voice_quality",
+        "generalized_factory_robustness_beyond_configured_audio"
+      ],
+      "claims_proves": [
+        "pipewire_physical_microphone_captures_played_stress_audio",
+        "captured_loopback_audio_feeds_realtimestt_automatic_vad",
+        "captured_loopback_audio_routes_through_rung7_speaker_memory_contract"
+      ],
+      "exists": true,
+      "failed_gates": [],
+      "ingress_proven": true,
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/tmp/chatterbox-fork-agent-out/rung8-physical-mic-20260702T205201Z/rung8-physical-mic-listener.json",
+      "pipewire_identity": {
+        "capture_backend": null,
+        "capture_kind": "physical_microphone",
+        "pulse_source": null,
+        "record_node_name": null,
+        "record_target": "62",
+        "sink_node_name": null,
+        "sink_target": "64"
+      },
+      "play_audio_sha256": "4ffd6f966369d6b3fd81d1d12c5d05e5f85ed98e38d190931632368828f214a5",
+      "proof_scope": null,
+      "source_identity_proven": true,
+      "transcript": "He's all tracked, weapon-carrying, automated artillery, nested in four, or even eight-orderly cannons, trackers, guerrillas, powerful, the lump of four-wheel-matter, the commander has struck no reckoning, I think, over the whole, as his command totally, leaving the enemy with our weapons, the unapologetic regiment of wide-world, publishing exercise, and maintain, and kept them wet in the shower, and seriously turned them into big boats and bombs, just an axe, an axe to build.",
+      "transcript_present": true,
+      "transport": "pipewire_physical_microphone"
+    }
+  ],
+  "historical_passing_candidate_count": 9,
+  "listener_websocket_ingress": {
+    "blocking_summary": "controlled RealtimeSTT websocket ingress works for known-good speech, but the current Horus/browser capture artifacts do not produce final transcripts",
+    "boundary": "controlled_pcm_wav_to_realtimestt_ws_transcribe",
+    "candidate_count": 4,
+    "failed_candidate_count": 2,
+    "failed_candidates": [
+      {
+        "audio_path": "/tmp/chatterbox-fork-agent-out/browser-webrtc-horus-loud-20260703T133629Z.wav",
+        "audio_stats": {
+          "channels": 1,
+          "duration_seconds": 7.936,
+          "non_silent_frame_ratio_250_rms": 0.461,
+          "non_silent_frame_ratio_5_rms": 0.9975,
+          "peak_abs": 1281,
+          "rms": 250.879,
+          "rms_dbfs": -42.32,
+          "sample_rate": 48000
+        },
+        "events_by_type": {
+          "hello": 1,
+          "ready": 1,
+          "status": 3
+        },
+        "failed_gates": [
+          "listener_final_transcript_missing"
+        ],
+        "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T082957Z-bb8b5e79/listener-webrtc-realtimestt.json"
+      },
+      {
+        "audio_path": "/tmp/chatterbox-fork-agent-out/horus-browser-capture-normalized-20260708T083000Z.wav",
+        "audio_stats": {
+          "channels": 1,
+          "duration_seconds": 7.936,
+          "non_silent_frame_ratio_250_rms": 0.9975,
+          "non_silent_frame_ratio_5_rms": 0.9975,
+          "peak_abs": 22983,
+          "rms": 4543.221,
+          "rms_dbfs": -17.16,
+          "sample_rate": 16000
+        },
+        "events_by_type": {
+          "hello": 1,
+          "ready": 1,
+          "status": 3
+        },
+        "failed_gates": [
+          "listener_final_transcript_missing"
+        ],
+        "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083242Z-2ff99fda/listener-webrtc-realtimestt.json"
+      }
+    ],
+    "passing_candidate_count": 2,
+    "passing_candidates": [
+      {
+        "audio_path": "/tmp/embry-realtimestt-ingress/20260708T084416Z/captured.wav",
+        "audio_stats": {
+          "channels": 1,
+          "duration_seconds": 13.822,
+          "non_silent_frame_ratio_250_rms": 0.5896,
+          "non_silent_frame_ratio_5_rms": 0.9986,
+          "peak_abs": 29986,
+          "rms": 2278.773,
+          "rms_dbfs": -23.15,
+          "sample_rate": 16000
+        },
+        "events_by_type": {
+          "final": 1,
+          "hello": 1,
+          "ready": 1,
+          "realtime": 40,
+          "status": 11,
+          "timeline": 44
+        },
+        "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T084527Z-cc96850e/listener-webrtc-realtimestt.json",
+        "transcript_prefix": "Hey guys, welcome to the new demo of my real-time transcription library design to showcase its lightning fast capabilities. As you'll see, speech is transparent."
+      },
+      {
+        "audio_path": "/home/graham/workspace/experiments/RealtimeSTT/tests/unit/audio/asr-reference.wav",
+        "audio_stats": {
+          "channels": 1,
+          "duration_seconds": 51.925,
+          "non_silent_frame_ratio_250_rms": 0.9403,
+          "non_silent_frame_ratio_5_rms": 0.9996,
+          "peak_abs": 32768,
+          "rms": 3771.259,
+          "rms_dbfs": -18.78,
+          "sample_rate": 16000
+        },
+        "events_by_type": {
+          "final": 2,
+          "hello": 1,
+          "ready": 1,
+          "realtime": 127,
+          "status": 16,
+          "timeline": 135,
+          "warning": 1
+        },
+        "path": "/tmp/chatterbox-fork-agent-out/embry-voice-control-listener-runs/20260708T083833Z-90a050c0/listener-webrtc-realtimestt.json",
+        "transcript_prefix": "Hey guys, welcome to the new demo of my real time transcription library designed to showcase its lightning fast capabilities. As you'll see speeches transcribed almost instantly into text, which I think is a pretty cool achievement given th"
+      }
+    ],
+    "ready": true
+  },
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "schema": "chatterbox.embry_realtimestt_ingress_evidence_audit.v1",
+  "source_identity_evidence": {
+    "blocking_summary": null,
+    "boundary": "captured_audio_source_identity",
+    "candidate_count": 4,
+    "missing_identity_count": 0,
+    "ready": true,
+    "sample_missing_identity": [],
+    "source_identity_candidate_count": 4
+  },
+  "status": "failed"
+}

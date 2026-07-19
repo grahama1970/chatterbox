@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-03T14:25:19.584092+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://127.0.0.1:8876/",
+  "name": "chatterbox-webrtc-transport",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/chatterbox-webrtc-transport/20260703T142445Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/chatterbox-webrtc-transport/20260703T142445Z.read.json"
+}

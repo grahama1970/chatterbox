@@ -1,0 +1,13 @@
+{
+  "schema": "surf.webgpt_heartbeat.v1",
+  "updated_at": "2026-07-08T00:22:47Z",
+  "submitted_at": "2026-07-08T00:22:38Z",
+  "last_browser_observation_at": "2026-07-08T00:22:47Z",
+  "phase": "failed",
+  "page_state": "stalled",
+  "last_artifact_written": "/tmp/surf-webgpt-submit-stderr.5rGhhU.log",
+  "next_expected_artifact": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-voice-architecture-20260708/response.meta.json",
+  "timeout_remaining_seconds": 0,
+  "sentinel": "<<<WEBGPT_DONE:20260708T002236Z:a1a0461b>>>",
+  "prepared_prompt_is_transport_proof": false
+}

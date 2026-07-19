@@ -1,0 +1,166 @@
+name: "Embry Voice Event Spine"
+components:
+  - id: event_journal
+    label: "Canonical Event Journal"
+    tech: "append-only embry.event.v1 NDJSON"
+    latency: "missing"
+    color: red
+    files:
+      - docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md
+      - docs/EMBRY_STRESS_SESSION_MATRIX.json
+
+  - id: real_audio_capture
+    label: "Real Audio Capture"
+    tech: "native mic / browser getUserMedia / PipeWire"
+    latency: "partial"
+    color: amber
+    files:
+      - scripts/smoke_voice_chat_e2e.py
+      - scripts/smoke_browser_webrtc_transport.py
+      - scripts/smoke_rung8_loopback_listener.py
+
+  - id: realtimestt_listener
+    label: "RealtimeSTT Listener"
+    tech: "VAD + ASR companion"
+    latency: "partial"
+    color: amber
+    files:
+      - scripts/smoke_realtimestt_listener_bridge.py
+      - scripts/smoke_continuous_voice_loop.py
+
+  - id: speaker_gate
+    label: "Speaker Identity Gate"
+    tech: "memory /speaker/resolve + diarization evidence"
+    latency: "narrow pass"
+    color: green
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+      - scripts/smoke_voice_chat_e2e.py
+      - tests/test_embry_intelligence_stress.py
+
+  - id: turn_controller
+    label: "Turn Policy Controller"
+    tech: "accepted_full / identity_prompt / rejected"
+    latency: "missing"
+    color: red
+    files:
+      - scripts/smoke_continuous_voice_loop.py
+
+  - id: memory_answerability
+    label: "Memory Answerability"
+    tech: "retrieval + records_used + clarify/no_answer"
+    latency: "failing"
+    color: red
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+      - docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md
+
+  - id: tau_router
+    label: "Tau Intent And Handoff"
+    tech: "tau.intent + tau.agent_handoff.v1"
+    latency: "failing"
+    color: red
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+      - scripts/smoke_tau_voice_render.py
+
+  - id: response_plan
+    label: "Assistant Response Plan"
+    tech: "text + trace + entities + tone/emotion"
+    latency: "missing"
+    color: red
+    files:
+      - docs/VOICE_CHAT_REQUIREMENTS.md
+
+  - id: chatterbox_renderer
+    label: "Chatterbox Renderer"
+    tech: "Embry TTS artifact generation"
+    latency: "partial"
+    color: amber
+    files:
+      - src/chatterbox/agent/server.py
+      - scripts/smoke_tau_voice_render.py
+
+  - id: audio_output
+    label: "Audio Playback Authority"
+    tech: "playback receipts + envelope telemetry"
+    latency: "partial"
+    color: amber
+    files:
+      - scripts/smoke_voice_chat_e2e.py
+
+  - id: shared_chat_ux
+    label: "Shared Chat UX Renderer"
+    tech: "ledger subscriber, not proof authority"
+    latency: "partial/drifting"
+    color: amber
+    files:
+      - docs/VOICE_CHAT_REQUIREMENTS.md
+
+  - id: embry_orb
+    label: "Embry Orb"
+    tech: "audio envelope subscriber"
+    latency: "partial"
+    color: amber
+    files:
+      - docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md
+
+  - id: interruption_manager
+    label: "Interruption Manager"
+    tech: "barge-in + stale playback cancel"
+    latency: "partial"
+    color: amber
+    files:
+      - scripts/smoke_overlap_turn_control.py
+      - scripts/smoke_voice_chat_e2e.py
+
+  - id: replay_runner
+    label: "Session Replay"
+    tech: "journal + artifacts hash replay"
+    latency: "missing"
+    color: red
+    files:
+      - docs/VOICE_CHAT_REQUIREMENTS.md
+
+  - id: proof_runner
+    label: "Proof Receipts"
+    tech: "rung pass/fail from journal"
+    latency: "partial"
+    color: blue
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+      - docs/EMBRY_STRESS_SESSION_MATRIX.json
+
+connections:
+  - from: real_audio_capture
+    to: event_journal
+  - from: event_journal
+    to: realtimestt_listener
+  - from: realtimestt_listener
+    to: speaker_gate
+  - from: speaker_gate
+    to: turn_controller
+  - from: turn_controller
+    to: memory_answerability
+  - from: memory_answerability
+    to: tau_router
+  - from: tau_router
+    to: response_plan
+  - from: response_plan
+    to: chatterbox_renderer
+  - from: chatterbox_renderer
+    to: audio_output
+  - from: audio_output
+    to: event_journal
+  - from: event_journal
+    to: shared_chat_ux
+  - from: audio_output
+    to: embry_orb
+  - from: realtimestt_listener
+    to: interruption_manager
+  - from: interruption_manager
+    to: audio_output
+  - from: event_journal
+    to: replay_runner
+  - from: event_journal
+    to: proof_runner

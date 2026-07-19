@@ -1,0 +1,13 @@
+{
+  "status": "missing_sentinel",
+  "output": ".ask/embry-audio-runner-live-executor-response.recovered.md",
+  "raw_output": ".ask/embry-audio-runner-live-executor-response.recovered.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-extract-stderr.WfWBW8.log",
+  "sentinel": "<<<WEBGPT_DONE:20260711T170901Z:78c38d1f>>>",
+  "requested_tab_id": "837357645",
+  "controlled_tab_id": "837357645",
+  "raw_contains_sentinel": false,
+  "raw_chars": 144,
+  "started_at": "2026-07-11T17:25:35Z",
+  "finished_at": "2026-07-11T17:25:35Z"
+}

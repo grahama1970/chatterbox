@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-05T13:44:04.504943+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://localhost:3002/#embry-voice",
+  "name": "embry-voice-browser-quality-webcam",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-quality-webcam/20260705T134329Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-browser-quality-webcam/20260705T134329Z.read.json"
+}

@@ -1,0 +1,74 @@
+{
+  "status": "missing_sentinel",
+  "failure": "missing_sentinel",
+  "input": ".codex/webgpt-punts/embry-voice-e2e-architecture-bundle-20260708.sanitized.md",
+  "submitted_output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.md.submitted.md",
+  "output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.md",
+  "raw_output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-submit-stderr.dttudL.log",
+  "sentinel": "<<<WEBGPT_DONE:20260708T103554Z:3fc3939a>>>",
+  "requested_tab_id": "837357645",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "tab_identity_preflight": {
+    "ok": true,
+    "error": null,
+    "tab_id": "837357645",
+    "tab": {
+      "id": "837357645",
+      "title": "ChatGPT - Embry",
+      "url": "https://chatgpt.com/g/g-p-6a4aa54fcdac8191bb444763f4770254-embry/c/6a4d975f-fa80-83ea-8216-b1158b57801c"
+    },
+    "chatgpt_tabs_count": 7,
+    "expected_url": "https://chatgpt.com/g/g-p-6a4aa54fcdac8191bb444763f4770254-embry/c/6a4d975f-fa80-83ea-8216-b1158b57801c",
+    "expected_title": null,
+    "source": "tab-id",
+    "checks": [
+      {
+        "name": "tab_id_valid",
+        "ok": true,
+        "detail": "837357645"
+      },
+      {
+        "name": "tab_open_chatgpt",
+        "ok": true,
+        "detail": "ok"
+      },
+      {
+        "name": "expected_url_matches_tab",
+        "ok": true,
+        "detail": "expected_url matched tab 837357645"
+      },
+      {
+        "name": "tab_identity_verified_or_allowed",
+        "ok": true,
+        "detail": "verified"
+      }
+    ]
+  },
+  "roundtrip_preflight_required": false,
+  "roundtrip_preflight_exit_code": 0,
+  "roundtrip_preflight_output_dir": null,
+  "roundtrip_preflight": null,
+  "controlled_tab_id": "837357645",
+  "conversation_url": null,
+  "response_source": "webgpt-extract-fallback",
+  "response_timed_out": null,
+  "timeout_error": null,
+  "raw_contains_sentinel": true,
+  "clean_contains_sentinel": true,
+  "raw_chars": 38992,
+  "clean_chars": 38992,
+  "raw_response_advisory": true,
+  "extract_fallback_used": true,
+  "extract_fallback_reason": "missing_sentinel",
+  "extract_fallback_raw": "/tmp/surf-webgpt-submit-extract-raw.Y3y9VC.md",
+  "extract_fallback_meta": "/tmp/surf-webgpt-submit-extract-meta.PHfrpY.json",
+  "started_at": "2026-07-08T10:35:56Z",
+  "finished_at": "2026-07-08T10:40:02Z",
+  "proof_status": "submitted_no_response_proof",
+  "agent_diagnosis": "Surf captured response text, but it did not contain the current completion sentinel in assistant output.",
+  "agent_action": "Do not use output as proof. If ChatGPT visibly completed, run webgpt.extract with the exact sentinel; otherwise resubmit to a clean verified tab.",
+  "submitted_to_chatgpt": true
+}

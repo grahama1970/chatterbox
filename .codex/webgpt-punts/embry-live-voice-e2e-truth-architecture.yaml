@@ -1,0 +1,110 @@
+name: "Embry Live Voice E2E Truth Architecture"
+components:
+  - id: stress_matrix
+    label: "Stress Matrix"
+    tech: "implemented misleading: split legacy_component_status from voice_e2e_status"
+    color: amber
+    files:
+      - docs/EMBRY_STRESS_SESSION_MATRIX.json
+      - scripts/build_embry_stress_session_matrix.py
+
+  - id: os_audio_graph_capture
+    label: "OS Audio Graph Capture"
+    tech: "next required: PipeWire/Pulse null-sink monitor + nonce"
+    color: red
+
+  - id: realtimestt_listener
+    label: "RealtimeSTT Listener"
+    tech: "failing physical mic; next external-audio feed_audio proof"
+    color: red
+    files:
+      - scripts/smoke_rung8_loopback_listener.py
+
+  - id: speaker_gate
+    label: "Speaker Gate"
+    tech: "partial failing source-62: Horus ratio 0.0"
+    color: red
+    files:
+      - scripts/smoke_speaker_segment_evidence.py
+
+  - id: memory_answer_intent
+    label: "Memory Answer + Intent"
+    tech: "partial: answerability and tone before speech"
+    color: blue
+
+  - id: tau_router
+    label: "Tau Router"
+    tech: "partial: owns route, skill handoff, DAG receipt"
+    color: amber
+
+  - id: agent_skills
+    label: "Agent Skills"
+    tech: "partial: create-figure analytics evidence-case validator"
+    color: amber
+
+  - id: brave_search_route
+    label: "Brave Search Route"
+    tech: "partial: source receipts before speech"
+    color: blue
+
+  - id: chatterbox_renderer
+    label: "Chatterbox Renderer"
+    tech: "partial: renderer only, no memory/reasoning"
+    color: green
+
+  - id: audio_playback_authority
+    label: "Audio Playback Authority"
+    tech: "partial: OS playback receipt before Chrome proof"
+    color: red
+
+  - id: shared_chat_ux
+    label: "Shared Chat UX"
+    tech: "failing as proof authority: render event journal only"
+    color: purple
+
+  - id: orb_envelope
+    label: "Orb Envelope Subscriber"
+    tech: "partial: must subscribe to actual playback envelope"
+    color: purple
+
+  - id: replay_runner
+    label: "Replay Runner"
+    tech: "partial: replay actual session journal, not live proof"
+    color: amber
+
+  - id: interruption_manager
+    label: "Interruption Manager"
+    tech: "partial: barge-in, non-primary suppression, stale audio"
+    color: amber
+
+connections:
+  - from: os_audio_graph_capture
+    to: realtimestt_listener
+  - from: realtimestt_listener
+    to: speaker_gate
+  - from: speaker_gate
+    to: memory_answer_intent
+  - from: memory_answer_intent
+    to: tau_router
+  - from: tau_router
+    to: agent_skills
+  - from: tau_router
+    to: brave_search_route
+  - from: tau_router
+    to: chatterbox_renderer
+  - from: chatterbox_renderer
+    to: audio_playback_authority
+  - from: audio_playback_authority
+    to: orb_envelope
+  - from: audio_playback_authority
+    to: shared_chat_ux
+  - from: tau_router
+    to: shared_chat_ux
+  - from: shared_chat_ux
+    to: replay_runner
+  - from: os_audio_graph_capture
+    to: interruption_manager
+  - from: speaker_gate
+    to: interruption_manager
+  - from: interruption_manager
+    to: audio_playback_authority

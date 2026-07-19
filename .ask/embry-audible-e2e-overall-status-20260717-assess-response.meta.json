@@ -1,0 +1,39 @@
+{
+  "agent_action": "Inspect status, failure, stderr_log, receipt_output, raw_output, and meta_output before retrying.",
+  "agent_diagnosis": "Surf did not map this result to a known agent-facing diagnosis.",
+  "failure": "prompt_path_preflight_failed",
+  "finished_at": "2026-07-17T13:08:20Z",
+  "input": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717.submitted-assess.md",
+  "output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response.md",
+  "prompt_path_preflight": {
+    "agent_action": "Concatenate readable text into one markdown file or attach a small zip (<=5 files).",
+    "browser_submit_allowed": false,
+    "local_paths": [
+      {
+        "exists_locally": true,
+        "path": "//"
+      },
+      {
+        "exists_locally": true,
+        "path": "/dev/snd/controlC4"
+      },
+      {
+        "exists_locally": true,
+        "path": "/dev/snd"
+      }
+    ],
+    "reason": "web_review_bundle_unreadable",
+    "safe_default": "provide_concatenated_text_or_small_zip",
+    "schema": "surf.webgpt_prompt_preflight.v1",
+    "status": "fail"
+  },
+  "proof_status": "unknown_failure",
+  "raw_output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response.raw.md",
+  "sentinel": "<<<WEBGPT_DONE:20260717T130820Z:a6903ea9>>>",
+  "started_at": "2026-07-17T13:08:20Z",
+  "status": "failed",
+  "stderr_log": "/dev/null",
+  "submitted_output": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response.md.submitted.md",
+  "submitted_to_chatgpt": false,
+  "surf_doctor_request_path": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response.meta.surf-doctor-request.json"
+}

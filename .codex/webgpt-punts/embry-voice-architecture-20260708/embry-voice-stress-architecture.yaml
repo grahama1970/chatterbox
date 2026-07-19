@@ -1,0 +1,128 @@
+name: "Embry Voice Stress Test Architecture"
+components:
+  - id: session_matrix
+    label: Stress Session Matrix
+    tech: "200 labeled cases"
+    latency: "offline contract"
+    color: amber
+    files:
+      - docs/EMBRY_STRESS_SESSION_MATRIX.json
+      - scripts/build_embry_stress_session_matrix.py
+
+  - id: stress_runner
+    label: Stress Runner
+    tech: "receipt executor"
+    latency: "per route"
+    color: amber
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+      - tests/test_embry_intelligence_stress.py
+
+  - id: realtime_stt
+    label: RealtimeSTT Ingress
+    tech: "audio/VAD/ASR"
+    latency: "unproven in matrix"
+    color: red
+    files:
+      - scripts/smoke_voice_chat_e2e.py
+
+  - id: speaker_gate
+    label: Speaker Identity Gate
+    tech: "memory.speaker.resolve"
+    latency: "unimplemented in matrix"
+    color: red
+    files:
+      - scripts/smoke_voice_chat_e2e.py
+
+  - id: memory_intent
+    label: Memory Intent
+    tech: "intent + voice_delivery"
+    latency: "live endpoint"
+    color: amber
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+
+  - id: memory_answer
+    label: Memory Answerability
+    tech: "answer + source gate"
+    latency: "live endpoint"
+    color: red
+    files:
+      - scripts/smoke_embry_intelligence_stress.py
+
+  - id: brave_search
+    label: Brave Search Research
+    tech: "source receipt"
+    latency: "live CLI"
+    color: green
+    files:
+      - /home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py
+
+  - id: tau_router
+    label: Tau Router
+    tech: "agent handoff"
+    latency: "unimplemented in matrix"
+    color: red
+    files:
+      - scripts/smoke_tau_voice_render.py
+
+  - id: chatterbox
+    label: Chatterbox Renderer
+    tech: "voice synthesis"
+    latency: "partial"
+    color: amber
+    files:
+      - src/chatterbox/agent/server.py
+      - scripts/smoke_tau_voice_render.py
+
+  - id: turn_control
+    label: Turn Control
+    tech: "cancel/duck/stop"
+    latency: "unimplemented in matrix"
+    color: red
+    files:
+      - scripts/smoke_voice_chat_e2e.py
+
+  - id: shared_chat_ux
+    label: Shared Chat UX Sync
+    tech: "chat + voice timeline"
+    latency: "unimplemented in matrix"
+    color: red
+    files:
+      - docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md
+
+  - id: orb_replay
+    label: Orb And Replay
+    tech: "envelope + session journal"
+    latency: "unimplemented in matrix"
+    color: red
+    files:
+      - docs/VOICE_CHAT_REAL_WORLD_TEST_LIST.md
+
+connections:
+  - from: session_matrix
+    to: stress_runner
+  - from: stress_runner
+    to: realtime_stt
+  - from: realtime_stt
+    to: speaker_gate
+  - from: speaker_gate
+    to: memory_intent
+  - from: memory_intent
+    to: memory_answer
+  - from: memory_answer
+    to: brave_search
+  - from: memory_answer
+    to: tau_router
+  - from: brave_search
+    to: tau_router
+  - from: tau_router
+    to: chatterbox
+  - from: chatterbox
+    to: turn_control
+  - from: turn_control
+    to: shared_chat_ux
+  - from: chatterbox
+    to: orb_replay
+  - from: shared_chat_ux
+    to: orb_replay

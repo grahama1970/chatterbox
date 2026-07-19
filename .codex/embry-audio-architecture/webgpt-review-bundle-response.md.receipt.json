@@ -1,0 +1,17 @@
+{
+  "schema": "surf.webgpt_submit_receipt.v1",
+  "status": "submitted_to_chatgpt",
+  "submitted_to_chatgpt": true,
+  "prepared_prompt_is_transport_proof": false,
+  "input": "/home/graham/workspace/experiments/chatterbox/.codex/embry-audio-architecture/webgpt-review-bundle.md",
+  "submitted_output": "/home/graham/workspace/experiments/chatterbox/.codex/embry-audio-architecture/webgpt-review-bundle-response.md.submitted.md",
+  "output": "/home/graham/workspace/experiments/chatterbox/.codex/embry-audio-architecture/webgpt-review-bundle-response.md",
+  "raw_output": "/home/graham/workspace/experiments/chatterbox/.codex/embry-audio-architecture/webgpt-review-bundle-response.md.raw.md",
+  "meta_output": "/home/graham/workspace/experiments/chatterbox/.codex/embry-audio-architecture/webgpt-review-bundle-response.md.meta.json",
+  "sentinel": "<<<WEBGPT_DONE:20260705T182302Z:32cc38f3>>>",
+  "requested_tab_id": "837357645",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "receipt_at": "2026-07-05T18:23:09Z"
+}

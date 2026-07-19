@@ -1,0 +1,42 @@
+{
+  "status": "failed",
+  "failure": "prompt_path_preflight_failed",
+  "input": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-voice-architecture-20260708/request.md",
+  "submitted_output": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-voice-architecture-20260708/response.md.submitted.md",
+  "output": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-voice-architecture-20260708/response.md",
+  "raw_output": "/home/graham/workspace/experiments/chatterbox/.codex/webgpt-punts/embry-voice-architecture-20260708/response.raw.md",
+  "stderr_log": "/dev/null",
+  "sentinel": "<<<WEBGPT_DONE:20260708T002156Z:c8e85ed5>>>",
+  "prompt_path_preflight": {
+    "schema": "surf.webgpt_prompt_preflight.v1",
+    "status": "fail",
+    "reason": "web_review_bundle_unreadable",
+    "safe_default": "provide_concatenated_text_or_small_zip",
+    "local_paths": [
+      {
+        "path": "/home/graham/workspace/experiments/chatterbox",
+        "exists_locally": true
+      },
+      {
+        "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000144Z-matrix-simple-memory-search-v2/receipt.json",
+        "exists_locally": true
+      },
+      {
+        "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T000951Z-matrix-simple-rest/receipt.json",
+        "exists_locally": true
+      },
+      {
+        "path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T001850Z-matrix-tone-simple/receipt.json",
+        "exists_locally": true
+      }
+    ],
+    "browser_submit_allowed": false,
+    "agent_action": "Concatenate readable text into one markdown file or attach a small zip (<=5 files)."
+  },
+  "started_at": "2026-07-08T00:21:56Z",
+  "finished_at": "2026-07-08T00:21:56Z",
+  "agent_diagnosis": "Surf did not map this result to a known agent-facing diagnosis.",
+  "agent_action": "Inspect status, failure, stderr_log, receipt_output, raw_output, and meta_output before retrying.",
+  "proof_status": "unknown_failure",
+  "submitted_to_chatgpt": false
+}

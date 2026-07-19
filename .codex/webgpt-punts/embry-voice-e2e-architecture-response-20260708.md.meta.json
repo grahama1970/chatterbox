@@ -1,0 +1,16 @@
+{
+  "status": "completed",
+  "output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.md",
+  "raw_output": ".codex/webgpt-punts/embry-voice-e2e-architecture-response-20260708.md.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-extract-stderr.cdu4HD.log",
+  "sentinel": null,
+  "requested_tab_id": "837357645",
+  "controlled_tab_id": "837357645",
+  "response_source": "assistant-dom",
+  "raw_contains_sentinel": false,
+  "clean_contains_sentinel": false,
+  "raw_chars": 38991,
+  "clean_chars": 38991,
+  "started_at": "2026-07-08T10:42:00Z",
+  "finished_at": "2026-07-08T10:42:00Z"
+}

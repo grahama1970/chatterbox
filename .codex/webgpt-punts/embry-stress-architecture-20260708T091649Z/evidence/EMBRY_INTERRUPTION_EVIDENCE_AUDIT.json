@@ -1,0 +1,300 @@
+{
+  "best_candidate_paths": [
+    "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json"
+  ],
+  "candidate_count": 6,
+  "candidates": [
+    {
+      "chatterbox_turn_control_missing_fields": [],
+      "chatterbox_turn_control_ok": true,
+      "missing_field_count": 0,
+      "missing_fields": [],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [],
+        "listener_detected": true,
+        "listener_speaker_id": "horus_lupercal",
+        "live": true,
+        "mocked": false,
+        "new_turn_id": "turn-d1a2faf7",
+        "new_turn_wins": true,
+        "ok": true,
+        "old_turn_bytes_after_cancel": 0,
+        "old_turn_id": "turn-faddc426",
+        "playback_offset_ms_at_interrupt": 0,
+        "primary_speaker_match": true,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": true,
+        "turn_id": "turn-faddc426"
+      },
+      "ok": true,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T062448Z-rung4-live-horus-interrupt/rung4-live-interrupt.json",
+      "proof_scope": null
+    },
+    {
+      "chatterbox_turn_control_missing_fields": [],
+      "chatterbox_turn_control_ok": true,
+      "missing_field_count": 2,
+      "missing_fields": [
+        "listener_interruption.primary_speaker_match",
+        "listener_interruption.speaker_id"
+      ],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [],
+        "listener_detected": true,
+        "listener_speaker_id": null,
+        "live": true,
+        "mocked": false,
+        "new_turn_id": "turn-edf587f2",
+        "new_turn_wins": true,
+        "ok": true,
+        "old_turn_bytes_after_cancel": 0,
+        "old_turn_id": "turn-5d788860",
+        "playback_offset_ms_at_interrupt": 0,
+        "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": true,
+        "turn_id": "turn-5d788860"
+      },
+      "ok": false,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T061455Z-rung4-live-interrupt/rung4-live-interrupt.json",
+      "proof_scope": null
+    },
+    {
+      "chatterbox_turn_control_missing_fields": [],
+      "chatterbox_turn_control_ok": true,
+      "missing_field_count": 3,
+      "missing_fields": [
+        "listener_interruption.detected",
+        "listener_interruption.primary_speaker_match",
+        "listener_interruption.speaker_id"
+      ],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [],
+        "listener_detected": null,
+        "listener_speaker_id": null,
+        "live": true,
+        "mocked": false,
+        "new_turn_id": "turn-09af7879",
+        "new_turn_wins": true,
+        "ok": true,
+        "old_turn_bytes_after_cancel": 0,
+        "old_turn_id": "turn-ffd6d9e7",
+        "playback_offset_ms_at_interrupt": 0,
+        "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": true,
+        "turn_id": "turn-ffd6d9e7"
+      },
+      "ok": false,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/interruption-current/20260708T034752Z-interrupt-current/final-response.json",
+      "proof_scope": null
+    },
+    {
+      "chatterbox_turn_control_missing_fields": [
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "turn_control.stopped"
+      ],
+      "chatterbox_turn_control_ok": false,
+      "missing_field_count": 10,
+      "missing_fields": [
+        "embry_playback.audio_artifact_id",
+        "embry_playback.offset_ms_at_interrupt",
+        "embry_playback.started_at_epoch_ms",
+        "listener_interruption.detected",
+        "listener_interruption.primary_speaker_match",
+        "listener_interruption.speaker_id",
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "turn_control.stopped"
+      ],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [],
+        "listener_detected": null,
+        "listener_speaker_id": null,
+        "live": true,
+        "mocked": false,
+        "new_turn_id": null,
+        "new_turn_wins": null,
+        "ok": true,
+        "old_turn_bytes_after_cancel": 0,
+        "old_turn_id": "turn-cancel-44280d62822d",
+        "playback_offset_ms_at_interrupt": null,
+        "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": true,
+        "turn_control_stopped": null,
+        "turn_id": "turn-cancel-44280d62822d"
+      },
+      "ok": false,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/stream-cancel-20260702T1150/stream-cancel.json",
+      "proof_scope": "pre_cancelled_turn_stream_suppression"
+    },
+    {
+      "chatterbox_turn_control_missing_fields": [
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "old_turn_id",
+        "stale_audio.old_turn_bytes_after_cancel",
+        "turn_control.stale_chunks_should_skip",
+        "turn_control.stopped"
+      ],
+      "chatterbox_turn_control_ok": false,
+      "missing_field_count": 15,
+      "missing_fields": [
+        "embry_playback.audio_artifact_id",
+        "embry_playback.offset_ms_at_interrupt",
+        "embry_playback.started_at_epoch_ms",
+        "listener_interruption.detected",
+        "listener_interruption.primary_speaker_match",
+        "listener_interruption.speaker_id",
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "old_turn_id",
+        "stale_audio.old_turn_bytes_after_cancel",
+        "turn_control.cancelled",
+        "turn_control.stale_chunks_should_skip",
+        "turn_control.stopped",
+        "turn_id"
+      ],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [],
+        "listener_detected": null,
+        "listener_speaker_id": null,
+        "live": true,
+        "mocked": false,
+        "new_turn_id": null,
+        "new_turn_wins": null,
+        "ok": true,
+        "old_turn_bytes_after_cancel": null,
+        "old_turn_id": null,
+        "playback_offset_ms_at_interrupt": null,
+        "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": null,
+        "turn_control_stopped": null,
+        "turn_id": null
+      },
+      "ok": false,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/overlap-turn-control-20260703T192737Z-live/overlap-turn-control.json",
+      "proof_scope": null
+    },
+    {
+      "chatterbox_turn_control_missing_fields": [
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "old_turn_id",
+        "stale_audio.old_turn_bytes_after_cancel",
+        "turn_control.stale_chunks_should_skip",
+        "turn_control.stopped"
+      ],
+      "chatterbox_turn_control_ok": false,
+      "missing_field_count": 15,
+      "missing_fields": [
+        "embry_playback.audio_artifact_id",
+        "embry_playback.offset_ms_at_interrupt",
+        "embry_playback.started_at_epoch_ms",
+        "listener_interruption.detected",
+        "listener_interruption.primary_speaker_match",
+        "listener_interruption.speaker_id",
+        "new_turn.response_started",
+        "new_turn.wins",
+        "new_turn_id",
+        "old_turn_id",
+        "stale_audio.old_turn_bytes_after_cancel",
+        "turn_control.cancelled",
+        "turn_control.stale_chunks_should_skip",
+        "turn_control.stopped",
+        "turn_id"
+      ],
+      "observed": {
+        "action_order": null,
+        "failed_gates": [
+          "interruption-simple-01:interruption_detected_receipt_not_emitted",
+          "interruption-simple-01:new_horus_turn_not_exercised",
+          "interruption-simple-01:new_turn_wins_receipt_not_emitted",
+          "interruption-simple-02:blessed_qra_cached_response_not_exercised",
+          "interruption-simple-02:interruption_detected_receipt_not_emitted",
+          "interruption-simple-02:stale_audio_stream_bytes_not_measured",
+          "interruption-simple-03:interruption_detected_receipt_not_emitted",
+          "interruption-simple-03:non_primary_interrupt_rejection_not_exercised",
+          "interruption-simple-03:speaker_gate_receipt_not_linked_to_turn_control",
+          "interruption-simple-04:interruption_detected_receipt_not_emitted",
+          "interruption-simple-04:natural_stop_phrase_not_observed",
+          "interruption-simple-04:tau_tool_wait_not_exercised"
+        ],
+        "listener_detected": null,
+        "listener_speaker_id": null,
+        "live": true,
+        "mocked": false,
+        "new_turn_id": null,
+        "new_turn_wins": null,
+        "ok": false,
+        "old_turn_bytes_after_cancel": null,
+        "old_turn_id": null,
+        "playback_offset_ms_at_interrupt": null,
+        "primary_speaker_match": null,
+        "turn_control_stale_chunks_should_skip": null,
+        "turn_control_stopped": null,
+        "turn_id": null
+      },
+      "ok": false,
+      "proof_path": "/tmp/chatterbox-fork-agent-out/embry-intelligence-stress/20260708T013317Z-matrix-interruption-simple/receipt.json",
+      "proof_scope": null
+    }
+  ],
+  "chatterbox_turn_control_candidate_count": 3,
+  "claims": {
+    "does_not_prove": [
+      "RealtimeSTT transcription quality",
+      "speaker diarization quality",
+      "subjective interruption feel"
+    ],
+    "proves": [
+      "at_least_one_receipt_proves_primary_speaker_barge_in_stops_old_audio_and_new_turn_wins"
+    ]
+  },
+  "failed_gates": [],
+  "generated_at_utc": "2026-07-08T06:25:29.211493+00:00",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "passing_candidate_count": 1,
+  "proof_count": 6,
+  "required_barge_in_fields": [
+    "turn_id",
+    "old_turn_id",
+    "new_turn_id",
+    "embry_playback.audio_artifact_id",
+    "embry_playback.started_at_epoch_ms",
+    "embry_playback.offset_ms_at_interrupt",
+    "listener_interruption.detected",
+    "listener_interruption.speaker_id",
+    "listener_interruption.primary_speaker_match",
+    "turn_control.cancelled",
+    "turn_control.stopped",
+    "turn_control.stale_chunks_should_skip",
+    "stale_audio.old_turn_bytes_after_cancel",
+    "new_turn.wins",
+    "new_turn.response_started"
+  ],
+  "required_chatterbox_turn_control_fields": [
+    "old_turn_id",
+    "new_turn_id",
+    "turn_control.stopped",
+    "turn_control.stale_chunks_should_skip",
+    "stale_audio.old_turn_bytes_after_cancel",
+    "new_turn.wins",
+    "new_turn.response_started"
+  ],
+  "schema": "chatterbox.embry_interruption_evidence_audit.v1",
+  "status": "passed"
+}

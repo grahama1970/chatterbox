@@ -1,0 +1,13 @@
+{
+  "schema": "surf.webgpt_heartbeat.v1",
+  "updated_at": "2026-07-17T13:21:39Z",
+  "submitted_at": "2026-07-17T13:12:51Z",
+  "last_browser_observation_at": "2026-07-17T13:21:39Z",
+  "phase": "completed",
+  "page_state": "response_detected",
+  "last_artifact_written": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.raw.md",
+  "next_expected_artifact": "/home/graham/workspace/experiments/chatterbox/.ask/embry-audible-e2e-overall-status-20260717-assess-response-retry1.meta.json",
+  "timeout_remaining_seconds": 0,
+  "sentinel": "<<<WEBGPT_DONE:20260717T131248Z:e21c219a>>>",
+  "prepared_prompt_is_transport_proof": false
+}

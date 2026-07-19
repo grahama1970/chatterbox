@@ -1,6 +1,6 @@
 # Project Knowledge: chatterbox
 
-**Last updated:** 2026-07-10 21:36 by agent
+**Last updated:** 2026-07-19 18:37 by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -92,6 +92,7 @@
 - 2026-07-10 live Memory speaker-resolution proof PASS: POST /speaker/resolve consumed the physical Resemblyzer profile candidate from /tmp/embry-horus-enrollment-physical/physical-enrollment-receipt.json. Held-out Horus confidence 0.775029 at threshold 0.75 returned schema memory.speaker_resolution.v1, status=known, speaker_id=horus_lupercal, allow_personal_memory=true, recall_profile=speaker_conversation_memory, and memory tags persona:embry, persona:horus_lupercal, speaker:horus_lupercal, user:horus_lupercal, plus the profile hash. Embry self-audio confidence 0.480605 returned status=unknown, allow_personal_memory=false, only persona:embry, and an interruptible identity clarification prompt. Receipt: /tmp/embry-horus-enrollment-physical/memory-resolution/receipt.json. mocked=false, live=true. This proves Memory routing from supplied speaker evidence; it does not independently prove embedding or diarization correctness, or downstream intent/recall/Tau execution.
 - 2026-07-10: The Journal -> Memory -> persistent Tau rung passed live and non-mocked for physical event listener.final_transcript.bfb99d8b05cccea6. SQLite preserved one lineage: source sequence 120 -> memory.speaker_resolved sequence 1497 -> memory.intent_resolved sequence 1498 -> tau.persistent_tick.completed sequence 1499. Memory resolved horus_lupercal with personal memory allowed; Tau executed one bounded persistent-subagent tick; the source was acknowledged and duplicate claim performed zero Memory/Tau work. Receipt: /tmp/embry-journal-memory-tau-proof/receipt.json. Agent-skills main: 5d988c118. This does not prove Chatterbox rendering, Chat UX, orb, replay, or interruption.
 - 2026-07-11: Causal Chatterbox render rung PASS. A physical Jabra RealtimeSTT event listener.final_transcript.e05728f278813654 (sequence 29, session physical-hot-mic-20260711T010233Z-2668d0b9, turn listener-process-1) was verified as Horus at 0.886888, routed through live Memory intent/answer, classified memory_miss_irrelevant_answer, and converted by the production Embry planner into tau.turn_plan.v1 with static_answer text The capital of France is Paris. Chatterbox /tau/voice-render consumed only that hashed plan and emitted a 97,998-byte, 24 kHz mono, 2.04-second WAV with SHA-256 909a462da7f2e34ebbcb07c1b028b252e4f0798fb4757799a6b3d392103a3ddc. Receipt: /tmp/embry-causal-render/render/receipt.json; all 16 acceptance fields true; mocked=false/live=true. Agent-skills main: 648999e0b. This does not prove Chat UX projection, orb synchronization, replay, playback, or interruption.
+- E2E voice campaign complete 2026-07-19: 260/300 matrix cases counted live+unmocked in the journal (247 bulk via silent PipeWire loopback, 12 pilot, 1 physical human). Chat projection contract stable (270/271 turns resolve, clone+physical). Embry/Chatterbox backend ready for SPARTA Chat UX integration pending 3 gates: UI consumption of projections, in-UX playback, interactive latency. 53 blocked cases (42 asset-gen hard content, 11 spine) triaged for round 2. Code: agent-skills branch voice-campaign-20260718; RealtimeSTT master. Ops guide: chatterbox/local/HANDOFF.md top section.
 
 ## Recent Decisions
 
@@ -108,6 +109,7 @@
 | 2026-07-08 | Use focused proof receipts before unified Embry voice-loop claims | The 2026-07-08 pass showed each gate can be proven independently, but the full-loop claim still needs one shared turn_id/event-spine receipt tying browser/RealtimeSTT, speaker gate, memory/Tau, Chatterbox, Chat UX, orb, replay, and interruption together. |
 | 2026-07-10 | Use Unix/PipeWire RealtimeSTT as the first-class listener path | Chrome mic/WebRTC remains useful as a diagnostic, but it has been too brittle for the wake/listen proof. The authoritative path for starting the 200+ Embry tests is a local audio/RealtimeSTT receipt consumed by the Embry voice-control live-turn adapter. |
 | 2026-07-10 | Use the passed Unix/PipeWire physical hot-mic path as the listener authority and make real multi-sample Horus enrollment the next singular proof rung | The listener now has a non-mocked physical-microphone receipt; identity must fail closed before listener turns can safely unlock Horus-scoped Memory/Tau routing. |
+| 2026-07-19 | Bulk voice E2E runs over PipeWire null-sink loopback, not room air | Oracle-reviewed: spec's two-tier language puts room acoustics on the small physical subset; loopback removes echo-cancellation/VAD/hallucination flake classes and is silent for the human |
 
 ## Open Questions
 

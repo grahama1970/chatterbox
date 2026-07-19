@@ -1,0 +1,13 @@
+{
+  "status": "missing_sentinel",
+  "output": ".codex/webgpt-punts/embry-live-loop-create-architecture.manual-extract.md",
+  "raw_output": ".codex/webgpt-punts/embry-live-loop-create-architecture.manual-extract.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-extract-stderr.J92A3S.log",
+  "sentinel": "<<<WEBGPT_DONE:20260706T230916Z:16eb7dde>>>",
+  "requested_tab_id": "837357648",
+  "controlled_tab_id": "837357648",
+  "raw_contains_sentinel": false,
+  "raw_chars": 212,
+  "started_at": "2026-07-06T23:14:26Z",
+  "finished_at": "2026-07-06T23:14:26Z"
+}

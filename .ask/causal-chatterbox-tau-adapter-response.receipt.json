@@ -1,0 +1,17 @@
+{
+  "schema": "surf.webgpt_submit_receipt.v1",
+  "status": "submitted_to_chatgpt",
+  "submitted_to_chatgpt": true,
+  "prepared_prompt_is_transport_proof": false,
+  "input": ".ask/causal-chatterbox-tau-adapter-blocker.md",
+  "submitted_output": ".ask/causal-chatterbox-tau-adapter-response.md.submitted.md",
+  "output": ".ask/causal-chatterbox-tau-adapter-response.md",
+  "raw_output": ".ask/causal-chatterbox-tau-adapter-response.raw.md",
+  "meta_output": ".ask/causal-chatterbox-tau-adapter-response.meta.json",
+  "sentinel": "<<<WEBGPT_DONE:20260711T010952Z:668b0282>>>",
+  "requested_tab_id": "837357645",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "receipt_at": "2026-07-11T01:17:04Z"
+}

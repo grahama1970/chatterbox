@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-07-05T17:27:34.314597+00:00",
+  "cwd": "/home/graham/workspace/experiments/chatterbox",
+  "root": "/home/graham/workspace/experiments/chatterbox",
+  "output_root": "/tmp/codex-ui-verification/chatterbox",
+  "url": "http://127.0.0.1:3002/#embry-voice",
+  "name": "embry-voice-orb-replay",
+  "screenshot": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.png",
+  "read_json": "/tmp/codex-ui-verification/chatterbox/embry-voice-orb-replay/20260705T172729Z.read.json"
+}
