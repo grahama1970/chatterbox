@@ -1,5 +1,105 @@
 # Handoff Report: Chatterbox / Embry Live Voice
 
+## -3. CURRENT HANDOFF 2026-07-20T13:24:36-04:00 - Sparta Chat UX integration ticket filed; Chatterbox evidence is live but integration proof remains open
+
+**Active Agent:** Codex
+
+### 1. Project Overview
+
+- **Ecosystem:** Python 3.10+ package (`pyproject.toml`) with FastAPI/uvicorn agent server, Chatterbox TTS/Turbo rendering, RealtimeSTT listener integration, PipeWire/Jabra audio paths, SQLite journal evidence, and cross-project Sparta/UX Lab integration.
+- **Core purpose:** This fork keeps upstream Resemble AI Chatterbox models and adds an Embry voice-agent renderer: listener audio/text -> optional speaker gate -> Memory/QRA/Tau coordination -> Chatterbox Turbo render -> PCM/WAV receipts.
+- **Authority boundary:** Chatterbox is the audio renderer. Listener state, Memory, Tau, replay, speaker identity, and Chat UX state must come from authoritative journal/service receipts, not UI-local booleans or synthetic claims.
+
+### 2. Current State (Doc-Code Alignment)
+
+- `README.md` correctly states that the first-class Embry wake/listen proof path is Unix/PipeWire RealtimeSTT, not browser `getUserMedia`.
+- The latest campaign evidence supersedes older sections below that say the journal spine has no producers. Current journal counts show producers are present for `listener.final_transcript`, `memory.answer_resolved`, `tau.turn_plan.completed`, `chatterbox.voice_render.completed`, `speaker.verification.completed`, `playback.started`, and `audio_e2e.case_completed`.
+- The Sparta Chat UX integration is now tracked in GitHub, not only agent inbox:
+  - Issue: https://github.com/grahama1970/sparta/issues/2
+  - Title: `Integrate Embry Chatterbox voice spine into Sparta Chat UX using authoritative journal evidence`
+  - Verified state: `OPEN`
+  - Verified labels: `type:feature`, `maintainer-active`, `route:frontend_code`, `agent:frontend-coder`
+- Agent inbox handoff also exists for Sparta:
+  - Corrected message: `/home/graham/.agent-inbox/pending/sparta_2253c871.json`
+  - Supersedes earlier duplicate `/home/graham/.agent-inbox/pending/sparta_9dd9a743.json`, which had auto-detected `from=skills`.
+
+### 3. What Is Working Well
+
+- Round-2 recovery supervisor finished:
+  - Command resumed: `/tmp/claude-1000/-home-graham-workspace-experiments-chatterbox/8928d5f2-5ea8-49c9-abd4-6fb71804382f/scratchpad/round2_supervisor.sh`
+  - Terminal result recorded earlier: `SUPERVISOR DONE st=completed`
+  - Final state: `/tmp/claude-1000/-home-graham-workspace-experiments-chatterbox/8928d5f2-5ea8-49c9-abd4-6fb71804382f/scratchpad/round2_recovery_state.json`
+  - State status: `completed`
+  - State updated_at: `2026-07-20T12:38:01.297059+00:00`
+  - State sha256: `0d1993c2f6f1232226e9b0bd69a4421a4f4d855fbf355edfa094208bd018f792`
+- Campaign receipt:
+  - Path: `/tmp/claude-1000/-home-graham-workspace-experiments-chatterbox/8928d5f2-5ea8-49c9-abd4-6fb71804382f/scratchpad/campaign_round2/campaign-receipt.json`
+  - Schema: `embry.audio_e2e_campaign_receipt.v1`
+  - Status: `PASS`
+  - Campaign id: `campaign_bf26de7573167482301d887e`
+  - Receipt sha256: `d008dfe0d6ffc297d6509f1699ac962cd25a6fb6de6651c5aa20ec1bcc0d1b01`
+- Journal evidence at `/mnt/storage12tb/skills/embry-voice-control/state/voice-events.sqlite3`:
+  - `COUNT(DISTINCT session_id)` for `audio_e2e.case_completed`: `300`
+  - `COUNT(DISTINCT $.case_id)` for `audio_e2e.case_completed`: `288`
+  - `audio_e2e.case_completed`: `300`
+  - `listener.final_transcript`: `1114`
+  - `memory.answer_resolved`: `1016`
+  - `tau.turn_plan.completed`: `1016`
+  - `chatterbox.voice_render.completed`: `1015`
+  - `speaker.verification.completed`: `2`
+  - `playback.started`: `2`
+  - `MAX(sequence)`: `2590`
+- Listener service currently responds on `8032`:
+  - Command: `curl --max-time 5 -fsS http://127.0.0.1:8032/health`
+  - Result: `{"schema":"embry.listener_service_health.v1","status":"ok"}`
+- No active broad Chatterbox e2e runners were found:
+  - Command: `pgrep -af '[e]mbry_voice_control.audio_e2e run|[r]ender_tau_turn_plan|[r]un_journal_memory_tau_proof'`
+  - Result: no output.
+
+### 4. What Is Currently Broken / Risky
+
+- **Full Sparta Chat UX integration is still unproven.** Existing CDP proof only showed that `http://127.0.0.1:3002/` loaded; it did not prove live voice projection, replay, provenance, or audible playback inside Sparta Chat.
+- **Unique matrix coverage is not 300.** There are `300` completed sessions but only `288` unique case IDs. Do not report this as 300 unique matrix cases.
+- **Physical audible playback evidence is thin.** Journal has `playback.started=2` and `speaker.verification.completed=2`, far less than the bulk render/listener counts.
+- **Current service health risk:** `8601/health` and `3001/api/projects/embry-voice/listener/latest` both timed out with `curl --max-time 5` during this handoff update. Ports are listening (`8601` backlog `44`, `3001` backlog `21`, `3001` node pid `3632735`), but agents should treat Memory/UX service responsiveness as a live blocker to re-check before integration proof.
+- **Handoff runner missing:** `$handoff` required `.pi/skills/handoff/run.sh`, but this repo returned `NO_HANDOFF_RUNNER .pi/skills/handoff/run.sh`. This update used manual supplemental assessment.
+- **No full test suite was run in this handoff turn.** Evidence here comes from receipt reads, SQLite journal queries, service curl probes with timeouts, `gh issue view`, `pgrep`, and git history/status.
+- **Synthetic qualified Horus clone remains bounded.** It can support bulk tests with `speaker_identity_proven=false` and non-personal memory policy. It must not unlock personal memory or be treated as physical Horus identity.
+
+### 5. Next Steps
+
+1. In the Sparta repo, continue from https://github.com/grahama1970/sparta/issues/2. The issue is already `maintainer-active`; coordinate with the leasing agent before parallel edits.
+2. Re-check services before coding integration proof:
+   - `curl --max-time 5 -fsS http://127.0.0.1:8032/health`
+   - `curl --max-time 5 -fsS http://127.0.0.1:8601/health`
+   - `curl --max-time 5 -fsS http://127.0.0.1:3001/api/projects/embry-voice/listener/latest`
+3. Wire Sparta Chat UX to authoritative listener/journal/service state. Do not infer listening/speaking/pass state from React-local state alone.
+4. Acceptance proof must be one live, non-mocked spoken Jabra flow: listener -> Memory -> Tau -> Chatterbox render -> playback/replay -> Chat UX projection, with matching journal session/turn events and fresh CDP screenshot/marker.
+5. Preserve degraded/fail-closed UI states for missing, stale, synthetic-only, or no-playback evidence.
+6. Separately close the remaining Chatterbox coverage gap: 12 unique case IDs, including the previously noted 5 `tone_emotion` physical-recording cases and 7 Class B listener/runtime cases, unless newer failure bundles say otherwise.
+
+### 6. Project Context for Success
+
+- Key Chatterbox files:
+  - `README.md`
+  - `pyproject.toml`
+  - `src/chatterbox/agent/server.py`
+  - `scripts/start_agent_server_docker.sh`
+  - `docs/EMBRY_STRESS_SESSION_MATRIX.json`
+  - `local/HANDOFF.md`
+- Key live/journal artifacts:
+  - `/mnt/storage12tb/skills/embry-voice-control/state/voice-events.sqlite3`
+  - `/tmp/claude-1000/-home-graham-workspace-experiments-chatterbox/8928d5f2-5ea8-49c9-abd4-6fb71804382f/scratchpad/round2_recovery_state.json`
+  - `/tmp/claude-1000/-home-graham-workspace-experiments-chatterbox/8928d5f2-5ea8-49c9-abd4-6fb71804382f/scratchpad/campaign_round2/campaign-receipt.json`
+  - `/home/graham/workspace/experiments/chatterbox/.codex/ui-verification/latest.json`
+  - `/tmp/codex-ui-verification/chatterbox/sparta-explorer-chat-ux/20260720T123937Z.png`
+- Recent commits on `main`:
+  - `79c8734` `Record Sparta Explorer Chat UX UI verification`
+  - `c36de72` `Handoff: campaign at 281 counted, round-2 recovery in flight, memory-repo incident documented`
+  - `f79eff1` `Record 300-case audio E2E campaign: 260 counted, handoff, knowledge, oracle receipts`
+  - `61ccc89` `Update Embry live voice handoff`
+  - `8a7f64a` `test: preserve live listener playback and replay proof`
+
 ## -2. HANDOFF 2026-07-20T04:30Z — CAMPAIGN NEAR-COMPLETE; Round-2 recovery in flight
 
 **Journal-verified at write time:** **281 counted sessions** (`audio_e2e.case_completed`
