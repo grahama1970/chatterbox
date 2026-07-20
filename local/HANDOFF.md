@@ -1,5 +1,59 @@
 # Handoff Report: Chatterbox / Embry Live Voice
 
+## -2. HANDOFF 2026-07-20T04:30Z — CAMPAIGN NEAR-COMPLETE; Round-2 recovery in flight
+
+**Journal-verified at write time:** **281 counted sessions** (`audio_e2e.case_completed`
+distinct); recovery run live: 18 of 37 Round-2 cases completed, 19 running.
+Unique matrix coverage after recovery lands: ~288 of 300.
+
+**Remaining to 300 (evidence in `$SCR/round2_report.md` + failure manifests):**
+- 5 `tone_emotion` cases — REQUIRE PHYSICAL RECORDING (prosody is the tested
+  feature; an Orpheus tag renders a nonverbal sound that can never pass the
+  locked lexical WER 0.25 gate). Cases: tone_emotion-{advanced-02, adversarial-02,
+  medium-02, simple-04, soak-02}. Use `scripts/record_horus_corpus.py` +
+  `scripts/horus_capture_segment.py` at the Jabra, then `recorded_physical_horus`
+  source mode.
+- 7 Class B listener cases — runtime tuning documented in round2_report.md
+  (post-speech-silence for soak-length queries; domain hotwords; the
+  receipt-missing orchestration timeout), then re-run.
+- Anything the current recovery leaves blocked (read
+  `$SCR/round2_recovery_state.json` failure bundles).
+
+**Round-2 defects fixed today (commits on branch `voice-campaign-20260718`):**
+- extract-entities recall timeout 15s->60s (`7caea2d15`, memory-daemon recall on
+  dense text; reproduced verbatim)
+- entity span case-fold comparison (`5a226019e`; extractor normalizes mentions)
+- chat projection clone-mode support (`b98dcc4fc`,`a715869d4`; 270/271 turns
+  resolve across ALL completed cases — projections had NEVER worked for clone mode)
+- decorative-vs-feature emotion-tag rule + transcript-based truncation detector
+  (`6a3e3c3de`,`d766e0f1b`; regeneration sweep proved tags were the primary
+  Class-A defect: 37/42 cases requalified cleanly)
+- memory retry gate proves no-double-answer from the journal (`297a1d2ae`)
+
+**CRITICAL cross-project incident (memory repo, `/home/graham/workspace/experiments/memory`):**
+The battle automation committed code importing symbols whose definitions lived
+only in a stash ("partial commit"). The long-running embry-memory process masked
+it; ANY restart crash-loops the service (ImportError), and the half-loaded app
+serves /health but drops routers (404 on /speaker/resolve — this blocked the
+whole campaign spine). Repair applied: constants restored from stash
+(commit `443ed33`), then full `git stash apply` + two conflict resolutions
+(config.py whitespace, _models.py battle validator). Service now healthy with
+77 routes incl. /speaker/resolve (verified via openapi.json). The stash entry
+still exists; the working tree holds uncommitted battle WIP — the battle
+automation's owner should commit or discard it properly.
+
+**Operational invariants (learned the hard way, do not relearn):**
+- Any pkill pattern must not appear in the wrapper's own cmdline (self-kill,
+  exit 144) — put supervisors in script files.
+- `status` is a read-only zsh variable — never use it as a shell var name.
+- Null sinks suspend when idle: keep-alive stream into `embry_horus_input`
+  required during any loopback run.
+- The runner requires `--allow-memory-answer-retry-after-timeout` to resume
+  cases whose prior attempt died in a memory timeout.
+- embedding-mm container (4.6GB VRAM) is safe to stop for GPU windows; restore
+  after. Orpheus and the listener's CUDA whisper cannot both fit with the full
+  spine — sequence them.
+
 ## -1. HANDOFF UPDATE 2026-07-19T17:35Z — bulk campaign running; how to operate without an agent
 
 **State (all journal-verified at write time):** 92 of 300 cases counted
@@ -326,3 +380,77 @@ completions dominated by the **247** in this campaign.
 learned: the run does **up-front audio-asset validation for every manifest case and fails closed**
 if any case lacks assets — so asset-blocked cases must be **excluded from the run manifest**, not
 left in it (hence the 258-case run manifest).
+
+---
+
+## Round 2 bug-fix campaign (2026-07-19/20)
+
+Commit `6a3e3c3de` on `battle-adaptive-lineage-goal` (pointer `voice-campaign-20260718`
+moved). Tests **110 pass** (was 89). Full report: `$SCR/round2_report.md`.
+
+**Accounting (deduped, keyed by case id):** journal 263 sessions → **251 distinct
+completed cases** (12 dup a02/a03 attempts) + **49 uncompleted = 300** ✓.
+Manifest `$SCR/round2_failure_manifest.json`. 49 = **42 Class A `tts_asset_blocked`**
++ **7 Class B `listener_receipt_missing`** (was 8; one recovered by continued runs).
+
+**Class A code (committed, tested):** decorative-vs-feature tone-tag rule (only
+`tone_emotion` family keeps Orpheus tags in synthesis; others synthesize plain
+lexical text, metadata retained); audio-side `detect_generation_truncation` +
+`tts_generation_truncated` rejection that does NOT consume a quality slot
+(`TRUNCATION_RETRY_BUDGET=3`); clause-concatenation helpers (crossfade 150–250ms,
+`source_text_unchanged`). Verified server hard-caps `max_new_tokens=1200` and
+returns no finish_reason (so audio-side detection + clause-concat, not an 1800 bump).
+
+**Manifest recompile proven:** new rule reproduces `campaign_bf26de7573167482301d887e`
+exactly (same campaign), 138 decorative-tag turns cleaned across the 42 blocked
+cases, 17 tone_emotion turns retained. Delta manifest:
+`$SCR/round2_delta_manifest_assetblocked42.json`.
+
+**BLOCKED — GPU capacity:** started orpheus to regenerate; horus synth GPU-OOMs
+(`Some modules are dispatched on the CPU or the disk`) — only ~2 GB free, chatterbox/
+tau/voicemode hold the GPU. Cannot regenerate (Task 3) or run recovered cases
+(Task 5) without reclaiming VRAM from protected services (forbidden). **orpheus left
+stopped.** No live runs; journal unchanged at 263.
+
+**Class B (7): all listener-side, NONE for physical recording.** Source assets
+qualified; captures are clean leading prefixes (VAD/post-speech segmentation on long
+adversarial/soak queries) or minor decode errors (small/tiny-model ASR capacity),
+now degraded to receipt-missing (runaway `WAKE ACCEPTED … awaiting post-wake speech`
+= orchestration/timeout defect). Levers: longer post-speech/VAD timeout; fixed
+domain-vocabulary hotwords + verified beam_size=5 (consider medium.en production-
+wide); fix the receipt-missing timeout. Then re-run.
+
+**Physical-recording candidates (Class A only, after regen attempt):** 5 tone_emotion
+(advanced-02, adversarial-02, medium-02, simple-04, soak-02) + interruption-medium-03.
+
+### Round 2 continued — GPU unblocked (2026-07-20)
+
+Coordinator freed 9.7 GB by stopping unhealthy `embry-embedding-mm` (restore
+transferred to me — DONE: embedding-mm restarted, orpheus stopped).
+
+**Truncation detector CORRECTED (commit d766e0f1b):** the shipped audio trailing-
+silence heuristic false-flagged EVERY candidate (accepted Orpheus takes end with
+0.00-0.08 s tail — non-discriminative). Replaced with a transcript-based detector
+(actual is a leading prefix of expected with tail missing, only among WER-failures).
+Tests: 111 pass.
+
+**Task 3 asset regeneration COMPLETE — 37/42 recovered.** With decorative-tag
+removal + corrected detector, all 37 non-tone_emotion asset-blocked cases qualified
+(138 turn-query assets, mostly first-candidate; ~2 legit WER rejects that requalified).
+Assets: `.../horus-clone-assets-round2b-.../qualified-horus-clone-assets.json`.
+**5 tone_emotion cases EXHAUSTED → physical recording** (advanced-02, adversarial-02,
+medium-02, simple-04, soak-02): tags retained render nonverbal sounds Whisper
+transcribes → WER always > 0.25. Confirms the oracle's physical-recording set.
+
+**Class B:** levers already exist (`--turn-timeout-seconds`, `--listener-post-speech-
+silence-seconds`, plumbed; cycle-budget headroom already fixes receipt_missing
+starvation). No isolated in-repo defect to unit-test; residual tuning is runtime +
+external RealtimeSTT recorder (cli.py default post_speech 0.35 s is the risky value).
+
+**Task 5 live campaign NOT run:** no `embry_horus_input` null sink up; needs full
+loopback + managed-listener(cuda) + keepalive + chatterbox/tau/memory. Multi-hour
+live op; not safely completable in a bounded window without risking append-only
+journal pollution. Journal unchanged: 263 sessions / 251 distinct. Ready command +
+37-case delta in `$SCR/round2_report.md`. If run: journal -> ~288 distinct.
+
+**Restore:** orpheus stopped ✓, embedding-mm started ✓.
