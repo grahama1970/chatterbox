@@ -21,7 +21,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from chatterbox.agent.asr_acceptance import acceptance_result
-from chatterbox.agent.chunking import build_render_plan
+from chatterbox.agent.chunking import build_render_plan, build_render_plan_from_chunks
 from chatterbox.agent.presets import (
     ALLOWED_TONES,
     CHATTERBOX_TAG_HANDLING,
@@ -132,6 +132,7 @@ class SynthesisBatchRequest(RenderPlanRequest):
     pause_strategy: str | None = Field(default=None, max_length=120)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
     delivery_arc: list[dict[str, str]] | None = None
+    render_chunks: list[dict[str, Any]] | None = None
     include_completion_cue: bool = True
     stream: bool = False
     crossfade_ms: int = Field(default=20, ge=0, le=250)
@@ -1215,6 +1216,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
     tones: list[str] = []
     requested_max_chars: list[int] = []
     chunk_receipts: list[dict[str, Any]] = []
+    render_chunks: list[dict[str, Any]] = []
     for index, chunk in enumerate(request.speakable_chunks, start=1):
         text = chunk.text.strip()
         actual_sha = sha256_text(text)
@@ -1244,6 +1246,23 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
                 "pause_after_ms": chunk.pause_after_ms,
                 "interruptible": chunk.interruptible,
                 "char_len": len(text),
+            }
+        )
+        render_chunks.append(
+            {
+                "text": text,
+                "tone": normalize_tone(chunk.tone or request.tone or request.voice_delivery.get("tone")),
+                "requested_tone": chunk.tone or request.tone or request.voice_delivery.get("tone"),
+                "delivery_stage": effective_delivery_stage(
+                    tone=chunk.tone or request.tone or request.voice_delivery.get("tone"),
+                    delivery_stage=chunk.delivery_stage,
+                ),
+                "requested_delivery_stage": chunk.delivery_stage or request.delivery_stage,
+                "pace": chunk.pace or request.pace or request.voice_delivery.get("pace"),
+                "pause_strategy": chunk.pause_strategy or request.pause_strategy or request.voice_delivery.get("pause_strategy"),
+                "pause_after_ms": chunk.pause_after_ms,
+                "interruptible": chunk.interruptible,
+                "role": f"tau_chunk_{index}",
             }
         )
 
@@ -1280,6 +1299,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         pace=tau_voice_delivery.get("pace"),
         pause_strategy=tau_voice_delivery.get("pause_strategy"),
         voice_delivery=tau_voice_delivery,
+        render_chunks=render_chunks,
         delivery_arc=[
             {
                 "stage": effective_delivery_stage(
@@ -1327,6 +1347,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
             "blessed_qra_variant": batch_request.blessed_qra_variant,
             "require_blessed_qra_memory_gate": batch_request.require_blessed_qra_memory_gate,
             "asr_verify": batch_request.asr_verify,
+            "render_chunk_count": len(batch_request.render_chunks or []),
         },
         "failed_gates": failed_gates,
     }
@@ -1527,6 +1548,40 @@ def cache_key_for_batch(
     return hashlib.sha256(encoded).hexdigest(), material
 
 
+def applied_controls_for_plan(plan: dict[str, Any], voice_delivery: dict[str, Any]) -> list[dict[str, Any]]:
+    controls = []
+    for chunk in plan.get("chunks") or []:
+        pause_after_ms = int(chunk.get("pause_after_ms") or 0)
+        controls.append(
+            {
+                "chunk_index": chunk["index"],
+                "requested": {
+                    "tone": voice_delivery.get("requested_tone"),
+                    "delivery_stage": voice_delivery.get("requested_delivery_stage"),
+                    "pace": voice_delivery.get("pace"),
+                    "pause_strategy": voice_delivery.get("pause_strategy"),
+                    "pause_after_ms": chunk.get("pause_after_ms"),
+                },
+                "normalized": {
+                    "tone": voice_delivery.get("normalized_tone") or voice_delivery.get("tone"),
+                    "delivery_stage": chunk.get("delivery_stage"),
+                    "pace": voice_delivery.get("pace"),
+                    "pause_strategy": voice_delivery.get("pause_strategy"),
+                    "pause_after_ms": pause_after_ms,
+                },
+                "applied": {
+                    "tone": voice_delivery.get("tone"),
+                    "delivery_stage": chunk.get("delivery_stage"),
+                    "pace": voice_delivery.get("pace"),
+                    "pause_strategy": voice_delivery.get("pause_strategy"),
+                    "pause_after_ms": pause_after_ms,
+                    "can_interrupt_after": bool(chunk.get("can_interrupt_after", True)),
+                },
+            }
+        )
+    return controls
+
+
 def mark_turn_control(turn_id: str, action: str, request: TurnControlRequest) -> dict[str, Any]:
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     state = turn_controls.setdefault(turn_id, {"turn_id": turn_id, "events": []})
@@ -1682,13 +1737,22 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             started_total=started_total,
             batch_events=batch_events,
         )
-    plan = build_render_plan(
-        request.answer_text,
-        max_chars=request.max_chars,
-        pause_after_ms=request.pause_after_ms,
-        completion_cue=request.completion_cue,
-        arc=request.delivery_arc,
-    )
+    if request.render_chunks:
+        plan = build_render_plan_from_chunks(
+            request.render_chunks,
+            max_chars=request.max_chars,
+            fallback_pause_after_ms=request.pause_after_ms,
+            completion_cue=request.completion_cue,
+        )
+    else:
+        plan = build_render_plan(
+            request.answer_text,
+            max_chars=request.max_chars,
+            pause_after_ms=request.pause_after_ms,
+            completion_cue=request.completion_cue,
+            arc=request.delivery_arc,
+        )
+    applied_controls = applied_controls_for_plan(plan, batch_voice_delivery)
     latency_event(batch_events, "render_plan_ready", started_total, chunk_count=plan["chunk_count"])
     ref_audio_path = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)
     ref_audio = str(ref_audio_path)
@@ -1758,6 +1822,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
                 "chunk_total": chunk["total"],
                 "pause_after_ms": chunk["pause_after_ms"],
                 "can_interrupt_after": chunk["can_interrupt_after"],
+                "applied_control": applied_controls[chunk["index"] - 1],
             }
         )
         if not result.get("ok"):
@@ -1839,6 +1904,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
         "tag_handling": batch_voice_delivery["tag_handling"],
+        "applied_controls": applied_controls,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": cache_key,
         "cache_material": cache_material,

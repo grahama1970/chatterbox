@@ -176,3 +176,63 @@ def build_render_plan(
         "completion_cue": completion_cue,
         "completion_cue_sha256": sha256_text(completion_cue) if completion_cue else None,
     }
+
+
+def build_render_plan_from_chunks(
+    chunks: list[dict[str, Any]],
+    *,
+    max_chars: int = 300,
+    fallback_pause_after_ms: int = 250,
+    completion_cue: str | None = None,
+) -> dict[str, Any]:
+    """Build a render plan from caller-owned chunk boundaries."""
+    requested_max_chars = max_chars
+    effective_max_chars = min(max_chars, 300)
+    planned_chunks = []
+    total = len(chunks)
+    answer_text_parts = []
+    for index, chunk in enumerate(chunks, start=1):
+        text = " ".join(str(chunk.get("text") or "").split())
+        if not text:
+            continue
+        answer_text_parts.append(text)
+        stage = str(chunk.get("delivery_stage") or stage_for_chunk(index, total)["stage"])
+        pause_after_ms = chunk.get("pause_after_ms")
+        if pause_after_ms is None:
+            pause_after_ms = fallback_pause_after_ms if index < total else 0
+        planned_chunks.append(
+            {
+                "index": index,
+                "total": total,
+                "text": text,
+                "text_sha256": sha256_text(text),
+                "char_len": len(text),
+                "delivery_stage": stage,
+                "delivery_tone": str(chunk.get("tone") or ""),
+                "delivery_role": str(chunk.get("role") or f"caller_chunk_{index}"),
+                "arc_position": round(index / total, 3) if total else 0.0,
+                "pause_after_ms": int(pause_after_ms) if index < total else 0,
+                "can_interrupt_after": bool(chunk.get("interruptible", True)),
+            }
+        )
+    answer_text = " ".join(answer_text_parts).strip()
+    return {
+        "answer_text": answer_text,
+        "answer_text_sha256": sha256_text(answer_text),
+        "max_chars": effective_max_chars,
+        "requested_max_chars": requested_max_chars,
+        "chunking_strategy": {
+            "name": "caller_supplied_chunks",
+            "target_max_chars": effective_max_chars,
+            "requested_max_chars": requested_max_chars,
+            "turbo_safety_recommended_max_chars": 300,
+            "safety_activated": any(len(chunk["text"]) > effective_max_chars for chunk in planned_chunks),
+            "hard_cap_enforced": False,
+            "splitter": "caller_supplied_speakable_chunks",
+            "does_not_split_inside_words": True,
+        },
+        "chunks": planned_chunks,
+        "chunk_count": len(planned_chunks),
+        "completion_cue": completion_cue,
+        "completion_cue_sha256": sha256_text(completion_cue) if completion_cue else None,
+    }

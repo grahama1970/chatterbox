@@ -351,6 +351,54 @@ def test_tau_voice_render_preserves_chunk_tone_arc() -> None:
     assert [item["stage"] for item in batch.delivery_arc] == [item[2] for item in chunks]
 
 
+def test_tau_voice_render_preserves_caller_chunk_boundaries_for_render_plan() -> None:
+    request = TauVoiceRenderRequest(
+        conversation_id="conv-controls",
+        turn_id="turn-controls",
+        voice_delivery={
+            "tone": "memory_confident",
+            "pace": "measured",
+            "pause_strategy": "long_boundary",
+        },
+        speakable_chunks=[
+            {
+                "chunk_id": "chunk-1",
+                "text": "First short chunk.",
+                "text_sha256": server.sha256_text("First short chunk."),
+                "delivery_stage": "neutral",
+                "pause_after_ms": 700,
+            },
+            {
+                "chunk_id": "chunk-2",
+                "text": "Second short chunk.",
+                "text_sha256": server.sha256_text("Second short chunk."),
+                "delivery_stage": "satisfied",
+                "pause_after_ms": 0,
+            },
+        ],
+        use_blessed_qra_cache=False,
+    )
+
+    batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
+    plan = server.build_render_plan_from_chunks(
+        batch.render_chunks or [],
+        max_chars=batch.max_chars,
+        fallback_pause_after_ms=batch.pause_after_ms,
+        completion_cue=batch.completion_cue,
+    )
+    controls = server.applied_controls_for_plan(plan, batch.voice_delivery)
+
+    assert receipt["ok"] is True
+    assert receipt["source_chunk_count"] == 2
+    assert receipt["mapped_batch"]["render_chunk_count"] == 2
+    assert [chunk["text"] for chunk in plan["chunks"]] == ["First short chunk.", "Second short chunk."]
+    assert [chunk["pause_after_ms"] for chunk in plan["chunks"]] == [700, 0]
+    assert [chunk["delivery_stage"] for chunk in plan["chunks"]] == ["neutral", "satisfied"]
+    assert controls[0]["applied"]["pause_after_ms"] == 700
+    assert controls[0]["applied"]["pace"] == "measured"
+    assert controls[0]["applied"]["pause_strategy"] == "long_boundary"
+
+
 def test_tau_voice_render_request_fails_closed_on_hash_mismatch() -> None:
     request = TauVoiceRenderRequest(
         conversation_id="conv-1",
