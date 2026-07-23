@@ -162,6 +162,25 @@ turn-control state is cancelled or stopped, the stream generator stops before
 synthesis and before PCM block emission. The smoke proves a baseline stream
 emits bytes and a pre-cancelled old turn emits zero bytes.
 
+## Chatterbox Tags
+
+Chatterbox Turbo in this fork does not currently expose a dedicated
+`chatterbox_tags` affect channel. Consumers may pass candidate tags through the
+open `voice_delivery` receipt envelope for provenance, but the renderer records
+them as requested-only metadata and applies no tag vocabulary.
+
+Inline text tags such as `[firm]` or `[breath]` are treated as speakable text by
+Turbo, not as control tokens. Do not use inline tags as an affect channel unless
+the caller intentionally wants that text to be synthesized.
+
+Render receipts and `/presets` expose `tag_handling` with:
+
+- `dedicated_tag_channel: "unsupported"`
+- `accepted_tags: []`
+- `applied_tags: []`
+- `tags_interpreted: false`
+- `inline_text_tag_behavior: "synthesized_as_literal_text"`
+
 ## Blessed QRA Instant Playback
 
 Known, reviewed QRA answers can be pre-rendered into Embry audio variants and

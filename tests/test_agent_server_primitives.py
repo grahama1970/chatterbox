@@ -179,6 +179,30 @@ def test_unknown_tone_receipt_exposes_requested_and_normalized_tone() -> None:
     assert delivery["ignored_turbo_params"] == ["cfg_weight", "exaggeration", "min_p"]
 
 
+def test_chatterbox_tags_are_recorded_as_ignored_metadata() -> None:
+    request = SynthesisRequest(
+        text="Known answer.",
+        voice_delivery={"chatterbox_tags": ["firm", "breath"]},
+    )
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["tag_handling"]["requested_tags"] == ["firm", "breath"]
+    assert delivery["tag_handling"]["applied_tags"] == []
+    assert delivery["tag_handling"]["accepted_tags"] == []
+    assert delivery["tag_handling"]["tags_interpreted"] is False
+    assert delivery["tag_handling"]["inline_text_tag_behavior"] == "synthesized_as_literal_text"
+
+
+def test_presets_expose_tag_handling_contract() -> None:
+    response = server.presets()
+
+    assert response["tag_handling"]["dedicated_tag_channel"] == "unsupported"
+    assert response["tag_handling"]["accepted_tags"] == []
+    assert response["tag_handling"]["applied_tags"] == []
+    assert response["tag_handling"]["tags_interpreted"] is False
+
+
 def test_synthesis_request_explicit_delivery_stage_overrides_tone_mapping() -> None:
     request = SynthesisRequest(
         text="Careful answer.",

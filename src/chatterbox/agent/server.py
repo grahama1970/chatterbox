@@ -24,6 +24,7 @@ from chatterbox.agent.asr_acceptance import acceptance_result
 from chatterbox.agent.chunking import build_render_plan
 from chatterbox.agent.presets import (
     ALLOWED_TONES,
+    CHATTERBOX_TAG_HANDLING,
     DELIVERY_STAGE_ALIASES,
     STAGE_PRESETS,
     TONE_TO_DELIVERY_STAGE,
@@ -620,6 +621,15 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
     requested_stage = getattr(request, "delivery_stage", None) or source_delivery.get("delivery_stage")
     tone = normalize_tone(requested_tone)
     requested_tone_token = normalize_voice_token(requested_tone)
+    requested_tags = getattr(request, "chatterbox_tags", None) or source_delivery.get("chatterbox_tags") or []
+    if isinstance(requested_tags, str):
+        requested_tags = [requested_tags]
+    if not isinstance(requested_tags, list):
+        requested_tags = []
+    tag_handling = {
+        **CHATTERBOX_TAG_HANDLING,
+        "requested_tags": [str(tag) for tag in requested_tags],
+    }
     explicit_stage = normalize_delivery_stage(requested_stage)
     stage = effective_delivery_stage(tone=tone, delivery_stage=requested_stage)
     return {
@@ -632,6 +642,7 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
         "delivery_stage": stage,
         "delivery_stage_source": "request.delivery_stage" if explicit_stage else "tone_mapping",
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
+        "tag_handling": tag_handling,
         "pace": getattr(request, "pace", None) or source_delivery.get("pace"),
         "pause_strategy": getattr(request, "pause_strategy", None) or source_delivery.get("pause_strategy"),
         "wait_activity": source_delivery.get("wait_activity"),
@@ -714,6 +725,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "delivery_stage": voice_delivery["delivery_stage"],
             "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
             "voice_delivery": voice_delivery,
+            "tag_handling": voice_delivery["tag_handling"],
             "generation_params": params,
             "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
             "generation_seconds": generation_seconds,
@@ -746,6 +758,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
+        "tag_handling": voice_delivery["tag_handling"],
         "generation_params": params,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "generation_seconds": generation_seconds,
@@ -899,6 +912,7 @@ def accepted_audio_cache_material(
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
+        "tag_handling": voice_delivery["tag_handling"],
         "generation_params": params,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "reference_audio": reference_audio_fingerprint(ref_audio_path, params),
@@ -1449,6 +1463,7 @@ def blessed_qra_batch_response(
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
+        "tag_handling": voice_delivery["tag_handling"],
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": f"blessed_qra:{match.get('entry_id')}",
         "cache_material": {
@@ -1589,6 +1604,7 @@ def health() -> dict[str, Any]:
         "reference_audio_roots": [str(root) for root in REFERENCE_AUDIO_ROOTS],
         "supported_params": sorted(TURBO_SUPPORTED_PARAMS),
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
+        "tag_handling": CHATTERBOX_TAG_HANDLING,
         "torch": torch_info,
         "nvidia_smi": run_cmd(["nvidia-smi", "--query-gpu=name,memory.total,memory.used,memory.free,driver_version", "--format=csv,noheader"]),
     }
@@ -1601,6 +1617,7 @@ def presets() -> dict[str, Any]:
         "engine": "chatterbox_turbo",
         "supported_params": sorted(TURBO_SUPPORTED_PARAMS),
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
+        "tag_handling": CHATTERBOX_TAG_HANDLING,
         "allowed_tones": sorted(ALLOWED_TONES),
         "tone_to_delivery_stage": TONE_TO_DELIVERY_STAGE,
         "delivery_stage_aliases": DELIVERY_STAGE_ALIASES,
@@ -1821,6 +1838,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "delivery_stage": batch_voice_delivery["delivery_stage"],
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
+        "tag_handling": batch_voice_delivery["tag_handling"],
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": cache_key,
         "cache_material": cache_material,

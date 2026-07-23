@@ -169,6 +169,17 @@ TURBO_IGNORED_PARAMS = {
 }
 
 
+CHATTERBOX_TAG_HANDLING: dict[str, Any] = {
+    "schema": "chatterbox.tag_handling.v1",
+    "dedicated_tag_channel": "unsupported",
+    "accepted_tags": [],
+    "unknown_tag_behavior": "ignored",
+    "inline_text_tag_behavior": "synthesized_as_literal_text",
+    "applied_tags": [],
+    "tags_interpreted": False,
+}
+
+
 def generation_params_for_stage(
     delivery_stage: str | None,
     overrides: dict[str, Any] | None = None,
