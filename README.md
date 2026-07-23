@@ -181,6 +181,24 @@ Render receipts and `/presets` expose `tag_handling` with:
 - `tags_interpreted: false`
 - `inline_text_tag_behavior: "synthesized_as_literal_text"`
 
+## Stage Presets And Affect
+
+`STAGE_PRESETS` are delivery/generation presets, not a validated affect channel.
+The current n=5 four-arm acoustic receipt measured preset-driven shifts below
+same-parameter stochastic spread, so consumers should not treat stage preset
+selection as reliable emotion conditioning.
+
+`/health` and `/presets` expose `stage_preset_affect_status` with:
+
+- `status: "not_validated_as_affect_channel"`
+- `evidence.receipt: "/home/graham/workspace/experiments/agent-skills-main/skills/persona-dream/reports/goal_v4/four_arm/four_arm_acoustic_receipt.v2.json"`
+- `evidence.duration_s_flat_spread: 1.36`
+- `evidence.f0_sd_hz_flat_spread: 21.21`
+- `evidence.f0_range_hz_flat_spread: 60.85`
+
+Fresh same-parameter variance evidence is required before promoting
+`STAGE_PRESETS` to an affect-control API for Sparta Chat UX or Embry memory.
+
 ## Stochastic Renders And Repeat Groups
 
 Chatterbox Turbo renders are stochastic in this fork. The server does not expose

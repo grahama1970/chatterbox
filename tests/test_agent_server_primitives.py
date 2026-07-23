@@ -203,6 +203,18 @@ def test_presets_expose_tag_handling_contract() -> None:
     assert response["tag_handling"]["tags_interpreted"] is False
 
 
+def test_presets_expose_stage_preset_affect_status() -> None:
+    response = server.presets()
+    status = response["stage_preset_affect_status"]
+
+    assert status["schema"] == "chatterbox.stage_preset_affect_status.v1"
+    assert status["status"] == "not_validated_as_affect_channel"
+    assert status["evidence"]["duration_s_flat_spread"] == 1.36
+    assert status["evidence"]["f0_sd_hz_flat_spread"] == 21.21
+    assert status["evidence"]["f0_range_hz_flat_spread"] == 60.85
+    assert "Do not treat STAGE_PRESETS" in status["consumer_guidance"]
+
+
 def test_stochasticity_receipt_records_repeat_group_without_determinism_claim() -> None:
     request = SynthesisRequest(text="Known answer.", repeat_group_id="variance-arm-flat-r0")
 

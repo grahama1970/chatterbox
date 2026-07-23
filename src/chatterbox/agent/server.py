@@ -26,6 +26,7 @@ from chatterbox.agent.presets import (
     ALLOWED_TONES,
     CHATTERBOX_TAG_HANDLING,
     DELIVERY_STAGE_ALIASES,
+    STAGE_PRESET_AFFECT_STATUS,
     STAGE_PRESETS,
     TONE_TO_DELIVERY_STAGE,
     TURBO_IGNORED_PARAMS,
@@ -1689,6 +1690,7 @@ def health() -> dict[str, Any]:
         "supported_params": sorted(TURBO_SUPPORTED_PARAMS),
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": CHATTERBOX_TAG_HANDLING,
+        "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
         "torch": torch_info,
         "nvidia_smi": run_cmd(["nvidia-smi", "--query-gpu=name,memory.total,memory.used,memory.free,driver_version", "--format=csv,noheader"]),
     }
@@ -1702,6 +1704,7 @@ def presets() -> dict[str, Any]:
         "supported_params": sorted(TURBO_SUPPORTED_PARAMS),
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": CHATTERBOX_TAG_HANDLING,
+        "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
         "allowed_tones": sorted(ALLOWED_TONES),
         "tone_to_delivery_stage": TONE_TO_DELIVERY_STAGE,
         "delivery_stage_aliases": DELIVERY_STAGE_ALIASES,

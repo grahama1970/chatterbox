@@ -180,6 +180,20 @@ CHATTERBOX_TAG_HANDLING: dict[str, Any] = {
 }
 
 
+STAGE_PRESET_AFFECT_STATUS: dict[str, Any] = {
+    "schema": "chatterbox.stage_preset_affect_status.v1",
+    "status": "not_validated_as_affect_channel",
+    "summary": "Turbo stage presets are delivery/generation presets; current n=5 four-arm evidence measured preset-driven shifts below same-parameter stochastic spread.",
+    "evidence": {
+        "receipt": "/home/graham/workspace/experiments/agent-skills-main/skills/persona-dream/reports/goal_v4/four_arm/four_arm_acoustic_receipt.v2.json",
+        "duration_s_flat_spread": 1.36,
+        "f0_sd_hz_flat_spread": 21.21,
+        "f0_range_hz_flat_spread": 60.85,
+    },
+    "consumer_guidance": "Do not treat STAGE_PRESETS as a reliable affect channel without fresh receipt evidence clearing same-parameter variance.",
+}
+
+
 def generation_params_for_stage(
     delivery_stage: str | None,
     overrides: dict[str, Any] | None = None,
