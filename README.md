@@ -181,6 +181,26 @@ Render receipts and `/presets` expose `tag_handling` with:
 - `tags_interpreted: false`
 - `inline_text_tag_behavior: "synthesized_as_literal_text"`
 
+## Stochastic Renders And Repeat Groups
+
+Chatterbox Turbo renders are stochastic in this fork. The server does not expose
+a generation seed or deterministic render mode, and a repeated request with the
+same text and generation parameters should not be treated as byte-identical
+proof.
+
+Callers that need paired comparisons can pass `repeat_group_id` on
+`/synthesize`, `/synthesize-batch`, or `/tau/voice-render`. Receipts expose a
+`stochasticity` block with:
+
+- `repeat_group_id`
+- `deterministic_audio: false`
+- `seed_supported: false`
+- `seed: null`
+- `equivalence: "same_repeat_group_id_groups_comparable_stochastic_renders_without_implying_identical_audio"`
+
+The repeat group is provenance metadata for variance calibration. It is not a
+cache buster and does not make audio deterministic.
+
 ## Blessed QRA Instant Playback
 
 Known, reviewed QRA answers can be pre-rendered into Embry audio variants and

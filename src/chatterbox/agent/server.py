@@ -101,6 +101,7 @@ class SynthesisRequest(BaseModel):
     text: str = Field(min_length=1, max_length=1200)
     ref_audio: str | None = None
     label: str | None = None
+    repeat_group_id: str | None = Field(default=None, max_length=160)
     tone: str | None = Field(default=None, max_length=80)
     delivery_stage: str | None = None
     pace: str | None = Field(default=None, max_length=80)
@@ -126,6 +127,7 @@ class SynthesisBatchRequest(RenderPlanRequest):
     blessed_qra_memory_review_status: str | None = Field(default=None, max_length=80)
     ref_audio: str | None = None
     label: str | None = None
+    repeat_group_id: str | None = Field(default=None, max_length=160)
     tone: str | None = Field(default=None, max_length=80)
     delivery_stage: str | None = Field(default=None, max_length=80)
     pace: str | None = Field(default=None, max_length=80)
@@ -192,6 +194,7 @@ class TauVoiceRenderRequest(BaseModel):
     external_evidence: dict[str, Any] = Field(default_factory=dict)
     receipt_root: str | None = Field(default=None, max_length=2048)
     label: str | None = Field(default=None, max_length=160)
+    repeat_group_id: str | None = Field(default=None, max_length=160)
     completion_cue: str | None = Field(default=None, max_length=240)
     include_completion_cue: bool = False
     crossfade_ms: int = Field(default=20, ge=0, le=250)
@@ -653,6 +656,22 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
     }
 
 
+def stochasticity_for_request(request: SynthesisRequest | SynthesisBatchRequest | TauVoiceRenderRequest) -> dict[str, Any]:
+    source_delivery = getattr(request, "voice_delivery", None)
+    if not isinstance(source_delivery, dict):
+        source_delivery = {}
+    repeat_group_id = getattr(request, "repeat_group_id", None) or source_delivery.get("repeat_group_id")
+    return {
+        "schema": "chatterbox.stochasticity.v1",
+        "repeat_group_id": repeat_group_id,
+        "deterministic_audio": False,
+        "seed_supported": False,
+        "seed": None,
+        "equivalence": "same_repeat_group_id_groups_comparable_stochastic_renders_without_implying_identical_audio",
+        "cache_behavior": "repeat_group_id_is_receipt_metadata_not_a_cache_buster",
+    }
+
+
 def generation_params(request: SynthesisRequest) -> dict[str, float | int | bool]:
     overrides = {
         "temperature": request.temperature,
@@ -686,6 +705,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     voice_delivery = voice_delivery_for_request(request)
+    stochasticity = stochasticity_for_request(request)
     latency_event(events, "generation_params_ready", started_total)
     started = time.perf_counter()
     try:
@@ -727,6 +747,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
             "voice_delivery": voice_delivery,
             "tag_handling": voice_delivery["tag_handling"],
+            "stochasticity": stochasticity,
             "generation_params": params,
             "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
             "generation_seconds": generation_seconds,
@@ -760,6 +781,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
         "tag_handling": voice_delivery["tag_handling"],
+        "stochasticity": stochasticity,
         "generation_params": params,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "generation_seconds": generation_seconds,
@@ -876,6 +898,7 @@ def synthesis_request_with_overrides(
         text=base_request.text,
         ref_audio=base_request.ref_audio,
         label=label,
+        repeat_group_id=base_request.repeat_group_id,
         tone=base_request.tone,
         delivery_stage=base_request.delivery_stage,
         pace=base_request.pace,
@@ -898,6 +921,7 @@ def accepted_audio_cache_material(
 ) -> dict[str, Any]:
     params = generation_params(base_request)
     voice_delivery = voice_delivery_for_request(base_request)
+    stochasticity = stochasticity_for_request(base_request)
     return {
         "cache_schema_version": CACHE_SCHEMA_VERSION,
         "engine": "chatterbox_turbo",
@@ -914,6 +938,7 @@ def accepted_audio_cache_material(
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
         "tag_handling": voice_delivery["tag_handling"],
+        "stochasticity": stochasticity,
         "generation_params": params,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "reference_audio": reference_audio_fingerprint(ref_audio_path, params),
@@ -1294,6 +1319,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
         blessed_qra_memory_key=request.blessed_qra_memory_key,
         blessed_qra_memory_similarity=request.blessed_qra_memory_similarity,
         blessed_qra_memory_review_status=request.blessed_qra_memory_review_status,
+        repeat_group_id=request.repeat_group_id or request.voice_delivery.get("repeat_group_id"),
         tone=tone,
         delivery_stage=delivery_stage,
         pace=tau_voice_delivery.get("pace"),
@@ -1342,6 +1368,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
             "delivery_stage": delivery_stage,
             "pace": batch_request.pace,
             "pause_strategy": batch_request.pause_strategy,
+            "repeat_group_id": batch_request.repeat_group_id,
             "turn_id": batch_request.turn_id,
             "use_blessed_qra_cache": batch_request.use_blessed_qra_cache,
             "blessed_qra_variant": batch_request.blessed_qra_variant,
@@ -1412,6 +1439,7 @@ def blessed_qra_batch_response(
     batch_events: list[dict[str, Any]],
 ) -> dict[str, Any]:
     voice_delivery = voice_delivery_for_request(request)
+    stochasticity = stochasticity_for_request(request)
     plan = build_render_plan(
         match["answer_text"],
         max_chars=request.max_chars,
@@ -1485,6 +1513,7 @@ def blessed_qra_batch_response(
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
         "tag_handling": voice_delivery["tag_handling"],
+        "stochasticity": stochasticity,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": f"blessed_qra:{match.get('entry_id')}",
         "cache_material": {
@@ -1707,6 +1736,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
     batch_dir = OUT_DIR / batch_label
     batch_dir.mkdir(parents=True, exist_ok=True)
     batch_voice_delivery = voice_delivery_for_request(request)
+    batch_stochasticity = stochasticity_for_request(request)
     latency_event(batch_events, "batch_dir_ready", started_total)
     blessed_qra_lookup = (
         apply_blessed_qra_memory_gate(
@@ -1785,6 +1815,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             text=chunk["text"],
             ref_audio=request.ref_audio,
             label=f"{batch_label}_chunk_{chunk['index']:02d}",
+            repeat_group_id=request.repeat_group_id,
             tone=request.tone,
             delivery_stage=chunk["delivery_stage"],
             pace=request.pace,
@@ -1840,6 +1871,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             text=request.completion_cue,
             ref_audio=request.ref_audio,
             label=f"{batch_label}_response_complete",
+            repeat_group_id=request.repeat_group_id,
             tone=request.tone,
             delivery_stage="closing",
             pace=request.pace,
@@ -1904,6 +1936,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
         "tag_handling": batch_voice_delivery["tag_handling"],
+        "stochasticity": batch_stochasticity,
         "applied_controls": applied_controls,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": cache_key,
@@ -2034,6 +2067,7 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 text=item["text"],
                 ref_audio=request.ref_audio,
                 label=f"{batch_label}_stream_{item['index']:02d}",
+                repeat_group_id=request.repeat_group_id,
                 delivery_stage=item.get("delivery_stage"),
             )
             out_path = batch_dir / f"stream_{item['index']:02d}_{item.get('delivery_stage', 'neutral')}.wav"

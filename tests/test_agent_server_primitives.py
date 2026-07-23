@@ -203,6 +203,18 @@ def test_presets_expose_tag_handling_contract() -> None:
     assert response["tag_handling"]["tags_interpreted"] is False
 
 
+def test_stochasticity_receipt_records_repeat_group_without_determinism_claim() -> None:
+    request = SynthesisRequest(text="Known answer.", repeat_group_id="variance-arm-flat-r0")
+
+    receipt = server.stochasticity_for_request(request)
+
+    assert receipt["repeat_group_id"] == "variance-arm-flat-r0"
+    assert receipt["deterministic_audio"] is False
+    assert receipt["seed_supported"] is False
+    assert receipt["seed"] is None
+    assert "without_implying_identical_audio" in receipt["equivalence"]
+
+
 def test_synthesis_request_explicit_delivery_stage_overrides_tone_mapping() -> None:
     request = SynthesisRequest(
         text="Careful answer.",
@@ -287,6 +299,7 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
             "source": "memory_intent",
             "confidence": 0.86,
         },
+        repeat_group_id="variance-arm-static-r0",
         speakable_chunks=[
             {
                 "chunk_id": "turn-1-chunk-1",
@@ -327,6 +340,8 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
     assert receipt["voice_delivery"]["source"] == "memory_intent"
     assert receipt["mapped_batch"]["tone"] == "memory_confident"
     assert receipt["mapped_batch"]["delivery_stage"] == "satisfied"
+    assert receipt["mapped_batch"]["repeat_group_id"] == "variance-arm-static-r0"
+    assert batch.repeat_group_id == "variance-arm-static-r0"
 
 
 def test_tau_voice_render_preserves_chunk_tone_arc() -> None:
