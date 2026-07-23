@@ -33,6 +33,7 @@ from chatterbox.agent.presets import (
     generation_params_for_stage,
     normalize_delivery_stage,
     normalize_tone,
+    normalize_voice_token,
 )
 
 
@@ -618,15 +619,19 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
     requested_tone = getattr(request, "tone", None) or source_delivery.get("tone")
     requested_stage = getattr(request, "delivery_stage", None) or source_delivery.get("delivery_stage")
     tone = normalize_tone(requested_tone)
+    requested_tone_token = normalize_voice_token(requested_tone)
     explicit_stage = normalize_delivery_stage(requested_stage)
     stage = effective_delivery_stage(tone=tone, delivery_stage=requested_stage)
     return {
         "schema": "chatterbox.voice_delivery.v1",
         "requested_tone": requested_tone,
+        "normalized_tone": tone,
         "tone": tone,
+        "tone_was_normalized": bool(requested_tone_token) and requested_tone_token != tone,
         "requested_delivery_stage": requested_stage,
         "delivery_stage": stage,
         "delivery_stage_source": "request.delivery_stage" if explicit_stage else "tone_mapping",
+        "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "pace": getattr(request, "pace", None) or source_delivery.get("pace"),
         "pause_strategy": getattr(request, "pause_strategy", None) or source_delivery.get("pause_strategy"),
         "wait_activity": source_delivery.get("wait_activity"),
@@ -705,10 +710,12 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "audio": str(out_path),
             "tone": voice_delivery["tone"],
             "requested_tone": voice_delivery["requested_tone"],
+            "normalized_tone": voice_delivery["normalized_tone"],
             "delivery_stage": voice_delivery["delivery_stage"],
             "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
             "voice_delivery": voice_delivery,
             "generation_params": params,
+            "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
             "generation_seconds": generation_seconds,
             "latency_events": events,
             "total_elapsed_ms": round((time.perf_counter() - started_total) * 1000, 3),
@@ -735,10 +742,12 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         "audio": str(out_path),
         "tone": voice_delivery["tone"],
         "requested_tone": voice_delivery["requested_tone"],
+        "normalized_tone": voice_delivery["normalized_tone"],
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
         "generation_params": params,
+        "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "generation_seconds": generation_seconds,
         "latency_events": events,
         "total_elapsed_ms": round((time.perf_counter() - started_total) * 1000, 3),
@@ -886,10 +895,12 @@ def accepted_audio_cache_material(
         "text": base_request.text,
         "tone": voice_delivery["tone"],
         "requested_tone": voice_delivery["requested_tone"],
+        "normalized_tone": voice_delivery["normalized_tone"],
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
         "generation_params": params,
+        "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "reference_audio": reference_audio_fingerprint(ref_audio_path, params),
         "candidate_variants": candidate_variants(asr_max_candidates),
         "asr_max_wer": asr_max_wer,
@@ -1212,6 +1223,7 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
                 "declared_text_sha256": chunk.text_sha256,
                 "tone": normalize_tone(chunk.tone or request.tone or request.voice_delivery.get("tone")),
                 "requested_tone": chunk.tone or request.tone or request.voice_delivery.get("tone"),
+                "normalized_tone": normalize_tone(chunk.tone or request.tone or request.voice_delivery.get("tone")),
                 "delivery_stage": chunk.delivery_stage or request.delivery_stage or "neutral",
                 "pace": chunk.pace or request.pace or request.voice_delivery.get("pace"),
                 "pause_strategy": chunk.pause_strategy or request.pause_strategy or request.voice_delivery.get("pause_strategy"),
@@ -1390,6 +1402,7 @@ def blessed_qra_batch_response(
                 "duration_seconds": float(metrics.get("duration_seconds") or 0.0),
                 "tone": voice_delivery["tone"],
                 "requested_tone": voice_delivery["requested_tone"],
+                "normalized_tone": voice_delivery["normalized_tone"],
                 "delivery_stage": chunk.get("delivery_stage") or "neutral",
                 "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
                 "voice_delivery": {
@@ -1416,6 +1429,7 @@ def blessed_qra_batch_response(
                     "failed_gates": [],
                 },
                 "failed_gates": [],
+                "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
             }
         )
     segments = [{"audio": item["audio"], "pause_after_ms": item.get("pause_after_ms", 0)} for item in chunk_results]
@@ -1431,9 +1445,11 @@ def blessed_qra_batch_response(
         "batch_label": batch_label,
         "tone": voice_delivery["tone"],
         "requested_tone": voice_delivery["requested_tone"],
+        "normalized_tone": voice_delivery["normalized_tone"],
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
+        "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": f"blessed_qra:{match.get('entry_id')}",
         "cache_material": {
             "schema_version": BLESSED_QRA_SCHEMA_VERSION,
@@ -1801,9 +1817,11 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "batch_label": batch_label,
         "tone": batch_voice_delivery["tone"],
         "requested_tone": batch_voice_delivery["requested_tone"],
+        "normalized_tone": batch_voice_delivery["normalized_tone"],
         "delivery_stage": batch_voice_delivery["delivery_stage"],
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
+        "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": cache_key,
         "cache_material": cache_material,
         "answer_text_sha256": plan["answer_text_sha256"],

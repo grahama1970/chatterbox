@@ -159,9 +159,24 @@ def test_synthesis_request_maps_tone_to_effective_delivery_stage() -> None:
     params = server.generation_params(request)
 
     assert delivery["tone"] == "memory_confident"
+    assert delivery["normalized_tone"] == "memory_confident"
+    assert delivery["tone_was_normalized"] is False
     assert delivery["delivery_stage"] == "satisfied"
     assert delivery["delivery_stage_source"] == "tone_mapping"
+    assert delivery["ignored_turbo_params"] == sorted(server.TURBO_IGNORED_PARAMS)
     assert params == server.generation_params_for_stage("satisfied")
+
+
+def test_unknown_tone_receipt_exposes_requested_and_normalized_tone() -> None:
+    request = SynthesisRequest(text="Known answer.", tone="gentle_firm")
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["requested_tone"] == "gentle_firm"
+    assert delivery["normalized_tone"] == "neutral_warm"
+    assert delivery["tone"] == "neutral_warm"
+    assert delivery["tone_was_normalized"] is True
+    assert delivery["ignored_turbo_params"] == ["cfg_weight", "exaggeration", "min_p"]
 
 
 def test_synthesis_request_explicit_delivery_stage_overrides_tone_mapping() -> None:
@@ -224,9 +239,11 @@ def test_synthesize_to_file_receipt_records_voice_delivery(tmp_path: Path, monke
 
     assert result["ok"] is True
     assert result["tone"] == "memory_confident"
+    assert result["normalized_tone"] == "memory_confident"
     assert result["delivery_stage"] == "satisfied"
     assert result["voice_delivery"]["pace"] == "measured"
     assert result["voice_delivery"]["pause_strategy"] == "short_answer_no_filler"
+    assert result["ignored_turbo_params"] == sorted(server.TURBO_IGNORED_PARAMS)
     assert result["generation_params"] == server.generation_params_for_stage("satisfied")
 
 
@@ -282,6 +299,7 @@ def test_tau_voice_render_request_maps_to_batch_request() -> None:
     assert batch.use_blessed_qra_cache is True
     assert batch.blessed_qra_memory_key == "qra-si-answer"
     assert receipt["voice_delivery"]["tone"] == "memory_confident"
+    assert receipt["voice_delivery"]["normalized_tone"] == "memory_confident"
     assert receipt["voice_delivery"]["source"] == "memory_intent"
     assert receipt["mapped_batch"]["tone"] == "memory_confident"
     assert receipt["mapped_batch"]["delivery_stage"] == "satisfied"
