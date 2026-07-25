@@ -656,6 +656,11 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
         "source": source_delivery.get("source"),
         "confidence": source_delivery.get("confidence"),
         "evidence": source_delivery.get("evidence"),
+        # Weighted-emotion inputs (persona-dream arc_state). When present, the
+        # renderer uses the base model that HONORS exaggeration/cfg_weight.
+        "intensity": source_delivery.get("intensity"),
+        "valence": source_delivery.get("valence"),
+        "use_base_emotion": source_delivery.get("use_base_emotion"),
     }
 
 
@@ -694,6 +699,60 @@ def safe_label(value: str) -> str:
     return "".join(c if c.isalnum() or c in "-_" else "_" for c in value)[:80]
 
 
+TONE_AFFECT_DEFAULTS: dict[str, dict[str, float]] = {
+    "neutral_warm": {"intensity": 0.4, "valence": 0.3},
+    "calm_precise": {"intensity": 0.35, "valence": 0.1},
+    "careful_concerned": {"intensity": 0.5, "valence": -0.3},
+    "serious_low_energy": {"intensity": 0.4, "valence": -0.5},
+    "memory_confident": {"intensity": 0.6, "valence": 0.5},
+    "memory_uncertain": {"intensity": 0.45, "valence": -0.2},
+    "curious_searching": {"intensity": 0.5, "valence": 0.2},
+    "playful_light": {"intensity": 0.75, "valence": 0.7},
+    "relieved": {"intensity": 0.7, "valence": 0.6},
+    "firm_boundary": {"intensity": 0.85, "valence": -0.7},
+    "identity_clarification": {"intensity": 0.5, "valence": -0.1},
+    "one_at_a_time_interrupt": {"intensity": 0.8, "valence": -0.6},
+    "deflect_calm": {"intensity": 0.45, "valence": -0.4},
+    "grief_safe": {"intensity": 0.4, "valence": -0.6},
+    "wait_presence": {"intensity": 0.25, "valence": 0.0},
+}
+
+
+def emotion_knobs_from_delivery(voice_delivery: dict[str, Any]) -> dict[str, float] | None:
+    """Map weighted emotion (tone + intensity + valence) -> base-model controls.
+
+    Returns None unless the delivery explicitly carries emotion (intensity,
+    valence, or use_base_emotion), so default Turbo rendering is unchanged.
+    intensity is the WEIGHT and scales exaggeration; negative valence lowers cfg.
+    """
+    vd = voice_delivery or {}
+    intensity_raw = vd.get("intensity")
+    valence_raw = vd.get("valence")
+    if intensity_raw is None and valence_raw is None and not vd.get("use_base_emotion"):
+        return None
+
+    def _num(value: Any) -> float | None:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    base = TONE_AFFECT_DEFAULTS.get(vd.get("tone") or "neutral_warm", {"intensity": 0.4, "valence": 0.0})
+    intensity = _num(intensity_raw)
+    intensity = base["intensity"] if intensity is None else intensity
+    valence = _num(valence_raw)
+    valence = base["valence"] if valence is None else valence
+    intensity = max(0.0, min(1.0, intensity))
+    valence = max(-1.0, min(1.0, valence))
+    return {
+        "exaggeration": round(max(0.3, min(1.4, 0.3 + 0.9 * intensity)), 3),
+        "cfg_weight": round(max(0.3, min(0.5, 0.5 - 0.2 * max(0.0, -valence))), 3),
+        "temperature": 0.7,
+        "intensity": intensity,
+        "valence": valence,
+    }
+
+
 def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, Any]:
     import torchaudio as ta
 
@@ -709,23 +768,39 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     voice_delivery = voice_delivery_for_request(request)
     stochasticity = stochasticity_for_request(request)
+    knobs = emotion_knobs_from_delivery(voice_delivery)
+    engine_used = "chatterbox_base" if knobs else "chatterbox_turbo"
     latency_event(events, "generation_params_ready", started_total)
     started = time.perf_counter()
     try:
         with render_lock:
-            conditioning = prepare_voice_conditioning(ref_audio, params)
-            latency_event(
-                events,
-                "voice_conditioning_ready",
-                started_total,
-                cache_hit=conditioning.get("conditioning_cache_hit"),
-                cache_key=conditioning.get("conditioning_cache_key"),
-                render_lock="held",
-            )
-            wav = model.generate(request.text, audio_prompt_path=None, **params)
+            if knobs:
+                base = get_base_model()
+                latency_event(events, "voice_conditioning_ready", started_total, engine="chatterbox_base", render_lock="held")
+                wav = base.generate(
+                    request.text,
+                    audio_prompt_path=str(ref_audio),
+                    exaggeration=float(knobs["exaggeration"]),
+                    cfg_weight=float(knobs["cfg_weight"]),
+                    temperature=float(knobs["temperature"]),
+                )
+                render_sr = base.sr
+                conditioning = {"reference_audio": str(ref_audio), "engine": "chatterbox_base", "emotion_knobs": knobs}
+            else:
+                conditioning = prepare_voice_conditioning(ref_audio, params)
+                latency_event(
+                    events,
+                    "voice_conditioning_ready",
+                    started_total,
+                    cache_hit=conditioning.get("conditioning_cache_hit"),
+                    cache_key=conditioning.get("conditioning_cache_key"),
+                    render_lock="held",
+                )
+                wav = model.generate(request.text, audio_prompt_path=None, **params)
+                render_sr = model.sr
         generation_seconds = round(time.perf_counter() - started, 3)
         latency_event(events, "first_audio_ready", started_total, generation_seconds=generation_seconds)
-        ta.save(str(out_path), wav, model.sr)
+        ta.save(str(out_path), wav, render_sr)
         latency_event(events, "audio_saved", started_total)
         os.chmod(out_path, 0o664)
         metrics = audio_metrics(out_path)
@@ -736,7 +811,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "ok": False,
             "mocked": False,
             "live": True,
-            "engine": "chatterbox_turbo",
+            "engine": engine_used,
             "requested_device": DEVICE,
             "text": request.text,
             "text_sha256": hashlib.sha256(request.text.encode("utf-8")).hexdigest(),
@@ -770,7 +845,8 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         "ok": not failed_gates,
         "mocked": False,
         "live": True,
-        "engine": "chatterbox_turbo",
+        "engine": engine_used,
+        "emotion_knobs": knobs,
         "requested_device": DEVICE,
         "text": request.text,
         "text_sha256": hashlib.sha256(request.text.encode("utf-8")).hexdigest(),
