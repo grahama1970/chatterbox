@@ -63,6 +63,8 @@ REFERENCE_AUDIO_ROOTS = [
 app = FastAPI(title="Chatterbox Turbo Agent Server")
 model: Any | None = None
 model_load_seconds: float | None = None
+base_model: Any | None = None
+base_model_load_seconds: float | None = None
 started_at_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 voice_conditioning_cache: dict[str, Any] = {}
 turn_controls: dict[str, dict[str, Any]] = {}
@@ -1728,6 +1730,85 @@ def synthesize(request: SynthesisRequest) -> dict[str, Any]:
     label = request.label or f"sample-{uuid4().hex[:8]}"
     out_path = OUT_DIR / f"{safe_label(label)}.wav"
     return synthesize_to_file(request, out_path)
+
+
+class EmotionRenderRequest(BaseModel):
+    """Base-model render that HONORS exaggeration/cfg_weight (Turbo ignores them).
+
+    Emotion-weighting bridge: persona-dream maps verdict -> emotion -> intensity
+    weight -> (exaggeration, cfg_weight); this endpoint applies them acoustically.
+    """
+
+    text: str
+    ref_audio: str | None = None
+    exaggeration: float = Field(default=0.5, ge=0.0, le=2.0)
+    cfg_weight: float = Field(default=0.5, ge=0.0, le=1.0)
+    temperature: float = Field(default=0.7, gt=0.0, le=2.0)
+    label: str | None = None
+
+
+def get_base_model() -> Any:
+    """Lazily load the base ChatterboxTTS (separate from the Turbo model)."""
+    global base_model, base_model_load_seconds
+    if base_model is None:
+        from chatterbox.tts import ChatterboxTTS
+
+        started = time.perf_counter()
+        base_model = ChatterboxTTS.from_pretrained(device=DEVICE)
+        base_model_load_seconds = round(time.perf_counter() - started, 3)
+    return base_model
+
+
+@app.post("/synthesize-emotion")
+def synthesize_emotion(request: EmotionRenderRequest) -> dict[str, Any]:
+    import torchaudio as ta
+
+    ref = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)
+    label = safe_label(request.label or f"emotion-{uuid4().hex[:8]}")
+    out_path = OUT_DIR / f"{label}.wav"
+    started = time.perf_counter()
+    try:
+        m = get_base_model()
+        with render_lock:
+            wav = m.generate(
+                request.text,
+                audio_prompt_path=str(ref),
+                exaggeration=float(request.exaggeration),
+                cfg_weight=float(request.cfg_weight),
+                temperature=float(request.temperature),
+            )
+        ta.save(str(out_path), wav, m.sr)
+        os.chmod(out_path, 0o664)
+    except Exception as exc:  # noqa: BLE001 - endpoint returns a JSON receipt on failure
+        return {
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "engine": "chatterbox_base",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "generation_seconds": round(time.perf_counter() - started, 3),
+        }
+    generation_seconds = round(time.perf_counter() - started, 3)
+    return {
+        "ok": True,
+        "mocked": False,
+        "live": True,
+        "engine": "chatterbox_base",
+        "honors_exaggeration_cfg_weight": True,
+        "requested_device": DEVICE,
+        "base_model_load_seconds": base_model_load_seconds,
+        "text": request.text,
+        "reference_audio": str(ref),
+        "params": {
+            "exaggeration": request.exaggeration,
+            "cfg_weight": request.cfg_weight,
+            "temperature": request.temperature,
+        },
+        "generation_seconds": generation_seconds,
+        "audio": str(out_path),
+        "audio_metrics": audio_metrics(out_path),
+    }
 
 
 @app.post("/synthesize-batch")
