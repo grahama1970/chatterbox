@@ -1820,6 +1820,7 @@ class EmotionRenderRequest(BaseModel):
     exaggeration: float = Field(default=0.5, ge=0.0, le=2.0)
     cfg_weight: float = Field(default=0.5, ge=0.0, le=1.0)
     temperature: float = Field(default=0.7, gt=0.0, le=2.0)
+    seed: int | None = None
     label: str | None = None
 
 
@@ -1846,6 +1847,9 @@ def synthesize_emotion(request: EmotionRenderRequest) -> dict[str, Any]:
     try:
         m = get_base_model()
         with render_lock:
+            if request.seed is not None:
+                import torch
+                torch.manual_seed(int(request.seed))
             wav = m.generate(
                 request.text,
                 audio_prompt_path=str(ref),
