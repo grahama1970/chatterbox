@@ -36,6 +36,7 @@ from chatterbox.agent.server import (
     cancel_turn,
     stream_turn_should_stop,
     synthesis_batch_request_from_tau_voice_render,
+    synthesis_request_with_overrides,
     synthesize_to_file,
     synthesize_batch,
     tau_voice_render,
@@ -743,6 +744,76 @@ def test_accepted_audio_cache_key_changes_with_text(tmp_path: Path) -> None:
     assert first["cache_schema_version"] == CACHE_SCHEMA_VERSION
     assert first["asr_acceptance_version"] == "asr_acceptance.v1"
     assert first["text_normalization_version"] == "asr_acceptance.normalize_text.v1"
+
+
+def test_asr_candidate_request_preserves_weighted_voice_delivery() -> None:
+    base = SynthesisRequest(
+        text="I will hold the boundary clearly.",
+        label="base",
+        tone="firm_boundary",
+        delivery_stage="deflecting",
+        voice_delivery={
+            "tone": "firm_boundary",
+            "delivery_stage": "deflecting",
+            "intensity": 0.9,
+            "valence": -0.7,
+            "use_base_emotion": True,
+            "source": "memory.intent",
+        },
+    )
+
+    candidate = synthesis_request_with_overrides(
+        base,
+        label="candidate",
+        overrides={"temperature": 0.72},
+    )
+    delivery = server.voice_delivery_for_request(candidate)
+
+    assert candidate.voice_delivery["intensity"] == 0.9
+    assert candidate.voice_delivery["valence"] == -0.7
+    assert candidate.voice_delivery["use_base_emotion"] is True
+    assert delivery["tone"] == "firm_boundary"
+    assert delivery["intensity"] == 0.9
+    assert server.emotion_knobs_from_delivery(delivery) == {
+        "exaggeration": 1.11,
+        "cfg_weight": 0.36,
+        "temperature": 0.7,
+        "intensity": 0.9,
+        "valence": -0.7,
+    }
+
+
+def test_accepted_audio_cache_material_records_base_engine_for_weighted_emotion(tmp_path: Path) -> None:
+    ref = tmp_path / "ref.wav"
+    ref.write_bytes(b"RIFF-ref")
+    material = accepted_audio_cache_material(
+        SynthesisRequest(
+            text="Emotion should survive ASR retries.",
+            tone="firm_boundary",
+            delivery_stage="deflecting",
+            voice_delivery={
+                "tone": "firm_boundary",
+                "delivery_stage": "deflecting",
+                "intensity": 0.9,
+                "valence": -0.7,
+                "use_base_emotion": True,
+            },
+        ),
+        ref_audio_path=ref,
+        asr_max_wer=0.35,
+        asr_max_duration_ratio=2.5,
+        asr_max_candidates=1,
+    )
+
+    assert material["engine"] == "chatterbox_base"
+    assert material["emotion_knobs"] == {
+        "exaggeration": 1.11,
+        "cfg_weight": 0.36,
+        "temperature": 0.7,
+        "intensity": 0.9,
+        "valence": -0.7,
+    }
+    assert material["voice_delivery"]["use_base_emotion"] is True
 
 
 def test_save_and_load_accepted_audio_cache_round_trip(tmp_path: Path, monkeypatch) -> None:

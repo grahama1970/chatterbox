@@ -987,6 +987,7 @@ def synthesis_request_with_overrides(
         top_k=overrides.get("top_k", base_request.top_k),
         repetition_penalty=overrides.get("repetition_penalty", base_request.repetition_penalty),
         norm_loudness=overrides.get("norm_loudness", base_request.norm_loudness),
+        voice_delivery=dict(base_request.voice_delivery or {}),
     )
 
 
@@ -1000,10 +1001,12 @@ def accepted_audio_cache_material(
 ) -> dict[str, Any]:
     params = generation_params(base_request)
     voice_delivery = voice_delivery_for_request(base_request)
+    knobs = emotion_knobs_from_delivery(voice_delivery)
     stochasticity = stochasticity_for_request(base_request)
     return {
         "cache_schema_version": CACHE_SCHEMA_VERSION,
-        "engine": "chatterbox_turbo",
+        "engine": "chatterbox_base" if knobs else "chatterbox_turbo",
+        "emotion_knobs": knobs,
         "device": DEVICE,
         "text_normalization_version": TEXT_NORMALIZATION_VERSION,
         "asr_acceptance_version": ASR_ACCEPTANCE_VERSION,
@@ -1637,8 +1640,10 @@ def cache_key_for_batch(
     asr_verify: bool = False,
     voice_delivery: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
+    knobs = emotion_knobs_from_delivery(voice_delivery or {})
     material = {
-        "engine": "chatterbox_turbo",
+        "engine": "chatterbox_base" if knobs else "chatterbox_turbo",
+        "emotion_knobs": knobs,
         "voice_delivery": voice_delivery,
         "answer_text_sha256": plan["answer_text_sha256"],
         "completion_cue_sha256": plan.get("completion_cue_sha256"),
@@ -2091,7 +2096,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "ok": not failed_gates,
         "mocked": False,
         "live": True,
-        "engine": "chatterbox_turbo",
+        "engine": cache_material["engine"],
         "batch_label": batch_label,
         "tone": batch_voice_delivery["tone"],
         "requested_tone": batch_voice_delivery["requested_tone"],
