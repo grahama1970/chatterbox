@@ -29,7 +29,6 @@ from uuid import uuid4
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-EMBRY_VOICE_CONTROL_SKILL_SRC = "/home/graham/workspace/experiments/agent-skills/skills/embry-voice-control/src"
 sys.path.insert(0, str(SCRIPT_DIR))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
@@ -48,12 +47,6 @@ from smoke_realtimestt_listener_bridge import (  # noqa: E402
     wav_metrics,
 )
 from chatterbox.agent.asr_acceptance import normalize_text  # noqa: E402
-
-_local_embry_voice_control_module = sys.modules.pop("embry_voice_control", None)
-sys.path.insert(0, EMBRY_VOICE_CONTROL_SKILL_SRC)
-from embry_voice_control.listener_turn import publish_listener_turn_journal  # noqa: E402
-if _local_embry_voice_control_module is not None:
-    sys.modules["embry_voice_control_local"] = _local_embry_voice_control_module
 
 
 def post_json(url: str, payload: dict[str, Any], timeout_s: float) -> tuple[int | None, dict[str, Any] | None, str | None]:
@@ -409,64 +402,6 @@ def execute_turn(
         **playback,
     }
 
-    if args.publish_journal:
-        try:
-            sparta_response = json.loads(Path(str(sparta_turn["response_path"])).read_text(encoding="utf-8"))
-            listener_receipt = {
-                "schema": "embry.backend_conversation_audio_mvp.listener_receipt.v1",
-                "mocked": False,
-                "live": True,
-                "transcript": {"final": realtime_transcript},
-                "listener_events": {
-                    "final_transcript": realtime_transcript,
-                    "normalized_final_transcript": normalize_text(realtime_transcript),
-                    "wake_detected": turn_index > 1 or "embry" in normalize_text(realtime_transcript),
-                    "events_path": (route.get("realtimestt") or {}).get("events_path"),
-                },
-                "realtimestt": {
-                    "receipt_path": (route.get("realtimestt") or {}).get("receipt_path"),
-                    "event_count": (route.get("realtimestt") or {}).get("event_count"),
-                },
-                "underlying_receipt_path": (route.get("realtimestt") or {}).get("receipt_path"),
-                "route_receipt": route,
-            }
-            listener_receipt_path = turn_dir / "listener_receipt_for_journal.json"
-            listener_receipt_path.write_text(json.dumps(listener_receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-            local_playback = {
-                "requested": True,
-                "played": playback.get("returncode") == 0,
-                "command": ["pw-play", "--target", turn_args.jabra_sink, str(audio_path)] if audio_path else [],
-                "driver": "pipewire-pw-play",
-                "target": turn_args.jabra_sink,
-                "returncode": playback.get("returncode"),
-            }
-            journal_events = publish_listener_turn_journal(
-                journal_db=Path(args.journal_db),
-                receipt_created_at=utc_now(),
-                listener_receipt_path=listener_receipt_path,
-                listener_receipt=listener_receipt,
-                turn_text=realtime_transcript,
-                request_payload=sparta_response.get("turnAuthority") if isinstance(sparta_response.get("turnAuthority"), dict) else sparta_turn["request"],
-                response=sparta_response,
-                local_playback=local_playback,
-            )
-            turn["journal_publish"] = {
-                "mocked": False,
-                "live": True,
-                "journal_db": args.journal_db,
-                "event_count": len(journal_events),
-                "event_types": [event.get("type") for event in journal_events],
-                "last_sequence": journal_events[-1].get("sequence") if journal_events else None,
-            }
-        except Exception as exc:  # noqa: BLE001
-            turn["journal_publish"] = {
-                "mocked": False,
-                "live": True,
-                "journal_db": args.journal_db,
-                "error": f"{type(exc).__name__}: {exc}",
-            }
-            turn_failed_gates.append("journal_publish_for_ui_projection_ok")
-
     question_envelope = question_render["voice_envelope"]
     answer_envelope = sparta_turn["voice_envelope"]
     if not question_envelope.get("present") or question_envelope.get("nonzero_level_frames", 0) <= 0:
@@ -572,8 +507,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--question", action="append", default=None)
     parser.add_argument("--cat-story-conversation", action="store_true")
-    parser.add_argument("--publish-journal", action="store_true")
-    parser.add_argument("--journal-db", default="/mnt/storage12tb/skills/embry-voice-control/state/voice-events.sqlite3")
     parser.add_argument("--session-id", default="")
     parser.add_argument("--sparta-api", default=os.getenv("SPARTA_API", "http://127.0.0.1:3001"))
     parser.add_argument("--sparta-timeout-s", type=float, default=90.0)
