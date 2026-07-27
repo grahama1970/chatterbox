@@ -176,6 +176,10 @@ def sparta_live_turn(args: argparse.Namespace, out_dir: Path, *, transcript: str
     raw_path = out_dir / "sparta_live_turn.json"
     raw_path.write_text(json.dumps(response or {"error": error}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     audio_path, audio_metrics = existing_audio_metrics((response or {}).get("audioPath"))
+    memory = (response or {}).get("memory") if isinstance(response, dict) else {}
+    memory = memory if isinstance(memory, dict) else {}
+    memory_answer = memory.get("answer") if isinstance(memory.get("answer"), dict) else {}
+    memory_intent = memory.get("intent") if isinstance(memory.get("intent"), dict) else {}
     return {
         "request": payload,
         "status_code": status_code,
@@ -190,6 +194,25 @@ def sparta_live_turn(args: argparse.Namespace, out_dir: Path, *, transcript: str
         "receipt_path": (response or {}).get("receiptPath"),
         "audio_metrics": audio_metrics,
         "voice_envelope": compact_voice_envelope((response or {}).get("voiceEnvelope")),
+        "memory_intent": {
+            "action": memory_intent.get("action"),
+            "query_type": memory_intent.get("query_type"),
+            "response_mode": memory_intent.get("response_mode"),
+        },
+        "memory_answer": {
+            "ok": memory_answer.get("ok"),
+            "can_answer": memory_answer.get("can_answer"),
+            "answer_type": memory_answer.get("answer_type"),
+            "session_context_authority": memory_answer.get("session_context_authority"),
+            "story_turn_id": memory_answer.get("story_turn_id"),
+            "story_context_recovered": memory_answer.get("story_context_recovered"),
+            "answer_uses_story_fact": memory_answer.get("answer_uses_story_fact"),
+            "final_response_origin": memory_answer.get("final_response_origin"),
+            "fallback_used": memory_answer.get("fallback_used"),
+            "source_answer_sha256": sha256_text(str(memory_answer.get("source_answer") or "")),
+            "final_response_sha256": sha256_text(str(memory_answer.get("final_response") or "")),
+            "story_context": memory_answer.get("story_context"),
+        },
         "tau_boundary": (response or {}).get("tauBoundary"),
         "unverified": (response or {}).get("unverified"),
         "ok": bool(
@@ -237,7 +260,42 @@ def derived_required_substrings(args: argparse.Namespace, question: str) -> list
         if country in normalized:
             required.append(country)
             break
+    for content_word in ("cat", "story", "find"):
+        if content_word in normalized:
+            required.append(content_word)
     return required or ["embry"]
+
+
+def validate_cat_story_turn(turn_index: int, sparta_turn: dict[str, Any]) -> list[str]:
+    failed_gates: list[str] = []
+    memory_answer = sparta_turn.get("memory_answer") if isinstance(sparta_turn.get("memory_answer"), dict) else {}
+    answer_text = str(sparta_turn.get("answer_text") or "")
+    if sparta_turn.get("answer_authority") != "memory":
+        failed_gates.append("cat_story_answer_authority_is_memory")
+    if memory_answer.get("fallback_used"):
+        failed_gates.append("cat_story_memory_fallback_not_used")
+    if turn_index == 1:
+        if memory_answer.get("answer_type") != "session_story_generation":
+            failed_gates.append("cat_story_turn_001_answer_type_session_story_generation")
+        if memory_answer.get("session_context_authority") != "memory":
+            failed_gates.append("cat_story_turn_001_session_context_authority_memory")
+        if not str(memory_answer.get("story_turn_id") or "").strip():
+            failed_gates.append("cat_story_turn_001_story_turn_id_present")
+        normalized_answer = normalize_text(answer_text)
+        if "cat" not in normalized_answer:
+            failed_gates.append("cat_story_turn_001_answer_mentions_cat")
+        if "?" not in answer_text:
+            failed_gates.append("cat_story_turn_001_answer_asks_question")
+    elif turn_index == 2:
+        if memory_answer.get("answer_type") != "session_story_context":
+            failed_gates.append("cat_story_turn_002_answer_type_session_story_context")
+        if memory_answer.get("story_context_recovered") is not True:
+            failed_gates.append("cat_story_turn_002_story_context_recovered")
+        if memory_answer.get("answer_uses_story_fact") is not True:
+            failed_gates.append("cat_story_turn_002_answer_uses_story_fact")
+        if not answer_text.strip():
+            failed_gates.append("cat_story_turn_002_answer_text_present")
+    return failed_gates
 
 
 def execute_turn(
@@ -324,6 +382,8 @@ def execute_turn(
     turn["sparta_live_turn"] = sparta_turn
     if not sparta_turn["ok"]:
         turn_failed_gates.append("sparta_live_turn_dynamic_answer_and_chatterbox_render_ok")
+    if args.cat_story_conversation:
+        turn_failed_gates.extend(validate_cat_story_turn(turn_index, sparta_turn))
 
     playback = {"skipped": True}
     audio_path_raw = str(sparta_turn.get("audio_path") or "").strip()
@@ -446,6 +506,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--question", action="append", default=None)
+    parser.add_argument("--cat-story-conversation", action="store_true")
     parser.add_argument("--session-id", default="")
     parser.add_argument("--sparta-api", default=os.getenv("SPARTA_API", "http://127.0.0.1:3001"))
     parser.add_argument("--sparta-timeout-s", type=float, default=90.0)
@@ -469,10 +530,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--realtimestt-timeout-s", type=float, default=300.0)
     args = parser.parse_args(argv)
     if args.question is None:
-        args.question = [
-            "Hey Embry, what is the capital of France?",
-            "What is the capital of Germany?",
-        ]
+        if args.cat_story_conversation:
+            args.question = [
+                "Hey Embry, tell me a short story about your cat and ask me one question about it.",
+                "What did the cat find?",
+            ]
+        else:
+            args.question = [
+                "Hey Embry, what is the capital of France?",
+                "What is the capital of Germany?",
+            ]
     return args
 
 
