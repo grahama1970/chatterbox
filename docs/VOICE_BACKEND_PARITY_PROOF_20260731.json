@@ -1,0 +1,78 @@
+{
+  "base_affect": {
+    "backend": {
+      "capability_digest": "e4d1eed07cd193000853dbabd211f0ea7b62dfd2fb3e55b54306f761ff920048",
+      "id": "chatterbox_base_affect",
+      "selection_source": "affect_auto"
+    },
+    "duration_seconds": 4.92,
+    "elapsed_s": 45.1,
+    "emotion_knobs": {
+      "cfg_weight": 0.42,
+      "exaggeration": 0.93,
+      "intensity": 0.7,
+      "temperature": 0.7,
+      "valence": -0.4
+    },
+    "engine": "chatterbox_base",
+    "ok": true,
+    "output_format": {
+      "backend_sample_rate": 24000,
+      "channels": 1,
+      "container": "wav",
+      "declared_sample_rate": 24000
+    },
+    "status": 200
+  },
+  "health_backends": {
+    "chatterbox_base_affect": {
+      "capability_digest": "e4d1eed07cd193000853dbabd211f0ea7b62dfd2fb3e55b54306f761ff920048",
+      "load_seconds": 41.421,
+      "measured_resident_vram_mb": 3060.2,
+      "state": "loaded"
+    },
+    "chatterbox_turbo": {
+      "capability_digest": "4b332b29ed1608307e96205143c68c123de182bca8ec86a6b5b2da10ef7b1aaa",
+      "load_seconds": null,
+      "measured_resident_vram_mb": null,
+      "state": "loaded"
+    }
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": "voice_backend_interface_live_parity",
+  "turbo": {
+    "backend": {
+      "capability_digest": "4b332b29ed1608307e96205143c68c123de182bca8ec86a6b5b2da10ef7b1aaa",
+      "id": "chatterbox_turbo",
+      "selection_source": "default"
+    },
+    "duration_seconds": 2.92,
+    "elapsed_s": 2.6,
+    "engine": "chatterbox_turbo",
+    "ok": true,
+    "output_format": {
+      "backend_sample_rate": 24000,
+      "channels": 1,
+      "container": "wav",
+      "declared_sample_rate": 24000
+    },
+    "status": 200
+  },
+  "unknown_backend": {
+    "detail": {
+      "detail": "unknown_backend:qwen3",
+      "reason": "unknown_backend"
+    },
+    "status": 422
+  },
+  "unsupported_capability": {
+    "detail": {
+      "backend": "chatterbox_turbo",
+      "capability": "structured_affect_axes",
+      "reason": "backend_capability_unsupported:structured_affect_axes"
+    },
+    "status": 422
+  }
+}
