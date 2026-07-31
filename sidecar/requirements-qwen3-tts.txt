@@ -1,0 +1,12 @@
+# Isolated Qwen3-TTS sidecar environment (issue #13).
+# qwen-tts pins transformers==4.57.3, which conflicts with Chatterbox's
+# transformers 5.x runtime — install these in a dedicated venv, never into
+# the Chatterbox environment or container.
+#
+# Adoption manifest: docs/QWEN3_TTS_ADOPTION_MANIFEST.md
+qwen-tts==0.1.1
+fastapi==0.128.0
+uvicorn==0.34.0
+soundfile==0.13.1
+# torch/torchaudio: install first, matched to the local CUDA driver, e.g.
+#   pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124

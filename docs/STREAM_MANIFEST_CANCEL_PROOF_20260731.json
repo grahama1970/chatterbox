@@ -1,0 +1,45 @@
+{
+  "cancel_ack_ok": true,
+  "client_observed_bytes": 13440,
+  "disk_equals_endpoint": true,
+  "disk_manifest_terminal": {
+    "at_utc": "2026-07-31T12:36:09.765937Z",
+    "control_state": {
+      "cancelled": true,
+      "last_action": "cancel",
+      "stale_chunks_should_skip": true,
+      "turn_id": "turn-mf-live-49fb77882e",
+      "updated_at": "2026-07-31T12:36:09Z"
+    },
+    "failed_gates": [],
+    "published_bytes": 13440,
+    "published_frames": 7,
+    "reason": "turn_cancelled",
+    "status": "cancelled"
+  },
+  "endpoint_manifest_terminal": {
+    "at_utc": "2026-07-31T12:36:09.765937Z",
+    "control_state": {
+      "cancelled": true,
+      "last_action": "cancel",
+      "stale_chunks_should_skip": true,
+      "turn_id": "turn-mf-live-49fb77882e",
+      "updated_at": "2026-07-31T12:36:09Z"
+    },
+    "failed_gates": [],
+    "published_bytes": 13440,
+    "published_frames": 7,
+    "reason": "turn_cancelled",
+    "status": "cancelled"
+  },
+  "endpoint_validation_failures": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": "live_stream_cancellation_manifest",
+  "render_plan_digest": "a8304362924fc8c4f603ceb75158da6c7e9c4c24edd20aa162396800a1f9dbae",
+  "stream_id": "stream-8edee3177ce349c5",
+  "terminal_reason": "turn_cancelled",
+  "terminal_status": "cancelled",
+  "turn_id": "turn-mf-live-49fb77882e"
+}

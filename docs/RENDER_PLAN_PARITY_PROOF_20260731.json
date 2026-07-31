@@ -1,0 +1,16 @@
+{
+  "applied_controls_equal": true,
+  "batch_disk_digest": "306c710f17be3d6713aeae460f4af551509aeb50dbc67bb33c3b459a7f3ae8a5",
+  "batch_ok": true,
+  "batch_response_digest": "306c710f17be3d6713aeae460f4af551509aeb50dbc67bb33c3b459a7f3ae8a5",
+  "chunk_identity_equal": true,
+  "digests_all_equal": true,
+  "elapsed_s": 6.67,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": "render_plan_digest_parity_batch_vs_stream_live",
+  "stream_bytes": 336960,
+  "stream_disk_digest": "306c710f17be3d6713aeae460f4af551509aeb50dbc67bb33c3b459a7f3ae8a5",
+  "stream_header_digest": "306c710f17be3d6713aeae460f4af551509aeb50dbc67bb33c3b459a7f3ae8a5"
+}

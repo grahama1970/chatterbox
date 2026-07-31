@@ -133,6 +133,9 @@ docker_env=(
 if [[ -n "$hf_token" ]]; then
   docker_env+=(-e HF_TOKEN="$hf_token")
 fi
+if [[ -n "${CHATTERBOX_QWEN_SIDECAR_URL:-}" ]]; then
+  docker_env+=(-e CHATTERBOX_QWEN_SIDECAR_URL="${CHATTERBOX_QWEN_SIDECAR_URL}")
+fi
 
 docker rm -f "$chatterbox_container" >/dev/null 2>&1 || true
 docker run -d \
@@ -145,6 +148,7 @@ docker run -d \
   -v "${repo_root}:/work:ro" \
   -v "${out_dir}:/out" \
   -v "${ref_audio}:/data/embry_ref.wav:ro" \
+  -v chatterbox-hf-cache:/root/.cache/huggingface \
   "$image" \
   -m uvicorn chatterbox.agent.server:app --host 0.0.0.0 --port "$container_port"
 
