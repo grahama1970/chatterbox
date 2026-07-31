@@ -21,7 +21,12 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from chatterbox.agent.asr_acceptance import acceptance_result
-from chatterbox.agent.chunking import build_render_plan, build_render_plan_from_chunks
+from chatterbox.agent.chunking import (
+    build_render_plan,
+    build_render_plan_from_chunks,
+    compile_render_plan,
+    declared_chunk_hash_failures,
+)
 from chatterbox.agent.presets import (
     ALLOWED_TONES,
     CHATTERBOX_TAG_HANDLING,
@@ -1522,11 +1527,19 @@ def blessed_qra_batch_response(
 ) -> dict[str, Any]:
     voice_delivery = voice_delivery_for_request(request)
     stochasticity = stochasticity_for_request(request)
-    plan = build_render_plan(
-        match["answer_text"],
+    plan = compile_render_plan(
+        answer_text=match["answer_text"],
+        render_chunks=blessed_render_chunks(match),
         max_chars=request.max_chars,
         pause_after_ms=0,
         completion_cue=None,
+    )
+    persist_render_plan_receipt(
+        batch_dir,
+        plan=plan,
+        entry_point="synthesize_batch.blessed_qra",
+        batch_label=batch_label,
+        voice_delivery=voice_delivery,
     )
     chunk_results = []
     for index, chunk in enumerate(match["chunks"], start=1):
@@ -1615,6 +1628,7 @@ def blessed_qra_batch_response(
             "source": "blessed_qra_cache",
             "cached_chunk_count": len(match["chunks"]),
         },
+        "render_plan_digest": plan["render_plan_digest"],
         "chunks": chunk_results,
         "completion_cue": None,
         "finished_response_audio": str(finished_audio),
@@ -1693,6 +1707,39 @@ def applied_controls_for_plan(plan: dict[str, Any], voice_delivery: dict[str, An
             }
         )
     return controls
+
+
+def blessed_render_chunks(match: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {
+            "text": chunk.get("text"),
+            "delivery_stage": chunk.get("delivery_stage"),
+            "pause_after_ms": chunk.get("pause_after_ms"),
+            "role": f"blessed_chunk_{index}",
+        }
+        for index, chunk in enumerate(match.get("chunks") or [], start=1)
+    ]
+
+
+def persist_render_plan_receipt(
+    batch_dir: Path,
+    *,
+    plan: dict[str, Any],
+    entry_point: str,
+    batch_label: str,
+    voice_delivery: dict[str, Any],
+) -> Path:
+    receipt = {
+        "schema": "chatterbox.render_plan_receipt.v1",
+        "entry_point": entry_point,
+        "batch_label": batch_label,
+        "render_plan_digest": plan["render_plan_digest"],
+        "plan": plan,
+        "applied_controls": applied_controls_for_plan(plan, voice_delivery),
+    }
+    path = batch_dir / "render_plan.json"
+    path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
 
 
 def mark_turn_control(turn_id: str, action: str, request: TurnControlRequest) -> dict[str, Any]:
@@ -1829,13 +1876,13 @@ def presets() -> dict[str, Any]:
 
 @app.post("/render-plan")
 def render_plan(request: RenderPlanRequest) -> dict[str, Any]:
-    plan = build_render_plan(
-        request.answer_text,
+    plan = compile_render_plan(
+        answer_text=request.answer_text,
         max_chars=request.max_chars,
         pause_after_ms=request.pause_after_ms,
         completion_cue=request.completion_cue,
     )
-    return {"ok": True, "mocked": False, "live": True, "plan": plan}
+    return {"ok": True, "mocked": False, "live": True, "plan": plan, "render_plan_digest": plan["render_plan_digest"]}
 
 
 @app.post("/synthesize")
@@ -1938,6 +1985,17 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
     batch_dir.mkdir(parents=True, exist_ok=True)
     batch_voice_delivery = voice_delivery_for_request(request)
     batch_stochasticity = stochasticity_for_request(request)
+    hash_failures = declared_chunk_hash_failures(request.render_chunks)
+    if hash_failures:
+        return {
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "engine": "chatterbox_turbo",
+            "batch_label": batch_label,
+            "reason": "render_chunk_hash_mismatch",
+            "failed_gates": hash_failures,
+        }
     latency_event(batch_events, "batch_dir_ready", started_total)
     blessed_qra_lookup = (
         apply_blessed_qra_memory_gate(
@@ -1968,21 +2026,21 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             started_total=started_total,
             batch_events=batch_events,
         )
-    if request.render_chunks:
-        plan = build_render_plan_from_chunks(
-            request.render_chunks,
-            max_chars=request.max_chars,
-            fallback_pause_after_ms=request.pause_after_ms,
-            completion_cue=request.completion_cue,
-        )
-    else:
-        plan = build_render_plan(
-            request.answer_text,
-            max_chars=request.max_chars,
-            pause_after_ms=request.pause_after_ms,
-            completion_cue=request.completion_cue,
-            arc=request.delivery_arc,
-        )
+    plan = compile_render_plan(
+        answer_text=request.answer_text,
+        render_chunks=request.render_chunks,
+        max_chars=request.max_chars,
+        pause_after_ms=request.pause_after_ms,
+        completion_cue=request.completion_cue,
+        arc=request.delivery_arc,
+    )
+    persist_render_plan_receipt(
+        batch_dir,
+        plan=plan,
+        entry_point="synthesize_batch",
+        batch_label=batch_label,
+        voice_delivery=batch_voice_delivery,
+    )
     applied_controls = applied_controls_for_plan(plan, batch_voice_delivery)
     latency_event(batch_events, "render_plan_ready", started_total, chunk_count=plan["chunk_count"])
     ref_audio_path = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)
@@ -2144,6 +2202,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "cache_material": cache_material,
         "answer_text_sha256": plan["answer_text_sha256"],
         "render_plan": plan,
+        "render_plan_digest": plan["render_plan_digest"],
         "chunks": chunk_results,
         "completion_cue": completion_result,
         "finished_response_audio": str(finished_audio),
@@ -2191,6 +2250,52 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
     remain available through /synthesize-batch for deterministic verification.
     """
     request.stream = True
+    hash_failures = declared_chunk_hash_failures(request.render_chunks)
+    if hash_failures:
+        raise HTTPException(
+            status_code=422,
+            detail={"reason": "render_chunk_hash_mismatch", "failed_gates": hash_failures},
+        )
+    batch_label = safe_label(request.label or f"stream-{uuid4().hex[:8]}")
+    batch_dir = OUT_DIR / batch_label
+    batch_dir.mkdir(parents=True, exist_ok=True)
+    stream_voice_delivery = voice_delivery_for_request(request)
+    blessed_qra_lookup = (
+        apply_blessed_qra_memory_gate(
+            request,
+            find_blessed_qra_match(
+                request.question_text,
+                min_similarity=request.blessed_qra_min_similarity,
+                preferred_variant=request.blessed_qra_variant,
+            ),
+        )
+        if request.use_blessed_qra_cache
+        else blessed_qra_cache_disabled_receipt()
+    )
+    if blessed_qra_lookup.get("hit"):
+        plan = compile_render_plan(
+            answer_text=blessed_qra_lookup["answer_text"],
+            render_chunks=blessed_render_chunks(blessed_qra_lookup),
+            max_chars=request.max_chars,
+            pause_after_ms=0,
+            completion_cue=None,
+        )
+    else:
+        plan = compile_render_plan(
+            answer_text=request.answer_text,
+            render_chunks=request.render_chunks,
+            max_chars=request.max_chars,
+            pause_after_ms=request.pause_after_ms,
+            completion_cue=request.completion_cue,
+            arc=request.delivery_arc,
+        )
+    persist_render_plan_receipt(
+        batch_dir,
+        plan=plan,
+        entry_point="synthesize_batch_stream",
+        batch_label=batch_label,
+        voice_delivery=stream_voice_delivery,
+    )
 
     def pcm_bytes(wav: Any) -> bytes:
         import torch
@@ -2213,21 +2318,6 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
         import torch
         import torchaudio as ta
 
-        batch_label = safe_label(request.label or f"stream-{uuid4().hex[:8]}")
-        batch_dir = OUT_DIR / batch_label
-        batch_dir.mkdir(parents=True, exist_ok=True)
-        blessed_qra_lookup = (
-            apply_blessed_qra_memory_gate(
-                request,
-                find_blessed_qra_match(
-                    request.question_text,
-                    min_similarity=request.blessed_qra_min_similarity,
-                    preferred_variant=request.blessed_qra_variant,
-                ),
-            )
-            if request.use_blessed_qra_cache
-            else blessed_qra_cache_disabled_receipt()
-        )
         if blessed_qra_lookup.get("hit"):
             for chunk in blessed_qra_lookup["chunks"]:
                 if stop_if_turn_controlled():
@@ -2240,12 +2330,6 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                     if silence_len > 0:
                         yield from guarded_pcm_chunks(torch.zeros((1, silence_len), dtype=torch.float32), sr)
             return
-        plan = build_render_plan(
-            request.answer_text,
-            max_chars=request.max_chars,
-            pause_after_ms=request.pause_after_ms,
-            completion_cue=request.completion_cue,
-        )
         pending_tail = None
         sample_rate = None
         fade_len = 0
@@ -2258,6 +2342,7 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                     "text": request.completion_cue,
                     "delivery_stage": "closing",
                     "pause_after_ms": 0,
+                    "is_completion_cue": True,
                 }
         )
 
@@ -2269,7 +2354,11 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 ref_audio=request.ref_audio,
                 label=f"{batch_label}_stream_{item['index']:02d}",
                 repeat_group_id=request.repeat_group_id,
+                tone=request.tone,
                 delivery_stage=item.get("delivery_stage"),
+                pace=request.pace,
+                pause_strategy=request.pause_strategy,
+                voice_delivery={**stream_voice_delivery, "delivery_stage": item.get("delivery_stage")},
             )
             out_path = batch_dir / f"stream_{item['index']:02d}_{item.get('delivery_stage', 'neutral')}.wav"
             result = synthesize_to_file(chunk_request, out_path)
@@ -2334,7 +2423,14 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 return
             yield from guarded_pcm_chunks(pending_tail, sample_rate or STREAM_SAMPLE_RATE)
 
-    return StreamingResponse(iter_audio(), media_type="audio/L16; rate=24000; channels=1")
+    return StreamingResponse(
+        iter_audio(),
+        media_type="audio/L16; rate=24000; channels=1",
+        headers={
+            "X-Render-Plan-Digest": plan["render_plan_digest"],
+            "X-Batch-Label": batch_label,
+        },
+    )
 
 
 @app.post("/turn/{turn_id}/cancel")

@@ -138,7 +138,11 @@ def test_stream_admits_no_frame_after_mid_generation_stop(client: TestClient, mo
 def blessed_hit(paths: list[Path]) -> dict:
     return {
         "hit": True,
-        "chunks": [{"audio": str(path), "pause_after_ms": 0} for path in paths],
+        "answer_text": "The cached blessed answer text.",
+        "chunks": [
+            {"audio": str(path), "text": f"Cached chunk {index}.", "pause_after_ms": 0}
+            for index, path in enumerate(paths, start=1)
+        ],
     }
 
 
