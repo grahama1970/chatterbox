@@ -1,0 +1,189 @@
+{
+  "base_url": "http://127.0.0.1:8018",
+  "baseline": {
+    "bytes_before_control_ack": null,
+    "content_type": "audio/L16; rate=24000; channels=1",
+    "control_ack": null,
+    "control_ack_ms": null,
+    "control_action": null,
+    "control_sent_ms": null,
+    "elapsed_ms": 41097.663,
+    "first_byte_ms": 37857.37,
+    "last_byte_after_control_ack_ms": null,
+    "last_byte_ms": 41097.644,
+    "post_control_audio_ms": null,
+    "post_control_bytes": null,
+    "total_audio_ms": 16400.0,
+    "total_bytes": 787200
+  },
+  "blessed_qra_mid_cancel": {
+    "bytes_before_control_ack": 4096,
+    "content_type": "audio/L16; rate=24000; channels=1",
+    "control_ack": {
+      "control": {
+        "cancelled": true,
+        "events": [
+          {
+            "action": "cancel",
+            "new_turn_id": null,
+            "old_turn_id": "turn-bp-blessed-349f3f2b0e",
+            "reason": "bounded publication proof cancel",
+            "timestamp": "2026-07-31T12:06:58Z"
+          }
+        ],
+        "last_action": "cancel",
+        "stale_chunks_should_skip": true,
+        "turn_id": "turn-bp-blessed-349f3f2b0e",
+        "updated_at": "2026-07-31T12:06:58Z"
+      },
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "turn_id": "turn-bp-blessed-349f3f2b0e"
+    },
+    "control_ack_ms": 131.616,
+    "control_action": "cancel",
+    "control_sent_ms": 129.004,
+    "elapsed_ms": 131.676,
+    "first_byte_ms": 129.001,
+    "last_byte_after_control_ack_ms": 0.051,
+    "last_byte_ms": 131.667,
+    "post_control_audio_ms": 194.667,
+    "post_control_bytes": 9344,
+    "total_audio_ms": 280.0,
+    "total_bytes": 13440
+  },
+  "does_not_prove": [
+    "microphone_to_speaker_barge_in_latency",
+    "acoustic_echo_suppression",
+    "client_playback_buffer_flush"
+  ],
+  "failed_gates": [],
+  "health": {
+    "device": "cuda",
+    "engine": "chatterbox_turbo",
+    "model_loaded": true,
+    "ok": true,
+    "started_at_utc": "2026-07-31T12:04:14Z"
+  },
+  "live": true,
+  "mid_stream_cancel": {
+    "bytes_before_control_ack": 4096,
+    "content_type": "audio/L16; rate=24000; channels=1",
+    "control_ack": {
+      "control": {
+        "cancelled": true,
+        "events": [
+          {
+            "action": "cancel",
+            "new_turn_id": null,
+            "old_turn_id": "turn-bp-cancel-997fd0811b",
+            "reason": "bounded publication proof cancel",
+            "timestamp": "2026-07-31T12:06:55Z"
+          }
+        ],
+        "last_action": "cancel",
+        "stale_chunks_should_skip": true,
+        "turn_id": "turn-bp-cancel-997fd0811b",
+        "updated_at": "2026-07-31T12:06:55Z"
+      },
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "turn_id": "turn-bp-cancel-997fd0811b"
+    },
+    "control_ack_ms": 3108.414,
+    "control_action": "cancel",
+    "control_sent_ms": 3105.86,
+    "elapsed_ms": 3108.511,
+    "first_byte_ms": 3105.857,
+    "last_byte_after_control_ack_ms": 0.086,
+    "last_byte_ms": 3108.5,
+    "post_control_audio_ms": 194.667,
+    "post_control_bytes": 9344,
+    "total_audio_ms": 280.0,
+    "total_bytes": 13440
+  },
+  "mid_stream_stop": {
+    "bytes_before_control_ack": 4096,
+    "content_type": "audio/L16; rate=24000; channels=1",
+    "control_ack": {
+      "control": {
+        "events": [
+          {
+            "action": "stop",
+            "new_turn_id": null,
+            "old_turn_id": "turn-bp-stop-9778f9bf4f",
+            "reason": "bounded publication proof stop",
+            "timestamp": "2026-07-31T12:06:58Z"
+          }
+        ],
+        "last_action": "stop",
+        "stopped": true,
+        "turn_id": "turn-bp-stop-9778f9bf4f",
+        "updated_at": "2026-07-31T12:06:58Z"
+      },
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "turn_id": "turn-bp-stop-9778f9bf4f"
+    },
+    "control_ack_ms": 3153.527,
+    "control_action": "stop",
+    "control_sent_ms": 3150.674,
+    "elapsed_ms": 3153.635,
+    "first_byte_ms": 3150.671,
+    "last_byte_after_control_ack_ms": 0.096,
+    "last_byte_ms": 3153.623,
+    "post_control_audio_ms": 234.667,
+    "post_control_bytes": 11264,
+    "total_audio_ms": 320.0,
+    "total_bytes": 15360
+  },
+  "mocked": false,
+  "note": "post_control_bytes observed at the client include pre-cancel admitted frames still in transport buffers; the <=40 ms per-frame admission bound is proven by tests/test_stream_bounded_publication.py at the publication layer.",
+  "ok": true,
+  "pre_cancelled": {
+    "ack": {
+      "control": {
+        "cancelled": true,
+        "events": [
+          {
+            "action": "cancel",
+            "new_turn_id": null,
+            "old_turn_id": "turn-bp-pre-62d021c023",
+            "reason": "pre-cancel proof",
+            "timestamp": "2026-07-31T12:06:58Z"
+          }
+        ],
+        "last_action": "cancel",
+        "stale_chunks_should_skip": true,
+        "turn_id": "turn-bp-pre-62d021c023",
+        "updated_at": "2026-07-31T12:06:58Z"
+      },
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "turn_id": "turn-bp-pre-62d021c023"
+    },
+    "stream": {
+      "bytes_before_control_ack": null,
+      "content_type": "audio/L16; rate=24000; channels=1",
+      "control_ack": null,
+      "control_ack_ms": null,
+      "control_action": null,
+      "control_sent_ms": null,
+      "elapsed_ms": 1.543,
+      "first_byte_ms": null,
+      "last_byte_after_control_ack_ms": null,
+      "last_byte_ms": null,
+      "post_control_audio_ms": null,
+      "post_control_bytes": null,
+      "total_audio_ms": 0.0,
+      "total_bytes": 0
+    }
+  },
+  "proof_scope": "bounded_server_pcm_publication_after_stream_cancellation",
+  "publication_frame_bytes": 1920,
+  "publication_frame_ms": 40
+}
