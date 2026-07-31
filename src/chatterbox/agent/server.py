@@ -13,7 +13,7 @@ import urllib.request
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterator
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
@@ -1731,6 +1731,38 @@ def stream_turn_should_stop(turn_id: str | None) -> bool:
     return bool(state and (state.get("cancelled") or state.get("stopped")))
 
 
+STREAM_SAMPLE_RATE = 24000
+STREAM_CHANNELS = 1
+STREAM_BYTES_PER_SAMPLE = 2
+# Publication frame policy: at most this much already-encoded PCM may be
+# admitted between turn-control checks, bounding stale audio after a cancel.
+STREAM_PUBLICATION_FRAME_MS = 40
+
+
+def pcm_frame_bytes(
+    *,
+    sample_rate: int = STREAM_SAMPLE_RATE,
+    channels: int = STREAM_CHANNELS,
+    bytes_per_sample: int = STREAM_BYTES_PER_SAMPLE,
+    frame_ms: int = STREAM_PUBLICATION_FRAME_MS,
+) -> int:
+    sample_bytes = channels * bytes_per_sample
+    return max(sample_bytes, int(sample_rate * frame_ms / 1000) * sample_bytes)
+
+
+def bounded_pcm_frames(
+    data: bytes,
+    should_stop: Callable[[], bool],
+    *,
+    sample_rate: int = STREAM_SAMPLE_RATE,
+) -> Iterator[bytes]:
+    block_size = pcm_frame_bytes(sample_rate=sample_rate)
+    for offset in range(0, len(data), block_size):
+        if should_stop():
+            return
+        yield data[offset : offset + block_size]
+
+
 @app.on_event("startup")
 def load_model() -> None:
     global model, model_load_seconds
@@ -2170,12 +2202,12 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
     def stop_if_turn_controlled() -> bool:
         return stream_turn_should_stop(request.turn_id)
 
-    def guarded_pcm_chunks(wav: Any, block_size: int = 65536):
-        data = pcm_bytes(wav)
-        for offset in range(0, len(data), block_size):
-            if stop_if_turn_controlled():
-                return
-            yield data[offset : offset + block_size]
+    def guarded_pcm_chunks(wav: Any, sample_rate: int = STREAM_SAMPLE_RATE):
+        yield from bounded_pcm_frames(
+            pcm_bytes(wav),
+            stop_if_turn_controlled,
+            sample_rate=sample_rate,
+        )
 
     def iter_audio():
         import torch
@@ -2201,12 +2233,12 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 if stop_if_turn_controlled():
                     return
                 wav, sr = ta.load(str(chunk["audio"]))
-                yield from guarded_pcm_chunks(wav)
+                yield from guarded_pcm_chunks(wav, sr)
                 pause_ms = int(chunk.get("pause_after_ms") or 0) if request.blessed_qra_preserve_pauses else 0
                 if pause_ms > 0:
                     silence_len = int(sr * (pause_ms / 1000))
                     if silence_len > 0:
-                        yield from guarded_pcm_chunks(torch.zeros((1, silence_len), dtype=torch.float32))
+                        yield from guarded_pcm_chunks(torch.zeros((1, silence_len), dtype=torch.float32), sr)
             return
         plan = build_render_plan(
             request.answer_text,
@@ -2253,11 +2285,11 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 if pending_tail is not None:
                     if stop_if_turn_controlled():
                         return
-                    yield from guarded_pcm_chunks(pending_tail)
+                    yield from guarded_pcm_chunks(pending_tail, sample_rate or STREAM_SAMPLE_RATE)
                 if fade_len > 0 and wav.shape[1] > fade_len:
                     if stop_if_turn_controlled():
                         return
-                    yield from guarded_pcm_chunks(wav[:, :-fade_len])
+                    yield from guarded_pcm_chunks(wav[:, :-fade_len], sample_rate or STREAM_SAMPLE_RATE)
                     pending_tail = wav[:, -fade_len:]
                 else:
                     pending_tail = wav
@@ -2268,20 +2300,24 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                     fade_in = torch.linspace(0.0, 1.0, fade_len, dtype=current_head.dtype).reshape(1, -1)
                     if stop_if_turn_controlled():
                         return
-                    yield from guarded_pcm_chunks(pending_tail * fade_out + current_head * fade_in)
+                    yield from guarded_pcm_chunks(
+                        pending_tail * fade_out + current_head * fade_in,
+                        sample_rate or STREAM_SAMPLE_RATE,
+                    )
                     if stop_if_turn_controlled():
                         return
                     yield from guarded_pcm_chunks(
-                        wav[:, fade_len:-fade_len] if wav.shape[1] > 2 * fade_len else wav[:, fade_len:]
+                        wav[:, fade_len:-fade_len] if wav.shape[1] > 2 * fade_len else wav[:, fade_len:],
+                        sample_rate or STREAM_SAMPLE_RATE,
                     )
                     pending_tail = wav[:, -fade_len:] if wav.shape[1] > fade_len else None
                 else:
                     if stop_if_turn_controlled():
                         return
-                    yield from guarded_pcm_chunks(pending_tail)
+                    yield from guarded_pcm_chunks(pending_tail, sample_rate or STREAM_SAMPLE_RATE)
                     if stop_if_turn_controlled():
                         return
-                    yield from guarded_pcm_chunks(wav[:, :-fade_len])
+                    yield from guarded_pcm_chunks(wav[:, :-fade_len], sample_rate or STREAM_SAMPLE_RATE)
                     pending_tail = wav[:, -fade_len:]
             pause_ms = int(item.get("pause_after_ms") or 0)
             if pause_ms > 0 and sample_rate:
@@ -2289,11 +2325,14 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 if silence_len > 0:
                     if stop_if_turn_controlled():
                         return
-                    yield from guarded_pcm_chunks(torch.zeros((1, silence_len), dtype=torch.float32))
+                    yield from guarded_pcm_chunks(
+                        torch.zeros((1, silence_len), dtype=torch.float32),
+                        sample_rate or STREAM_SAMPLE_RATE,
+                    )
         if pending_tail is not None:
             if stop_if_turn_controlled():
                 return
-            yield from guarded_pcm_chunks(pending_tail)
+            yield from guarded_pcm_chunks(pending_tail, sample_rate or STREAM_SAMPLE_RATE)
 
     return StreamingResponse(iter_audio(), media_type="audio/L16; rate=24000; channels=1")
 
