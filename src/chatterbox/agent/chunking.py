@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from typing import Any
+
+RENDER_PLAN_SCHEMA = "chatterbox.render_plan.v1"
 
 DEFAULT_ARC = [
     {
@@ -147,6 +150,11 @@ def build_render_plan(
                 "delivery_stage": stage["stage"],
                 "delivery_tone": stage["tone"],
                 "delivery_role": stage["role"],
+                "tone": None,
+                "requested_tone": None,
+                "requested_delivery_stage": None,
+                "pace": None,
+                "pause_strategy": None,
                 "arc_position": round(index / total, 3) if total else 0.0,
                 "pause_after_ms": pause_after_ms if index < total else 0,
                 "can_interrupt_after": True,
@@ -176,6 +184,87 @@ def build_render_plan(
         "completion_cue": completion_cue,
         "completion_cue_sha256": sha256_text(completion_cue) if completion_cue else None,
     }
+
+
+def render_plan_digest(plan: dict[str, Any]) -> str:
+    """Stable digest over the identity-bearing plan fields.
+
+    Excludes presentation-only fields so semantically identical plans produced
+    by different entry points hash identically.
+    """
+    material = {
+        "schema": RENDER_PLAN_SCHEMA,
+        "answer_text_sha256": plan.get("answer_text_sha256"),
+        "completion_cue_sha256": plan.get("completion_cue_sha256"),
+        "chunking_strategy": (plan.get("chunking_strategy") or {}).get("name"),
+        "max_chars": plan.get("max_chars"),
+        "chunks": [
+            {
+                "index": chunk.get("index"),
+                "text_sha256": chunk.get("text_sha256"),
+                "delivery_stage": chunk.get("delivery_stage"),
+                "tone": chunk.get("tone"),
+                "pace": chunk.get("pace"),
+                "pause_strategy": chunk.get("pause_strategy"),
+                "pause_after_ms": chunk.get("pause_after_ms"),
+                "can_interrupt_after": chunk.get("can_interrupt_after"),
+            }
+            for chunk in plan.get("chunks") or []
+        ],
+    }
+    canonical = json.dumps(material, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def declared_chunk_hash_failures(chunks: list[dict[str, Any]] | None) -> list[str]:
+    """Reason codes for caller chunks whose declared text hash does not match.
+
+    Uses the same `chunk_{index}_text_sha256_matches` reason code as the Tau
+    voice-render entry point so every entry point fails closed identically.
+    """
+    failures: list[str] = []
+    for index, chunk in enumerate(chunks or [], start=1):
+        declared = chunk.get("text_sha256")
+        if not declared:
+            continue
+        text = " ".join(str(chunk.get("text") or "").split())
+        if declared != sha256_text(text):
+            failures.append(f"chunk_{index}_text_sha256_matches")
+    return failures
+
+
+def compile_render_plan(
+    *,
+    answer_text: str,
+    render_chunks: list[dict[str, Any]] | None = None,
+    max_chars: int = 300,
+    pause_after_ms: int = 250,
+    completion_cue: str | None = None,
+    arc: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    """Single side-effect-free plan compiler shared by every render entry point.
+
+    Caller-supplied `render_chunks` win over `answer_text` splitting; the
+    returned plan always carries the versioned schema and a stable digest.
+    """
+    if render_chunks:
+        plan = build_render_plan_from_chunks(
+            render_chunks,
+            max_chars=max_chars,
+            fallback_pause_after_ms=pause_after_ms,
+            completion_cue=completion_cue,
+        )
+    else:
+        plan = build_render_plan(
+            answer_text,
+            max_chars=max_chars,
+            pause_after_ms=pause_after_ms,
+            completion_cue=completion_cue,
+            arc=arc,
+        )
+    plan["plan_schema"] = RENDER_PLAN_SCHEMA
+    plan["render_plan_digest"] = render_plan_digest(plan)
+    return plan
 
 
 def build_render_plan_from_chunks(
@@ -210,6 +299,11 @@ def build_render_plan_from_chunks(
                 "delivery_stage": stage,
                 "delivery_tone": str(chunk.get("tone") or ""),
                 "delivery_role": str(chunk.get("role") or f"caller_chunk_{index}"),
+                "tone": chunk.get("tone"),
+                "requested_tone": chunk.get("requested_tone") or chunk.get("tone"),
+                "requested_delivery_stage": chunk.get("requested_delivery_stage") or chunk.get("delivery_stage"),
+                "pace": chunk.get("pace"),
+                "pause_strategy": chunk.get("pause_strategy"),
                 "arc_position": round(index / total, 3) if total else 0.0,
                 "pause_after_ms": int(pause_after_ms) if index < total else 0,
                 "can_interrupt_after": bool(chunk.get("interruptible", True)),
