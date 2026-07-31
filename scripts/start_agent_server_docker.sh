@@ -133,6 +133,9 @@ docker_env=(
 if [[ -n "$hf_token" ]]; then
   docker_env+=(-e HF_TOKEN="$hf_token")
 fi
+if [[ -n "${CHATTERBOX_QWEN_SIDECAR_URL:-}" ]]; then
+  docker_env+=(-e CHATTERBOX_QWEN_SIDECAR_URL="${CHATTERBOX_QWEN_SIDECAR_URL}")
+fi
 
 docker rm -f "$chatterbox_container" >/dev/null 2>&1 || true
 docker run -d \

@@ -797,7 +797,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             status_code=422,
             detail={"reason": str(exc), "backend": exc.backend_id, "capability": exc.capability},
         ) from exc
-    engine_used = "chatterbox_base" if backend.caps.backend_id == "chatterbox_base_affect" else "chatterbox_turbo"
+    engine_used = ENGINE_NAME_BY_BACKEND.get(backend.caps.backend_id, backend.caps.backend_id)
     latency_event(events, "generation_params_ready", started_total)
     started = time.perf_counter()
     try:
@@ -2057,6 +2057,16 @@ def build_voice_backend_registry() -> VoiceBackendRegistry:
 
 
 VOICE_BACKENDS = build_voice_backend_registry()
+# Experimental, explicit-only sidecar backend; registration imports no Qwen deps.
+from chatterbox.agent.qwen_backend import register_qwen_backend  # noqa: E402
+
+register_qwen_backend(VOICE_BACKENDS)
+
+ENGINE_NAME_BY_BACKEND = {
+    "chatterbox_turbo": "chatterbox_turbo",
+    "chatterbox_base_affect": "chatterbox_base",
+    "qwen3_tts": "qwen3_tts",
+}
 
 
 def select_voice_backend_for_request(
