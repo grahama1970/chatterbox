@@ -145,6 +145,7 @@ docker run -d \
   -v "${repo_root}:/work:ro" \
   -v "${out_dir}:/out" \
   -v "${ref_audio}:/data/embry_ref.wav:ro" \
+  -v chatterbox-hf-cache:/root/.cache/huggingface \
   "$image" \
   -m uvicorn chatterbox.agent.server:app --host 0.0.0.0 --port "$container_port"
 

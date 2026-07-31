@@ -27,6 +27,14 @@ from chatterbox.agent.chunking import (
     compile_render_plan,
     declared_chunk_hash_failures,
 )
+from chatterbox.agent.backends import (
+    DECLARED_SAMPLE_RATE,
+    CallableVoiceBackend,
+    UnknownBackendError,
+    UnsupportedCapabilityError,
+    VoiceBackendRegistry,
+    VoiceCapabilities,
+)
 from chatterbox.agent.stream_manifest import (
     StreamManifest,
     validate_stream_manifest,
@@ -119,6 +127,7 @@ class SynthesisRequest(BaseModel):
     pace: str | None = Field(default=None, max_length=80)
     pause_strategy: str | None = Field(default=None, max_length=120)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
+    backend: str | None = Field(default=None, max_length=80)
     temperature: float | None = Field(default=None, ge=0.05, le=5.0)
     top_p: float | None = Field(default=None, ge=0.0, le=1.0)
     top_k: int | None = Field(default=None, ge=1, le=5000)
@@ -145,6 +154,7 @@ class SynthesisBatchRequest(RenderPlanRequest):
     pace: str | None = Field(default=None, max_length=80)
     pause_strategy: str | None = Field(default=None, max_length=120)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
+    backend: str | None = Field(default=None, max_length=80)
     delivery_arc: list[dict[str, str]] | None = None
     render_chunks: list[dict[str, Any]] | None = None
     include_completion_cue: bool = True
@@ -778,25 +788,29 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
     voice_delivery = voice_delivery_for_request(request)
     stochasticity = stochasticity_for_request(request)
     knobs = emotion_knobs_from_delivery(voice_delivery)
-    engine_used = "chatterbox_base" if knobs else "chatterbox_turbo"
+    try:
+        backend, backend_selection = select_voice_backend_for_request(request.backend, knobs)
+    except UnknownBackendError as exc:
+        raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
+    except UnsupportedCapabilityError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"reason": str(exc), "backend": exc.backend_id, "capability": exc.capability},
+        ) from exc
+    engine_used = "chatterbox_base" if backend.caps.backend_id == "chatterbox_base_affect" else "chatterbox_turbo"
     latency_event(events, "generation_params_ready", started_total)
     started = time.perf_counter()
     try:
         with render_lock:
-            if knobs:
-                base = get_base_model()
-                latency_event(events, "voice_conditioning_ready", started_total, engine="chatterbox_base", render_lock="held")
-                wav = base.generate(
-                    request.text,
-                    audio_prompt_path=str(ref_audio),
-                    exaggeration=float(knobs["exaggeration"]),
-                    cfg_weight=float(knobs["cfg_weight"]),
-                    temperature=float(knobs["temperature"]),
+            if backend.caps.backend_id == "chatterbox_base_affect":
+                wav, render_sr, conditioning = backend.synthesize(
+                    text=request.text, ref_audio=ref_audio, knobs=knobs
                 )
-                render_sr = base.sr
-                conditioning = {"reference_audio": str(ref_audio), "engine": "chatterbox_base", "emotion_knobs": knobs}
+                latency_event(events, "voice_conditioning_ready", started_total, engine="chatterbox_base", render_lock="held")
             else:
-                conditioning = prepare_voice_conditioning(ref_audio, params)
+                wav, render_sr, conditioning = backend.synthesize(
+                    text=request.text, ref_audio=ref_audio, params=params
+                )
                 latency_event(
                     events,
                     "voice_conditioning_ready",
@@ -805,8 +819,6 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
                     cache_key=conditioning.get("conditioning_cache_key"),
                     render_lock="held",
                 )
-                wav = model.generate(request.text, audio_prompt_path=None, **params)
-                render_sr = model.sr
         generation_seconds = round(time.perf_counter() - started, 3)
         latency_event(events, "first_audio_ready", started_total, generation_seconds=generation_seconds)
         ta.save(str(out_path), wav, render_sr)
@@ -821,6 +833,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "mocked": False,
             "live": True,
             "engine": engine_used,
+            "backend": backend_selection,
             "requested_device": DEVICE,
             "text": request.text,
             "text_sha256": hashlib.sha256(request.text.encode("utf-8")).hexdigest(),
@@ -850,11 +863,20 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         failed_gates.append("duration_present")
     if int(metrics.get("bytes") or 0) <= 44:
         failed_gates.append("audio_non_empty")
+    if int(render_sr) != DECLARED_SAMPLE_RATE:
+        failed_gates.append("output_sample_rate_matches_declared")
     return {
         "ok": not failed_gates,
         "mocked": False,
         "live": True,
         "engine": engine_used,
+        "backend": backend_selection,
+        "output_format": {
+            "declared_sample_rate": DECLARED_SAMPLE_RATE,
+            "backend_sample_rate": int(render_sr),
+            "channels": 1,
+            "container": "wav",
+        },
         "emotion_knobs": knobs,
         "requested_device": DEVICE,
         "text": request.text,
@@ -1886,6 +1908,8 @@ def health() -> dict[str, Any]:
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": CHATTERBOX_TAG_HANDLING,
         "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
+        "voice_backends": VOICE_BACKENDS.summary(),
+        "supported_backends": VOICE_BACKENDS.ids(),
         "torch": torch_info,
         "nvidia_smi": run_cmd(["nvidia-smi", "--query-gpu=name,memory.total,memory.used,memory.free,driver_version", "--format=csv,noheader"]),
     }
@@ -1951,6 +1975,109 @@ def get_base_model() -> Any:
         base_model = ChatterboxTTS.from_pretrained(device=DEVICE)
         base_model_load_seconds = round(time.perf_counter() - started, 3)
     return base_model
+
+
+def build_voice_backend_registry() -> VoiceBackendRegistry:
+    registry = VoiceBackendRegistry()
+
+    def turbo_generate(*, text: str, ref_audio: Path, params: dict[str, Any]):
+        conditioning = prepare_voice_conditioning(ref_audio, params)
+        wav = model.generate(text, audio_prompt_path=None, **params)
+        return wav, model.sr, conditioning
+
+    def affect_generate(*, text: str, ref_audio: Path, knobs: dict[str, Any]):
+        base = get_base_model()
+        wav = base.generate(
+            text,
+            audio_prompt_path=str(ref_audio),
+            exaggeration=float(knobs["exaggeration"]),
+            cfg_weight=float(knobs["cfg_weight"]),
+            temperature=float(knobs["temperature"]),
+        )
+        conditioning = {
+            "reference_audio": str(ref_audio),
+            "engine": "chatterbox_base",
+            "emotion_knobs": knobs,
+        }
+        return wav, base.sr, conditioning
+
+    def unload_base_model() -> None:
+        global base_model, base_model_load_seconds
+        base_model = None
+        base_model_load_seconds = None
+
+    registry.register(
+        CallableVoiceBackend(
+            caps=VoiceCapabilities(
+                backend_id="chatterbox_turbo",
+                revision="ResembleAI/chatterbox-turbo",
+                voice_cloning=True,
+                preset_voices=False,
+                structured_affect_axes=False,
+                per_segment_delivery=True,
+                true_incremental_streaming=False,
+                cooperative_inference_cancellation=False,
+                stale_output_fencing=True,
+                deterministic_seed=False,
+                input_sample_formats=("wav_any_sr_reference",),
+                output_sample_formats=("wav_float32_24000", "pcm_s16le_24000"),
+                estimated_resident_vram_mb=3500,
+                max_concurrency=1,
+            ),
+            loader=lambda: load_model() if model is None else None,
+            generator=turbo_generate,
+            is_loaded=lambda: model is not None,
+        )
+    )
+    registry.register(
+        CallableVoiceBackend(
+            caps=VoiceCapabilities(
+                backend_id="chatterbox_base_affect",
+                revision="ResembleAI/chatterbox",
+                voice_cloning=True,
+                preset_voices=False,
+                structured_affect_axes=True,
+                per_segment_delivery=True,
+                true_incremental_streaming=False,
+                cooperative_inference_cancellation=False,
+                stale_output_fencing=True,
+                deterministic_seed=False,
+                input_sample_formats=("wav_any_sr_reference",),
+                output_sample_formats=("wav_float32_24000", "pcm_s16le_24000"),
+                estimated_resident_vram_mb=3000,
+                max_concurrency=1,
+            ),
+            loader=lambda: get_base_model() and None,
+            generator=affect_generate,
+            is_loaded=lambda: base_model is not None,
+            unloader=unload_base_model,
+        )
+    )
+    return registry
+
+
+VOICE_BACKENDS = build_voice_backend_registry()
+
+
+def select_voice_backend_for_request(
+    requested: str | None,
+    knobs: dict[str, Any] | None,
+) -> tuple[CallableVoiceBackend, dict[str, Any]]:
+    """Explicit selection wins and is capability-checked; otherwise weighted
+    affect routes to the base model exactly as before."""
+    if requested:
+        backend = VOICE_BACKENDS.get(requested)
+        if knobs and not backend.caps.structured_affect_axes:
+            raise UnsupportedCapabilityError(backend.caps.backend_id, "structured_affect_axes")
+        selection_source = "request.backend"
+    else:
+        backend = VOICE_BACKENDS.get("chatterbox_base_affect" if knobs else "chatterbox_turbo")
+        selection_source = "affect_auto" if knobs else "default"
+    return backend, {
+        "id": backend.caps.backend_id,
+        "selection_source": selection_source,
+        "capability_digest": backend.caps.digest(),
+    }
 
 
 @app.post("/synthesize-emotion")
@@ -2029,6 +2156,17 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             "reason": "render_chunk_hash_mismatch",
             "failed_gates": hash_failures,
         }
+    try:
+        _, batch_backend_selection = select_voice_backend_for_request(
+            request.backend, emotion_knobs_from_delivery(batch_voice_delivery)
+        )
+    except UnknownBackendError as exc:
+        raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
+    except UnsupportedCapabilityError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"reason": str(exc), "backend": exc.backend_id, "capability": exc.capability},
+        ) from exc
     latency_event(batch_events, "batch_dir_ready", started_total)
     blessed_qra_lookup = (
         apply_blessed_qra_memory_gate(
@@ -2113,6 +2251,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             pace=request.pace,
             pause_strategy=request.pause_strategy,
             voice_delivery={**batch_voice_delivery, "delivery_stage": chunk["delivery_stage"]},
+            backend=request.backend,
         )
         base_filename = f"chunk_{chunk['index']:02d}_{chunk['delivery_stage']}"
         out_path = batch_dir / f"{base_filename}.wav"
@@ -2169,6 +2308,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             pace=request.pace,
             pause_strategy=request.pause_strategy,
             voice_delivery={**batch_voice_delivery, "delivery_stage": "closing"},
+            backend=request.backend,
         )
         if request.asr_verify and asr_api_key:
             completion_result = synthesize_asr_accepted_to_file(
@@ -2236,6 +2376,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "answer_text_sha256": plan["answer_text_sha256"],
         "render_plan": plan,
         "render_plan_digest": plan["render_plan_digest"],
+        "backend": batch_backend_selection,
         "chunks": chunk_results,
         "completion_cue": completion_result,
         "finished_response_audio": str(finished_audio),
@@ -2293,6 +2434,17 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
     batch_dir = OUT_DIR / batch_label
     batch_dir.mkdir(parents=True, exist_ok=True)
     stream_voice_delivery = voice_delivery_for_request(request)
+    try:
+        _, stream_backend_selection = select_voice_backend_for_request(
+            request.backend, emotion_knobs_from_delivery(stream_voice_delivery)
+        )
+    except UnknownBackendError as exc:
+        raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
+    except UnsupportedCapabilityError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"reason": str(exc), "backend": exc.backend_id, "capability": exc.capability},
+        ) from exc
     blessed_qra_lookup = (
         apply_blessed_qra_memory_gate(
             request,
@@ -2345,6 +2497,7 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 "repeat_group_id": request.repeat_group_id,
             },
             "backend": {
+                **stream_backend_selection,
                 "engine": "chatterbox_turbo",
                 "device": DEVICE,
                 "server_started_at_utc": started_at_utc,
@@ -2428,6 +2581,7 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 pace=request.pace,
                 pause_strategy=request.pause_strategy,
                 voice_delivery={**stream_voice_delivery, "delivery_stage": item.get("delivery_stage")},
+                backend=request.backend,
             )
             out_path = batch_dir / f"stream_{item['index']:02d}_{item.get('delivery_stage', 'neutral')}.wav"
             result = synthesize_to_file(chunk_request, out_path)
