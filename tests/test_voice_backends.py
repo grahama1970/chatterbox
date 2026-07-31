@@ -76,7 +76,7 @@ AFFECT_DELIVERY = {"intensity": 0.7, "valence": -0.4}
 
 def test_capabilities_and_digests_present() -> None:
     summary = server.VOICE_BACKENDS.summary()
-    assert sorted(summary) == ["chatterbox_base_affect", "chatterbox_turbo"]
+    assert {"chatterbox_base_affect", "chatterbox_turbo"}.issubset(summary)
     for entry in summary.values():
         caps = entry["capabilities"]
         for field in (

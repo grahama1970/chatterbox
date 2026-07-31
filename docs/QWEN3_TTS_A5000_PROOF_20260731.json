@@ -1,0 +1,226 @@
+{
+  "cold_load_from_cache": {
+    "load_seconds": 4.913,
+    "vram": {
+      "cuda": true,
+      "peak_mb": 4008.5,
+      "resident_mb": 4006.8
+    },
+    "wall_s": 5.036
+  },
+  "cold_load_including_download_seconds_earlier_run": 48.878,
+  "environment": {
+    "agent_container": "chatterbox-fork-agent-server",
+    "gpu": "NVIDIA RTX A5000, 570.211.01, 24564 MiB",
+    "sidecar_container": "qwen3-tts-sidecar"
+  },
+  "failed_gates": [],
+  "latency_note": "non-streaming adapter: TTFA equals full synthesis wall time by design (capability true_incremental_streaming=false)",
+  "live": true,
+  "mid_stream_cancel": {
+    "manifest_backend": {
+      "capability_digest": "56e68f4e55501f6a976eff0a5e09a63576ea152ebbdde773fa7a16977fa0fa8a",
+      "device": "cuda",
+      "engine": "chatterbox_turbo",
+      "id": "qwen3_tts",
+      "selection_source": "request.backend",
+      "server_started_at_utc": "2026-07-31T13:06:41Z"
+    },
+    "post_cancel_drained_bytes": 11520,
+    "stream_id": "stream-5d441234c6464f38",
+    "terminal": {
+      "at_utc": "2026-07-31T13:09:10.031985Z",
+      "control_state": {
+        "cancelled": true,
+        "last_action": "cancel",
+        "stale_chunks_should_skip": true,
+        "turn_id": "turn-qwen-bd881d88",
+        "updated_at": "2026-07-31T13:09:10Z"
+      },
+      "failed_gates": [],
+      "published_bytes": 13440,
+      "published_frames": 7,
+      "reason": "turn_cancelled",
+      "status": "cancelled"
+    }
+  },
+  "mocked": false,
+  "no_silent_fallback": {
+    "qwen_down_engine": "qwen3_tts",
+    "qwen_down_error_present": true,
+    "qwen_down_ok": false,
+    "turbo_engine": "chatterbox_turbo",
+    "turbo_still_ok": true
+  },
+  "ok": true,
+  "proof_scope": "qwen3_tts_backend_rtx_a5000_live",
+  "sidecar_capabilities": {
+    "cancellation_unsupported_reason": "no_mid_generation_abort_in_contract_v1",
+    "cooperative_model_cancellation": false,
+    "custom_voice": false,
+    "deterministic_seed": false,
+    "input_sample_formats": [
+      "wav_b64_any_sr_reference"
+    ],
+    "max_concurrency": 1,
+    "model_id": "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+    "output_sample_formats": [
+      "float32le_b64_model_sr"
+    ],
+    "per_request_instruction": false,
+    "per_segment_delivery": false,
+    "revision": null,
+    "schema": "chatterbox.qwen_sidecar_capabilities.v1",
+    "streaming_unsupported_reason": "sidecar_contract_v1_non_streaming",
+    "true_incremental_streaming": false,
+    "voice_clone": true,
+    "voice_design": false
+  },
+  "sidecar_health": {
+    "device": "cuda:0",
+    "live": true,
+    "mocked": false,
+    "model_id": "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+    "model_load_seconds": 4.913,
+    "model_loaded": true,
+    "ok": true,
+    "revision": null,
+    "schema": "chatterbox.qwen_sidecar.v1",
+    "versions": {
+      "qwen_tts": "unknown",
+      "torch": "2.6.0+cu124",
+      "transformers": "4.57.3"
+    },
+    "vram": {
+      "cuda": true,
+      "peak_mb": 4008.5,
+      "resident_mb": 4006.8
+    }
+  },
+  "structured_delivery_request": {
+    "detail": {
+      "backend": "qwen3_tts",
+      "capability": "structured_affect_axes",
+      "reason": "backend_capability_unsupported:structured_affect_axes"
+    },
+    "status": 422
+  },
+  "ttfa_full_synth_p50_s": 6.982,
+  "ttfa_full_synth_p95_s": 7.413,
+  "unload_reload": {
+    "model_loaded_after_unload": false,
+    "reload_render_ok": true,
+    "reload_wall_s": 10.81,
+    "unload": {
+      "model_loaded": false,
+      "ok": true,
+      "vram": {
+        "cuda": true,
+        "peak_mb": 8.1,
+        "resident_mb": 8.1
+      }
+    }
+  },
+  "warm_renders": [
+    {
+      "backend": {
+        "capability_digest": "56e68f4e55501f6a976eff0a5e09a63576ea152ebbdde773fa7a16977fa0fa8a",
+        "id": "qwen3_tts",
+        "selection_source": "request.backend"
+      },
+      "duration_seconds": 4.32,
+      "engine": "qwen3_tts",
+      "generation_seconds": 20.568,
+      "ok": true,
+      "output_format": {
+        "backend_sample_rate": 24000,
+        "channels": 1,
+        "container": "wav",
+        "declared_sample_rate": 24000
+      },
+      "realtime_factor": 4.761,
+      "status": 200,
+      "wall_s": 20.634
+    },
+    {
+      "backend": {
+        "capability_digest": "56e68f4e55501f6a976eff0a5e09a63576ea152ebbdde773fa7a16977fa0fa8a",
+        "id": "qwen3_tts",
+        "selection_source": "request.backend"
+      },
+      "duration_seconds": 3.6,
+      "engine": "qwen3_tts",
+      "generation_seconds": 6.916,
+      "ok": true,
+      "output_format": {
+        "backend_sample_rate": 24000,
+        "channels": 1,
+        "container": "wav",
+        "declared_sample_rate": 24000
+      },
+      "realtime_factor": 1.921,
+      "status": 200,
+      "wall_s": 6.982
+    },
+    {
+      "backend": {
+        "capability_digest": "56e68f4e55501f6a976eff0a5e09a63576ea152ebbdde773fa7a16977fa0fa8a",
+        "id": "qwen3_tts",
+        "selection_source": "request.backend"
+      },
+      "duration_seconds": 4.0,
+      "engine": "qwen3_tts",
+      "generation_seconds": 7.352,
+      "ok": true,
+      "output_format": {
+        "backend_sample_rate": 24000,
+        "channels": 1,
+        "container": "wav",
+        "declared_sample_rate": 24000
+      },
+      "realtime_factor": 1.838,
+      "status": 200,
+      "wall_s": 7.413
+    },
+    {
+      "backend": {
+        "capability_digest": "56e68f4e55501f6a976eff0a5e09a63576ea152ebbdde773fa7a16977fa0fa8a",
+        "id": "qwen3_tts",
+        "selection_source": "request.backend"
+      },
+      "duration_seconds": 3.76,
+      "engine": "qwen3_tts",
+      "generation_seconds": 6.216,
+      "ok": true,
+      "output_format": {
+        "backend_sample_rate": 24000,
+        "channels": 1,
+        "container": "wav",
+        "declared_sample_rate": 24000
+      },
+      "realtime_factor": 1.653,
+      "status": 200,
+      "wall_s": 6.278
+    },
+    {
+      "backend": {
+        "capability_digest": "56e68f4e55501f6a976eff0a5e09a63576ea152ebbdde773fa7a16977fa0fa8a",
+        "id": "qwen3_tts",
+        "selection_source": "request.backend"
+      },
+      "duration_seconds": 3.68,
+      "engine": "qwen3_tts",
+      "generation_seconds": 6.698,
+      "ok": true,
+      "output_format": {
+        "backend_sample_rate": 24000,
+        "channels": 1,
+        "container": "wav",
+        "declared_sample_rate": 24000
+      },
+      "realtime_factor": 1.82,
+      "status": 200,
+      "wall_s": 6.778
+    }
+  ]
+}
