@@ -27,6 +27,10 @@ from chatterbox.agent.chunking import (
     compile_render_plan,
     declared_chunk_hash_failures,
 )
+from chatterbox.agent.stream_manifest import (
+    StreamManifest,
+    validate_stream_manifest,
+)
 from chatterbox.agent.presets import (
     ALLOWED_TONES,
     CHATTERBOX_TAG_HANDLING,
@@ -1810,6 +1814,35 @@ def bounded_pcm_frames(
         yield data[offset : offset + block_size]
 
 
+class StreamSegmentSynthesisError(RuntimeError):
+    """A planned segment failed to synthesize; the stream must terminate failed."""
+
+
+STREAM_MANIFEST_INDEX: dict[str, str] = {}
+STREAM_MANIFEST_INDEX_MAX = 256
+
+
+def register_stream_manifest(stream_id: str, path: Path) -> None:
+    STREAM_MANIFEST_INDEX[stream_id] = str(path)
+    while len(STREAM_MANIFEST_INDEX) > STREAM_MANIFEST_INDEX_MAX:
+        STREAM_MANIFEST_INDEX.pop(next(iter(STREAM_MANIFEST_INDEX)))
+
+
+@app.get("/stream-manifest/{stream_id}")
+def get_stream_manifest(stream_id: str) -> dict[str, Any]:
+    path = STREAM_MANIFEST_INDEX.get(stream_id)
+    if not path or not Path(path).exists():
+        raise HTTPException(status_code=404, detail="stream_manifest_not_found")
+    manifest = json.loads(Path(path).read_text(encoding="utf-8"))
+    return {
+        "ok": True,
+        "mocked": False,
+        "live": True,
+        "manifest": manifest,
+        "validation_failures": validate_stream_manifest(manifest),
+    }
+
+
 @app.on_event("startup")
 def load_model() -> None:
     global model, model_load_seconds
@@ -2296,6 +2329,38 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
         batch_label=batch_label,
         voice_delivery=stream_voice_delivery,
     )
+    stream_id = f"stream-{uuid4().hex[:16]}"
+    manifest = StreamManifest(
+        batch_dir / f"stream_manifest_{stream_id}.json",
+        stream_id=stream_id,
+        header={
+            "batch_label": batch_label,
+            "entry_point": "synthesize_batch_stream",
+            "request_digest": sha256_text(
+                json.dumps(request.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+            ),
+            "render_plan_digest": plan["render_plan_digest"],
+            "lineage": {
+                "turn_id": request.turn_id,
+                "repeat_group_id": request.repeat_group_id,
+            },
+            "backend": {
+                "engine": "chatterbox_turbo",
+                "device": DEVICE,
+                "server_started_at_utc": started_at_utc,
+            },
+            "output_format": {
+                "encoding": "pcm_s16le",
+                "sample_rate": STREAM_SAMPLE_RATE,
+                "channels": STREAM_CHANNELS,
+                "publication_frame_ms": STREAM_PUBLICATION_FRAME_MS,
+            },
+            "blessed_qra_hit": bool(blessed_qra_lookup.get("hit")),
+            "planned_segment_count": plan["chunk_count"],
+        },
+    )
+    register_stream_manifest(stream_id, manifest.path)
+    totals = {"published_bytes": 0, "published_frames": 0}
 
     def pcm_bytes(wav: Any) -> bytes:
         import torch
@@ -2308,22 +2373,26 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
         return stream_turn_should_stop(request.turn_id)
 
     def guarded_pcm_chunks(wav: Any, sample_rate: int = STREAM_SAMPLE_RATE):
-        yield from bounded_pcm_frames(
+        for frame in bounded_pcm_frames(
             pcm_bytes(wav),
             stop_if_turn_controlled,
             sample_rate=sample_rate,
-        )
+        ):
+            totals["published_bytes"] += len(frame)
+            totals["published_frames"] += 1
+            yield frame
 
-    def iter_audio():
+    def produce():
         import torch
         import torchaudio as ta
 
         if blessed_qra_lookup.get("hit"):
-            for chunk in blessed_qra_lookup["chunks"]:
+            for index, chunk in enumerate(blessed_qra_lookup["chunks"], start=1):
                 if stop_if_turn_controlled():
                     return
                 wav, sr = ta.load(str(chunk["audio"]))
                 yield from guarded_pcm_chunks(wav, sr)
+                manifest.record("cached_segment_published", segment_index=index)
                 pause_ms = int(chunk.get("pause_after_ms") or 0) if request.blessed_qra_preserve_pauses else 0
                 if pause_ms > 0:
                     silence_len = int(sr * (pause_ms / 1000))
@@ -2363,7 +2432,17 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
             out_path = batch_dir / f"stream_{item['index']:02d}_{item.get('delivery_stage', 'neutral')}.wav"
             result = synthesize_to_file(chunk_request, out_path)
             if not result.get("ok"):
-                continue
+                manifest.record(
+                    "segment_synthesis_failed",
+                    segment_index=item["index"],
+                    is_completion_cue=bool(item.get("is_completion_cue")),
+                )
+                raise StreamSegmentSynthesisError(f"chunk_{item['index']}_synthesis_ok")
+            manifest.record(
+                "segment_synthesized",
+                segment_index=item["index"],
+                is_completion_cue=bool(item.get("is_completion_cue")),
+            )
             if stop_if_turn_controlled():
                 return
             wav, sr = ta.load(str(out_path))
@@ -2423,12 +2502,45 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 return
             yield from guarded_pcm_chunks(pending_tail, sample_rate or STREAM_SAMPLE_RATE)
 
+    def iter_audio():
+        try:
+            yield from produce()
+        except GeneratorExit:
+            manifest.finalize("cancelled", reason="client_disconnected", **totals)
+            raise
+        except StreamSegmentSynthesisError as exc:
+            manifest.finalize(
+                "failed",
+                reason="segment_synthesis_failed",
+                failed_gates=[str(exc)],
+                **totals,
+            )
+            return
+        except Exception as exc:
+            manifest.finalize(
+                "failed",
+                reason=f"producer_exception:{type(exc).__name__}",
+                **totals,
+            )
+            raise
+        state = turn_controls.get(request.turn_id) if request.turn_id else None
+        if state and (state.get("cancelled") or state.get("stopped")):
+            manifest.finalize(
+                "cancelled",
+                reason="turn_cancelled" if state.get("cancelled") else "turn_stopped",
+                control_state={key: value for key, value in state.items() if key != "events"},
+                **totals,
+            )
+        else:
+            manifest.finalize("completed", **totals)
+
     return StreamingResponse(
         iter_audio(),
         media_type="audio/L16; rate=24000; channels=1",
         headers={
             "X-Render-Plan-Digest": plan["render_plan_digest"],
             "X-Batch-Label": batch_label,
+            "X-Stream-Id": stream_id,
         },
     )
 
