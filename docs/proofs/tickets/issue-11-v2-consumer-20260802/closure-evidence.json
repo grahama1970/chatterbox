@@ -1,0 +1,59 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 11,
+  "ticket": "https://github.com/grahama1970/chatterbox/issues/11",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "primary_receipt": "docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/receipt.json",
+  "proof_markdown": "docs/proofs/tickets/issue-11-v2-consumer-20260802/README.md",
+  "unit": {
+    "command": "PYTHONPATH=src uv run --no-sync python -m pytest -q tests/test_agent_server_primitives.py tests/test_render_plan_parity.py tests/test_stream_manifest_lifecycle.py",
+    "exit_code": 0,
+    "passed": 60
+  },
+  "e2e": {
+    "command": "PYTHONPATH=src uv run --no-sync python scripts/smoke_tau_voice_render_v2.py --allow-live",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/chatterbox/docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/receipt.json"
+  },
+  "commands": [
+    {
+      "cmd": "python -m ruff check src/chatterbox/agent/server.py tests/test_agent_server_primitives.py scripts/smoke_tau_voice_render_v2.py",
+      "result": "All checks passed!"
+    },
+    {
+      "cmd": "PYTHONPATH=src uv run --no-sync python -m pytest -q tests/test_agent_server_primitives.py tests/test_render_plan_parity.py tests/test_stream_manifest_lifecycle.py",
+      "result": "60 passed, 4 warnings in 2.88s"
+    },
+    {
+      "cmd": "PYTHONPATH=src uv run --no-sync python scripts/smoke_tau_voice_render_v2.py --allow-live",
+      "result": "PASS; wrote docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/receipt.json with failed_gates=[]"
+    },
+    {
+      "cmd": "git diff --check",
+      "result": "exit code 0; no whitespace errors"
+    },
+    {
+      "cmd": "scripts/best-practices-github-ticket/scripts/audit-worktrees.sh equivalent",
+      "result": "ok=true total=1 tmp=0 detached=0 prunable=0 dirty_secondary=0"
+    }
+  ],
+  "live_receipt_invariants": {
+    "http_status": 200,
+    "failed_gates": [],
+    "request_lineage_digest": "10242ccd97287926fbb0692163429ee95427e692dc63daf88f3a63b161b0e95b",
+    "consumer_digest_matches": true,
+    "stale_response_id_rejected": true,
+    "current_response_cancel_accepted": true,
+    "duplicate_cancel_idempotent": true,
+    "finished_response_audio_non_empty": true
+  },
+  "does_not_prove": [
+    "perceptual quality of generated voice",
+    "GPU model load on this host",
+    "streaming terminal behavior beyond existing issue #10 manifest tests"
+  ]
+}
