@@ -1,0 +1,74 @@
+{
+  "applied_controls": [
+    {
+      "applied": {
+        "can_interrupt_after": true,
+        "delivery_stage": "recoverable_blocker",
+        "pace": null,
+        "pause_after_ms": 0,
+        "pause_strategy": null,
+        "tone": "careful_concerned"
+      },
+      "chunk_index": 1,
+      "normalized": {
+        "delivery_stage": "recoverable_blocker",
+        "pace": null,
+        "pause_after_ms": 0,
+        "pause_strategy": null,
+        "tone": "careful_concerned"
+      },
+      "requested": {
+        "delivery_stage": "recoverable_blocker",
+        "pace": null,
+        "pause_after_ms": 0,
+        "pause_strategy": null,
+        "tone": "careful_concerned"
+      }
+    }
+  ],
+  "batch_label": "issue-11-v2-live",
+  "entry_point": "synthesize_batch.blessed_qra",
+  "plan": {
+    "answer_text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict.",
+    "answer_text_sha256": "ded3daa7a74038fc6a9172a4195fd380a378831bae1c76017266340491abc946",
+    "chunk_count": 1,
+    "chunking_strategy": {
+      "does_not_split_inside_words": true,
+      "hard_cap_enforced": false,
+      "name": "caller_supplied_chunks",
+      "requested_max_chars": 300,
+      "safety_activated": false,
+      "splitter": "caller_supplied_speakable_chunks",
+      "target_max_chars": 300,
+      "turbo_safety_recommended_max_chars": 300
+    },
+    "chunks": [
+      {
+        "arc_position": 1.0,
+        "can_interrupt_after": true,
+        "char_len": 117,
+        "delivery_role": "blessed_chunk_1",
+        "delivery_stage": "recoverable_blocker",
+        "delivery_tone": "",
+        "index": 1,
+        "pace": null,
+        "pause_after_ms": 0,
+        "pause_strategy": null,
+        "requested_delivery_stage": "recoverable_blocker",
+        "requested_tone": null,
+        "text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict.",
+        "text_sha256": "ded3daa7a74038fc6a9172a4195fd380a378831bae1c76017266340491abc946",
+        "tone": null,
+        "total": 1
+      }
+    ],
+    "completion_cue": null,
+    "completion_cue_sha256": null,
+    "max_chars": 300,
+    "plan_schema": "chatterbox.render_plan.v1",
+    "render_plan_digest": "926f68459787553df342b8b71931fdcb800cda09c6e0c0d6be65ad46359f0d8f",
+    "requested_max_chars": 300
+  },
+  "render_plan_digest": "926f68459787553df342b8b71931fdcb800cda09c6e0c0d6be65ad46359f0d8f",
+  "schema": "chatterbox.render_plan_receipt.v1"
+}

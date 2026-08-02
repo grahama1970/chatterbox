@@ -10,20 +10,27 @@ import subprocess
 import threading
 import time
 import urllib.request
+import wave
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import Annotated, Any, Callable, Iterator, Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 from chatterbox.agent.asr_acceptance import acceptance_result
 from chatterbox.agent.chunking import (
-    build_render_plan,
-    build_render_plan_from_chunks,
     compile_render_plan,
     declared_chunk_hash_failures,
 )
@@ -68,6 +75,12 @@ BLESSED_QRA_LEDGER_PATH = Path(os.getenv("CHATTERBOX_BLESSED_QRA_LEDGER", str(OU
 ASR_ACCEPTANCE_VERSION = "asr_acceptance.v1"
 TEXT_NORMALIZATION_VERSION = "asr_acceptance.normalize_text.v1"
 STREAM_PROTOCOL_VERSION = "pcm_l16_chunk_stream.v1"
+TAU_VOICE_RENDER_REQUEST_V1 = "tau.voice_render_request.v1"
+TAU_VOICE_RENDER_REQUEST_V2 = "tau.voice_render_request.v2"
+SUPPORTED_TAU_VOICE_RENDER_REQUEST_SCHEMAS = (
+    TAU_VOICE_RENDER_REQUEST_V1,
+    TAU_VOICE_RENDER_REQUEST_V2,
+)
 REFERENCE_AUDIO_ROOTS = [
     Path(item)
     for item in os.getenv(
@@ -85,7 +98,9 @@ base_model_load_seconds: float | None = None
 started_at_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 voice_conditioning_cache: dict[str, Any] = {}
 turn_controls: dict[str, dict[str, Any]] = {}
+tau_response_controls: dict[str, dict[str, Any]] = {}
 render_lock = threading.RLock()
+NonEmptyStr = Annotated[str, StringConstraints(min_length=1)]
 
 ASR_CANDIDATE_VARIANTS: list[dict[str, Any]] = [
     {"name": "stage_default", "overrides": {}},
@@ -187,7 +202,7 @@ class TauVoiceTurnControlPolicy(BaseModel):
 
 
 class TauVoiceRenderRequest(BaseModel):
-    schema: str = Field(default="tau.voice_render_request.v1")
+    schema: str = Field(default=TAU_VOICE_RENDER_REQUEST_V1)
     run_id: str | None = Field(default=None, max_length=160)
     conversation_id: str = Field(min_length=1, max_length=160)
     turn_id: str = Field(min_length=1, max_length=120)
@@ -227,6 +242,141 @@ class TurnControlRequest(BaseModel):
     reason: str | None = Field(default=None, max_length=240)
     old_turn_id: str | None = Field(default=None, max_length=120)
     new_turn_id: str | None = Field(default=None, max_length=120)
+    conversation_id: str | None = Field(default=None, max_length=160)
+    turn_revision: int | None = Field(default=None, ge=0)
+    response_id: str | None = Field(default=None, max_length=160)
+    expected_cancel_epoch: int | None = Field(default=None, ge=0)
+
+
+class StrictTauVoiceModel(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        strict=True,
+        allow_inf_nan=False,
+        validate_default=True,
+        revalidate_instances="always",
+    )
+
+
+def tuple_from_json_array(value: Any) -> Any:
+    if isinstance(value, list):
+        return tuple(value)
+    return value
+
+
+class TauVoiceDeliverySettingsV2(StrictTauVoiceModel):
+    tone: NonEmptyStr | None = None
+    intensity: float | None = None
+    valence: float | None = None
+    stage: NonEmptyStr | None = None
+
+
+class TauVoiceDeliveryDecisionV2(StrictTauVoiceModel):
+    policy_version: NonEmptyStr
+    requested_delivery: TauVoiceDeliverySettingsV2
+    effective_delivery: TauVoiceDeliverySettingsV2
+    overridden_fields: tuple[NonEmptyStr, ...] = ()
+    override_reasons: dict[NonEmptyStr, NonEmptyStr] = Field(default_factory=dict)
+    evidence_references: tuple[NonEmptyStr, ...] = ()
+    profile_validation_status: Literal["declared_profile", "undeclared_profile", "no_tone"]
+
+    @field_validator("overridden_fields", "evidence_references", mode="before")
+    @classmethod
+    def accept_json_arrays(cls, value: Any) -> Any:
+        return tuple_from_json_array(value)
+
+    @model_validator(mode="after")
+    def overrides_reconcile(self) -> "TauVoiceDeliveryDecisionV2":
+        if set(self.overridden_fields) != set(self.override_reasons):
+            raise ValueError("overridden_fields must exactly match override_reasons keys")
+        return self
+
+
+class TauVoiceSourceLineageV2(StrictTauVoiceModel):
+    workflow: NonEmptyStr
+    run_id: NonEmptyStr
+    node_id: NonEmptyStr
+    attempt_id: NonEmptyStr | None = None
+    scheduler_journal_sequence: int | None = None
+    state_digest: NonEmptyStr | None = None
+    goal_hash: NonEmptyStr | None = None
+    event_type: NonEmptyStr = "state_change"
+    state_transition: NonEmptyStr | None = None
+
+
+class TauVoiceResponseIdentityV2(StrictTauVoiceModel):
+    request_id: NonEmptyStr
+    conversation_id: NonEmptyStr
+    turn_id: NonEmptyStr
+    turn_revision: int = Field(ge=0)
+    response_id: NonEmptyStr
+    cancel_epoch: int = Field(ge=0)
+    supersedes_response_id: NonEmptyStr | None = None
+
+
+class TauVoiceSegmentV2(StrictTauVoiceModel):
+    segment_id: NonEmptyStr
+    text: NonEmptyStr
+    text_sha256: NonEmptyStr
+    delivery: TauVoiceDeliverySettingsV2 | None = None
+    interruptible: Literal[True] = True
+
+    @field_validator("text_sha256")
+    @classmethod
+    def hash_matches(cls, value: str, info: Any) -> str:
+        text = info.data.get("text")
+        if text is not None and sha256_text(text) != value:
+            raise ValueError("text_sha256 does not match text")
+        return value
+
+
+class TauVoiceControlTargetV2(StrictTauVoiceModel):
+    conversation_id: NonEmptyStr
+    turn_id: NonEmptyStr
+    turn_revision: int = Field(ge=0)
+    response_id: NonEmptyStr
+    expected_cancel_epoch: int = Field(ge=0)
+
+
+class TauVoiceRenderBlockV2(StrictTauVoiceModel):
+    identity: TauVoiceResponseIdentityV2
+    lineage: TauVoiceSourceLineageV2
+    delivery_decision: TauVoiceDeliveryDecisionV2
+    segments: tuple[TauVoiceSegmentV2, ...] = Field(min_length=1)
+    control_target: TauVoiceControlTargetV2
+    extensions: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("segments", mode="before")
+    @classmethod
+    def accept_json_segment_array(cls, value: Any) -> Any:
+        return tuple_from_json_array(value)
+
+    @field_validator("control_target")
+    @classmethod
+    def target_matches_identity(
+        cls, value: TauVoiceControlTargetV2, info: Any
+    ) -> TauVoiceControlTargetV2:
+        identity = info.data.get("identity")
+        if identity is not None and (
+            value.conversation_id != identity.conversation_id
+            or value.turn_id != identity.turn_id
+            or value.turn_revision != identity.turn_revision
+            or value.response_id != identity.response_id
+            or value.expected_cancel_epoch != identity.cancel_epoch
+        ):
+            raise ValueError("control_target must match the response identity")
+        return value
+
+    @model_validator(mode="after")
+    def segments_match_identity(self) -> "TauVoiceRenderBlockV2":
+        segment_ids = [segment.segment_id for segment in self.segments]
+        if len(segment_ids) != len(set(segment_ids)):
+            raise ValueError("segment_id values must be unique")
+        prefix = f"{self.identity.response_id}-"
+        for segment in self.segments:
+            if not segment.segment_id.startswith(prefix):
+                raise ValueError("segment_id must be bound to response_id")
+        return self
 
 
 def sha256_file(path: Path) -> str:
@@ -1302,8 +1452,16 @@ def combine_audio_segments(
     *,
     crossfade_ms: int = 20,
 ) -> dict[str, Any]:
-    import torch
-    import torchaudio as ta
+    try:
+        import torch
+        import torchaudio as ta
+    except (ModuleNotFoundError, OSError) as exc:
+        if crossfade_ms == 0:
+            return combine_pcm_wav_segments(segments, out_path)
+        raise HTTPException(
+            status_code=500,
+            detail=f"torchaudio_unavailable_for_crossfade:{type(exc).__name__}",
+        ) from exc
 
     tensors = []
     sample_rate = None
@@ -1327,6 +1485,48 @@ def combine_audio_segments(
     return audio_metrics(out_path)
 
 
+def combine_pcm_wav_segments(
+    segments: list[dict[str, Any]],
+    out_path: Path,
+) -> dict[str, Any]:
+    """Combine compatible PCM WAV segments without torch/torchaudio."""
+    params: wave._wave_params | None = None
+    frames: list[bytes] = []
+    for segment in segments:
+        audio_path = Path(segment["audio"])
+        with wave.open(str(audio_path), "rb") as handle:
+            current_params = handle.getparams()
+            if current_params.comptype != "NONE":
+                raise HTTPException(status_code=500, detail=f"compressed_wav_not_supported:{audio_path}")
+            compare_params = wave._wave_params(
+                current_params.nchannels,
+                current_params.sampwidth,
+                current_params.framerate,
+                0,
+                current_params.comptype,
+                current_params.compname,
+            )
+            if params is None:
+                params = compare_params
+            if compare_params != params:
+                raise HTTPException(status_code=500, detail=f"wav_params_mismatch:{audio_path}")
+            frames.append(handle.readframes(current_params.nframes))
+        pause_ms = int(segment.get("pause_after_ms") or 0)
+        if pause_ms > 0 and params is not None:
+            silence_frames = int(params.framerate * (pause_ms / 1000))
+            frames.append(b"\x00" * silence_frames * params.nchannels * params.sampwidth)
+    if not frames or params is None:
+        raise HTTPException(status_code=500, detail="no_audio_segments_to_combine")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(out_path), "wb") as handle:
+        handle.setnchannels(params.nchannels)
+        handle.setsampwidth(params.sampwidth)
+        handle.setframerate(params.framerate)
+        handle.writeframes(b"".join(frames))
+    os.chmod(out_path, 0o664)
+    return audio_metrics(out_path)
+
+
 def blessed_qra_cache_disabled_receipt() -> dict[str, Any]:
     return {
         "enabled": False,
@@ -1339,7 +1539,7 @@ def blessed_qra_cache_disabled_receipt() -> dict[str, Any]:
 
 def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest) -> tuple[SynthesisBatchRequest, dict[str, Any]]:
     failed_gates: list[str] = []
-    if request.schema != "tau.voice_render_request.v1":
+    if request.schema != TAU_VOICE_RENDER_REQUEST_V1:
         failed_gates.append("tau_voice_render_schema")
     if request.question_text and request.question_text_sha256 and sha256_text(request.question_text) != request.question_text_sha256:
         failed_gates.append("question_text_sha256_matches")
@@ -1488,6 +1688,298 @@ def synthesis_batch_request_from_tau_voice_render(request: TauVoiceRenderRequest
             "require_blessed_qra_memory_gate": batch_request.require_blessed_qra_memory_gate,
             "asr_verify": batch_request.asr_verify,
             "render_chunk_count": len(batch_request.render_chunks or []),
+        },
+        "failed_gates": failed_gates,
+    }
+    return batch_request, receipt
+
+
+def summarize_validation_error(exc: ValidationError) -> str:
+    parts = []
+    for error in exc.errors():
+        location = ".".join(str(item) for item in error["loc"]) or "<root>"
+        parts.append(f"{location}: {error['msg']}")
+    return "; ".join(sorted(parts))
+
+
+def tau_voice_render_request_lineage_digest(
+    envelope: dict[str, Any],
+    block: TauVoiceRenderBlockV2,
+) -> str:
+    material = {
+        "schema": envelope.get("schema"),
+        "identity": block.identity.model_dump(mode="json"),
+        "lineage": block.lineage.model_dump(mode="json"),
+        "segment_text_sha256": [segment.text_sha256 for segment in block.segments],
+    }
+    return sha256_text(json.dumps(material, sort_keys=True, separators=(",", ":")))
+
+
+def parse_tau_voice_render_v2(payload: dict[str, Any]) -> TauVoiceRenderBlockV2:
+    schema = payload.get("schema")
+    if schema != TAU_VOICE_RENDER_REQUEST_V2:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "reason": "unsupported_tau_voice_render_schema",
+                "schema": schema,
+                "supported_schemas": list(SUPPORTED_TAU_VOICE_RENDER_REQUEST_SCHEMAS),
+            },
+        )
+    block = payload.get("v2")
+    if not isinstance(block, dict):
+        raise HTTPException(
+            status_code=422,
+            detail={"reason": "missing_tau_voice_render_v2_block"},
+        )
+    try:
+        return TauVoiceRenderBlockV2.model_validate(block)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "reason": "invalid_tau_voice_render_v2_block",
+                "detail": summarize_validation_error(exc),
+            },
+        ) from exc
+
+
+def register_tau_response_identity(identity: TauVoiceResponseIdentityV2) -> dict[str, Any]:
+    key = identity.conversation_id
+    previous = tau_response_controls.get(key)
+    if previous and identity.supersedes_response_id not in (
+        None,
+        previous.get("response_id"),
+    ):
+        return {
+            "accepted": False,
+            "reason": "supersedes_mismatch",
+            "current_response_id": previous.get("response_id"),
+        }
+    record = {
+        **identity.model_dump(mode="json"),
+        "events": [],
+        "cancelled": False,
+        "stopped": False,
+        "ducked": False,
+    }
+    tau_response_controls[key] = record
+    return {"accepted": True, "response_id": identity.response_id}
+
+
+def tau_response_control_target_from_request(
+    turn_id: str,
+    request: TurnControlRequest,
+) -> TauVoiceControlTargetV2 | None:
+    supplied_identity_fields = [
+        request.conversation_id,
+        request.turn_revision,
+        request.response_id,
+        request.expected_cancel_epoch,
+    ]
+    if all(value is None for value in supplied_identity_fields):
+        return None
+    values = {
+        "conversation_id": request.conversation_id,
+        "turn_id": turn_id,
+        "turn_revision": request.turn_revision,
+        "response_id": request.response_id,
+        "expected_cancel_epoch": request.expected_cancel_epoch,
+    }
+    if any(value is None for value in values.values()):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "reason": "incomplete_tau_voice_control_target",
+                "required": [
+                    "conversation_id",
+                    "turn_id",
+                    "turn_revision",
+                    "response_id",
+                    "expected_cancel_epoch",
+                ],
+            },
+        )
+    try:
+        return TauVoiceControlTargetV2.model_validate(values)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "reason": "invalid_tau_voice_control_target",
+                "detail": summarize_validation_error(exc),
+            },
+        ) from exc
+
+
+def mark_tau_response_control(
+    target: TauVoiceControlTargetV2,
+    action: str,
+    request: TurnControlRequest,
+) -> dict[str, Any]:
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    state = tau_response_controls.get(target.conversation_id)
+    receipt = {
+        "action": action,
+        "target": target.model_dump(mode="json"),
+        "idempotent": False,
+    }
+    if state is None:
+        return {**receipt, "accepted": False, "reason": "unknown_conversation"}
+    if target.turn_id != state.get("turn_id"):
+        return {**receipt, "accepted": False, "reason": "stale_turn"}
+    if target.turn_revision != state.get("turn_revision"):
+        return {**receipt, "accepted": False, "reason": "stale_turn_revision"}
+    if target.response_id != state.get("response_id"):
+        return {**receipt, "accepted": False, "reason": "stale_response_id"}
+    if target.expected_cancel_epoch != state.get("cancel_epoch"):
+        return {**receipt, "accepted": False, "reason": "stale_cancel_epoch"}
+    if action == "cancel" and state.get("cancelled"):
+        return {**receipt, "accepted": True, "idempotent": True, "reason": "already_cancelled"}
+    event = {
+        "action": action,
+        "reason": request.reason,
+        "old_turn_id": request.old_turn_id,
+        "new_turn_id": request.new_turn_id,
+        "timestamp": now,
+    }
+    state["events"].append(event)
+    state["last_action"] = action
+    state["updated_at"] = now
+    if action == "cancel":
+        state["cancelled"] = True
+        state["stale_chunks_should_skip"] = True
+        state["cancel_epoch"] = int(state["cancel_epoch"]) + 1
+    if action == "duck":
+        state["ducked"] = True
+    if action == "stop":
+        state["stopped"] = True
+    return {**receipt, "accepted": True, "reason": "current_response", "state": state}
+
+
+def synthesis_batch_request_from_tau_voice_render_v2(
+    payload: dict[str, Any],
+    block: TauVoiceRenderBlockV2,
+) -> tuple[SynthesisBatchRequest, dict[str, Any]]:
+    failed_gates: list[str] = []
+    registration = register_tau_response_identity(block.identity)
+    if not registration.get("accepted"):
+        failed_gates.append("response_identity_registered")
+    digest = tau_voice_render_request_lineage_digest(payload, block)
+    requested = block.delivery_decision.effective_delivery
+    voice_delivery = {
+        "schema": "chatterbox.tau_voice_delivery.v2",
+        "source": "tau.voice_render_request.v2.delivery_decision",
+        "tone": requested.tone,
+        "delivery_stage": requested.stage,
+        "stage": requested.stage,
+        "intensity": requested.intensity,
+        "valence": requested.valence,
+        "requested_delivery": block.delivery_decision.requested_delivery.model_dump(mode="json"),
+        "effective_delivery": block.delivery_decision.effective_delivery.model_dump(mode="json"),
+        "overridden_fields": list(block.delivery_decision.overridden_fields),
+        "override_reasons": dict(block.delivery_decision.override_reasons),
+        "policy_version": block.delivery_decision.policy_version,
+        "profile_validation_status": block.delivery_decision.profile_validation_status,
+        "evidence_references": list(block.delivery_decision.evidence_references),
+        "request_lineage_digest": digest,
+        "response_id": block.identity.response_id,
+        "turn_revision": block.identity.turn_revision,
+        "cancel_epoch": block.identity.cancel_epoch,
+    }
+    render_chunks = []
+    chunk_receipts = []
+    for index, segment in enumerate(block.segments, start=1):
+        delivery = segment.delivery or block.delivery_decision.effective_delivery
+        stage = delivery.stage or requested.stage or "neutral"
+        tone = delivery.tone or requested.tone
+        render_chunks.append(
+            {
+                "text": segment.text,
+                "text_sha256": segment.text_sha256,
+                "tone": tone,
+                "requested_tone": tone,
+                "delivery_stage": effective_delivery_stage(tone=tone, delivery_stage=stage),
+                "requested_delivery_stage": stage,
+                "interruptible": segment.interruptible,
+                "role": f"tau_v2_segment_{index}",
+            }
+        )
+        chunk_receipts.append(
+            {
+                "segment_id": segment.segment_id,
+                "index": index,
+                "text_sha256": segment.text_sha256,
+                "tone": tone,
+                "delivery_stage": stage,
+                "interruptible": segment.interruptible,
+            }
+        )
+    answer_text = " ".join(segment.text.strip() for segment in block.segments).strip()
+    batch_request = SynthesisBatchRequest(
+        answer_text=answer_text or " ",
+        max_chars=300,
+        pause_after_ms=250,
+        completion_cue=payload.get("completion_cue"),
+        turn_id=block.identity.turn_id,
+        question_text=payload.get("question_text"),
+        use_blessed_qra_cache=bool(payload.get("use_blessed_qra_cache", False)),
+        blessed_qra_min_similarity=float(payload.get("blessed_qra_min_similarity", 0.99)),
+        blessed_qra_variant=payload.get("blessed_qra_variant"),
+        blessed_qra_preserve_pauses=bool(payload.get("blessed_qra_preserve_pauses", False)),
+        require_blessed_qra_memory_gate=bool(
+            payload.get("require_blessed_qra_memory_gate", True)
+        ),
+        blessed_qra_memory_key=payload.get("blessed_qra_memory_key"),
+        blessed_qra_memory_similarity=payload.get("blessed_qra_memory_similarity"),
+        blessed_qra_memory_review_status=payload.get("blessed_qra_memory_review_status"),
+        repeat_group_id=(
+            payload.get("repeat_group_id")
+            or (payload.get("voice_delivery") or {}).get("repeat_group_id")
+        ),
+        tone=requested.tone,
+        delivery_stage=requested.stage,
+        voice_delivery=voice_delivery,
+        render_chunks=render_chunks,
+        delivery_arc=[
+            {
+                "stage": chunk["delivery_stage"],
+                "tone": chunk["tone"] or "neutral_warm",
+                "role": chunk["role"],
+            }
+            for chunk in render_chunks
+        ],
+        label=payload.get("label")
+        or f"tau_{safe_label(block.identity.conversation_id)}_{safe_label(block.identity.response_id)}",
+        include_completion_cue=bool(payload.get("include_completion_cue", False)),
+        crossfade_ms=int(payload.get("crossfade_ms", 20)),
+        asr_verify=bool(payload.get("asr_verify", False)),
+    )
+    receipt = {
+        "schema": TAU_VOICE_RENDER_REQUEST_V2,
+        "ok": not failed_gates,
+        "conversation_id": block.identity.conversation_id,
+        "turn_id": block.identity.turn_id,
+        "turn_revision": block.identity.turn_revision,
+        "response_id": block.identity.response_id,
+        "cancel_epoch": block.identity.cancel_epoch,
+        "request_id": block.identity.request_id,
+        "lineage": block.lineage.model_dump(mode="json"),
+        "delivery_decision": block.delivery_decision.model_dump(mode="json"),
+        "control_target": block.control_target.model_dump(mode="json"),
+        "request_lineage_digest": digest,
+        "consumer_lineage_digest": digest,
+        "source_segment_count": len(block.segments),
+        "source_segments": chunk_receipts,
+        "response_registration": registration,
+        "mapped_batch": {
+            "answer_text_sha256": sha256_text(answer_text),
+            "turn_id": batch_request.turn_id,
+            "response_id": block.identity.response_id,
+            "render_chunk_count": len(batch_request.render_chunks or []),
+            "tone": batch_request.tone,
+            "delivery_stage": batch_request.delivery_stage,
+            "asr_verify": batch_request.asr_verify,
         },
         "failed_gates": failed_gates,
     }
@@ -1769,6 +2261,16 @@ def persist_render_plan_receipt(
 
 
 def mark_turn_control(turn_id: str, action: str, request: TurnControlRequest) -> dict[str, Any]:
+    target = tau_response_control_target_from_request(turn_id, request)
+    if target is not None:
+        control = mark_tau_response_control(target, action, request)
+        return {
+            "ok": bool(control.get("accepted")),
+            "mocked": False,
+            "live": True,
+            "turn_id": turn_id,
+            "control": control,
+        }
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     state = turn_controls.setdefault(turn_id, {"turn_id": turn_id, "events": []})
     event = {
@@ -1904,6 +2406,9 @@ def health() -> dict[str, Any]:
         "model_load_seconds": model_load_seconds,
         "voice_conditioning_cache_size": len(voice_conditioning_cache),
         "reference_audio_roots": [str(root) for root in REFERENCE_AUDIO_ROOTS],
+        "supported_tau_voice_render_request_schemas": list(
+            SUPPORTED_TAU_VOICE_RENDER_REQUEST_SCHEMAS
+        ),
         "supported_params": sorted(TURBO_SUPPORTED_PARAMS),
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": CHATTERBOX_TAG_HANDLING,
@@ -2400,9 +2905,45 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
     }
 
 
+def tau_voice_render_payload_to_batch(
+    request: TauVoiceRenderRequest | dict[str, Any],
+) -> tuple[SynthesisBatchRequest, dict[str, Any]]:
+    if isinstance(request, TauVoiceRenderRequest):
+        return synthesis_batch_request_from_tau_voice_render(request)
+    if not isinstance(request, dict):
+        raise HTTPException(
+            status_code=422,
+            detail={"reason": "tau_voice_render_request_must_be_json_object"},
+        )
+    schema = request.get("schema", TAU_VOICE_RENDER_REQUEST_V1)
+    if schema == TAU_VOICE_RENDER_REQUEST_V1:
+        try:
+            parsed = TauVoiceRenderRequest.model_validate(request)
+        except ValidationError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "reason": "invalid_tau_voice_render_v1_block",
+                    "detail": summarize_validation_error(exc),
+                },
+            ) from exc
+        return synthesis_batch_request_from_tau_voice_render(parsed)
+    if schema == TAU_VOICE_RENDER_REQUEST_V2:
+        block = parse_tau_voice_render_v2(request)
+        return synthesis_batch_request_from_tau_voice_render_v2(request, block)
+    raise HTTPException(
+        status_code=422,
+        detail={
+            "reason": "unsupported_tau_voice_render_schema",
+            "schema": schema,
+            "supported_schemas": list(SUPPORTED_TAU_VOICE_RENDER_REQUEST_SCHEMAS),
+        },
+    )
+
+
 @app.post("/tau/voice-render")
-def tau_voice_render(request: TauVoiceRenderRequest) -> dict[str, Any]:
-    batch_request, tau_receipt = synthesis_batch_request_from_tau_voice_render(request)
+def tau_voice_render(request: dict[str, Any] | TauVoiceRenderRequest) -> dict[str, Any]:
+    batch_request, tau_receipt = tau_voice_render_payload_to_batch(request)
     if tau_receipt["failed_gates"]:
         return {
             "ok": False,
@@ -2420,6 +2961,14 @@ def tau_voice_render(request: TauVoiceRenderRequest) -> dict[str, Any]:
         **batch,
         "source": "tau_voice_render_request",
         "tau_voice_render_request": tau_receipt,
+        "request_lineage_digest": tau_receipt.get("request_lineage_digest"),
+        "consumer_lineage_digest": tau_receipt.get("consumer_lineage_digest"),
+        "consumer_digest_matches": (
+            tau_receipt.get("request_lineage_digest")
+            == tau_receipt.get("consumer_lineage_digest")
+            if tau_receipt.get("request_lineage_digest")
+            else None
+        ),
         "ok": bool(batch.get("ok")) and not failed_gates,
         "failed_gates": failed_gates,
     }

@@ -1,0 +1,30 @@
+{
+  "enabled": true,
+  "entries": [
+    {
+      "answer_text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict.",
+      "audio_variants": [
+        {
+          "blessed": true,
+          "chunks": [
+            {
+              "audio": "/home/graham/workspace/experiments/chatterbox/docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/blessed-v2.wav",
+              "audio_sha256": "58a2f64e4937368f19c47cca70b3f448914fffbb29b10e81ccaf04a99ba7eff4",
+              "delivery_stage": "recoverable_blocker",
+              "index": 1,
+              "pause_after_ms": 0,
+              "text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict."
+            }
+          ],
+          "default": true,
+          "id": "variant-live-v2",
+          "name": "Tau v2 live readback"
+        }
+      ],
+      "blessed": true,
+      "id": "tau-v2-live-readback",
+      "question_text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict."
+    }
+  ],
+  "schema_version": "blessed_qra_response_cache.v1"
+}

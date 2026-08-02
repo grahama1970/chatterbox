@@ -10,7 +10,11 @@ import time
 import types
 import wave
 
-from chatterbox.agent.chunking import build_render_plan, split_spoken_chunks
+from chatterbox.agent.chunking import (
+    build_render_plan,
+    build_render_plan_from_chunks,
+    split_spoken_chunks,
+)
 import chatterbox.agent.server as server
 from chatterbox.agent.server import (
     ASR_API_KEY_ENV,
@@ -36,11 +40,13 @@ from chatterbox.agent.server import (
     cancel_turn,
     stream_turn_should_stop,
     synthesis_batch_request_from_tau_voice_render,
+    tau_voice_render_payload_to_batch,
     synthesis_request_with_overrides,
     synthesize_to_file,
     synthesize_batch,
     tau_voice_render,
 )
+from starlette.testclient import TestClient
 
 
 def test_turbo_render_plan_uses_sentence_aware_300_char_safety() -> None:
@@ -408,7 +414,7 @@ def test_tau_voice_render_preserves_caller_chunk_boundaries_for_render_plan() ->
     )
 
     batch, receipt = synthesis_batch_request_from_tau_voice_render(request)
-    plan = server.build_render_plan_from_chunks(
+    plan = build_render_plan_from_chunks(
         batch.render_chunks or [],
         max_chars=batch.max_chars,
         fallback_pause_after_ms=batch.pause_after_ms,
@@ -498,6 +504,235 @@ def test_tau_voice_render_request_allows_answerable_answerability() -> None:
     assert receipt["ok"] is True
     assert receipt["failed_gates"] == []
     assert batch.answer_text == chunk_text
+
+
+def tau_v2_positive_payload() -> dict[str, object]:
+    text = (
+        "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, "
+        "at node review, blocked by waiting on reviewer verdict."
+    )
+    text_sha = server.sha256_text(text)
+    return {
+        "schema": "tau.voice_render_request.v2",
+        "conversation_id": "conv-288",
+        "turn_id": "turn-288-01",
+        "question_text": text,
+        "question_text_sha256": text_sha,
+        "use_blessed_qra_cache": False,
+        "include_completion_cue": False,
+        "crossfade_ms": 0,
+        "v2": {
+            "identity": {
+                "request_id": "req-288-0001",
+                "conversation_id": "conv-288",
+                "turn_id": "turn-288-01",
+                "turn_revision": 1,
+                "response_id": "resp-288-0001",
+                "cancel_epoch": 0,
+                "supersedes_response_id": None,
+            },
+            "lineage": {
+                "workflow": "issue-288-voice-v2",
+                "run_id": "run-288-fixture",
+                "node_id": "review",
+                "attempt_id": "attempt-1",
+                "scheduler_journal_sequence": 42,
+                "state_digest": "d1e5f0c0a288",
+                "goal_hash": "goalhash288",
+                "event_type": "state_change",
+                "state_transition": "RUNNING->BLOCKED",
+            },
+            "delivery_decision": {
+                "policy_version": "tau.voice_delivery_policy.v1",
+                "requested_delivery": {
+                    "tone": None,
+                    "intensity": None,
+                    "valence": None,
+                    "stage": None,
+                },
+                "effective_delivery": {
+                    "tone": "careful_concerned",
+                    "intensity": 0.45,
+                    "valence": -0.25,
+                    "stage": "recoverable_blocker",
+                },
+                "overridden_fields": [],
+                "override_reasons": {},
+                "evidence_references": [
+                    "tau_run:run-288-fixture",
+                    "state_digest:d1e5f0c0a288",
+                    "authoritative_state:BLOCKED",
+                ],
+                "profile_validation_status": "declared_profile",
+            },
+            "segments": [
+                {
+                    "segment_id": "resp-288-0001-000",
+                    "text": text,
+                    "text_sha256": text_sha,
+                    "delivery": {
+                        "tone": "careful_concerned",
+                        "intensity": 0.45,
+                        "valence": -0.25,
+                        "stage": "recoverable_blocker",
+                    },
+                    "interruptible": True,
+                }
+            ],
+            "control_target": {
+                "conversation_id": "conv-288",
+                "turn_id": "turn-288-01",
+                "turn_revision": 1,
+                "response_id": "resp-288-0001",
+                "expected_cancel_epoch": 0,
+            },
+            "extensions": {},
+        },
+    }
+
+
+def test_tau_voice_render_v2_maps_canonical_payload_and_retains_digest() -> None:
+    server.tau_response_controls.clear()
+
+    batch, receipt = tau_voice_render_payload_to_batch(tau_v2_positive_payload())
+
+    assert receipt["ok"] is True
+    assert receipt["schema"] == "tau.voice_render_request.v2"
+    assert receipt["response_id"] == "resp-288-0001"
+    assert receipt["request_lineage_digest"] == "10242ccd97287926fbb0692163429ee95427e692dc63daf88f3a63b161b0e95b"
+    assert receipt["consumer_lineage_digest"] == receipt["request_lineage_digest"]
+    assert batch.turn_id == "turn-288-01"
+    assert batch.voice_delivery["response_id"] == "resp-288-0001"
+    assert batch.render_chunks and batch.render_chunks[0]["text_sha256"]
+
+
+def test_tau_voice_render_route_accepts_v2_on_existing_endpoint(monkeypatch) -> None:
+    server.tau_response_controls.clear()
+
+    def fake_synthesize_batch(batch_request):
+        return {
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "engine": "chatterbox_turbo",
+            "batch_label": batch_request.label,
+            "render_plan_digest": "digest-render-plan",
+            "failed_gates": [],
+        }
+
+    monkeypatch.setattr(server, "synthesize_batch", fake_synthesize_batch)
+    response = TestClient(server.app).post("/tau/voice-render", json=tau_v2_positive_payload())
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is True
+    assert body["consumer_digest_matches"] is True
+    assert body["tau_voice_render_request"]["response_id"] == "resp-288-0001"
+    assert body["request_lineage_digest"] == "10242ccd97287926fbb0692163429ee95427e692dc63daf88f3a63b161b0e95b"
+
+
+def test_tau_voice_render_v2_rejects_unsupported_or_misspelled_schema_fields() -> None:
+    client = TestClient(server.app)
+    unsupported = tau_v2_positive_payload()
+    unsupported["schema"] = "tau.voice_render_request.v3"
+    response = client.post("/tau/voice-render", json=unsupported)
+    assert response.status_code == 422
+    assert response.json()["detail"]["reason"] == "unsupported_tau_voice_render_schema"
+
+    misspelled = json.loads(json.dumps(tau_v2_positive_payload()))
+    misspelled["v2"]["identity"]["respons_id"] = misspelled["v2"]["identity"].pop("response_id")
+    response = client.post("/tau/voice-render", json=misspelled)
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert detail["reason"] == "invalid_tau_voice_render_v2_block"
+    assert "respons_id" in detail["detail"]
+    assert "response_id" in detail["detail"]
+
+
+def test_tau_voice_render_v2_control_target_fences_stale_responses() -> None:
+    server.tau_response_controls.clear()
+    _batch, receipt = tau_voice_render_payload_to_batch(tau_v2_positive_payload())
+    assert receipt["response_registration"]["accepted"] is True
+
+    wrong_conversation = server.cancel_turn(
+        "turn-288-01",
+        TurnControlRequest(
+            reason="wrong conversation",
+            conversation_id="conv-other",
+            turn_revision=1,
+            response_id="resp-288-0001",
+            expected_cancel_epoch=0,
+        ),
+    )
+    assert wrong_conversation["ok"] is False
+    assert wrong_conversation["control"]["reason"] == "unknown_conversation"
+
+    stale_epoch = server.cancel_turn(
+        "turn-288-01",
+        TurnControlRequest(
+            reason="stale",
+            conversation_id="conv-288",
+            turn_revision=1,
+            response_id="resp-288-0001",
+            expected_cancel_epoch=7,
+        ),
+    )
+    assert stale_epoch["ok"] is False
+    assert stale_epoch["control"]["reason"] == "stale_cancel_epoch"
+
+    current = server.cancel_turn(
+        "turn-288-01",
+        TurnControlRequest(
+            reason="barge-in",
+            conversation_id="conv-288",
+            turn_revision=1,
+            response_id="resp-288-0001",
+            expected_cancel_epoch=0,
+        ),
+    )
+    assert current["ok"] is True
+    assert current["control"]["reason"] == "current_response"
+
+    duplicate = server.cancel_turn(
+        "turn-288-01",
+        TurnControlRequest(
+            reason="duplicate",
+            conversation_id="conv-288",
+            turn_revision=1,
+            response_id="resp-288-0001",
+            expected_cancel_epoch=1,
+        ),
+    )
+    assert duplicate["ok"] is True
+    assert duplicate["control"]["idempotent"] is True
+
+
+def test_tau_voice_render_v2_new_response_blocks_late_old_control() -> None:
+    server.tau_response_controls.clear()
+    _batch, first = tau_voice_render_payload_to_batch(tau_v2_positive_payload())
+    assert first["response_registration"]["accepted"] is True
+    newer = json.loads(json.dumps(tau_v2_positive_payload()))
+    newer["v2"]["identity"]["request_id"] = "req-288-0002"
+    newer["v2"]["identity"]["response_id"] = "resp-288-0002"
+    newer["v2"]["identity"]["supersedes_response_id"] = "resp-288-0001"
+    newer["v2"]["control_target"]["response_id"] = "resp-288-0002"
+    newer["v2"]["segments"][0]["segment_id"] = "resp-288-0002-000"
+    _batch, second = tau_voice_render_payload_to_batch(newer)
+    assert second["response_registration"]["accepted"] is True
+
+    old_control = server.cancel_turn(
+        "turn-288-01",
+        TurnControlRequest(
+            reason="late old response",
+            conversation_id="conv-288",
+            turn_revision=1,
+            response_id="resp-288-0001",
+            expected_cancel_epoch=0,
+        ),
+    )
+
+    assert old_control["ok"] is False
+    assert old_control["control"]["reason"] == "stale_response_id"
 
 
 def test_stream_turn_should_stop_only_for_cancel_or_stop() -> None:
