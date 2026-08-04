@@ -53,6 +53,7 @@ from chatterbox.agent.presets import (
     STAGE_PRESET_AFFECT_STATUS,
     STAGE_PRESETS,
     TONE_TO_DELIVERY_STAGE,
+    TONE_CALIBRATION,
     TURBO_IGNORED_PARAMS,
     TURBO_SUPPORTED_PARAMS,
     VOICE_DELIVERY_EFFECT,
@@ -71,6 +72,7 @@ DEFAULT_REF_AUDIO = Path(os.getenv("CHATTERBOX_REF_AUDIO", "/data/embry_ref.wav"
 DEVICE = os.getenv("CHATTERBOX_DEVICE", "cuda")
 DEFAULT_ASR_OPENAI_BASE_URL = os.getenv("CHATTERBOX_ASR_OPENAI_BASE_URL", "http://172.17.0.1:9000")
 ASR_API_KEY_ENV = os.getenv("CHATTERBOX_ASR_API_KEY_ENV", "WHISPER_API_KEY")
+EMOTION_REALIZATION_DEFAULT = os.getenv("CHATTERBOX_EMOTION_REALIZATION_DEFAULT", "fast")
 CACHE_SCHEMA_VERSION = "accepted_audio_cache.v2"
 BLESSED_QRA_SCHEMA_VERSION = "blessed_qra_response_cache.v1"
 BLESSED_QRA_LEDGER_PATH = Path(os.getenv("CHATTERBOX_BLESSED_QRA_LEDGER", str(OUT_DIR / "_blessed_qra_ledger.json")))
@@ -832,6 +834,14 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
         "intensity": source_delivery.get("intensity"),
         "valence": source_delivery.get("valence"),
         "use_base_emotion": source_delivery.get("use_base_emotion"),
+        # audible: tone alone routes through TONE_CALIBRATION -> base-affect
+        # knobs + per-tone tempo. fast: turbo, tone request-only. Default is
+        # fast for latency compatibility (see voice_delivery_effect).
+        "emotion_realization": (
+            getattr(request, "emotion_realization", None)
+            or source_delivery.get("emotion_realization")
+            or EMOTION_REALIZATION_DEFAULT
+        ),
     }
 
 
@@ -899,8 +909,16 @@ def emotion_knobs_from_delivery(voice_delivery: dict[str, Any]) -> dict[str, flo
     vd = voice_delivery or {}
     intensity_raw = vd.get("intensity")
     valence_raw = vd.get("valence")
-    if intensity_raw is None and valence_raw is None and not vd.get("use_base_emotion"):
+    audible_tone_route = (
+        vd.get("emotion_realization") == "audible" and bool(vd.get("requested_tone"))
+    )
+    if intensity_raw is None and valence_raw is None and not vd.get("use_base_emotion") and not audible_tone_route:
         return None
+    if intensity_raw is None and valence_raw is None and audible_tone_route:
+        calibration = TONE_CALIBRATION.get(vd.get("tone") or "neutral_warm")
+        if calibration:
+            intensity_raw = calibration["intensity"]
+            valence_raw = calibration["valence"]
 
     def _num(value: Any) -> float | None:
         try:
@@ -924,7 +942,9 @@ def emotion_knobs_from_delivery(voice_delivery: dict[str, Any]) -> dict[str, flo
     }
 
 
-def apply_pace_stretch(wav: Any, sr: int, pace: str | None) -> tuple[Any, dict[str, Any]]:
+def apply_pace_stretch(
+    wav: Any, sr: int, pace: str | None, tone_tempo: float | None = None
+) -> tuple[Any, dict[str, Any]]:
     """Apply a pitch-preserving phase-vocoder time stretch for a requested pace.
 
     Deterministic post-process on the rendered waveform, so its duration effect
@@ -932,17 +952,22 @@ def apply_pace_stretch(wav: Any, sr: int, pace: str | None) -> tuple[Any, dict[s
     Unknown pace values are a no-op and reported as request_only in the receipt.
     """
     factor = pace_tempo_factor(pace)
+    tempo_source = "requested_pace"
+    if not pace and tone_tempo is not None:
+        factor = float(tone_tempo)
+        tempo_source = "tone_calibration"
     input_duration = round(wav.shape[-1] / sr, 3)
     receipt: dict[str, Any] = {
         "schema": "chatterbox.pace_effect.v1",
         "requested_pace": pace,
         "tempo_factor": factor,
+        "tempo_source": tempo_source if factor is not None else None,
         "mechanism": "phase_vocoder_time_stretch",
         "applied": False,
         "input_duration_seconds": input_duration,
         "output_duration_seconds": input_duration,
     }
-    if not pace:
+    if not pace and tone_tempo is None:
         receipt["reason"] = "no_pace_requested"
         return wav, receipt
     if factor is None:
@@ -993,7 +1018,12 @@ def affect_effect_receipt(
     if knobs is None:
         receipt["reason"] = "no_affect_requested_default_turbo_render"
         return receipt
-    receipt["knob_source"] = "explicit_intensity_valence" if explicit else "tone_affect_defaults"
+    if explicit:
+        receipt["knob_source"] = "explicit_intensity_valence"
+    elif voice_delivery.get("emotion_realization") == "audible" and voice_delivery.get("requested_tone"):
+        receipt["knob_source"] = "tone_calibration"
+    else:
+        receipt["knob_source"] = "tone_affect_defaults"
     if backend_id == "chatterbox_base_affect":
         receipt["applied"] = True
     else:
@@ -1050,7 +1080,10 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
                 )
         generation_seconds = round(time.perf_counter() - started, 3)
         latency_event(events, "first_audio_ready", started_total, generation_seconds=generation_seconds)
-        wav, pace_effect = apply_pace_stretch(wav, int(render_sr), voice_delivery.get("pace"))
+        tone_tempo = None
+        if not voice_delivery.get("pace") and knobs is not None and voice_delivery.get("emotion_realization") == "audible":
+            tone_tempo = TONE_CALIBRATION.get(voice_delivery["tone"], {}).get("tempo")
+        wav, pace_effect = apply_pace_stretch(wav, int(render_sr), voice_delivery.get("pace"), tone_tempo)
         if pace_effect["applied"]:
             latency_event(
                 events,
@@ -2469,6 +2502,26 @@ def load_model() -> None:
     model_load_seconds = round(time.perf_counter() - started, 3)
 
 
+TONE_CALIBRATION_MATRIX_PATH = Path(__file__).resolve().parents[3] / "docs" / "proofs" / "tone_calibration_matrix.json"
+
+
+def tone_calibration_matrix_receipt() -> dict[str, Any]:
+    """Published result of the tone_matrix eval: which tones are measurably distinct."""
+    try:
+        matrix = json.loads(TONE_CALIBRATION_MATRIX_PATH.read_text())
+        return {
+            "status": "calibrated",
+            "receipt_path": str(TONE_CALIBRATION_MATRIX_PATH),
+            "classification": matrix.get("classification"),
+            "noise_floor": matrix.get("noise_floor", {}).get("spread"),
+            "generated": matrix.get("generated"),
+        }
+    except FileNotFoundError:
+        return {"status": "not_yet_calibrated", "receipt_path": str(TONE_CALIBRATION_MATRIX_PATH)}
+    except Exception as exc:  # noqa: BLE001 - health must report a bad matrix file as data
+        return {"status": "matrix_unreadable", "error": f"{type(exc).__name__}: {exc}"}
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     try:
@@ -2505,6 +2558,8 @@ def health() -> dict[str, Any]:
         "tag_handling": CHATTERBOX_TAG_HANDLING,
         "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
         "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
+        "tone_calibration": TONE_CALIBRATION,
+        "tone_calibration_matrix": tone_calibration_matrix_receipt(),
         "voice_backends": VOICE_BACKENDS.summary(),
         "supported_backends": VOICE_BACKENDS.ids(),
         "torch": torch_info,
@@ -2522,6 +2577,8 @@ def presets() -> dict[str, Any]:
         "tag_handling": CHATTERBOX_TAG_HANDLING,
         "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
         "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
+        "tone_calibration": TONE_CALIBRATION,
+        "tone_calibration_matrix": tone_calibration_matrix_receipt(),
         "allowed_tones": sorted(ALLOWED_TONES),
         "tone_to_delivery_stage": TONE_TO_DELIVERY_STAGE,
         "delivery_stage_aliases": DELIVERY_STAGE_ALIASES,

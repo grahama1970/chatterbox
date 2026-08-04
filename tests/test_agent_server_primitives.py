@@ -301,10 +301,35 @@ def test_synthesize_to_file_receipt_records_voice_delivery(tmp_path: Path, monke
     assert result["pace_effect"]["schema"] == "chatterbox.pace_effect.v1"
     assert result["pace_effect"]["requested_pace"] == "measured"
     assert result["voice_delivery_effect"]["fields"]["pace"]["status"] == "applied"
-    assert result["voice_delivery_effect"]["fields"]["tone"]["status"] == "request_only_on_chatterbox_turbo"
+    assert (
+        result["voice_delivery_effect"]["fields"]["tone"]["status"]
+        == "audible_with_emotion_realization_audible__request_only_on_default_fast_path"
+    )
     assert result["voice_delivery_effect"]["fields"]["pause_strategy"]["status"] == "request_only"
     assert result["ignored_turbo_params"] == sorted(server.TURBO_IGNORED_PARAMS)
     assert result["generation_params"] == server.generation_params_for_stage("satisfied")
+
+
+def test_tone_alone_routes_audibly_only_when_emotion_realization_audible() -> None:
+    fast = server.emotion_knobs_from_delivery(
+        {"requested_tone": "grief_safe", "tone": "grief_safe", "emotion_realization": "fast"}
+    )
+    assert fast is None
+
+    audible = server.emotion_knobs_from_delivery(
+        {"requested_tone": "grief_safe", "tone": "grief_safe", "emotion_realization": "audible"}
+    )
+    assert audible is not None
+    assert audible["intensity"] == server.TONE_CALIBRATION["grief_safe"]["intensity"]
+    assert audible["valence"] == server.TONE_CALIBRATION["grief_safe"]["valence"]
+
+    no_tone = server.emotion_knobs_from_delivery({"requested_tone": None, "tone": "neutral_warm", "emotion_realization": "audible"})
+    assert no_tone is None
+
+    explicit_wins = server.emotion_knobs_from_delivery(
+        {"requested_tone": "grief_safe", "tone": "grief_safe", "emotion_realization": "audible", "intensity": 0.9, "valence": -0.8}
+    )
+    assert explicit_wins is not None and explicit_wins["intensity"] == 0.9
 
 
 def test_affect_effect_receipt_reports_applied_only_when_backend_honors_knobs() -> None:

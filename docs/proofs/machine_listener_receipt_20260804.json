@@ -1,0 +1,117 @@
+{
+ "case": "machine_listener",
+ "schema": "chatterbox.machine_listener.v2",
+ "model": "audeering wav2vec2-large-robust-12 dimensional (MSP-Podcast) via audonnx",
+ "tones_analyzed": 15,
+ "per_tone": {
+  "neutral_warm": {
+   "perceived_arousal": 0.618,
+   "perceived_dominance": 0.699,
+   "perceived_valence": 0.605,
+   "requested_intensity": 0.4,
+   "requested_valence": 0.3
+  },
+  "calm_precise": {
+   "perceived_arousal": 0.644,
+   "perceived_dominance": 0.719,
+   "perceived_valence": 0.531,
+   "requested_intensity": 0.3,
+   "requested_valence": 0.1
+  },
+  "careful_concerned": {
+   "perceived_arousal": 0.732,
+   "perceived_dominance": 0.781,
+   "perceived_valence": 0.558,
+   "requested_intensity": 0.55,
+   "requested_valence": -0.45
+  },
+  "serious_low_energy": {
+   "perceived_arousal": 0.493,
+   "perceived_dominance": 0.604,
+   "perceived_valence": 0.57,
+   "requested_intensity": 0.1,
+   "requested_valence": -0.9
+  },
+  "memory_confident": {
+   "perceived_arousal": 0.823,
+   "perceived_dominance": 0.835,
+   "perceived_valence": 0.559,
+   "requested_intensity": 0.7,
+   "requested_valence": 0.6
+  },
+  "memory_uncertain": {
+   "perceived_arousal": 0.814,
+   "perceived_dominance": 0.843,
+   "perceived_valence": 0.499,
+   "requested_intensity": 0.65,
+   "requested_valence": -0.45
+  },
+  "curious_searching": {
+   "perceived_arousal": 0.888,
+   "perceived_dominance": 0.885,
+   "perceived_valence": 0.525,
+   "requested_intensity": 0.8,
+   "requested_valence": 0.4
+  },
+  "playful_light": {
+   "perceived_arousal": 0.92,
+   "perceived_dominance": 0.908,
+   "perceived_valence": 0.479,
+   "requested_intensity": 0.85,
+   "requested_valence": 0.75
+  },
+  "relieved": {
+   "perceived_arousal": 0.789,
+   "perceived_dominance": 0.829,
+   "perceived_valence": 0.564,
+   "requested_intensity": 0.75,
+   "requested_valence": 0.65
+  },
+  "firm_boundary": {
+   "perceived_arousal": 0.945,
+   "perceived_dominance": 0.936,
+   "perceived_valence": 0.384,
+   "requested_intensity": 0.95,
+   "requested_valence": -0.85
+  },
+  "identity_clarification": {
+   "perceived_arousal": 0.77,
+   "perceived_dominance": 0.811,
+   "perceived_valence": 0.529,
+   "requested_intensity": 0.75,
+   "requested_valence": -0.2
+  },
+  "one_at_a_time_interrupt": {
+   "perceived_arousal": 0.973,
+   "perceived_dominance": 0.937,
+   "perceived_valence": 0.447,
+   "requested_intensity": 0.9,
+   "requested_valence": -0.7
+  },
+  "deflect_calm": {
+   "perceived_arousal": 0.762,
+   "perceived_dominance": 0.808,
+   "perceived_valence": 0.531,
+   "requested_intensity": 0.6,
+   "requested_valence": -0.65
+  },
+  "grief_safe": {
+   "perceived_arousal": 0.595,
+   "perceived_dominance": 0.682,
+   "perceived_valence": 0.568,
+   "requested_intensity": 0.3,
+   "requested_valence": -0.7
+  },
+  "wait_presence": {
+   "perceived_arousal": 0.587,
+   "perceived_dominance": 0.675,
+   "perceived_valence": 0.564,
+   "requested_intensity": 0.2,
+   "requested_valence": 0.0
+  }
+ },
+ "spearman_arousal_vs_requested_intensity": 0.961,
+ "spearman_valence_vs_requested_valence": 0.075,
+ "declared_limitation": "perceived valence does not track the requested valence knob; arousal is the single verified perceptual affect dimension",
+ "pass": true
+}

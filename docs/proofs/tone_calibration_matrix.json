@@ -1,0 +1,749 @@
+{
+ "case": "tone_matrix",
+ "schema": "chatterbox.tone_calibration_matrix.v1",
+ "generated": "eval_tone_audibility tone_matrix",
+ "noise_floor": {
+  "n": 6,
+  "values": {
+   "duration_s": [
+    10.72,
+    8.16,
+    8.68,
+    9.8,
+    8.68,
+    9.4
+   ],
+   "rms": [
+    0.05833,
+    0.05045,
+    0.05336,
+    0.06273,
+    0.05226,
+    0.0595
+   ],
+   "f0_median_hz": [
+    233.0,
+    212.4,
+    212.4,
+    223.3,
+    206.9,
+    220.2
+   ]
+  },
+  "spread": {
+   "duration_s": 2.56,
+   "rms": 0.0123,
+   "f0_median_hz": 26.1
+  }
+ },
+ "per_tone_samples": 2,
+ "tone_means": {
+  "neutral_warm": {
+   "duration_s": 9.24,
+   "rms": 0.0561,
+   "f0_median_hz": 218.0333
+  },
+  "calm_precise": {
+   "duration_s": 9.3545,
+   "rms": 0.0367,
+   "f0_median_hz": 216.5
+  },
+  "careful_concerned": {
+   "duration_s": 8.4905,
+   "rms": 0.041,
+   "f0_median_hz": 224.4
+  },
+  "serious_low_energy": {
+   "duration_s": 11.461,
+   "rms": 0.0339,
+   "f0_median_hz": 203.4
+  },
+  "memory_confident": {
+   "duration_s": 7.536,
+   "rms": 0.0458,
+   "f0_median_hz": 247.5
+  },
+  "memory_uncertain": {
+   "duration_s": 9.056,
+   "rms": 0.0466,
+   "f0_median_hz": 252.6
+  },
+  "curious_searching": {
+   "duration_s": 7.664,
+   "rms": 0.0464,
+   "f0_median_hz": 267.2
+  },
+  "playful_light": {
+   "duration_s": 7.7545,
+   "rms": 0.0454,
+   "f0_median_hz": 254.4
+  },
+  "relieved": {
+   "duration_s": 8.26,
+   "rms": 0.0604,
+   "f0_median_hz": 236.5
+  },
+  "firm_boundary": {
+   "duration_s": 9.531,
+   "rms": 0.0547,
+   "f0_median_hz": 275.1
+  },
+  "identity_clarification": {
+   "duration_s": 9.26,
+   "rms": 0.0775,
+   "f0_median_hz": 259.8
+  },
+  "one_at_a_time_interrupt": {
+   "duration_s": 7.0775,
+   "rms": 0.0538,
+   "f0_median_hz": 286.8
+  },
+  "deflect_calm": {
+   "duration_s": 10.1335,
+   "rms": 0.0459,
+   "f0_median_hz": 242.8
+  },
+  "grief_safe": {
+   "duration_s": 9.5625,
+   "rms": 0.035,
+   "f0_median_hz": 206.9
+  },
+  "wait_presence": {
+   "duration_s": 10.7145,
+   "rms": 0.0415,
+   "f0_median_hz": 219.4
+  }
+ },
+ "pairwise_separating_metrics": {
+  "neutral_warm": {
+   "calm_precise": [
+    "rms"
+   ],
+   "careful_concerned": [
+    "rms"
+   ],
+   "serious_low_energy": [
+    "rms"
+   ],
+   "memory_confident": [
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [
+    "f0_median_hz"
+   ],
+   "curious_searching": [
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "f0_median_hz"
+   ],
+   "relieved": [],
+   "firm_boundary": [
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "f0_median_hz"
+   ],
+   "deflect_calm": [],
+   "grief_safe": [
+    "rms"
+   ],
+   "wait_presence": [
+    "rms"
+   ]
+  },
+  "calm_precise": {
+   "neutral_warm": [
+    "rms"
+   ],
+   "careful_concerned": [],
+   "serious_low_energy": [],
+   "memory_confident": [
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [
+    "f0_median_hz"
+   ],
+   "curious_searching": [
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "f0_median_hz"
+   ],
+   "grief_safe": [],
+   "wait_presence": []
+  },
+  "careful_concerned": {
+   "neutral_warm": [
+    "rms"
+   ],
+   "calm_precise": [],
+   "serious_low_energy": [
+    "duration_s"
+   ],
+   "memory_confident": [],
+   "memory_uncertain": [
+    "f0_median_hz"
+   ],
+   "curious_searching": [
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [],
+   "grief_safe": [],
+   "wait_presence": []
+  },
+  "serious_low_energy": {
+   "neutral_warm": [
+    "rms"
+   ],
+   "calm_precise": [],
+   "careful_concerned": [
+    "duration_s"
+   ],
+   "memory_confident": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "curious_searching": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "f0_median_hz"
+   ],
+   "grief_safe": [],
+   "wait_presence": []
+  },
+  "memory_confident": {
+   "neutral_warm": [
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "f0_median_hz"
+   ],
+   "careful_concerned": [],
+   "serious_low_energy": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [],
+   "curious_searching": [],
+   "playful_light": [],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "duration_s"
+   ],
+   "grief_safe": [
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "f0_median_hz"
+   ]
+  },
+  "memory_uncertain": {
+   "neutral_warm": [
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [],
+   "curious_searching": [],
+   "playful_light": [],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "f0_median_hz"
+   ],
+   "deflect_calm": [],
+   "grief_safe": [
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "f0_median_hz"
+   ]
+  },
+  "curious_searching": {
+   "neutral_warm": [
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [],
+   "memory_uncertain": [],
+   "playful_light": [],
+   "relieved": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "firm_boundary": [],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [],
+   "deflect_calm": [],
+   "grief_safe": [
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "f0_median_hz"
+   ]
+  },
+  "playful_light": {
+   "neutral_warm": [
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "memory_confident": [],
+   "memory_uncertain": [],
+   "curious_searching": [],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "f0_median_hz"
+   ],
+   "deflect_calm": [],
+   "grief_safe": [
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "f0_median_hz"
+   ]
+  },
+  "relieved": {
+   "neutral_warm": [],
+   "calm_precise": [
+    "rms"
+   ],
+   "careful_concerned": [
+    "rms"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [
+    "rms"
+   ],
+   "memory_uncertain": [
+    "rms"
+   ],
+   "curious_searching": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "rms"
+   ],
+   "grief_safe": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "rms"
+   ]
+  },
+  "firm_boundary": {
+   "neutral_warm": [
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [],
+   "curious_searching": [],
+   "playful_light": [],
+   "relieved": [
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [],
+   "deflect_calm": [
+    "f0_median_hz"
+   ],
+   "grief_safe": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "rms",
+    "f0_median_hz"
+   ]
+  },
+  "identity_clarification": {
+   "neutral_warm": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [
+    "rms"
+   ],
+   "memory_uncertain": [
+    "rms"
+   ],
+   "curious_searching": [
+    "rms"
+   ],
+   "playful_light": [
+    "rms"
+   ],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "rms"
+   ],
+   "grief_safe": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "rms",
+    "f0_median_hz"
+   ]
+  },
+  "one_at_a_time_interrupt": {
+   "neutral_warm": [
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [
+    "f0_median_hz"
+   ],
+   "curious_searching": [],
+   "playful_light": [
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "f0_median_hz"
+   ],
+   "firm_boundary": [],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "grief_safe": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "f0_median_hz"
+   ]
+  },
+  "deflect_calm": {
+   "neutral_warm": [],
+   "calm_precise": [
+    "f0_median_hz"
+   ],
+   "careful_concerned": [],
+   "serious_low_energy": [
+    "f0_median_hz"
+   ],
+   "memory_confident": [
+    "duration_s"
+   ],
+   "memory_uncertain": [],
+   "curious_searching": [],
+   "playful_light": [],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "grief_safe": [
+    "f0_median_hz"
+   ],
+   "wait_presence": []
+  },
+  "grief_safe": {
+   "neutral_warm": [
+    "rms"
+   ],
+   "calm_precise": [],
+   "careful_concerned": [],
+   "serious_low_energy": [],
+   "memory_confident": [
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [
+    "f0_median_hz"
+   ],
+   "curious_searching": [
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [
+    "f0_median_hz"
+   ],
+   "wait_presence": []
+  },
+  "wait_presence": {
+   "neutral_warm": [
+    "rms"
+   ],
+   "calm_precise": [],
+   "careful_concerned": [],
+   "serious_low_energy": [],
+   "memory_confident": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "memory_uncertain": [
+    "f0_median_hz"
+   ],
+   "curious_searching": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "deflect_calm": [],
+   "grief_safe": []
+  }
+ },
+ "distinct_pairs": 77,
+ "total_pairs": 105,
+ "classification": {
+  "neutral_warm": "calibrated_distinct",
+  "calm_precise": "calibrated_distinct",
+  "careful_concerned": "calibrated_distinct",
+  "serious_low_energy": "calibrated_distinct",
+  "memory_confident": "calibrated_distinct",
+  "memory_uncertain": "calibrated_distinct",
+  "curious_searching": "calibrated_distinct",
+  "playful_light": "calibrated_distinct",
+  "relieved": "not_distinct_request_only",
+  "firm_boundary": "calibrated_distinct",
+  "identity_clarification": "calibrated_distinct",
+  "one_at_a_time_interrupt": "calibrated_distinct",
+  "deflect_calm": "not_distinct_request_only",
+  "grief_safe": "calibrated_distinct",
+  "wait_presence": "calibrated_distinct"
+ },
+ "pass": true
+}

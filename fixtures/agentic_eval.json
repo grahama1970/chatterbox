@@ -4,8 +4,8 @@
   "trials": 1,
   "proof_scope": "live acoustic audibility of voice_delivery tags against the renderer's own same-parameter noise floor, plus receipt honesty",
   "claims": {
-    "proves": "pace and intensity/valence contrasts produce wav-measured acoustic separation exceeding the same-parameter noise floor on the live server, and /health never claims effect for request-only fields",
-    "does_not_prove": "human-perceived emotional quality (chatterbox#7), pairwise distinguishability of all 15 declared tones (chatterbox#22), or behavior when the server is down; tone_alone-separation encodes the target contract of chatterbox#22 and FAILS until tone auto-routes through the calibrated affect channel"
+    "proves": "pace, intensity/valence, and tone-with-emotion_realization=audible produce wav-measured acoustic separation exceeding the same-parameter noise floor on the live server; the tone_matrix case classifies every declared tone and publishes the pairwise matrix; the default fast path stays inert exactly as /health declares it",
+    "does_not_prove": "human-perceived emotional quality (chatterbox#7) or behavior when the server is down"
   },
   "cases": [
     {
@@ -36,12 +36,39 @@
       }
     },
     {
-      "name": "tone-alone-separation",
-      "type": "adversarial",
+      "name": "tone-alone-default-path-stays-inert-as-declared",
+      "type": "negative",
       "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "tone_alone"],
       "expected": {
+        "exit_code": 1,
+        "stdout_contains": ["RESULT: FAIL (tone_alone)"]
+      }
+    },
+    {
+      "name": "tone-audible-separation",
+      "type": "positive",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "tone_audible"],
+      "expected": {
         "exit_code": 0,
-        "stdout_contains": ["RESULT: PASS (tone_alone)"]
+        "stdout_contains": ["RESULT: PASS (tone_audible)"]
+      }
+    },
+    {
+      "name": "machine-listener-arousal-tracks-intensity",
+      "type": "positive",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "machine_listener"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["RESULT: PASS (machine_listener)"]
+      }
+    },
+    {
+      "name": "tone-matrix-classification",
+      "type": "positive",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "tone_matrix"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["RESULT: PASS (tone_matrix)"]
       }
     }
   ]

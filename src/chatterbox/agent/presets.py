@@ -169,6 +169,30 @@ TURBO_IGNORED_PARAMS = {
 }
 
 
+# Per-tone calibration for audible emotion realization (chatterbox#22).
+# intensity/valence feed the base-affect knobs (top-weighted response curve, so
+# emotional extremes get extreme values); tempo adds a deterministic duration
+# axis so pace-of-speech separates tones the f0/energy axes cannot.
+# Active only when a request opts into emotion_realization=audible.
+TONE_CALIBRATION: dict[str, dict[str, float]] = {
+    "neutral_warm": {"intensity": 0.4, "valence": 0.3, "tempo": 1.0},
+    "calm_precise": {"intensity": 0.3, "valence": 0.1, "tempo": 0.93},
+    "careful_concerned": {"intensity": 0.55, "valence": -0.45, "tempo": 0.94},
+    "serious_low_energy": {"intensity": 0.1, "valence": -0.9, "tempo": 0.85},
+    "memory_confident": {"intensity": 0.7, "valence": 0.6, "tempo": 1.04},
+    "memory_uncertain": {"intensity": 0.65, "valence": -0.45, "tempo": 0.95},
+    "curious_searching": {"intensity": 0.8, "valence": 0.4, "tempo": 1.06},
+    "playful_light": {"intensity": 0.85, "valence": 0.75, "tempo": 1.12},
+    "relieved": {"intensity": 0.75, "valence": 0.65, "tempo": 1.0},
+    "firm_boundary": {"intensity": 0.95, "valence": -0.85, "tempo": 0.97},
+    "identity_clarification": {"intensity": 0.75, "valence": -0.2, "tempo": 1.0},
+    "one_at_a_time_interrupt": {"intensity": 0.9, "valence": -0.7, "tempo": 1.15},
+    "deflect_calm": {"intensity": 0.6, "valence": -0.65, "tempo": 0.92},
+    "grief_safe": {"intensity": 0.3, "valence": -0.7, "tempo": 0.87},
+    "wait_presence": {"intensity": 0.2, "valence": 0.0, "tempo": 0.9},
+}
+
+
 PACE_TEMPO_FACTORS: dict[str, float] = {
     "slow": 0.85,
     "measured": 0.92,
@@ -196,17 +220,24 @@ VOICE_DELIVERY_EFFECT: dict[str, Any] = {
             "proof_metric": "duration_seconds scales by 1/tempo_factor; see per-render pace_effect receipt",
         },
         "tone": {
-            "status": "request_only_on_chatterbox_turbo",
+            "status": "audible_with_emotion_realization_audible__request_only_on_default_fast_path",
             "reason": (
-                "Tone maps to STAGE_PRESETS which shift only sampling params "
-                "(temperature/top_p/top_k/repetition_penalty); measured acoustic "
-                "shifts are below same-parameter stochastic spread, and the params "
-                "that move affect (exaggeration, cfg_weight) are ignored by Turbo."
+                "On the default turbo fast path, tone maps to STAGE_PRESETS which shift "
+                "only sampling params; measured acoustic shifts are below same-parameter "
+                "stochastic spread, and the params that move affect (exaggeration, "
+                "cfg_weight) are ignored by Turbo."
             ),
             "audible_channel": (
-                "Set voice_delivery.intensity/valence or use_base_emotion to route "
-                "to chatterbox_base_affect, which honors exaggeration and cfg_weight."
+                "Set emotion_realization=audible (request field or voice_delivery key) and "
+                "the tone alone routes through TONE_CALIBRATION -> chatterbox_base_affect "
+                "knobs plus a per-tone tempo, with no knob knowledge required. Explicit "
+                "intensity/valence or use_base_emotion also route audibly, as before."
             ),
+            "default_policy": (
+                "Default is fast (turbo) for latency compatibility with live chat; override "
+                "per request or via CHATTERBOX_EMOTION_REALIZATION_DEFAULT=audible."
+            ),
+            "calibration": "TONE_CALIBRATION; pairwise distinguishability matrix published by the tone_matrix eval case",
         },
         "intensity_valence": {
             "status": "applied_on_chatterbox_base_affect",
@@ -222,6 +253,13 @@ VOICE_DELIVERY_EFFECT: dict[str, Any] = {
                     "inaudible": "single-axis deltas of 0.25-0.32 intensity from a 0.5 floor moved no metric past a 4-repeat noise floor (persona-dream measurement, chatterbox#21)",
                 },
                 "consumer_guidance": "Use large intensity/valence contrasts (>=0.5 apart) for audibly distinct arms; do not expect fine-grained gradations to be audible.",
+                "perceptual_validation": (
+                    "Held-out dimensional emotion model (audeering MSP-Podcast wav2vec2): "
+                    "perceived arousal rank-correlates with requested intensity at Spearman "
+                    "0.96 across all 15 calibrated tones; perceived valence does NOT track "
+                    "the requested valence knob (Spearman ~0.08) -- arousal is the single "
+                    "perceptually verified affect dimension. See the machine_listener eval case."
+                ),
             },
             "per_render_receipt": "affect_effect (chatterbox.affect_effect.v1)",
         },

@@ -1,0 +1,121 @@
+{
+  "schema": "agentic_evals.report.v1",
+  "source": "fixtures/agentic_eval.json",
+  "mocked": false,
+  "fixture_backed": true,
+  "live": false,
+  "proof_scope": "fixture wiring smoke",
+  "claims": {
+    "proves": "declared local commands met explicit fixture expectations across repeated trials",
+    "does_not_prove": "semantic correctness, live services, LLM judge behavior, or release readiness"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_count": 6,
+  "trial_count": 6,
+  "cases": [
+    {
+      "name": "receipt-honesty",
+      "type": "negative",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 239.258,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"receipt_honesty\",\n \"checks\": {\n  \"pace_declared_applied\": true,\n  \"tone_not_silently_claimed\": true,\n  \"pause_strategy_status_present\": true,\n  \"every_field_has_status\": true\n },\n \"pass\": true\n}\nRESULT: PASS (receipt_honesty)\n",
+          "stderr": "",
+          "duration_ms": 239.258,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "pace-separation",
+      "type": "positive",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 32920.981,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"pace\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"neutral_warm\",\n   \"pace\": \"slow\"\n  },\n  \"b\": {\n   \"tone\": \"neutral_warm\",\n   \"pace\": \"fast\"\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    7.64,\n    7.44,\n    9.32,\n    7.48,\n    7.76,\n    8.12\n   ],\n   \"floor_spread\": 1.88,\n   \"arm_a_values\": [\n    10.4,\n    7.808,\n    10.069\n   ],\n   \"arm_b_values\": [\n    6.987,\n    6.336,\n    6.517\n   ],\n   \"arm_group_delta\": 2.8123,\n   \"exceeds_floor\": true\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.04008,\n    0.04005,\n    0.03684,\n    0.04033,\n    0.03743,\n    0.03812\n   ],\n   \"floor_spread\": 0.0035,\n   \"arm_a_values\": [\n    0.02181,\n    0.02668,\n    0.02368\n   ],\n   \"arm_b_values\": [\n    0.02567,\n    0.02249,\n    0.02447\n   ],\n   \"arm_group_delta\": 0.0002,\n   \"exceeds_floor\": false\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    215.3,\n    244.9,\n    216.2,\n    212.4,\n    190.5,\n    222.2\n   ],\n   \"floor_spread\": 54.4,\n   \"arm_a_values\": [\n    203.4,\n    226.4,\n    220.2\n   ],\n   \"arm_b_values\": [\n    226.4,\n    194.3,\n    213.3\n   ],\n   \"arm_group_delta\": 5.3333,\n   \"exceeds_floor\": false\n  }\n },\n \"pass\": true\n}\nRESULT: PASS (pace)\n",
+          "stderr": "",
+          "duration_ms": 32920.981,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "affect-channel-separation",
+      "type": "positive",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 68062.12,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"affect\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"firm_boundary\",\n   \"voice_delivery\": {\n    \"intensity\": 0.9,\n    \"valence\": -0.8\n   }\n  },\n  \"b\": {\n   \"tone\": \"grief_safe\",\n   \"voice_delivery\": {\n    \"intensity\": 0.2,\n    \"valence\": -0.2\n   }\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    8.4,\n    8.44,\n    8.48,\n    7.32,\n    8.08,\n    8.36\n   ],\n   \"floor_spread\": 1.16,\n   \"arm_a_values\": [\n    8.24,\n    9.04,\n    8.72\n   ],\n   \"arm_b_values\": [\n    8.8,\n    8.8,\n    11.28\n   ],\n   \"arm_group_delta\": 0.96,\n   \"exceeds_floor\": false\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.05544,\n    0.05583,\n    0.05873,\n    0.05548,\n    0.05816,\n    0.06154\n   ],\n   \"floor_spread\": 0.0061,\n   \"arm_a_values\": [\n    0.07566,\n    0.07982,\n    0.0877\n   ],\n   \"arm_b_values\": [\n    0.0489,\n    0.04978,\n    0.05021\n   ],\n   \"arm_group_delta\": 0.0314,\n   \"exceeds_floor\": true\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    258.1,\n    212.4,\n    231.9,\n    225.4,\n    237.6,\n    229.7\n   ],\n   \"floor_spread\": 45.7,\n   \"arm_a_values\": [\n    307.7,\n    255.3,\n    285.7\n   ],\n   \"arm_b_values\": [\n    209.6,\n    204.3,\n    216.2\n   ],\n   \"arm_group_delta\": 72.8667,\n   \"exceeds_floor\": true\n  }\n },\n \"pass\": true\n}\nRESULT: PASS (affect)\n",
+          "stderr": "",
+          "duration_ms": 68062.12,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "tone-alone-default-path-stays-inert-as-declared",
+      "type": "negative",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 32299.424,
+      "trials": [
+        {
+          "exit_code": 1,
+          "stdout": "{\n \"case\": \"tone_alone\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"firm_boundary\"\n  },\n  \"b\": {\n   \"tone\": \"grief_safe\"\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    7.92,\n    8.0,\n    7.96,\n    8.28,\n    7.76,\n    8.96\n   ],\n   \"floor_spread\": 1.2,\n   \"arm_a_values\": [\n    8.28,\n    8.84,\n    7.56\n   ],\n   \"arm_b_values\": [\n    6.52,\n    8.2,\n    6.92\n   ],\n   \"arm_group_delta\": 1.0133,\n   \"exceeds_floor\": false\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.03442,\n    0.04408,\n    0.03383,\n    0.03571,\n    0.03797,\n    0.03808\n   ],\n   \"floor_spread\": 0.0103,\n   \"arm_a_values\": [\n    0.03749,\n    0.03085,\n    0.04033\n   ],\n   \"arm_b_values\": [\n    0.03766,\n    0.03439,\n    0.04077\n   ],\n   \"arm_group_delta\": 0.0014,\n   \"exceeds_floor\": false\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    196.7,\n    233.0,\n    216.2,\n    208.7,\n    196.7,\n    226.4\n   ],\n   \"floor_spread\": 36.3,\n   \"arm_a_values\": [\n    224.3,\n    183.9,\n    228.6\n   ],\n   \"arm_b_values\": [\n    222.2,\n    194.3,\n    210.5\n   ],\n   \"arm_group_delta\": 3.2667,\n   \"exceeds_floor\": false\n  }\n },\n \"pass\": false\n}\nRESULT: FAIL (tone_alone)\n",
+          "stderr": "",
+          "duration_ms": 32299.424,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "tone-audible-separation",
+      "type": "positive",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 75407.461,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"tone_audible\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"firm_boundary\",\n   \"voice_delivery\": {\n    \"emotion_realization\": \"audible\"\n   }\n  },\n  \"b\": {\n   \"tone\": \"grief_safe\",\n   \"voice_delivery\": {\n    \"emotion_realization\": \"audible\"\n   }\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    9.4,\n    8.36,\n    7.92,\n    8.8,\n    8.48,\n    8.0\n   ],\n   \"floor_spread\": 1.48,\n   \"arm_a_values\": [\n    10.315,\n    9.653,\n    7.456\n   ],\n   \"arm_b_values\": [\n    12.277,\n    10.944,\n    9.973\n   ],\n   \"arm_group_delta\": 1.9233,\n   \"exceeds_floor\": true\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.05533,\n    0.05132,\n    0.05449,\n    0.05936,\n    0.05615,\n    0.05332\n   ],\n   \"floor_spread\": 0.008,\n   \"arm_a_values\": [\n    0.05782,\n    0.05385,\n    0.0526\n   ],\n   \"arm_b_values\": [\n    0.03673,\n    0.03944,\n    0.03799\n   ],\n   \"arm_group_delta\": 0.0167,\n   \"exceeds_floor\": true\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    218.2,\n    206.9,\n    228.6,\n    220.2,\n    220.2,\n    222.2\n   ],\n   \"floor_spread\": 21.7,\n   \"arm_a_values\": [\n    259.5,\n    255.3,\n    280.7\n   ],\n   \"arm_b_values\": [\n    210.5,\n    218.2,\n    211.5\n   ],\n   \"arm_group_delta\": 51.7667,\n   \"exceeds_floor\": true\n  }\n },\n \"pass\": true\n}\nRESULT: PASS (tone_audible)\n",
+          "stderr": "",
+          "duration_ms": 75407.461,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "tone-matrix-classification",
+      "type": "positive",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 205755.028,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"tone_matrix\",\n \"schema\": \"chatterbox.tone_calibration_matrix.v1\",\n \"generated\": \"eval_tone_audibility tone_matrix\",\n \"noise_floor\": {\n  \"n\": 6,\n  \"values\": {\n   \"duration_s\": [\n    10.72,\n    8.16,\n    8.68,\n    9.8,\n    8.68,\n    9.4\n   ],\n   \"rms\": [\n    0.05833,\n    0.05045,\n    0.05336,\n    0.06273,\n    0.05226,\n    0.0595\n   ],\n   \"f0_median_hz\": [\n    233.0,\n    212.4,\n    212.4,\n    223.3,\n    206.9,\n    220.2\n   ]\n  },\n  \"spread\": {\n   \"duration_s\": 2.56,\n   \"rms\": 0.0123,\n   \"f0_median_hz\": 26.1\n  }\n },\n \"per_tone_samples\": 2,\n \"tone_means\": {\n  \"neutral_warm\": {\n   \"duration_s\": 9.24,\n   \"rms\": 0.0561,\n   \"f0_median_hz\": 218.0333\n  },\n  \"calm_precise\": {\n   \"duration_s\": 9.3545,\n   \"rms\": 0.0367,\n   \"f0_median_hz\": 216.5\n  },\n  \"careful_concerned\": {\n   \"duration_s\": 8.4905,\n   \"rms\": 0.041,\n   \"f0_median_hz\": 224.4\n  },\n  \"serious_low_energy\": {\n   \"duration_s\": 11.461,\n   \"rms\": 0.0339,\n   \"f0_median_hz\": 203.4\n  },\n  \"memory_confident\": {\n   \"duration_s\": 7.536,\n   \"rms\": 0.0458,\n   \"f0_median_hz\": 247.5\n  },\n  \"memory_uncertain\": {\n   \"duration_s\": 9.056,\n   \"rms\": 0.0466,\n   \"f0_median_hz\": 252.6\n  },\n  \"curious_searching\": {\n   \"duration_s\": 7.664,\n   \"rms\": 0.0464,\n   \"f0_median_hz\": 267.2\n  },\n  \"playful_light\": {\n   \"duration_s\": 7.7545,\n   \"rms\": 0.0454,\n   \"f0_median_hz\": 254.4\n  },\n  \"relieved\": {\n   \"duration_s\": 8.26,\n   \"rms\": 0.0604,\n   \"f0_median_hz\": 236.5\n  },\n  \"firm_boundary\": {\n   \"duration_s\": 9.531,\n   \"rms\": 0.0547,\n   \"f0_median_hz\": 275.1\n  },\n  \"identity_clarification\": {\n   \"duration_s\": 9.26,\n   \"rms\": 0.0775,\n   \"f0_median_hz\": 259.8\n  },\n  \"one_at_a_time_interrupt\": {\n   \"duration_s\": 7.0775,\n   \"rms\": 0.0538,\n   \"f0_median_hz\": 286.8\n  },\n  \"deflect_calm\": {\n   \"duration_s\": 10.1335,\n   \"rms\": 0.0459,\n   \"f0_median_hz\": 242.8\n  },\n  \"grief_safe\": {\n   \"duration_s\": 9.5625,\n   \"rms\": 0.035,\n   \"f0_median_hz\": 206.9\n  },\n  \"wait_presence\": {\n   \"duration_s\": 10.7145,\n   \"rms\": 0.0415,\n   \"f0_median_hz\": 219.4\n  }\n },\n \"pairwise_separating_metrics\": {\n  \"neutral_warm\": {\n   \"calm_precise\": [\n    \"rms\"\n   ],\n   \"careful_concerned\": [\n    \"rms\"\n   ],\n   \"serious_low_energy\": [\n    \"rms\"\n   ],\n   \"memory_confident\": [\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [],\n   \"firm_boundary\": [\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [],\n   \"grief_safe\": [\n    \"rms\"\n   ],\n   \"wait_presence\": [\n    \"rms\"\n   ]\n  },\n  \"calm_precise\": {\n   \"neutral_warm\": [\n    \"rms\"\n   ],\n   \"careful_concerned\": [],\n   \"serious_low_energy\": [],\n   \"memory_confident\": [\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"f0_median_hz\"\n   ],\n   \"grief_safe\": [],\n   \"wait_presence\": []\n  },\n  \"careful_concerned\": {\n   \"neutral_warm\": [\n    \"rms\"\n   ],\n   \"calm_precise\": [],\n   \"serious_low_energy\": [\n    \"duration_s\"\n   ],\n   \"memory_confident\": [],\n   \"memory_uncertain\": [\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [],\n   \"grief_safe\": [],\n   \"wait_presence\": []\n  },\n  \"serious_low_energy\": {\n   \"neutral_warm\": [\n    \"rms\"\n   ],\n   \"calm_precise\": [],\n   \"careful_concerned\": [\n    \"duration_s\"\n   ],\n   \"memory_confident\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [\n    \"duration_s\",\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [\n    \"duration_s\",\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"firm_boundary\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"duration_s\",\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"f0_median_hz\"\n   ],\n   \"grief_safe\": [],\n   \"wait_presence\": []\n  },\n  \"memory_confident\": {\n   \"neutral_warm\": [\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [],\n   \"serious_low_energy\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [],\n   \"curious_searching\": [],\n   \"playful_light\": [],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"duration_s\"\n   ],\n   \"grief_safe\": [\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ]\n  },\n  \"memory_uncertain\": {\n   \"neutral_warm\": [\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [\n    \"f0_median_hz\"\n   ],\n   \"serious_low_energy\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [],\n   \"curious_searching\": [],\n   \"playful_light\": [],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [],\n   \"grief_safe\": [\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"f0_median_hz\"\n   ]\n  },\n  \"curious_searching\": {\n   \"neutral_warm\": [\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [\n    \"f0_median_hz\"\n   ],\n   \"serious_low_energy\": [\n    \"duration_s\",\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [],\n   \"memory_uncertain\": [],\n   \"playful_light\": [],\n   \"relieved\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"firm_boundary\": [],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [],\n   \"deflect_calm\": [],\n   \"grief_safe\": [\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ]\n  },\n  \"playful_light\": {\n   \"neutral_warm\": [\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [\n    \"f0_median_hz\"\n   ],\n   \"serious_low_energy\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [],\n   \"memory_uncertain\": [],\n   \"curious_searching\": [],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [],\n   \"grief_safe\": [\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ]\n  },\n  \"relieved\": {\n   \"neutral_warm\": [],\n   \"calm_precise\": [\n    \"rms\"\n   ],\n   \"careful_concerned\": [\n    \"rms\"\n   ],\n   \"serious_low_energy\": [\n    \"duration_s\",\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [\n    \"rms\"\n   ],\n   \"memory_uncertain\": [\n    \"rms\"\n   ],\n   \"curious_searching\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"rms\"\n   ],\n   \"grief_safe\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"rms\"\n   ]\n  },\n  \"firm_boundary\": {\n   \"neutral_warm\": [\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"serious_low_energy\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [],\n   \"curious_searching\": [],\n   \"playful_light\": [],\n   \"relieved\": [\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [],\n   \"deflect_calm\": [\n    \"f0_median_hz\"\n   ],\n   \"grief_safe\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ]\n  },\n  \"identity_clarification\": {\n   \"neutral_warm\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"serious_low_energy\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [\n    \"rms\"\n   ],\n   \"memory_uncertain\": [\n    \"rms\"\n   ],\n   \"curious_searching\": [\n    \"rms\"\n   ],\n   \"playful_light\": [\n    \"rms\"\n   ],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"rms\"\n   ],\n   \"grief_safe\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ]\n  },\n  \"one_at_a_time_interrupt\": {\n   \"neutral_warm\": [\n    \"f0_median_hz\"\n   ],\n   \"calm_precise\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"serious_low_energy\": [\n    \"duration_s\",\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [],\n   \"playful_light\": [\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [\n    \"f0_median_hz\"\n   ],\n   \"firm_boundary\": [],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"grief_safe\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ]\n  },\n  \"deflect_calm\": {\n   \"neutral_warm\": [],\n   \"calm_precise\": [\n    \"f0_median_hz\"\n   ],\n   \"careful_concerned\": [],\n   \"serious_low_energy\": [\n    \"f0_median_hz\"\n   ],\n   \"memory_confident\": [\n    \"duration_s\"\n   ],\n   \"memory_uncertain\": [],\n   \"curious_searching\": [],\n   \"playful_light\": [],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"grief_safe\": [\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": []\n  },\n  \"grief_safe\": {\n   \"neutral_warm\": [\n    \"rms\"\n   ],\n   \"calm_precise\": [],\n   \"careful_concerned\": [],\n   \"serious_low_energy\": [],\n   \"memory_confident\": [\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"firm_boundary\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [\n    \"f0_median_hz\"\n   ],\n   \"wait_presence\": []\n  },\n  \"wait_presence\": {\n   \"neutral_warm\": [\n    \"rms\"\n   ],\n   \"calm_precise\": [],\n   \"careful_concerned\": [],\n   \"serious_low_energy\": [],\n   \"memory_confident\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"memory_uncertain\": [\n    \"f0_median_hz\"\n   ],\n   \"curious_searching\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"playful_light\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"relieved\": [\n    \"rms\"\n   ],\n   \"firm_boundary\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"identity_clarification\": [\n    \"rms\",\n    \"f0_median_hz\"\n   ],\n   \"one_at_a_time_interrupt\": [\n    \"duration_s\",\n    \"f0_median_hz\"\n   ],\n   \"deflect_calm\": [],\n   \"grief_safe\": []\n  }\n },\n \"distinct_pairs\": 77,\n \"total_pairs\": 105,\n \"classification\": {\n  \"neutral_warm\": \"calibrated_distinct\",\n  \"calm_precise\": \"calibrated_distinct\",\n  \"careful_concerned\": \"calibrated_distinct\",\n  \"serious_low_energy\": \"calibrated_distinct\",\n  \"memory_confident\": \"calibrated_distinct\",\n  \"memory_uncertain\": \"calibrated_distinct\",\n  \"curious_searching\": \"calibrated_distinct\",\n  \"playful_light\": \"calibrated_distinct\",\n  \"relieved\": \"not_distinct_request_only\",\n  \"firm_boundary\": \"calibrated_distinct\",\n  \"identity_clarification\": \"calibrated_distinct\",\n  \"one_at_a_time_interrupt\": \"calibrated_distinct\",\n  \"deflect_calm\": \"not_distinct_request_only\",\n  \"grief_safe\": \"calibrated_distinct\",\n  \"wait_presence\": \"calibrated_distinct\"\n },\n \"pass\": true\n}\nRESULT: PASS (tone_matrix)\n",
+          "stderr": "",
+          "duration_ms": 205755.028,
+          "timed_out": false
+        }
+      ]
+    }
+  ]
+}
