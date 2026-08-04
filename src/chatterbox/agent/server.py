@@ -55,11 +55,13 @@ from chatterbox.agent.presets import (
     TONE_TO_DELIVERY_STAGE,
     TURBO_IGNORED_PARAMS,
     TURBO_SUPPORTED_PARAMS,
+    VOICE_DELIVERY_EFFECT,
     effective_delivery_stage,
     generation_params_for_stage,
     normalize_delivery_stage,
     normalize_tone,
     normalize_voice_token,
+    pace_tempo_factor,
 )
 
 
@@ -922,6 +924,53 @@ def emotion_knobs_from_delivery(voice_delivery: dict[str, Any]) -> dict[str, flo
     }
 
 
+def apply_pace_stretch(wav: Any, sr: int, pace: str | None) -> tuple[Any, dict[str, Any]]:
+    """Apply a pitch-preserving phase-vocoder time stretch for a requested pace.
+
+    Deterministic post-process on the rendered waveform, so its duration effect
+    is exact-ratio and measurable above same-parameter stochastic spread.
+    Unknown pace values are a no-op and reported as request_only in the receipt.
+    """
+    factor = pace_tempo_factor(pace)
+    input_duration = round(wav.shape[-1] / sr, 3)
+    receipt: dict[str, Any] = {
+        "schema": "chatterbox.pace_effect.v1",
+        "requested_pace": pace,
+        "tempo_factor": factor,
+        "mechanism": "phase_vocoder_time_stretch",
+        "applied": False,
+        "input_duration_seconds": input_duration,
+        "output_duration_seconds": input_duration,
+    }
+    if not pace:
+        receipt["reason"] = "no_pace_requested"
+        return wav, receipt
+    if factor is None:
+        receipt["reason"] = "unknown_pace_value_request_only"
+        return wav, receipt
+    if abs(factor - 1.0) < 1e-3:
+        receipt["reason"] = "identity_tempo_factor"
+        return wav, receipt
+    try:
+        import torch
+        import torchaudio
+
+        n_fft, hop = 1024, 256
+        window = torch.hann_window(n_fft, device=wav.device)
+        spec = torch.stft(wav, n_fft=n_fft, hop_length=hop, window=window, return_complex=True)
+        stretched = torchaudio.transforms.TimeStretch(hop_length=hop, n_freq=n_fft // 2 + 1)(spec, factor)
+        out = torch.istft(stretched, n_fft=n_fft, hop_length=hop, window=window)
+        if out.dim() == 1:
+            out = out.unsqueeze(0)
+        out = out.to(dtype=wav.dtype)
+    except Exception as exc:  # noqa: BLE001 - a stretch failure must not kill the render, and must be reported honestly
+        receipt["reason"] = f"stretch_failed:{type(exc).__name__}:{exc}"
+        return wav, receipt
+    receipt["applied"] = True
+    receipt["output_duration_seconds"] = round(out.shape[-1] / sr, 3)
+    return out, receipt
+
+
 def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, Any]:
     import torchaudio as ta
 
@@ -971,6 +1020,15 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
                 )
         generation_seconds = round(time.perf_counter() - started, 3)
         latency_event(events, "first_audio_ready", started_total, generation_seconds=generation_seconds)
+        wav, pace_effect = apply_pace_stretch(wav, int(render_sr), voice_delivery.get("pace"))
+        if pace_effect["applied"]:
+            latency_event(
+                events,
+                "pace_stretch_applied",
+                started_total,
+                tempo_factor=pace_effect["tempo_factor"],
+                output_duration_seconds=pace_effect["output_duration_seconds"],
+            )
         ta.save(str(out_path), wav, render_sr)
         latency_event(events, "audio_saved", started_total)
         os.chmod(out_path, 0o664)
@@ -1040,6 +1098,8 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         "delivery_stage": voice_delivery["delivery_stage"],
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
+        "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
+        "pace_effect": pace_effect,
         "tag_handling": voice_delivery["tag_handling"],
         "stochasticity": stochasticity,
         "generation_params": params,
@@ -2413,6 +2473,7 @@ def health() -> dict[str, Any]:
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": CHATTERBOX_TAG_HANDLING,
         "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
+        "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
         "voice_backends": VOICE_BACKENDS.summary(),
         "supported_backends": VOICE_BACKENDS.ids(),
         "torch": torch_info,
@@ -2429,6 +2490,7 @@ def presets() -> dict[str, Any]:
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": CHATTERBOX_TAG_HANDLING,
         "stage_preset_affect_status": STAGE_PRESET_AFFECT_STATUS,
+        "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
         "allowed_tones": sorted(ALLOWED_TONES),
         "tone_to_delivery_stage": TONE_TO_DELIVERY_STAGE,
         "delivery_stage_aliases": DELIVERY_STAGE_ALIASES,
@@ -2882,6 +2944,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "delivery_stage": batch_voice_delivery["delivery_stage"],
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
+        "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
         "tag_handling": batch_voice_delivery["tag_handling"],
         "stochasticity": batch_stochasticity,
         "applied_controls": applied_controls,

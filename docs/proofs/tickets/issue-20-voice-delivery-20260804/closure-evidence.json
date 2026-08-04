@@ -1,0 +1,45 @@
+{
+  "schema": "chatterbox.ticket_closure_evidence.v1",
+  "issue": "https://github.com/grahama1970/chatterbox/issues/20",
+  "date": "2026-08-04",
+  "diagnosis": {
+    "tone": "Maps to STAGE_PRESETS varying only sampling params (temperature/top_p/top_k/repetition_penalty); the affect params (exaggeration, cfg_weight) are in TURBO_IGNORED_PARAMS. Prior four-arm receipt already measured preset shifts below same-parameter spread.",
+    "pace": "Accepted and echoed; no synthesis code path consumed it before this fix.",
+    "pause_strategy": "Accepted and echoed; no synthesis code path consumes it."
+  },
+  "fix": {
+    "pace": "Implemented as deterministic pitch-preserving phase-vocoder time stretch (apply_pace_stretch) applied to the rendered waveform on every synthesize_to_file path. Per-render pace_effect receipt (chatterbox.pace_effect.v1) reports applied/reason and measured pre/post durations. Tempo factors: slow 0.85, measured 0.92, brisk 1.08, fast 1.18; unknown values are request_only.",
+    "tone_and_pause_strategy": "Declared request-only on chatterbox_turbo via chatterbox.voice_delivery_effect.v1, published in /health, /presets, per-render and batch receipts, with audible_channel pointers (intensity/valence/use_base_emotion -> chatterbox_base_affect; per-chunk pause_after_ms)."
+  },
+  "required_proof": {
+    "protocol": "6x POST /synthesize-batch identical params for noise floor, then pace-varied renders; durations read from produced wav files with the wave module, never the echoed request.",
+    "noise_floor_wav_durations_s": [
+      14.36,
+      16.2,
+      13.92,
+      12.04,
+      12.28,
+      13.48
+    ],
+    "noise_floor_spread_s": 4.16,
+    "pace_slow_wav_durations_s": [
+      15.723,
+      13.941,
+      15.253
+    ],
+    "pace_fast_wav_durations_s": [
+      10.816,
+      10.88,
+      10.603
+    ],
+    "slow_vs_fast_group_mean_delta_s": 4.206,
+    "single_pair_slow_vs_fast_delta_s": 4.907,
+    "assertions": {
+      "measured_metric_exceeds_noise_floor": "slow-vs-fast delta 4.907s > same-parameter spread 4.16s",
+      "no_overlap": "every fast render (max 10.88s) < every slow render (min 13.941s) AND < min of 6 identical renders (12.04s)",
+      "deterministic_ratio": "slow/fast group ratio 1.39 matches predicted 1.18/0.85 = 1.388; receipt output_duration equals wav-measured duration (2.037s == 2.037s in final smoke)"
+    }
+  },
+  "tests": "55 passed (tests/test_agent_server_primitives.py, tests/test_voice_backends.py), including new test_apply_pace_stretch_receipt_never_claims_unproven_effect",
+  "health_readback": "GET /health voice_delivery_effect: pace=applied, tone=request_only_on_chatterbox_turbo, pause_strategy=request_only"
+}

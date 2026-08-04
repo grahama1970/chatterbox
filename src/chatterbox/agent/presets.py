@@ -169,6 +169,63 @@ TURBO_IGNORED_PARAMS = {
 }
 
 
+PACE_TEMPO_FACTORS: dict[str, float] = {
+    "slow": 0.85,
+    "measured": 0.92,
+    "neutral": 1.0,
+    "default": 1.0,
+    "brisk": 1.08,
+    "fast": 1.18,
+}
+
+
+def pace_tempo_factor(pace: str | None) -> float | None:
+    """Tempo factor for a requested pace, or None when the value is unknown."""
+    return PACE_TEMPO_FACTORS.get(normalize_voice_token(pace))
+
+
+VOICE_DELIVERY_EFFECT: dict[str, Any] = {
+    "schema": "chatterbox.voice_delivery_effect.v1",
+    "engine": "chatterbox_turbo",
+    "fields": {
+        "pace": {
+            "status": "applied",
+            "mechanism": "phase_vocoder_time_stretch",
+            "tempo_factors": PACE_TEMPO_FACTORS,
+            "unknown_value_behavior": "request_only",
+            "proof_metric": "duration_seconds scales by 1/tempo_factor; see per-render pace_effect receipt",
+        },
+        "tone": {
+            "status": "request_only_on_chatterbox_turbo",
+            "reason": (
+                "Tone maps to STAGE_PRESETS which shift only sampling params "
+                "(temperature/top_p/top_k/repetition_penalty); measured acoustic "
+                "shifts are below same-parameter stochastic spread, and the params "
+                "that move affect (exaggeration, cfg_weight) are ignored by Turbo."
+            ),
+            "audible_channel": (
+                "Set voice_delivery.intensity/valence or use_base_emotion to route "
+                "to chatterbox_base_affect, which honors exaggeration and cfg_weight."
+            ),
+        },
+        "pause_strategy": {
+            "status": "request_only",
+            "reason": "No synthesis code path consumes pause_strategy.",
+            "audible_channel": "Use per-chunk pause_after_ms, which inserts real silence when segments are combined.",
+        },
+        "chatterbox_tags": {
+            "status": "request_only",
+            "reason": "See tag_handling: no dedicated tag channel; inline tags are synthesized as literal text.",
+        },
+    },
+    "consumer_guidance": (
+        "Treat any field not marked applied as receipt metadata. Echo-back of a "
+        "request field is never evidence of acoustic effect; only a per-render "
+        "*_effect receipt with applied=true is."
+    ),
+}
+
+
 CHATTERBOX_TAG_HANDLING: dict[str, Any] = {
     "schema": "chatterbox.tag_handling.v1",
     "dedicated_tag_channel": "unsupported",

@@ -298,8 +298,41 @@ def test_synthesize_to_file_receipt_records_voice_delivery(tmp_path: Path, monke
     assert result["delivery_stage"] == "satisfied"
     assert result["voice_delivery"]["pace"] == "measured"
     assert result["voice_delivery"]["pause_strategy"] == "short_answer_no_filler"
+    assert result["pace_effect"]["schema"] == "chatterbox.pace_effect.v1"
+    assert result["pace_effect"]["requested_pace"] == "measured"
+    assert result["voice_delivery_effect"]["fields"]["pace"]["status"] == "applied"
+    assert result["voice_delivery_effect"]["fields"]["tone"]["status"] == "request_only_on_chatterbox_turbo"
+    assert result["voice_delivery_effect"]["fields"]["pause_strategy"]["status"] == "request_only"
     assert result["ignored_turbo_params"] == sorted(server.TURBO_IGNORED_PARAMS)
     assert result["generation_params"] == server.generation_params_for_stage("satisfied")
+
+
+def test_apply_pace_stretch_receipt_never_claims_unproven_effect() -> None:
+    import torch
+
+    wav = torch.zeros((1, 24000), dtype=torch.float32)
+
+    unchanged, receipt = server.apply_pace_stretch(wav, 24000, None)
+    assert receipt["applied"] is False
+    assert receipt["reason"] == "no_pace_requested"
+    assert unchanged is wav
+
+    unchanged, receipt = server.apply_pace_stretch(wav, 24000, "not_a_pace")
+    assert receipt["applied"] is False
+    assert receipt["reason"] == "unknown_pace_value_request_only"
+
+    unchanged, receipt = server.apply_pace_stretch(wav, 24000, "neutral")
+    assert receipt["applied"] is False
+    assert receipt["reason"] == "identity_tempo_factor"
+
+    stretched, receipt = server.apply_pace_stretch(wav, 24000, "fast")
+    if receipt["applied"]:
+        assert abs(receipt["output_duration_seconds"] - 1.0 / 1.18) < 0.05
+        assert stretched.shape[-1] < wav.shape[-1]
+    else:
+        # Environments without a working torchaudio must degrade honestly.
+        assert receipt["reason"].startswith("stretch_failed:")
+        assert unchanged is wav or stretched is wav
 
 
 def test_tau_voice_render_request_maps_to_batch_request() -> None:
