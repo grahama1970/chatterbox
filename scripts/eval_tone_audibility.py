@@ -125,11 +125,20 @@ CASES: dict[str, dict] = {
 
 def run_case(case: str, base_url: str, out_root: Path, floor_n: int, arm_n: int) -> dict:
     spec = CASES[case]
-    floor_paths = [
-        render(base_url, out_root, f"eval-{case}-floor-{i:02d}", spec["floor"]) for i in range(1, floor_n + 1)
-    ]
-    arm_a_paths = [render(base_url, out_root, f"eval-{case}-a-{i:02d}", spec["arm_a"]) for i in range(1, arm_n + 1)]
-    arm_b_paths = [render(base_url, out_root, f"eval-{case}-b-{i:02d}", spec["arm_b"]) for i in range(1, arm_n + 1)]
+    # Interleave floor/arm renders round-robin so slow session-scale drift in
+    # the renderer lands in the noise floor instead of masquerading as an arm
+    # effect (observed: sequential blocks let f0 drift read as tone separation).
+    schedule: list[tuple[str, int, dict]] = []
+    for i in range(1, max(floor_n, arm_n) + 1):
+        if i <= floor_n:
+            schedule.append(("floor", i, spec["floor"]))
+        if i <= arm_n:
+            schedule.append(("a", i, spec["arm_a"]))
+            schedule.append(("b", i, spec["arm_b"]))
+    paths: dict[str, list[Path]] = {"floor": [], "a": [], "b": []}
+    for group_name, i, body in schedule:
+        paths[group_name].append(render(base_url, out_root, f"eval-{case}-{group_name}-{i:02d}", body))
+    floor_paths, arm_a_paths, arm_b_paths = paths["floor"], paths["a"], paths["b"]
     floor_g, a_g, b_g = group(floor_paths), group(arm_a_paths), group(arm_b_paths)
     per_metric = {}
     for metric in floor_g:
@@ -170,8 +179,8 @@ def main() -> int:
     parser.add_argument("--case", required=True, choices=[*CASES, "receipt_honesty"])
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--out-root", default=str(Path(__file__).resolve().parent.parent / "logs"))
-    parser.add_argument("--floor-n", type=int, default=4)
-    parser.add_argument("--arm-n", type=int, default=2)
+    parser.add_argument("--floor-n", type=int, default=6)
+    parser.add_argument("--arm-n", type=int, default=3)
     args = parser.parse_args()
     try:
         if args.case == "receipt_honesty":
