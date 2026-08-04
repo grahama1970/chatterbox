@@ -1,0 +1,18 @@
+{
+ "schema": "chatterbox.listening_study_prereg.v1",
+ "issue": "chatterbox#7",
+ "date": "2026-08-04",
+ "design": "forced-choice per blinded pair: 'which clip sounds more <target word>' + per-clip voice-quality MOS 1-5",
+ "pairs_preregistered": [
+  "firm_boundary vs grief_safe",
+  "playful_light vs serious_low_energy",
+  "firm_boundary vs wait_presence",
+  "one_at_a_time_interrupt vs calm_precise",
+  "playful_light vs grief_safe",
+  "memory_confident vs serious_low_energy",
+  "relieved vs firm_boundary",
+  "curious_searching vs wait_presence"
+ ],
+ "threshold": "success = >= 6/8 correct forced choices (binomial p<0.15 vs chance) and mean MOS >= 3.0",
+ "stimuli_source": "tone_matrix renders, emotion_realization=audible, receipts in docs/proofs/tone_calibration_matrix.json"
+}

@@ -1,0 +1,38 @@
+{
+ "note": "Do NOT open before rating. Scoring key for the blinded pairs.",
+ "seed": 20260804,
+ "mapping": {
+  "pair01": {
+   "A": "firm_boundary",
+   "B": "grief_safe"
+  },
+  "pair02": {
+   "A": "playful_light",
+   "B": "serious_low_energy"
+  },
+  "pair03": {
+   "A": "firm_boundary",
+   "B": "wait_presence"
+  },
+  "pair04": {
+   "A": "one_at_a_time_interrupt",
+   "B": "calm_precise"
+  },
+  "pair05": {
+   "A": "playful_light",
+   "B": "grief_safe"
+  },
+  "pair06": {
+   "A": "serious_low_energy",
+   "B": "memory_confident"
+  },
+  "pair07": {
+   "A": "relieved",
+   "B": "firm_boundary"
+  },
+  "pair08": {
+   "A": "curious_searching",
+   "B": "wait_presence"
+  }
+ }
+}
