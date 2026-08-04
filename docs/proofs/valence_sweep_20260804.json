@@ -1,0 +1,186 @@
+{
+ "schema": "chatterbox.valence_sweep.v1",
+ "engine": "chatterbox_base via /synthesize-emotion (raw knobs, no clamps)",
+ "scorer": "audeering wav2vec2 dimensional (MSP-Podcast) via audonnx",
+ "floor": {
+  "n": 4,
+  "perceived_valence_values": [
+   0.628,
+   0.62,
+   0.566,
+   0.546
+  ],
+  "spread": 0.082
+ },
+ "axes": {
+  "cfg_weight": {
+   "valence_by_value": {
+    "0.1": 0.5745,
+    "0.3": 0.577,
+    "0.5": 0.6175,
+    "0.7": 0.6105,
+    "0.9": 0.5905
+   },
+   "sweep_range": 0.043,
+   "floor_spread": 0.082,
+   "spearman": 0.6,
+   "verdict": "inert_for_valence"
+  },
+  "temperature": {
+   "valence_by_value": {
+    "0.5": 0.6135,
+    "0.7": 0.643,
+    "0.9": 0.5685,
+    "1.1": 0.6
+   },
+   "sweep_range": 0.0745,
+   "floor_spread": 0.082,
+   "spearman": -0.6,
+   "verdict": "inert_for_valence"
+  },
+  "exaggeration": {
+   "valence_by_value": {
+    "0.3": 0.5715,
+    "0.5": 0.613,
+    "0.7": 0.5975,
+    "0.9": 0.5685,
+    "1.1": 0.5695
+   },
+   "sweep_range": 0.0445,
+   "floor_spread": 0.082,
+   "spearman": -0.6,
+   "verdict": "inert_for_valence"
+  }
+ },
+ "raw_scores": {
+  "v23-floor-01": {
+   "arousal": 0.664,
+   "valence": 0.628
+  },
+  "v23-cfg_weight-0.1-1": {
+   "arousal": 0.649,
+   "valence": 0.555
+  },
+  "v23-cfg_weight-0.1-2": {
+   "arousal": 0.585,
+   "valence": 0.594
+  },
+  "v23-cfg_weight-0.3-1": {
+   "arousal": 0.629,
+   "valence": 0.618
+  },
+  "v23-cfg_weight-0.3-2": {
+   "arousal": 0.625,
+   "valence": 0.536
+  },
+  "v23-cfg_weight-0.5-1": {
+   "arousal": 0.638,
+   "valence": 0.616
+  },
+  "v23-cfg_weight-0.5-2": {
+   "arousal": 0.671,
+   "valence": 0.619
+  },
+  "v23-cfg_weight-0.7-1": {
+   "arousal": 0.668,
+   "valence": 0.608
+  },
+  "v23-floor-02": {
+   "arousal": 0.624,
+   "valence": 0.62
+  },
+  "v23-cfg_weight-0.7-2": {
+   "arousal": 0.634,
+   "valence": 0.613
+  },
+  "v23-cfg_weight-0.9-1": {
+   "arousal": 0.667,
+   "valence": 0.57
+  },
+  "v23-cfg_weight-0.9-2": {
+   "arousal": 0.679,
+   "valence": 0.611
+  },
+  "v23-temperature-0.5-1": {
+   "arousal": 0.661,
+   "valence": 0.617
+  },
+  "v23-temperature-0.5-2": {
+   "arousal": 0.657,
+   "valence": 0.61
+  },
+  "v23-temperature-0.7-1": {
+   "arousal": 0.613,
+   "valence": 0.655
+  },
+  "v23-temperature-0.7-2": {
+   "arousal": 0.648,
+   "valence": 0.631
+  },
+  "v23-floor-03": {
+   "arousal": 0.655,
+   "valence": 0.566
+  },
+  "v23-temperature-0.9-1": {
+   "arousal": 0.631,
+   "valence": 0.543
+  },
+  "v23-temperature-0.9-2": {
+   "arousal": 0.652,
+   "valence": 0.594
+  },
+  "v23-temperature-1.1-1": {
+   "arousal": 0.64,
+   "valence": 0.575
+  },
+  "v23-temperature-1.1-2": {
+   "arousal": 0.705,
+   "valence": 0.625
+  },
+  "v23-exaggeration-0.3-1": {
+   "arousal": 0.441,
+   "valence": 0.541
+  },
+  "v23-exaggeration-0.3-2": {
+   "arousal": 0.477,
+   "valence": 0.602
+  },
+  "v23-exaggeration-0.5-1": {
+   "arousal": 0.52,
+   "valence": 0.597
+  },
+  "v23-floor-04": {
+   "arousal": 0.648,
+   "valence": 0.546
+  },
+  "v23-exaggeration-0.5-2": {
+   "arousal": 0.583,
+   "valence": 0.629
+  },
+  "v23-exaggeration-0.7-1": {
+   "arousal": 0.617,
+   "valence": 0.607
+  },
+  "v23-exaggeration-0.7-2": {
+   "arousal": 0.69,
+   "valence": 0.588
+  },
+  "v23-exaggeration-0.9-1": {
+   "arousal": 0.751,
+   "valence": 0.531
+  },
+  "v23-exaggeration-0.9-2": {
+   "arousal": 0.766,
+   "valence": 0.606
+  },
+  "v23-exaggeration-1.1-1": {
+   "arousal": 0.79,
+   "valence": 0.617
+  },
+  "v23-exaggeration-1.1-2": {
+   "arousal": 0.819,
+   "valence": 0.522
+  }
+ },
+ "any_axis_moves_valence": false
+}

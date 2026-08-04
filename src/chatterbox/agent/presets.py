@@ -240,7 +240,23 @@ VOICE_DELIVERY_EFFECT: dict[str, Any] = {
             "calibration": "TONE_CALIBRATION; pairwise distinguishability matrix published by the tone_matrix eval case",
         },
         "intensity_valence": {
-            "status": "applied_on_chatterbox_base_affect",
+            "status": "intensity_applied_on_chatterbox_base_affect__valence_perceptually_inert",
+            "valence_inertness": {
+                "declared": True,
+                "evidence": (
+                    "Full raw-knob sweep on /synthesize-emotion (cfg_weight 0.1-0.9, "
+                    "temperature 0.5-1.1, exaggeration 0.3-1.1; interleaved floor n=4) "
+                    "scored by the audeering dimensional model: every axis's perceived-"
+                    "valence sweep range (0.043-0.075) fell inside the same-parameter "
+                    "floor spread (0.082). No generation knob moves perceived valence "
+                    "on the Chatterbox engines. Receipt: docs/proofs/valence_sweep_20260804.json (chatterbox#23)."
+                ),
+                "consumer_guidance": (
+                    "Treat requested valence as engine-internal metadata, not a perceptual "
+                    "promise. Perceived tone differentiation comes from arousal (intensity) "
+                    "and tempo. A valence-capable engine is future work."
+                ),
+            },
             "mechanism": "intensity scales exaggeration (0.3+0.9*intensity, clamped 0.3-1.4); negative valence lowers cfg_weight (0.5-0.2*max(0,-valence), clamped 0.3-0.5)",
             "response_curve": {
                 "summary": (
