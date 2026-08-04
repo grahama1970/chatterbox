@@ -307,6 +307,29 @@ def test_synthesize_to_file_receipt_records_voice_delivery(tmp_path: Path, monke
     assert result["generation_params"] == server.generation_params_for_stage("satisfied")
 
 
+def test_affect_effect_receipt_reports_applied_only_when_backend_honors_knobs() -> None:
+    knobs = {"exaggeration": 1.065, "cfg_weight": 0.36, "temperature": 0.7, "intensity": 0.85, "valence": -0.7}
+
+    applied = server.affect_effect_receipt({"intensity": 0.85, "valence": -0.7}, knobs, "chatterbox_base_affect")
+    assert applied["schema"] == "chatterbox.affect_effect.v1"
+    assert applied["applied"] is True
+    assert applied["knob_source"] == "explicit_intensity_valence"
+    assert applied["derived_knobs"] == knobs
+
+    defaults = server.affect_effect_receipt({"use_base_emotion": True}, knobs, "chatterbox_base_affect")
+    assert defaults["applied"] is True
+    assert defaults["knob_source"] == "tone_affect_defaults"
+
+    wrong_backend = server.affect_effect_receipt({"intensity": 0.85}, knobs, "chatterbox_turbo")
+    assert wrong_backend["applied"] is False
+    assert wrong_backend["reason"] == "backend_chatterbox_turbo_does_not_honor_affect_knobs"
+
+    no_affect = server.affect_effect_receipt({}, None, "chatterbox_turbo")
+    assert no_affect["applied"] is False
+    assert no_affect["reason"] == "no_affect_requested_default_turbo_render"
+    assert no_affect["knob_source"] is None
+
+
 def test_apply_pace_stretch_receipt_never_claims_unproven_effect() -> None:
     import torch
 

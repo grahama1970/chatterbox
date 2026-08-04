@@ -1,0 +1,48 @@
+{
+  "version": 2,
+  "skill": "chatterbox-voice-delivery",
+  "trials": 1,
+  "proof_scope": "live acoustic audibility of voice_delivery tags against the renderer's own same-parameter noise floor, plus receipt honesty",
+  "claims": {
+    "proves": "pace and intensity/valence contrasts produce wav-measured acoustic separation exceeding the same-parameter noise floor on the live server, and /health never claims effect for request-only fields",
+    "does_not_prove": "human-perceived emotional quality (chatterbox#7), pairwise distinguishability of all 15 declared tones (chatterbox#22), or behavior when the server is down; tone_alone-separation encodes the target contract of chatterbox#22 and FAILS until tone auto-routes through the calibrated affect channel"
+  },
+  "cases": [
+    {
+      "name": "receipt-honesty",
+      "type": "negative",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "receipt_honesty"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["RESULT: PASS (receipt_honesty)"]
+      }
+    },
+    {
+      "name": "pace-separation",
+      "type": "positive",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "pace"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["RESULT: PASS (pace)"]
+      }
+    },
+    {
+      "name": "affect-channel-separation",
+      "type": "positive",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "affect"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["RESULT: PASS (affect)"]
+      }
+    },
+    {
+      "name": "tone-alone-separation",
+      "type": "adversarial",
+      "command": ["/home/graham/workspace/experiments/chatterbox/.venv/bin/python", "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py", "--case", "tone_alone"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["RESULT: PASS (tone_alone)"]
+      }
+    }
+  ]
+}

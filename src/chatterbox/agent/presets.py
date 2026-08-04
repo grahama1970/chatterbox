@@ -208,6 +208,23 @@ VOICE_DELIVERY_EFFECT: dict[str, Any] = {
                 "to chatterbox_base_affect, which honors exaggeration and cfg_weight."
             ),
         },
+        "intensity_valence": {
+            "status": "applied_on_chatterbox_base_affect",
+            "mechanism": "intensity scales exaggeration (0.3+0.9*intensity, clamped 0.3-1.4); negative valence lowers cfg_weight (0.5-0.2*max(0,-valence), clamped 0.3-0.5)",
+            "response_curve": {
+                "summary": (
+                    "Response is nonlinear and top-weighted: audible change is measured "
+                    "only near the top of the intensity range. Small deltas sit below the "
+                    "renderer's own same-parameter noise floor."
+                ),
+                "measured": {
+                    "audible": "intensity 0.9 / valence -0.8 vs intensity 0.2 / valence -0.2 separated f0_median by 66.6 Hz against an 8.1 Hz same-parameter floor and rms by 3.5x its floor (eval_tone_audibility affect case, 2026-08-04)",
+                    "inaudible": "single-axis deltas of 0.25-0.32 intensity from a 0.5 floor moved no metric past a 4-repeat noise floor (persona-dream measurement, chatterbox#21)",
+                },
+                "consumer_guidance": "Use large intensity/valence contrasts (>=0.5 apart) for audibly distinct arms; do not expect fine-grained gradations to be audible.",
+            },
+            "per_render_receipt": "affect_effect (chatterbox.affect_effect.v1)",
+        },
         "pause_strategy": {
             "status": "request_only",
             "reason": "No synthesis code path consumes pause_strategy.",

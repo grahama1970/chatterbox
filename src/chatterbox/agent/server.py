@@ -971,6 +971,36 @@ def apply_pace_stretch(wav: Any, sr: int, pace: str | None) -> tuple[Any, dict[s
     return out, receipt
 
 
+def affect_effect_receipt(
+    voice_delivery: dict[str, Any],
+    knobs: dict[str, float] | None,
+    backend_id: str | None,
+) -> dict[str, Any]:
+    """Per-render affect receipt in the same shape as pace_effect (#21).
+
+    applied is true only when derived knobs actually reached a backend that
+    honors them; a consumer verifies this receipt, never the echoed request.
+    """
+    explicit = voice_delivery.get("intensity") is not None or voice_delivery.get("valence") is not None
+    receipt: dict[str, Any] = {
+        "schema": "chatterbox.affect_effect.v1",
+        "applied": False,
+        "backend": backend_id,
+        "derived_knobs": knobs,
+        "knob_source": None,
+        "reason": None,
+    }
+    if knobs is None:
+        receipt["reason"] = "no_affect_requested_default_turbo_render"
+        return receipt
+    receipt["knob_source"] = "explicit_intensity_valence" if explicit else "tone_affect_defaults"
+    if backend_id == "chatterbox_base_affect":
+        receipt["applied"] = True
+    else:
+        receipt["reason"] = f"backend_{backend_id}_does_not_honor_affect_knobs"
+    return receipt
+
+
 def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, Any]:
     import torchaudio as ta
 
@@ -1086,6 +1116,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
             "container": "wav",
         },
         "emotion_knobs": knobs,
+        "affect_effect": affect_effect_receipt(voice_delivery, knobs, backend.caps.backend_id),
         "requested_device": DEVICE,
         "text": request.text,
         "text_sha256": hashlib.sha256(request.text.encode("utf-8")).hexdigest(),
@@ -2733,10 +2764,9 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             "reason": "render_chunk_hash_mismatch",
             "failed_gates": hash_failures,
         }
+    batch_knobs = emotion_knobs_from_delivery(batch_voice_delivery)
     try:
-        _, batch_backend_selection = select_voice_backend_for_request(
-            request.backend, emotion_knobs_from_delivery(batch_voice_delivery)
-        )
+        _, batch_backend_selection = select_voice_backend_for_request(request.backend, batch_knobs)
     except UnknownBackendError as exc:
         raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
     except UnsupportedCapabilityError as exc:
@@ -2945,6 +2975,8 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
         "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
+        "emotion_knobs": batch_knobs,
+        "affect_effect": affect_effect_receipt(batch_voice_delivery, batch_knobs, batch_backend_selection["id"]),
         "tag_handling": batch_voice_delivery["tag_handling"],
         "stochasticity": batch_stochasticity,
         "applied_controls": applied_controls,
