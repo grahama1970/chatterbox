@@ -1,0 +1,87 @@
+{
+  "schema": "agentic_evals.report.v1",
+  "source": "fixtures/agentic_eval.json",
+  "mocked": false,
+  "fixture_backed": true,
+  "live": false,
+  "proof_scope": "fixture wiring smoke",
+  "claims": {
+    "proves": "declared local commands met explicit fixture expectations across repeated trials",
+    "does_not_prove": "semantic correctness, live services, LLM judge behavior, or release readiness"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "USABLE_WITH_GAPS",
+  "case_count": 4,
+  "trial_count": 4,
+  "cases": [
+    {
+      "name": "receipt-honesty",
+      "type": "negative",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 181.905,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"receipt_honesty\",\n \"checks\": {\n  \"pace_declared_applied\": true,\n  \"tone_not_silently_claimed\": true,\n  \"pause_strategy_status_present\": true,\n  \"every_field_has_status\": true\n },\n \"pass\": true\n}\nRESULT: PASS (receipt_honesty)\n",
+          "stderr": "",
+          "duration_ms": 181.905,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "pace-separation",
+      "type": "positive",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 32954.069,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"pace\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"neutral_warm\",\n   \"pace\": \"slow\"\n  },\n  \"b\": {\n   \"tone\": \"neutral_warm\",\n   \"pace\": \"fast\"\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    7.28,\n    7.6,\n    9.08,\n    8.52,\n    7.56,\n    6.68\n   ],\n   \"floor_spread\": 2.4,\n   \"arm_a_values\": [\n    10.069,\n    9.792,\n    10.741\n   ],\n   \"arm_b_values\": [\n    6.475,\n    6.539,\n    6.069\n   ],\n   \"arm_group_delta\": 3.8397,\n   \"exceeds_floor\": true\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.03366,\n    0.03052,\n    0.03675,\n    0.04226,\n    0.03789,\n    0.03831\n   ],\n   \"floor_spread\": 0.0117,\n   \"arm_a_values\": [\n    0.02457,\n    0.0247,\n    0.02211\n   ],\n   \"arm_b_values\": [\n    0.02317,\n    0.02683,\n    0.02708\n   ],\n   \"arm_group_delta\": 0.0019,\n   \"exceeds_floor\": false\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    192.8,\n    196.7,\n    206.9,\n    224.3,\n    226.4,\n    216.2\n   ],\n   \"floor_spread\": 33.6,\n   \"arm_a_values\": [\n    209.6,\n    218.2,\n    224.3\n   ],\n   \"arm_b_values\": [\n    219.2,\n    220.2,\n    224.3\n   ],\n   \"arm_group_delta\": 3.8667,\n   \"exceeds_floor\": false\n  }\n },\n \"pass\": true\n}\nRESULT: PASS (pace)\n",
+          "stderr": "",
+          "duration_ms": 32954.069,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "affect-channel-separation",
+      "type": "positive",
+      "passed_trials": 1,
+      "total_trials": 1,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 67651.354,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n \"case\": \"affect\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"firm_boundary\",\n   \"voice_delivery\": {\n    \"intensity\": 0.9,\n    \"valence\": -0.8\n   }\n  },\n  \"b\": {\n   \"tone\": \"grief_safe\",\n   \"voice_delivery\": {\n    \"intensity\": 0.2,\n    \"valence\": -0.2\n   }\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    6.68,\n    8.2,\n    8.56,\n    8.84,\n    7.12,\n    8.6\n   ],\n   \"floor_spread\": 2.16,\n   \"arm_a_values\": [\n    9.04,\n    8.92,\n    9.0\n   ],\n   \"arm_b_values\": [\n    8.72,\n    9.28,\n    9.48\n   ],\n   \"arm_group_delta\": 0.1733,\n   \"exceeds_floor\": false\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.04642,\n    0.06071,\n    0.05861,\n    0.05536,\n    0.05591,\n    0.05544\n   ],\n   \"floor_spread\": 0.0143,\n   \"arm_a_values\": [\n    0.077,\n    0.06825,\n    0.0708\n   ],\n   \"arm_b_values\": [\n    0.05759,\n    0.05336,\n    0.061\n   ],\n   \"arm_group_delta\": 0.0147,\n   \"exceeds_floor\": true\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    230.8,\n    228.6,\n    224.3,\n    221.2,\n    220.2,\n    228.6\n   ],\n   \"floor_spread\": 10.6,\n   \"arm_a_values\": [\n    263.7,\n    272.7,\n    296.3\n   ],\n   \"arm_b_values\": [\n    208.7,\n    205.1,\n    216.2\n   ],\n   \"arm_group_delta\": 67.5667,\n   \"exceeds_floor\": true\n  }\n },\n \"pass\": true\n}\nRESULT: PASS (affect)\n",
+          "stderr": "",
+          "duration_ms": 67651.354,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "tone-alone-separation",
+      "type": "adversarial",
+      "passed_trials": 0,
+      "total_trials": 1,
+      "pass_rate": 0.0,
+      "avg_latency_ms": 29826.858,
+      "trials": [
+        {
+          "exit_code": 1,
+          "stdout": "{\n \"case\": \"tone_alone\",\n \"arms\": {\n  \"a\": {\n   \"tone\": \"firm_boundary\"\n  },\n  \"b\": {\n   \"tone\": \"grief_safe\"\n  }\n },\n \"metrics\": {\n  \"duration_s\": {\n   \"floor_values\": [\n    7.76,\n    9.0,\n    7.76,\n    6.96,\n    7.88,\n    7.56\n   ],\n   \"floor_spread\": 2.04,\n   \"arm_a_values\": [\n    6.88,\n    7.56,\n    8.68\n   ],\n   \"arm_b_values\": [\n    6.8,\n    7.16,\n    8.88\n   ],\n   \"arm_group_delta\": 0.0933,\n   \"exceeds_floor\": false\n  },\n  \"rms\": {\n   \"floor_values\": [\n    0.03249,\n    0.04101,\n    0.03618,\n    0.04591,\n    0.03961,\n    0.0393\n   ],\n   \"floor_spread\": 0.0134,\n   \"arm_a_values\": [\n    0.03507,\n    0.03514,\n    0.03623\n   ],\n   \"arm_b_values\": [\n    0.03463,\n    0.04059,\n    0.03437\n   ],\n   \"arm_group_delta\": 0.0011,\n   \"exceeds_floor\": false\n  },\n  \"f0_median_hz\": {\n   \"floor_values\": [\n    203.4,\n    237.6,\n    214.3,\n    235.3,\n    201.7,\n    235.3\n   ],\n   \"floor_spread\": 35.9,\n   \"arm_a_values\": [\n    216.2,\n    208.7,\n    216.2\n   ],\n   \"arm_b_values\": [\n    198.3,\n    220.2,\n    210.5\n   ],\n   \"arm_group_delta\": 4.0333,\n   \"exceeds_floor\": false\n  }\n },\n \"pass\": false\n}\nRESULT: FAIL (tone_alone)\n",
+          "stderr": "",
+          "duration_ms": 29826.858,
+          "timed_out": false
+        }
+      ]
+    }
+  ]
+}
