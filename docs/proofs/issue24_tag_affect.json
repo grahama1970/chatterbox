@@ -1,0 +1,227 @@
+{
+  "schema": "chatterbox.issue24_tag_affect_proof.v1",
+  "issue": "grahama1970/chatterbox#24",
+  "text_tagged": "That is genuinely funny. [laugh] Anyway, let me get back to what I was saying.",
+  "text_untagged": "That is genuinely funny. Anyway, let me get back to what I was saying.",
+  "tone": "playful_light",
+  "cases": {
+    "both_tone_and_tag": {
+      "request_voice_delivery": {
+        "tone": "playful_light",
+        "emotion_realization": "audible"
+      },
+      "backend": "chatterbox_turbo",
+      "engine": "chatterbox_turbo",
+      "tag_handling": {
+        "schema": "chatterbox.tag_handling.v1",
+        "dedicated_tag_channel": "native_event_tags_on_tag_consuming_backend",
+        "accepted_tags": [
+          "[clear throat]",
+          "[sigh]",
+          "[shush]",
+          "[cough]",
+          "[groan]",
+          "[sniff]",
+          "[gasp]",
+          "[chuckle]",
+          "[laugh]"
+        ],
+        "tag_consuming_backends": [
+          "chatterbox_turbo"
+        ],
+        "unknown_tag_behavior": "synthesized_as_literal_text",
+        "inline_text_tag_behavior": "consumed_natively_on_tag_consuming_backend__literal_text_on_other_backends",
+        "applied_tags": [
+          "[laugh]"
+        ],
+        "detected_tags": [
+          "[laugh]"
+        ],
+        "tags_interpreted": true,
+        "tags_interpreted_reason": "backend_chatterbox_turbo_consumes_event_tags_natively",
+        "requested_tags": [],
+        "backend": "chatterbox_turbo"
+      },
+      "pace_effect": {
+        "schema": "chatterbox.pace_effect.v1",
+        "requested_pace": null,
+        "tempo_factor": 1.12,
+        "tempo_source": "tone_calibration",
+        "mechanism": "phase_vocoder_time_stretch",
+        "applied": true,
+        "input_duration_seconds": 4.48,
+        "output_duration_seconds": 4.0
+      },
+      "affect_effect": {
+        "schema": "chatterbox.affect_effect.v1",
+        "applied": false,
+        "backend": "chatterbox_turbo",
+        "derived_knobs": null,
+        "knob_source": "tone_calibration_deferred_to_tag_realization",
+        "reason": "affect_knobs_not_applied__render_kept_on_tag_consuming_backend_for_inline_event_tags; tone carried by the backend-independent tempo axis, see pace_effect.tempo_source=tone_calibration"
+      },
+      "transcript": "That is genuinely funny.\nAnyway, let me get back to what I was saying.",
+      "literal_tag_word_present": false,
+      "audio": "/home/graham/workspace/experiments/chatterbox/logs/issue24_both_tone_and_tag/chunk_01_satisfied.wav",
+      "duration_seconds": 4.0
+    },
+    "tag_realization_literal_optout": {
+      "request_voice_delivery": {
+        "tone": "playful_light",
+        "emotion_realization": "audible",
+        "tag_realization": "literal"
+      },
+      "backend": "chatterbox_base_affect",
+      "engine": "chatterbox_base",
+      "tag_handling": {
+        "schema": "chatterbox.tag_handling.v1",
+        "dedicated_tag_channel": "native_event_tags_on_tag_consuming_backend",
+        "accepted_tags": [
+          "[clear throat]",
+          "[sigh]",
+          "[shush]",
+          "[cough]",
+          "[groan]",
+          "[sniff]",
+          "[gasp]",
+          "[chuckle]",
+          "[laugh]"
+        ],
+        "tag_consuming_backends": [
+          "chatterbox_turbo"
+        ],
+        "unknown_tag_behavior": "synthesized_as_literal_text",
+        "inline_text_tag_behavior": "consumed_natively_on_tag_consuming_backend__literal_text_on_other_backends",
+        "applied_tags": [],
+        "detected_tags": [
+          "[laugh]"
+        ],
+        "tags_interpreted": false,
+        "tags_interpreted_reason": "tag_realization_literal_requested__backend_chatterbox_base_affect_speaks_tags_as_literal_text",
+        "requested_tags": [],
+        "backend": "chatterbox_base_affect"
+      },
+      "pace_effect": {
+        "schema": "chatterbox.pace_effect.v1",
+        "requested_pace": null,
+        "tempo_factor": 1.12,
+        "tempo_source": "tone_calibration",
+        "mechanism": "phase_vocoder_time_stretch",
+        "applied": true,
+        "input_duration_seconds": 4.2,
+        "output_duration_seconds": 3.744
+      },
+      "affect_effect": {
+        "schema": "chatterbox.affect_effect.v1",
+        "applied": true,
+        "backend": "chatterbox_base_affect",
+        "derived_knobs": {
+          "exaggeration": 1.065,
+          "cfg_weight": 0.5,
+          "temperature": 0.7,
+          "intensity": 0.85,
+          "valence": 0.75
+        },
+        "knob_source": "tone_calibration",
+        "reason": null
+      },
+      "transcript": "That is genuinely funny.\nLaugh.\nAnyway, let me get back to what I was saying.",
+      "literal_tag_word_present": true,
+      "audio": "/home/graham/workspace/experiments/chatterbox/logs/issue24_tag_realization_literal_optout/chunk_01_satisfied.wav",
+      "duration_seconds": 3.744
+    },
+    "explicit_knobs_conflict": {
+      "request_voice_delivery": {
+        "tone": "playful_light",
+        "intensity": 0.9,
+        "valence": -0.8
+      },
+      "backend": "chatterbox_base_affect",
+      "engine": "chatterbox_base",
+      "tag_handling": {
+        "schema": "chatterbox.tag_handling.v1",
+        "dedicated_tag_channel": "native_event_tags_on_tag_consuming_backend",
+        "accepted_tags": [
+          "[clear throat]",
+          "[sigh]",
+          "[shush]",
+          "[cough]",
+          "[groan]",
+          "[sniff]",
+          "[gasp]",
+          "[chuckle]",
+          "[laugh]"
+        ],
+        "tag_consuming_backends": [
+          "chatterbox_turbo"
+        ],
+        "unknown_tag_behavior": "synthesized_as_literal_text",
+        "inline_text_tag_behavior": "consumed_natively_on_tag_consuming_backend__literal_text_on_other_backends",
+        "applied_tags": [],
+        "detected_tags": [
+          "[laugh]"
+        ],
+        "tags_interpreted": false,
+        "tags_interpreted_reason": "explicit_affect_knobs_route_to_backend_chatterbox_base_affect_which_speaks_tags_as_literal_text__unsatisfiable_with_tag_realization_native",
+        "requested_tags": [],
+        "backend": "chatterbox_base_affect"
+      },
+      "pace_effect": {
+        "schema": "chatterbox.pace_effect.v1",
+        "requested_pace": null,
+        "tempo_factor": null,
+        "tempo_source": null,
+        "mechanism": "phase_vocoder_time_stretch",
+        "applied": false,
+        "input_duration_seconds": 5.2,
+        "output_duration_seconds": 5.2,
+        "reason": "no_pace_requested"
+      },
+      "affect_effect": {
+        "schema": "chatterbox.affect_effect.v1",
+        "applied": true,
+        "backend": "chatterbox_base_affect",
+        "derived_knobs": {
+          "exaggeration": 1.11,
+          "cfg_weight": 0.34,
+          "temperature": 0.7,
+          "intensity": 0.9,
+          "valence": -0.8
+        },
+        "knob_source": "explicit_intensity_valence",
+        "reason": null
+      },
+      "transcript": "That is genuinely funny, laugh. Anyway, let me get back to what I was saying.",
+      "literal_tag_word_present": true,
+      "audio": "/home/graham/workspace/experiments/chatterbox/logs/issue24_explicit_knobs_conflict/chunk_01_satisfied.wav",
+      "duration_seconds": 5.2
+    }
+  },
+  "duration_check": {
+    "with_tag_seconds": [
+      4.256,
+      4.683,
+      4.32
+    ],
+    "without_tag_seconds": [
+      3.179,
+      2.965,
+      3.573
+    ],
+    "mean_delta_seconds": 1.181,
+    "ranges_non_overlapping": true
+  },
+  "gates": {
+    "both_render_uses_tag_consuming_backend": true,
+    "both_render_reports_tags_interpreted": true,
+    "both_render_applied_the_tag": true,
+    "both_render_has_no_literal_tag_word": true,
+    "both_render_applied_tone_calibration": true,
+    "both_render_affect_receipt_names_the_tradeoff": true,
+    "optout_reports_tags_not_interpreted": true,
+    "optout_receipt_matches_literal_audio": true,
+    "explicit_knobs_declare_conflict": true,
+    "tag_is_a_real_event": true
+  },
+  "ok": true
+}

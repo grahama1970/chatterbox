@@ -208,6 +208,37 @@ def pace_tempo_factor(pace: str | None) -> float | None:
     return PACE_TEMPO_FACTORS.get(normalize_voice_token(pace))
 
 
+# The nine paralinguistic event tags the Turbo model consumes natively. Turbo
+# realizes these as acoustic events (chatterbox#24: n=3 with [laugh] measured
+# [4.32, 5.24, 4.32]s vs [4.24, 3.76, 3.36]s without -- non-overlapping, ~0.84s
+# mean delta, so the tag is a real event and not silently stripped). The base
+# model has no tag vocabulary and synthesizes an inline tag as literal text.
+CHATTERBOX_EVENT_TAGS: tuple[str, ...] = (
+    "[clear throat]",
+    "[sigh]",
+    "[shush]",
+    "[cough]",
+    "[groan]",
+    "[sniff]",
+    "[gasp]",
+    "[chuckle]",
+    "[laugh]",
+)
+
+#: Backends that consume CHATTERBOX_EVENT_TAGS natively. A backend outside this
+#: set speaks an inline tag as the literal word.
+TAG_CONSUMING_BACKENDS: frozenset[str] = frozenset({"chatterbox_turbo"})
+
+
+def detect_event_tags(text: str | None) -> list[str]:
+    """Native event tags present in the render text, in first-appearance order."""
+    if not text:
+        return []
+    lowered = text.lower()
+    found = [(lowered.find(tag), tag) for tag in CHATTERBOX_EVENT_TAGS if tag in lowered]
+    return [tag for _, tag in sorted(found)]
+
+
 VOICE_DELIVERY_EFFECT: dict[str, Any] = {
     "schema": "chatterbox.voice_delivery_effect.v1",
     "engine": "chatterbox_turbo",
@@ -286,7 +317,46 @@ VOICE_DELIVERY_EFFECT: dict[str, Any] = {
         },
         "chatterbox_tags": {
             "status": "request_only",
-            "reason": "See tag_handling: no dedicated tag channel; inline tags are synthesized as literal text.",
+            "reason": (
+                "The voice_delivery.chatterbox_tags LIST remains request-only metadata; "
+                "invented tokens such as [firm] or [breath] are not model vocabulary. "
+                "INLINE tags in the text are different: see paralinguistic_tags."
+            ),
+        },
+        "paralinguistic_tags": {
+            "status": "applied_on_tag_consuming_backend__literal_text_elsewhere",
+            "accepted_tags": list(CHATTERBOX_EVENT_TAGS),
+            "mechanism": "native model vocabulary on chatterbox_turbo; no separate channel",
+            "affect_tradeoff": {
+                "declared": True,
+                "summary": (
+                    "Tag realization and the arousal knob axis live on different backends "
+                    "and cannot both be applied to one render. chatterbox_turbo consumes "
+                    "the event tags but ignores exaggeration/cfg_weight; "
+                    "chatterbox_base_affect honors those knobs but speaks the tag as a "
+                    "literal word."
+                ),
+                "resolution": (
+                    "When inline event tags are present and tone-derived calibration is the "
+                    "only affect source, the render stays on the tag-consuming backend and "
+                    "carries the backend-independent TONE_CALIBRATION tempo axis. The "
+                    "intensity/valence knob axis is then NOT applied and affect_effect "
+                    "reports applied=false with the backend reason."
+                ),
+                "consumer_override": (
+                    "Set voice_delivery.tag_realization='literal' to prefer the arousal "
+                    "knobs instead; the render then routes to chatterbox_base_affect and "
+                    "tag_handling reports tags_interpreted=false, so a consumer that cannot "
+                    "accept a spoken tag word fails closed on the receipt."
+                ),
+                "explicit_knob_conflict": (
+                    "Explicit intensity/valence/use_base_emotion always win the routing, "
+                    "because they are a direct instruction. With inline tags present that "
+                    "combination is declared unsatisfiable in tags_interpreted_reason "
+                    "rather than silently resolved."
+                ),
+            },
+            "proof_metric": "per-render tag_handling receipt; ASR transcript must not contain the tag word on a tag-consuming path",
         },
     },
     "consumer_guidance": (
@@ -297,14 +367,19 @@ VOICE_DELIVERY_EFFECT: dict[str, Any] = {
 }
 
 
+#: Template only. Per-render receipts are finalized against the backend actually
+#: used, because tag realization is a property of the path, not of the server.
 CHATTERBOX_TAG_HANDLING: dict[str, Any] = {
     "schema": "chatterbox.tag_handling.v1",
-    "dedicated_tag_channel": "unsupported",
-    "accepted_tags": [],
-    "unknown_tag_behavior": "ignored",
-    "inline_text_tag_behavior": "synthesized_as_literal_text",
+    "dedicated_tag_channel": "native_event_tags_on_tag_consuming_backend",
+    "accepted_tags": list(CHATTERBOX_EVENT_TAGS),
+    "tag_consuming_backends": sorted(TAG_CONSUMING_BACKENDS),
+    "unknown_tag_behavior": "synthesized_as_literal_text",
+    "inline_text_tag_behavior": "consumed_natively_on_tag_consuming_backend__literal_text_on_other_backends",
     "applied_tags": [],
+    "detected_tags": [],
     "tags_interpreted": False,
+    "tags_interpreted_reason": "no_backend_selected_yet",
 }
 
 

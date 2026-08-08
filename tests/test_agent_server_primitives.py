@@ -196,18 +196,96 @@ def test_chatterbox_tags_are_recorded_as_ignored_metadata() -> None:
 
     assert delivery["tag_handling"]["requested_tags"] == ["firm", "breath"]
     assert delivery["tag_handling"]["applied_tags"] == []
-    assert delivery["tag_handling"]["accepted_tags"] == []
+    # Invented tokens are not model vocabulary and stay request-only metadata;
+    # accepted_tags advertises the nine native event tags (chatterbox#24).
+    assert delivery["tag_handling"]["accepted_tags"] == list(server.CHATTERBOX_EVENT_TAGS)
+    assert delivery["tag_handling"]["detected_tags"] == []
     assert delivery["tag_handling"]["tags_interpreted"] is False
-    assert delivery["tag_handling"]["inline_text_tag_behavior"] == "synthesized_as_literal_text"
 
 
 def test_presets_expose_tag_handling_contract() -> None:
     response = server.presets()
 
-    assert response["tag_handling"]["dedicated_tag_channel"] == "unsupported"
-    assert response["tag_handling"]["accepted_tags"] == []
+    assert response["tag_handling"]["dedicated_tag_channel"] == "native_event_tags_on_tag_consuming_backend"
+    assert response["tag_handling"]["accepted_tags"] == list(server.CHATTERBOX_EVENT_TAGS)
+    assert response["tag_handling"]["tag_consuming_backends"] == ["chatterbox_turbo"]
     assert response["tag_handling"]["applied_tags"] == []
-    assert response["tag_handling"]["tags_interpreted"] is False
+
+
+def test_inline_event_tags_keep_the_tag_consuming_backend_under_audible_tone() -> None:
+    """chatterbox#24: audible tone must not silently route a tagged render to
+    the base model, which speaks the tag as the literal word."""
+    request = SynthesisRequest(
+        text="That is genuinely funny. [laugh] Anyway.",
+        voice_delivery={"tone": "playful_light", "emotion_realization": "audible"},
+    )
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["detected_event_tags"] == ["[laugh]"]
+    assert delivery["prefer_tag_consuming_backend"] is True
+    assert server.emotion_knobs_from_delivery(delivery) is None
+    # The backend-independent half of the calibration still reaches the render.
+    assert delivery["tone"] == "playful_light"
+    assert server.tone_calibration_tempo(delivery) == server.TONE_CALIBRATION["playful_light"]["tempo"]
+
+    tag_handling = server.apply_tag_handling_backend(delivery, "chatterbox_turbo")
+    assert tag_handling["tags_interpreted"] is True
+    assert tag_handling["applied_tags"] == ["[laugh]"]
+
+
+def test_tag_handling_reports_false_on_a_backend_that_speaks_tags_literally() -> None:
+    request = SynthesisRequest(
+        text="That is genuinely funny. [laugh] Anyway.",
+        voice_delivery={
+            "tone": "playful_light",
+            "emotion_realization": "audible",
+            "tag_realization": "literal",
+        },
+    )
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["prefer_tag_consuming_backend"] is False
+    assert server.emotion_knobs_from_delivery(delivery) is not None
+
+    tag_handling = server.apply_tag_handling_backend(delivery, "chatterbox_base_affect")
+    assert tag_handling["tags_interpreted"] is False
+    assert tag_handling["applied_tags"] == []
+    assert "literal" in tag_handling["tags_interpreted_reason"]
+
+
+def test_explicit_affect_knobs_win_routing_and_declare_the_tag_conflict() -> None:
+    request = SynthesisRequest(
+        text="That is genuinely funny. [laugh] Anyway.",
+        voice_delivery={"tone": "playful_light", "intensity": 0.9, "valence": -0.8},
+    )
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["prefer_tag_consuming_backend"] is False
+    tag_handling = server.apply_tag_handling_backend(delivery, "chatterbox_base_affect")
+    assert tag_handling["tags_interpreted"] is False
+    assert "unsatisfiable" in tag_handling["tags_interpreted_reason"]
+
+
+def test_batch_tag_routing_decision_propagates_to_untagged_chunks() -> None:
+    """One utterance must not split across backends: a chunk without the tag
+    inherits the batch decision made over the whole answer text."""
+    chunk = SynthesisRequest(
+        text="Anyway, let me get back to what I was saying.",
+        voice_delivery={
+            "tone": "playful_light",
+            "emotion_realization": "audible",
+            "prefer_tag_consuming_backend": True,
+        },
+    )
+
+    delivery = server.voice_delivery_for_request(chunk)
+
+    assert delivery["detected_event_tags"] == []
+    assert delivery["prefer_tag_consuming_backend"] is True
+    assert server.emotion_knobs_from_delivery(delivery) is None
 
 
 def test_presets_expose_stage_preset_affect_status() -> None:

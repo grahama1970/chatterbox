@@ -3,13 +3,13 @@ import numpy as np
 import torch
 import gradio as gr
 from chatterbox.tts_turbo import ChatterboxTurboTTS
+from chatterbox.agent.presets import CHATTERBOX_EVENT_TAGS
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-EVENT_TAGS = [
-    "[clear throat]", "[sigh]", "[shush]", "[cough]", "[groan]",
-    "[sniff]", "[gasp]", "[chuckle]", "[laugh]"
-]
+# Single source of truth with the agent server, so the UI and the receipts
+# cannot drift apart on what the model actually consumes.
+EVENT_TAGS = list(CHATTERBOX_EVENT_TAGS)
 
 # --- REFINED CSS ---
 # 1. tag-container: Forces the row to wrap items instead of scrolling. Removes borders/backgrounds.

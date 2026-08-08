@@ -164,22 +164,42 @@ emits bytes and a pre-cancelled old turn emits zero bytes.
 
 ## Chatterbox Tags
 
-Chatterbox Turbo in this fork does not currently expose a dedicated
-`chatterbox_tags` affect channel. Consumers may pass candidate tags through the
-open `voice_delivery` receipt envelope for provenance, but the renderer records
-them as requested-only metadata and applies no tag vocabulary.
+The `voice_delivery.chatterbox_tags` LIST is not an affect channel. Consumers may
+pass candidate tags through that open receipt envelope for provenance, but the
+renderer records them as requested-only metadata. Inline tags in the text are a
+separate mechanism, described below.
 
-Inline text tags such as `[firm]` or `[breath]` are treated as speakable text by
-Turbo, not as control tokens. Do not use inline tags as an affect channel unless
-the caller intentionally wants that text to be synthesized.
+Invented inline tags such as `[firm]` or `[breath]` are treated as speakable text
+by Turbo, not as control tokens. Do not use them as an affect channel unless the
+caller intentionally wants that text to be synthesized.
+
+Nine paralinguistic **event tags** are different: `[laugh]`, `[sigh]`, `[gasp]`,
+`[chuckle]`, `[cough]`, `[groan]`, `[sniff]`, `[shush]`, `[clear throat]` are
+native Turbo vocabulary and are realized as acoustic events. The base model
+(`chatterbox_base_affect`) has no tag vocabulary and speaks them as literal
+words.
+
+Tag realization and the arousal knob axis live on different backends and cannot
+both apply to one render. When inline event tags are present and tone-derived
+calibration is the only affect source, the render stays on the tag-consuming
+backend and the tone is carried by the backend-independent `TONE_CALIBRATION`
+tempo axis (`pace_effect.tempo_source: "tone_calibration"`); `affect_effect`
+then reports `applied: false` with
+`knob_source: "tone_calibration_deferred_to_tag_realization"`. Set
+`voice_delivery.tag_realization: "literal"` to prefer the arousal knobs instead,
+or pass explicit `intensity`/`valence`, which always win the routing. Either way
+`tag_handling.tags_interpreted` is false and names the reason, so a consumer that
+cannot accept a spoken tag word fails closed on the receipt. (chatterbox#24;
+receipt: `docs/proofs/issue24_tag_affect.json`.)
 
 Render receipts and `/presets` expose `tag_handling` with:
 
-- `dedicated_tag_channel: "unsupported"`
-- `accepted_tags: []`
-- `applied_tags: []`
-- `tags_interpreted: false`
-- `inline_text_tag_behavior: "synthesized_as_literal_text"`
+- `dedicated_tag_channel: "native_event_tags_on_tag_consuming_backend"`
+- `accepted_tags`: the nine event tags
+- `tag_consuming_backends: ["chatterbox_turbo"]`
+- `detected_tags`: event tags found in this render's text
+- `applied_tags` / `tags_interpreted`: true only on a backend that consumed them
+- `tags_interpreted_reason`: why, naming the backend actually used
 
 ## Stage Presets And Affect
 

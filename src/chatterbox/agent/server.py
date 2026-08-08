@@ -48,8 +48,11 @@ from chatterbox.agent.stream_manifest import (
 )
 from chatterbox.agent.presets import (
     ALLOWED_TONES,
+    CHATTERBOX_EVENT_TAGS,
     CHATTERBOX_TAG_HANDLING,
     DELIVERY_STAGE_ALIASES,
+    TAG_CONSUMING_BACKENDS,
+    detect_event_tags,
     STAGE_PRESET_AFFECT_STATUS,
     STAGE_PRESETS,
     TONE_TO_DELIVERY_STAGE,
@@ -793,6 +796,27 @@ def prepare_voice_conditioning(ref_audio: Path | None, params: dict[str, float |
     }
 
 
+def render_text_for_request(
+    request: SynthesisRequest | SynthesisBatchRequest | TauVoiceRenderRequest,
+) -> str:
+    """All text that will actually be spoken, across the request shapes.
+
+    Tag detection has to see the same string the model will see, so chunked
+    requests are joined rather than sampled.
+    """
+    parts: list[str] = []
+    for field in ("text", "answer_text"):
+        value = getattr(request, field, None)
+        if isinstance(value, str):
+            parts.append(value)
+    for field in ("render_chunks", "speakable_chunks"):
+        for chunk in getattr(request, field, None) or []:
+            chunk_text = chunk.get("text") if isinstance(chunk, dict) else getattr(chunk, "text", None)
+            if isinstance(chunk_text, str):
+                parts.append(chunk_text)
+    return " ".join(parts)
+
+
 def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest | TauVoiceRenderRequest) -> dict[str, Any]:
     source_delivery = getattr(request, "voice_delivery", None)
     if not isinstance(source_delivery, dict):
@@ -806,10 +830,29 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
         requested_tags = [requested_tags]
     if not isinstance(requested_tags, list):
         requested_tags = []
+    detected_tags = detect_event_tags(render_text_for_request(request))
     tag_handling = {
         **CHATTERBOX_TAG_HANDLING,
         "requested_tags": [str(tag) for tag in requested_tags],
+        "detected_tags": detected_tags,
     }
+    # Explicit affect is a direct instruction and keeps its base-model routing;
+    # tone-derived calibration yields to tag realization, because a spoken
+    # "laugh" is a defect a consumer cannot hear its way out of (chatterbox#24).
+    tag_realization = normalize_voice_token(source_delivery.get("tag_realization")) or "native"
+    explicit_affect = (
+        source_delivery.get("intensity") is not None
+        or source_delivery.get("valence") is not None
+        or bool(source_delivery.get("use_base_emotion"))
+    )
+    inherited_preference = source_delivery.get("prefer_tag_consuming_backend")
+    if isinstance(inherited_preference, bool):
+        # A batch decides once over the whole answer text and propagates that
+        # decision to every chunk. Re-deciding per chunk would put a tagged and
+        # an untagged chunk of one utterance on different backends.
+        prefer_tags = inherited_preference
+    else:
+        prefer_tags = bool(detected_tags) and tag_realization != "literal" and not explicit_affect
     explicit_stage = normalize_delivery_stage(requested_stage)
     stage = effective_delivery_stage(tone=tone, delivery_stage=requested_stage)
     return {
@@ -823,6 +866,9 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
         "delivery_stage_source": "request.delivery_stage" if explicit_stage else "tone_mapping",
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "tag_handling": tag_handling,
+        "tag_realization": tag_realization,
+        "detected_event_tags": detected_tags,
+        "prefer_tag_consuming_backend": prefer_tags,
         "pace": getattr(request, "pace", None) or source_delivery.get("pace"),
         "pause_strategy": getattr(request, "pause_strategy", None) or source_delivery.get("pause_strategy"),
         "wait_activity": source_delivery.get("wait_activity"),
@@ -910,7 +956,12 @@ def emotion_knobs_from_delivery(voice_delivery: dict[str, Any]) -> dict[str, flo
     intensity_raw = vd.get("intensity")
     valence_raw = vd.get("valence")
     audible_tone_route = (
-        vd.get("emotion_realization") == "audible" and bool(vd.get("requested_tone"))
+        vd.get("emotion_realization") == "audible"
+        and bool(vd.get("requested_tone"))
+        # Tone-derived knobs would route to the base model, which has no tag
+        # vocabulary. With native tags in the text the tag-consuming backend
+        # wins and the tone is carried by the backend-independent tempo axis.
+        and not vd.get("prefer_tag_consuming_backend")
     )
     if intensity_raw is None and valence_raw is None and not vd.get("use_base_emotion") and not audible_tone_route:
         return None
@@ -996,6 +1047,59 @@ def apply_pace_stretch(
     return out, receipt
 
 
+def tone_calibration_tempo(voice_delivery: dict[str, Any]) -> float | None:
+    """Calibration tempo for a render, or None when it does not apply.
+
+    Tempo is a post-synthesis phase-vocoder stretch, so unlike the
+    intensity/valence knobs it is backend-independent: it is the part of
+    TONE_CALIBRATION that survives on the tag-consuming path (chatterbox#24).
+    An explicit pace always wins, since that is a direct instruction.
+    """
+    if voice_delivery.get("pace"):
+        return None
+    if voice_delivery.get("emotion_realization") != "audible":
+        return None
+    if not voice_delivery.get("requested_tone"):
+        return None
+    return TONE_CALIBRATION.get(voice_delivery.get("tone") or "neutral_warm", {}).get("tempo")
+
+
+def apply_tag_handling_backend(voice_delivery: dict[str, Any], backend_id: str | None) -> dict[str, Any]:
+    """Finalize tag_handling against the backend actually used, in place.
+
+    tags_interpreted is a property of the path taken, not of the server, so it
+    is only true when native tags reached a backend that consumes them.
+    """
+    tag_handling = voice_delivery.get("tag_handling")
+    if not isinstance(tag_handling, dict):
+        return {}
+    detected = tag_handling.get("detected_tags") or []
+    consumes = backend_id in TAG_CONSUMING_BACKENDS
+    tag_handling["backend"] = backend_id
+    if not detected:
+        tag_handling["tags_interpreted"] = False
+        tag_handling["applied_tags"] = []
+        tag_handling["tags_interpreted_reason"] = (
+            f"no_event_tags_in_text__backend_{backend_id}_"
+            + ("would_consume_them" if consumes else "would_speak_them_literally")
+        )
+        return tag_handling
+    tag_handling["tags_interpreted"] = consumes
+    tag_handling["applied_tags"] = list(detected) if consumes else []
+    if consumes:
+        tag_handling["tags_interpreted_reason"] = f"backend_{backend_id}_consumes_event_tags_natively"
+    elif voice_delivery.get("tag_realization") == "literal":
+        tag_handling["tags_interpreted_reason"] = (
+            f"tag_realization_literal_requested__backend_{backend_id}_speaks_tags_as_literal_text"
+        )
+    else:
+        tag_handling["tags_interpreted_reason"] = (
+            f"explicit_affect_knobs_route_to_backend_{backend_id}_which_speaks_tags_as_literal_text__"
+            "unsatisfiable_with_tag_realization_native"
+        )
+    return tag_handling
+
+
 def affect_effect_receipt(
     voice_delivery: dict[str, Any],
     knobs: dict[str, float] | None,
@@ -1016,7 +1120,16 @@ def affect_effect_receipt(
         "reason": None,
     }
     if knobs is None:
-        receipt["reason"] = "no_affect_requested_default_turbo_render"
+        if voice_delivery.get("prefer_tag_consuming_backend"):
+            # Affect WAS requested; it yielded to tag realization. Saying
+            # "no affect requested" here would misdescribe the path (#24).
+            receipt["knob_source"] = "tone_calibration_deferred_to_tag_realization"
+            receipt["reason"] = (
+                "affect_knobs_not_applied__render_kept_on_tag_consuming_backend_for_inline_event_tags; "
+                "tone carried by the backend-independent tempo axis, see pace_effect.tempo_source=tone_calibration"
+            )
+        else:
+            receipt["reason"] = "no_affect_requested_default_turbo_render"
         return receipt
     if explicit:
         receipt["knob_source"] = "explicit_intensity_valence"
@@ -1049,6 +1162,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
     knobs = emotion_knobs_from_delivery(voice_delivery)
     try:
         backend, backend_selection = select_voice_backend_for_request(request.backend, knobs)
+        apply_tag_handling_backend(voice_delivery, backend.caps.backend_id)
     except UnknownBackendError as exc:
         raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
     except UnsupportedCapabilityError as exc:
@@ -1080,9 +1194,7 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
                 )
         generation_seconds = round(time.perf_counter() - started, 3)
         latency_event(events, "first_audio_ready", started_total, generation_seconds=generation_seconds)
-        tone_tempo = None
-        if not voice_delivery.get("pace") and knobs is not None and voice_delivery.get("emotion_realization") == "audible":
-            tone_tempo = TONE_CALIBRATION.get(voice_delivery["tone"], {}).get("tempo")
+        tone_tempo = tone_calibration_tempo(voice_delivery)
         wav, pace_effect = apply_pace_stretch(wav, int(render_sr), voice_delivery.get("pace"), tone_tempo)
         if pace_effect["applied"]:
             latency_event(
@@ -2823,7 +2935,8 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         }
     batch_knobs = emotion_knobs_from_delivery(batch_voice_delivery)
     try:
-        _, batch_backend_selection = select_voice_backend_for_request(request.backend, batch_knobs)
+        batch_backend, batch_backend_selection = select_voice_backend_for_request(request.backend, batch_knobs)
+        apply_tag_handling_backend(batch_voice_delivery, batch_backend.caps.backend_id)
     except UnknownBackendError as exc:
         raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
     except UnsupportedCapabilityError as exc:
@@ -3146,9 +3259,10 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
     batch_dir.mkdir(parents=True, exist_ok=True)
     stream_voice_delivery = voice_delivery_for_request(request)
     try:
-        _, stream_backend_selection = select_voice_backend_for_request(
+        stream_backend, stream_backend_selection = select_voice_backend_for_request(
             request.backend, emotion_knobs_from_delivery(stream_voice_delivery)
         )
+        apply_tag_handling_backend(stream_voice_delivery, stream_backend.caps.backend_id)
     except UnknownBackendError as exc:
         raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
     except UnsupportedCapabilityError as exc:
