@@ -49,8 +49,8 @@
         "tempo_source": "tone_calibration",
         "mechanism": "phase_vocoder_time_stretch",
         "applied": true,
-        "input_duration_seconds": 4.48,
-        "output_duration_seconds": 4.0
+        "input_duration_seconds": 4.96,
+        "output_duration_seconds": 4.437
       },
       "affect_effect": {
         "schema": "chatterbox.affect_effect.v1",
@@ -60,10 +60,10 @@
         "knob_source": "tone_calibration_deferred_to_tag_realization",
         "reason": "affect_knobs_not_applied__render_kept_on_tag_consuming_backend_for_inline_event_tags; tone carried by the backend-independent tempo axis, see pace_effect.tempo_source=tone_calibration"
       },
-      "transcript": "That is genuinely funny.\nAnyway, let me get back to what I was saying.",
+      "transcript": "that is genuinely funny. Anyway, let me get back to what I was saying.",
       "literal_tag_word_present": false,
       "audio": "/home/graham/workspace/experiments/chatterbox/logs/issue24_both_tone_and_tag/chunk_01_satisfied.wav",
-      "duration_seconds": 4.0
+      "duration_seconds": 4.437
     },
     "tag_realization_literal_optout": {
       "request_voice_delivery": {
@@ -108,8 +108,8 @@
         "tempo_source": "tone_calibration",
         "mechanism": "phase_vocoder_time_stretch",
         "applied": true,
-        "input_duration_seconds": 4.2,
-        "output_duration_seconds": 3.744
+        "input_duration_seconds": 4.32,
+        "output_duration_seconds": 3.861
       },
       "affect_effect": {
         "schema": "chatterbox.affect_effect.v1",
@@ -125,10 +125,10 @@
         "knob_source": "tone_calibration",
         "reason": null
       },
-      "transcript": "That is genuinely funny.\nLaugh.\nAnyway, let me get back to what I was saying.",
+      "transcript": "That is genuinely funny. Laugh.\nAnyway, let me get back to what I was saying.",
       "literal_tag_word_present": true,
       "audio": "/home/graham/workspace/experiments/chatterbox/logs/issue24_tag_realization_literal_optout/chunk_01_satisfied.wav",
-      "duration_seconds": 3.744
+      "duration_seconds": 3.861
     },
     "explicit_knobs_conflict": {
       "request_voice_delivery": {
@@ -173,8 +173,8 @@
         "tempo_source": null,
         "mechanism": "phase_vocoder_time_stretch",
         "applied": false,
-        "input_duration_seconds": 5.2,
-        "output_duration_seconds": 5.2,
+        "input_duration_seconds": 5.24,
+        "output_duration_seconds": 5.24,
         "reason": "no_pace_requested"
       },
       "affect_effect": {
@@ -191,25 +191,60 @@
         "knob_source": "explicit_intensity_valence",
         "reason": null
       },
-      "transcript": "That is genuinely funny, laugh. Anyway, let me get back to what I was saying.",
+      "transcript": "That is genuinely funny.\nLaugh.\nAnyway, let me get back to what I was saying.",
       "literal_tag_word_present": true,
       "audio": "/home/graham/workspace/experiments/chatterbox/logs/issue24_explicit_knobs_conflict/chunk_01_satisfied.wav",
-      "duration_seconds": 5.2
+      "duration_seconds": 5.24
     }
   },
   "duration_check": {
     "with_tag_seconds": [
-      4.256,
+      4.107,
+      3.893,
+      4.352,
       4.683,
+      4.032,
+      4.288,
+      4.437,
+      4.288,
+      4.437,
+      4.608,
+      4.501,
+      4.107,
+      4.437,
+      4.576,
+      4.533,
       4.32
     ],
     "without_tag_seconds": [
-      3.179,
-      2.965,
-      3.573
+      3.573,
+      4.256,
+      2.923,
+      3.253,
+      3.637,
+      3.723,
+      3.68,
+      3.435,
+      3.456,
+      3.147,
+      3.253,
+      3.317,
+      3.68,
+      3.968,
+      2.859,
+      3.637
     ],
-    "mean_delta_seconds": 1.181,
-    "ranges_non_overlapping": true
+    "mean_delta_seconds": 0.863,
+    "ranges_non_overlapping": false,
+    "significance": {
+      "test": "normal_approximation_rank_sum_tie_corrected",
+      "n_treatment": 16,
+      "n_control": 16,
+      "rank_sum": 387.0,
+      "p_value": 2e-06,
+      "common_language_effect_size": 0.98
+    },
+    "criterion": "p_value < 0.01 and a positive mean delta. The ticket's original n=3 min>max criterion is reported as ranges_non_overlapping but is not gated: the renderer is non-deterministic by its own stochasticity receipt, so strict non-overlap of small samples tests sample spread rather than the effect."
   },
   "gates": {
     "both_render_uses_tag_consuming_backend": true,

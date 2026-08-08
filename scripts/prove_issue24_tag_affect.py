@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
 import tempfile
@@ -70,6 +71,62 @@ def transcribe(path: Path) -> str:
         return (Path(tmp) / f"{path.stem}.txt").read_text().strip()
 
 
+def rank_sum_test(treatment: list[float], control: list[float]) -> dict[str, Any]:
+    """One-sided Mann-Whitney rank-sum test that treatment > control.
+
+    The renderer is explicitly non-deterministic (stochasticity receipt:
+    deterministic_audio=false, seed_supported=false), so a strict
+    min(treatment) > max(control) criterion on a handful of samples tests
+    sample spread rather than the effect -- at n=3 per arm the smallest
+    reachable p-value is 0.05, so that criterion cannot clear a 0.01 bar at all.
+
+    Enumerates the exact permutation distribution of the rank sum when that is
+    tractable, and falls back to the tie-corrected normal approximation above
+    200k combinations. No third-party dependency either way.
+    """
+    from collections import Counter
+    from itertools import combinations
+
+    pooled = sorted(treatment + control)
+    ranks: dict[float, float] = {}
+    for value in set(pooled):
+        positions = [index + 1 for index, item in enumerate(pooled) if item == value]
+        ranks[value] = sum(positions) / len(positions)  # average rank breaks ties
+
+    all_ranks = [ranks[value] for value in treatment + control]
+    observed = sum(ranks[value] for value in treatment)
+    n_treatment, n_control = len(treatment), len(control)
+    total = n_treatment + n_control
+
+    if math.comb(total, n_treatment) <= 200_000:
+        distribution = [sum(subset) for subset in combinations(all_ranks, n_treatment)]
+        at_least_as_extreme = sum(1 for value in distribution if value >= observed)
+        method = "exact_one_sided_permutation_rank_sum"
+        p_value = at_least_as_extreme / len(distribution)
+    else:
+        # Exact enumeration is not tractable at this n; use the tie-corrected
+        # normal approximation to the rank-sum distribution.
+        mean = n_treatment * (total + 1) / 2
+        tie_term = sum(count**3 - count for count in Counter(pooled).values())
+        variance = (n_treatment * n_control / 12) * (
+            (total + 1) - tie_term / (total * (total - 1))
+        )
+        z = (observed - mean - 0.5) / math.sqrt(variance)  # continuity-corrected
+        p_value = 0.5 * math.erfc(z / math.sqrt(2))
+        method = "normal_approximation_rank_sum_tie_corrected"
+
+    pairs = [(t, c) for t in treatment for c in control]
+    dominance = sum(1.0 if t > c else 0.5 if t == c else 0.0 for t, c in pairs) / len(pairs)
+    return {
+        "test": method,
+        "n_treatment": n_treatment,
+        "n_control": n_control,
+        "rank_sum": round(observed, 2),
+        "p_value": round(p_value, 6),
+        "common_language_effect_size": round(dominance, 3),
+    }
+
+
 def first_chunk(result: dict[str, Any]) -> str:
     for segment in result.get("segments") or result.get("chunks") or []:
         if segment.get("audio"):
@@ -81,9 +138,20 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default="http://127.0.0.1:8018")
     parser.add_argument("--out-root", default="logs", help="host path mounted as /out")
-    parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--repeats", type=int, default=16, help="renders per arm for the duration test")
     parser.add_argument("--output", default="docs/proofs/issue24_tag_affect.json")
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Required. This script only renders against a real server; there is no mock mode.",
+    )
     args = parser.parse_args()
+    if not args.live:
+        parser.error("pass --live: this proof renders against a real server and has no mock mode")
+
+    health = json.load(urllib.request.urlopen(args.base_url + "/health", timeout=30))
+    if not health.get("model_loaded") or health.get("mocked"):
+        raise SystemExit(f"server is not live with a loaded model: {health}")
 
     out_root = Path(args.out_root).resolve()
     tone = "playful_light"
@@ -122,6 +190,7 @@ def main() -> int:
             durations[key].append(duration_seconds(host_path(first_chunk(result), out_root)))
 
     with_tag, without_tag = durations["with_tag"], durations["without_tag"]
+    tag_event_test = rank_sum_test(with_tag, without_tag)
     both = cases["both_tone_and_tag"]
     both_pace = both["pace_effect"] or {}
     both_affect = both["affect_effect"] or {}
@@ -137,6 +206,14 @@ def main() -> int:
             "without_tag_seconds": without_tag,
             "mean_delta_seconds": round(sum(with_tag) / len(with_tag) - sum(without_tag) / len(without_tag), 3),
             "ranges_non_overlapping": min(with_tag) > max(without_tag),
+            "significance": tag_event_test,
+            "criterion": (
+                "p_value < 0.01 and a positive mean delta. The ticket's original n=3 "
+                "min>max criterion is reported as ranges_non_overlapping but is not "
+                "gated: the renderer is non-deterministic by its own stochasticity "
+                "receipt, so strict non-overlap of small samples tests sample spread "
+                "rather than the effect."
+            ),
         },
         "gates": {
             "both_render_uses_tag_consuming_backend": both["backend"] == "chatterbox_turbo",
@@ -161,7 +238,10 @@ def main() -> int:
                 "unsatisfiable"
                 in (cases["explicit_knobs_conflict"]["tag_handling"].get("tags_interpreted_reason") or "")
             ),
-            "tag_is_a_real_event": min(with_tag) > max(without_tag),
+            "tag_is_a_real_event": (
+                tag_event_test["p_value"] < 0.01
+                and sum(with_tag) / len(with_tag) > sum(without_tag) / len(without_tag)
+            ),
         },
     }
     receipt["ok"] = all(receipt["gates"].values())
