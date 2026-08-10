@@ -1,0 +1,108 @@
+{
+  "base_url": "http://127.0.0.1:8018",
+  "comparisons": {
+    "fast_duration_seconds": 3.253,
+    "fast_shorter_than_slow": true,
+    "slow_duration_seconds": 4.896
+  },
+  "failed_gates": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_path": "/tmp/pace-proof.json",
+  "results": {
+    "fast": {
+      "chunk_pace_effect": {
+        "applied": true,
+        "input_duration_seconds": 3.84,
+        "mechanism": "phase_vocoder_time_stretch",
+        "output_duration_seconds": 3.253,
+        "requested_pace": "fast",
+        "schema": "chatterbox.pace_effect.v1",
+        "tempo_factor": 1.18,
+        "tempo_source": "requested_pace"
+      },
+      "expected_tempo_factor": 1.18,
+      "failed_gates": [],
+      "finished_duration_seconds": 3.253,
+      "finished_response_audio": "/out/issue25-live-fast-1786379832/finished_response.wav",
+      "gates": {
+        "chunk_pace_effect_applied": true,
+        "duration_seconds_present": true,
+        "http_ok": true,
+        "input_duration_present": true,
+        "output_duration_present": true,
+        "pace_effect_applied": true,
+        "response_ok": true,
+        "tempo_factor_matches": true,
+        "top_level_pace_effect_present": true
+      },
+      "pace_effect": {
+        "applied": true,
+        "applied_render_count": 1,
+        "duration_seconds": {
+          "input": 3.84,
+          "output": 3.253
+        },
+        "input_duration_seconds": 3.84,
+        "mechanism": "phase_vocoder_time_stretch",
+        "output_duration_seconds": 3.253,
+        "render_count": 1,
+        "requested_pace": "fast",
+        "schema": "chatterbox.pace_effect.v1",
+        "scope": "batch",
+        "tempo_factor": 1.18,
+        "tempo_source": "requested_pace"
+      },
+      "raw_response_path": "/tmp/chatterbox-issue25-live/fast.json",
+      "response_ok": true
+    },
+    "slow": {
+      "chunk_pace_effect": {
+        "applied": true,
+        "input_duration_seconds": 4.16,
+        "mechanism": "phase_vocoder_time_stretch",
+        "output_duration_seconds": 4.896,
+        "requested_pace": "slow",
+        "schema": "chatterbox.pace_effect.v1",
+        "tempo_factor": 0.85,
+        "tempo_source": "requested_pace"
+      },
+      "expected_tempo_factor": 0.85,
+      "failed_gates": [],
+      "finished_duration_seconds": 4.896,
+      "finished_response_audio": "/out/issue25-live-slow-1786379828/finished_response.wav",
+      "gates": {
+        "chunk_pace_effect_applied": true,
+        "duration_seconds_present": true,
+        "http_ok": true,
+        "input_duration_present": true,
+        "output_duration_present": true,
+        "pace_effect_applied": true,
+        "response_ok": true,
+        "tempo_factor_matches": true,
+        "top_level_pace_effect_present": true
+      },
+      "pace_effect": {
+        "applied": true,
+        "applied_render_count": 1,
+        "duration_seconds": {
+          "input": 4.16,
+          "output": 4.896
+        },
+        "input_duration_seconds": 4.16,
+        "mechanism": "phase_vocoder_time_stretch",
+        "output_duration_seconds": 4.896,
+        "render_count": 1,
+        "requested_pace": "slow",
+        "schema": "chatterbox.pace_effect.v1",
+        "scope": "batch",
+        "tempo_factor": 0.85,
+        "tempo_source": "requested_pace"
+      },
+      "raw_response_path": "/tmp/chatterbox-issue25-live/slow.json",
+      "response_ok": true
+    }
+  },
+  "schema": "chatterbox.issue25.pace_effect_live_proof.v1"
+}

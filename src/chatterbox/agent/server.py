@@ -1047,6 +1047,75 @@ def apply_pace_stretch(
     return out, receipt
 
 
+def aggregate_pace_effect_receipts(
+    render_results: list[dict[str, Any]],
+    *,
+    requested_pace: str | None,
+    tone_tempo: float | None = None,
+) -> dict[str, Any]:
+    """Publish the batch-level pace receipt consumers verify.
+
+    Individual chunks already carry the render-level receipt from
+    apply_pace_stretch. Batch callers should not have to mine chunks to prove a
+    requested pace affected the final render.
+    """
+    factor = pace_tempo_factor(requested_pace)
+    tempo_source = "requested_pace"
+    if not requested_pace and tone_tempo is not None:
+        factor = float(tone_tempo)
+        tempo_source = "tone_calibration"
+    receipts = [
+        item.get("pace_effect")
+        for item in render_results
+        if isinstance(item.get("pace_effect"), dict)
+    ]
+    input_duration = round(
+        sum(float(receipt.get("input_duration_seconds") or 0.0) for receipt in receipts),
+        3,
+    )
+    output_duration = round(
+        sum(float(receipt.get("output_duration_seconds") or 0.0) for receipt in receipts),
+        3,
+    )
+    applied_count = sum(1 for receipt in receipts if receipt.get("applied") is True)
+    receipt: dict[str, Any] = {
+        "schema": "chatterbox.pace_effect.v1",
+        "scope": "batch",
+        "requested_pace": requested_pace,
+        "tempo_factor": factor,
+        "tempo_source": tempo_source if factor is not None else None,
+        "mechanism": "phase_vocoder_time_stretch",
+        "applied": bool(receipts) and applied_count == len(receipts),
+        "input_duration_seconds": input_duration,
+        "output_duration_seconds": output_duration,
+        "duration_seconds": {
+            "input": input_duration,
+            "output": output_duration,
+        },
+        "render_count": len(receipts),
+        "applied_render_count": applied_count,
+    }
+    if not receipts:
+        if not requested_pace and tone_tempo is None:
+            receipt["reason"] = "no_pace_requested"
+        else:
+            receipt["reason"] = "pace_effect_unavailable"
+        return receipt
+    if receipt["applied"]:
+        return receipt
+    reasons = sorted(
+        {
+            str(reason)
+            for reason in (item.get("reason") for item in receipts)
+            if reason
+        }
+    )
+    receipt["reason"] = reasons[0] if len(reasons) == 1 else "not_all_renders_applied"
+    if reasons:
+        receipt["render_reasons"] = reasons
+    return receipt
+
+
 def tone_calibration_tempo(voice_delivery: dict[str, Any]) -> float | None:
     """Calibration tempo for a render, or None when it does not apply.
 
@@ -2362,6 +2431,11 @@ def blessed_qra_batch_response(
         "requested_delivery_stage": voice_delivery["requested_delivery_stage"],
         "voice_delivery": voice_delivery,
         "tag_handling": voice_delivery["tag_handling"],
+        "pace_effect": aggregate_pace_effect_receipts(
+            chunk_results,
+            requested_pace=voice_delivery.get("pace"),
+            tone_tempo=tone_calibration_tempo(voice_delivery),
+        ),
         "stochasticity": stochasticity,
         "ignored_turbo_params": sorted(TURBO_IGNORED_PARAMS),
         "cache_key": f"blessed_qra:{match.get('entry_id')}",
@@ -3145,6 +3219,11 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         "requested_delivery_stage": batch_voice_delivery["requested_delivery_stage"],
         "voice_delivery": batch_voice_delivery,
         "voice_delivery_effect": VOICE_DELIVERY_EFFECT,
+        "pace_effect": aggregate_pace_effect_receipts(
+            chunk_results + ([completion_result] if completion_result else []),
+            requested_pace=batch_voice_delivery.get("pace"),
+            tone_tempo=tone_calibration_tempo(batch_voice_delivery),
+        ),
         "emotion_knobs": batch_knobs,
         "affect_effect": affect_effect_receipt(batch_voice_delivery, batch_knobs, batch_backend_selection["id"]),
         "tag_handling": batch_voice_delivery["tag_handling"],

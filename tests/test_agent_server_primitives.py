@@ -461,6 +461,62 @@ def test_apply_pace_stretch_receipt_never_claims_unproven_effect() -> None:
         assert unchanged is wav or stretched is wav
 
 
+def test_synthesize_batch_exposes_top_level_pace_effect(tmp_path: Path, monkeypatch) -> None:
+    ref = tmp_path / "embry.wav"
+    write_tiny_wav(ref)
+    monkeypatch.setattr(server, "REFERENCE_AUDIO_ROOTS", [tmp_path])
+    monkeypatch.setattr(server, "OUT_DIR", tmp_path / "out")
+
+    def fake_synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, object]:
+        write_tiny_wav(out_path)
+        return {
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "audio": str(out_path),
+            "duration_seconds": 1.0,
+            "metrics": {"duration_seconds": 1.0, "bytes": out_path.stat().st_size},
+            "pace_effect": {
+                "schema": "chatterbox.pace_effect.v1",
+                "requested_pace": request.pace,
+                "tempo_factor": 1.18,
+                "tempo_source": "requested_pace",
+                "mechanism": "phase_vocoder_time_stretch",
+                "applied": True,
+                "input_duration_seconds": 1.18,
+                "output_duration_seconds": 1.0,
+            },
+            "failed_gates": [],
+        }
+
+    def fake_combine_audio_segments(segments, out_path, *, crossfade_ms=20):
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        write_tiny_wav(out_path)
+        return {"path": str(out_path), "exists": True, "bytes": out_path.stat().st_size, "duration_seconds": 1.0}
+
+    monkeypatch.setattr(server, "synthesize_to_file", fake_synthesize_to_file)
+    monkeypatch.setattr(server, "combine_audio_segments", fake_combine_audio_segments)
+
+    result = synthesize_batch(
+        SynthesisBatchRequest(
+            answer_text="Known answer.",
+            ref_audio=str(ref),
+            pace="fast",
+            use_blessed_qra_cache=False,
+            include_completion_cue=False,
+            label="batch-pace-effect",
+        )
+    )
+
+    assert result["ok"] is True
+    assert result["chunks"][0]["pace_effect"]["applied"] is True
+    assert result["pace_effect"]["schema"] == "chatterbox.pace_effect.v1"
+    assert result["pace_effect"]["scope"] == "batch"
+    assert result["pace_effect"]["applied"] is True
+    assert result["pace_effect"]["tempo_factor"] == 1.18
+    assert result["pace_effect"]["duration_seconds"] == {"input": 1.18, "output": 1.0}
+
+
 def test_tau_voice_render_request_maps_to_batch_request() -> None:
     chunk_text = "Use system and communications protection."
     request = TauVoiceRenderRequest(
