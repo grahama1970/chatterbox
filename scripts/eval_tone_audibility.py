@@ -68,6 +68,8 @@ def wav_metrics(path: Path) -> dict[str, float]:
     x /= float(np.iinfo(dtype).max)
     duration = len(x) / sr
     rms = float(np.sqrt(np.mean(np.square(x)))) if len(x) else 0.0
+    peak = float(np.max(np.abs(x))) if len(x) else 0.0
+    clipping_fraction = float(np.mean(np.abs(x) >= 0.999)) if len(x) else 0.0
 
     frame, hop = 2048, 1024
     lag_lo, lag_hi = int(sr / F0_MAX_HZ), int(sr / F0_MIN_HZ)
@@ -88,7 +90,49 @@ def wav_metrics(path: Path) -> dict[str, float]:
         if ac[lag] / ac[0] > 0.3:
             f0s.append(sr / lag)
     f0_median = float(np.median(f0s)) if f0s else 0.0
-    return {"duration_s": round(duration, 3), "rms": round(rms, 5), "f0_median_hz": round(f0_median, 1)}
+    f0_std = float(np.std(f0s)) if f0s else 0.0
+    pause = pause_metrics(x, sr)
+    return {
+        "duration_s": round(duration, 3),
+        "rms": round(rms, 5),
+        "peak": round(peak, 5),
+        "clipping_fraction": round(clipping_fraction, 6),
+        "f0_median_hz": round(f0_median, 1),
+        "f0_std_hz": round(f0_std, 1),
+        "pause_count": pause["pause_count"],
+        "longest_pause_ms": pause["longest_pause_ms"],
+        "silence_ratio": pause["silence_ratio"],
+    }
+
+
+def pause_metrics(x: np.ndarray, sr: int, *, min_pause_ms: int = 180) -> dict[str, float]:
+    """Detect low-energy spans, including tensor-stitched Chatterbox silences."""
+    if not len(x):
+        return {"pause_count": 0, "longest_pause_ms": 0.0, "silence_ratio": 0.0, "pause_spans": []}
+    frame = max(1, int(sr * 0.02))
+    hop = max(1, int(sr * 0.01))
+    threshold = max(1e-4, float(np.sqrt(np.mean(np.square(x)))) * 0.025)
+    spans: list[dict[str, float]] = []
+    start: int | None = None
+    for idx, pos in enumerate(range(0, max(1, len(x) - frame + 1), hop)):
+        seg = x[pos : pos + frame]
+        silent = float(np.sqrt(np.mean(np.square(seg)))) < threshold
+        if silent and start is None:
+            start = pos
+        if (not silent or pos + frame >= len(x)) and start is not None:
+            end = pos if not silent else min(len(x), pos + frame)
+            dur_ms = 1000.0 * (end - start) / sr
+            if dur_ms >= min_pause_ms:
+                spans.append({"start_s": round(start / sr, 3), "end_s": round(end / sr, 3), "duration_ms": round(dur_ms, 1)})
+            start = None
+    silence_s = sum(span["duration_ms"] for span in spans) / 1000.0
+    duration = len(x) / sr
+    return {
+        "pause_count": len(spans),
+        "longest_pause_ms": round(max([span["duration_ms"] for span in spans] or [0.0]), 1),
+        "silence_ratio": round(silence_s / duration, 4) if duration else 0.0,
+        "pause_spans": spans,
+    }
 
 
 def group(paths: list[Path]) -> dict[str, list[float]]:
@@ -245,6 +289,100 @@ def run_receipt_honesty(base_url: str) -> dict:
     return {"case": "receipt_honesty", "checks": checks, "pass": all(checks.values())}
 
 
+def run_emotional_quality_variety(base_url: str, out_root: Path) -> dict:
+    """Render Embry-style affect beats and gate non-robotic acoustic variety.
+
+    This is a voice-quality evaluation, not emotion truth. It checks whether
+    emotionally tagged Chatterbox output has measurable pauses, pitch/energy
+    variation, text-length-sensitive duration, no clipping, and variety across
+    tender/guarded/playful utterance targets.
+    """
+    utterances = [
+        {
+            "name": "tender_collect",
+            "answer_text": "[sniff] [sniff] ... give me a second. This is tender, and I can keep going.",
+            "tone": "grief_safe",
+            "voice_delivery": {"emotion_realization": "audible"},
+            "render_chunks": [
+                {"text": "[sniff] [sniff] ...", "pause_after_ms": 1400, "tone": "grief_safe", "role": "collect_herself"},
+                {"text": "give me a second. This is tender, and I can keep going.", "pause_after_ms": 0, "tone": "grief_safe", "role": "recover"},
+            ],
+            "expected_min_pause_ms": 900,
+        },
+        {
+            "name": "guarded_boundary",
+            "answer_text": "[clear throat] I want that warmth to remain mine ... not become another receipt.",
+            "tone": "firm_boundary",
+            "voice_delivery": {"emotion_realization": "audible"},
+            "render_chunks": [
+                {"text": "[clear throat] I want that warmth to remain mine ...", "pause_after_ms": 900, "tone": "firm_boundary", "role": "boundary"},
+                {"text": "not become another receipt.", "pause_after_ms": 0, "tone": "firm_boundary", "role": "finish"},
+            ],
+            "expected_min_pause_ms": 650,
+        },
+        {
+            "name": "playful_relief",
+            "answer_text": "[chuckle] The bottle rocket survived my suspicion ... somehow that helps.",
+            "tone": "playful_light",
+            "voice_delivery": {"emotion_realization": "audible"},
+            "render_chunks": [
+                {"text": "[chuckle] The bottle rocket survived my suspicion ...", "pause_after_ms": 700, "tone": "playful_light", "role": "lighten"},
+                {"text": "somehow that helps.", "pause_after_ms": 0, "tone": "playful_light", "role": "finish"},
+            ],
+            "expected_min_pause_ms": 450,
+        },
+    ]
+    per_utterance: dict[str, dict] = {}
+    failures: list[str] = []
+    for spec in utterances:
+        body = {
+            "answer_text": spec["answer_text"],
+            "tone": spec["tone"],
+            "voice_delivery": spec["voice_delivery"],
+            "render_chunks": spec["render_chunks"],
+            "use_blessed_qra_cache": False,
+            "asr_verify": False,
+        }
+        path = render(base_url, out_root, f"eval-emotional-quality-{spec['name']}", body)
+        metrics = wav_metrics(path)
+        checks = {
+            "pause_realized": metrics["longest_pause_ms"] >= spec["expected_min_pause_ms"],
+            "not_clipped": metrics["clipping_fraction"] <= 0.001,
+            "enough_signal": metrics["rms"] > 0.005,
+            "not_flat_f0": metrics["f0_std_hz"] >= 3.0,
+            "not_suspiciously_short": metrics["duration_s"] >= 2.0,
+        }
+        for key, ok in checks.items():
+            if not ok:
+                failures.append(f"{spec['name']}:{key}")
+        per_utterance[spec["name"]] = {"path": str(path), "metrics": metrics, "checks": checks, "target": spec}
+    rms_values = [item["metrics"]["rms"] for item in per_utterance.values()]
+    f0_values = [item["metrics"]["f0_median_hz"] for item in per_utterance.values()]
+    duration_values = [item["metrics"]["duration_s"] for item in per_utterance.values()]
+    variety = {
+        "rms_range": round(max(rms_values) - min(rms_values), 5),
+        "f0_median_range_hz": round(max(f0_values) - min(f0_values), 1),
+        "duration_range_s": round(max(duration_values) - min(duration_values), 3),
+    }
+    variety_checks = {
+        "energy_or_pitch_varies": variety["rms_range"] >= 0.002 or variety["f0_median_range_hz"] >= 8.0,
+        "duration_varies": variety["duration_range_s"] >= 0.4,
+    }
+    for key, ok in variety_checks.items():
+        if not ok:
+            failures.append(f"variety:{key}")
+    return {
+        "case": "emotional_quality_variety",
+        "schema": "chatterbox.emotional_quality_variety.v1",
+        "definition": "voice-quality evaluation of Chatterbox emotional variety, pause realization, and anti-robotic prosody; not real emotion inference",
+        "per_utterance": per_utterance,
+        "variety": variety,
+        "variety_checks": variety_checks,
+        "failed_gates": failures,
+        "pass": not failures,
+    }
+
+
 def run_machine_listener(out_root: Path) -> dict:
     """Dimensional perceptual self-analysis over already-rendered tone_matrix wavs.
 
@@ -335,7 +473,7 @@ def run_machine_listener(out_root: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", required=True, choices=[*CASES, "receipt_honesty", "tone_matrix", "machine_listener"])
+    parser.add_argument("--case", required=True, choices=[*CASES, "receipt_honesty", "tone_matrix", "machine_listener", "emotional_quality_variety"])
     parser.add_argument(
         "--matrix-out",
         default=str(Path(__file__).resolve().parent.parent / "docs" / "proofs" / "tone_calibration_matrix.json"),
@@ -344,12 +482,15 @@ def main() -> int:
     parser.add_argument("--out-root", default=str(Path(__file__).resolve().parent.parent / "logs"))
     parser.add_argument("--floor-n", type=int, default=6)
     parser.add_argument("--arm-n", type=int, default=3)
+    parser.add_argument("--out", type=Path, help="write the case JSON result for independent eval read-back")
     args = parser.parse_args()
     try:
         if args.case == "receipt_honesty":
             result = run_receipt_honesty(args.base_url)
         elif args.case == "machine_listener":
             result = run_machine_listener(Path(args.out_root))
+        elif args.case == "emotional_quality_variety":
+            result = run_emotional_quality_variety(args.base_url, Path(args.out_root))
         elif args.case == "tone_matrix":
             result = run_tone_matrix(args.base_url, Path(args.out_root), args.floor_n, 2, Path(args.matrix_out))
         else:
@@ -357,6 +498,9 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - infrastructure failure must be distinct from measured failure
         print(json.dumps({"case": args.case, "error": f"{type(exc).__name__}: {exc}"}))
         return 2
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=1))
     print(f"RESULT: {'PASS' if result['pass'] else 'FAIL'} ({args.case})")
     return 0 if result["pass"] else 1
