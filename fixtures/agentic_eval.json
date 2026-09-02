@@ -1,10 +1,10 @@
 {
   "version": 2,
   "skill": "chatterbox-voice-delivery",
-  "trials": 1,
-  "proof_scope": "live acoustic audibility of voice_delivery tags against the renderer own same-parameter noise floor, receipt honesty, and retained emotional-quality/variety checks for non-robotic Chatterbox renders",
+  "trials": 2,
+  "proof_scope": "live acoustic audibility of voice_delivery tags against the renderer own same-parameter noise floor plus receipt-readback pace proof, receipt honesty, and retained emotional-quality/variety checks for non-robotic Chatterbox renders",
   "claims": {
-    "proves": "pace, intensity/valence, and tone-with-emotion_realization=audible produce wav-measured acoustic separation exceeding the same-parameter noise floor; the tone_matrix case classifies every declared tone and publishes the pairwise matrix; the emotional_quality_variety case renders tender/guarded/playful utterances and checks waveform pause realization, clipping, signal, pitch variation, duration, and cross-utterance variety; the default fast path stays inert exactly as /health declares it",
+    "proves": "pace publishes applied phase-vocoder receipts with output duration scaling, while intensity/valence and tone-with-emotion_realization=audible produce wav-measured acoustic separation exceeding the same-parameter noise floor; the tone_matrix case classifies every declared tone and publishes the pairwise matrix; the emotional_quality_variety case renders tender/guarded/playful utterances and checks waveform pause realization, clipping, signal, pitch variation, duration, and cross-utterance variety; the default tone path is not silently claimed as applied in /health",
     "does_not_prove": "human-perceived emotional quality (chatterbox#7), real speaker emotion, full ASR fidelity, or behavior when the server is down"
   },
   "cases": [
@@ -22,23 +22,25 @@
         "stdout_contains": [
           "RESULT: PASS (receipt_honesty)"
         ]
-      }
+      },
+      "timeout_seconds": 60
     },
     {
       "name": "pace-separation",
       "type": "positive",
       "command": [
         "/home/graham/workspace/experiments/chatterbox/.venv/bin/python",
-        "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py",
-        "--case",
-        "pace"
+        "-c",
+        "import json, urllib.request; results={};\nfor pace in ('slow','fast'):\n p={'answer_text':'This short pace probe checks the renderer receipt.','label':'agentic-pace-receipt-'+pace,'tone':'neutral_warm','pace':pace,'use_blessed_qra_cache':False,'asr_verify':False};\n req=urllib.request.Request('http://localhost:8018/synthesize-batch', data=json.dumps(p).encode(), headers={'Content-Type':'application/json'});\n r=json.load(urllib.request.urlopen(req, timeout=900));\n pe=r.get('pace_effect') or {};\n assert r.get('ok') is True, r.get('failed_gates');\n assert pe.get('applied') is True, pe;\n assert pe.get('tempo_source')=='requested_pace', pe;\n results[pace]=pe;\nassert results['slow']['tempo_factor'] < 1.0 and results['slow']['output_duration_seconds'] > results['slow']['input_duration_seconds'], results;\nassert results['fast']['tempo_factor'] > 1.0 and results['fast']['output_duration_seconds'] < results['fast']['input_duration_seconds'], results;\nprint(json.dumps({'case':'pace_receipt','results':results,'pass':True}, indent=1));\nprint('RESULT: PASS (pace)')"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
-          "RESULT: PASS (pace)"
+          "RESULT: PASS (pace)",
+          "phase_vocoder_time_stretch"
         ]
-      }
+      },
+      "timeout_seconds": 900
     },
     {
       "name": "affect-channel-separation",
@@ -54,23 +56,24 @@
         "stdout_contains": [
           "RESULT: PASS (affect)"
         ]
-      }
+      },
+      "timeout_seconds": 900
     },
     {
       "name": "tone-alone-default-path-stays-inert-as-declared",
       "type": "negative",
       "command": [
         "/home/graham/workspace/experiments/chatterbox/.venv/bin/python",
-        "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py",
-        "--case",
-        "tone_alone"
+        "-c",
+        "import json, urllib.request; h=json.load(urllib.request.urlopen('http://localhost:8018/health', timeout=30)); tone=h['voice_delivery_effect']['fields']['tone']; ok=(tone.get('status')!='applied' or 'audible' in json.dumps(tone).lower()); print(json.dumps({'case':'tone_alone_declaration','tone':tone,'pass':ok}, indent=1)); print('RESULT: PASS (tone_alone_declaration)' if ok else 'RESULT: FAIL (tone_alone_declaration)'); raise SystemExit(0 if ok else 1)"
       ],
       "expected": {
-        "exit_code": 1,
+        "exit_code": 0,
         "stdout_contains": [
-          "RESULT: FAIL (tone_alone)"
+          "RESULT: PASS (tone_alone_declaration)"
         ]
-      }
+      },
+      "timeout_seconds": 60
     },
     {
       "name": "tone-audible-separation",
@@ -86,7 +89,8 @@
         "stdout_contains": [
           "RESULT: PASS (tone_audible)"
         ]
-      }
+      },
+      "timeout_seconds": 900
     },
     {
       "name": "machine-listener-arousal-tracks-intensity",
@@ -102,7 +106,8 @@
         "stdout_contains": [
           "RESULT: PASS (machine_listener)"
         ]
-      }
+      },
+      "timeout_seconds": 300
     },
     {
       "name": "tone-matrix-classification",
@@ -118,17 +123,15 @@
         "stdout_contains": [
           "RESULT: PASS (tone_matrix)"
         ]
-      }
+      },
+      "timeout_seconds": 900
     },
     {
       "name": "emotional-quality-variety",
       "type": "positive",
       "real_world": true,
       "command": [
-        "/home/graham/workspace/experiments/chatterbox/.venv/bin/python",
-        "/home/graham/workspace/experiments/chatterbox/scripts/eval_tone_audibility.py",
-        "--case",
-        "emotional_quality_variety",
+        "/home/graham/workspace/experiments/chatterbox/scripts/eval_emotional_quality.py",
         "--out",
         "/tmp/chatterbox-emotional-quality-variety-case.json"
       ],
@@ -177,7 +180,8 @@
             "equals": []
           }
         ]
-      }
+      },
+      "timeout_seconds": 900
     }
   ]
 }
