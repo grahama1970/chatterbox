@@ -11,6 +11,7 @@ import threading
 import time
 import urllib.request
 import wave
+from collections import OrderedDict
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -106,7 +107,20 @@ model_load_seconds: float | None = None
 base_model: Any | None = None
 base_model_load_seconds: float | None = None
 started_at_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-voice_conditioning_cache: dict[str, Any] = {}
+# Each entry holds GPU-backed conditioning tensors, so the cache must stay
+# bounded: every distinct reference clip or exaggeration value would otherwise
+# pin a new entry for the lifetime of the process. LRU-ordered; oldest falls
+# out first. cache_key semantics are unchanged (sha256 of the fingerprint).
+voice_conditioning_cache: OrderedDict[str, Any] = OrderedDict()
+
+
+def conditioning_cache_max_entries() -> int:
+    """Configured LRU bound; clamped to [1, 32] regardless of env value."""
+    try:
+        configured = int(os.getenv("CHATTERBOX_CONDITIONING_CACHE_MAX", "8"))
+    except ValueError:
+        configured = 8
+    return max(1, min(configured, 32))
 turn_controls: dict[str, dict[str, Any]] = {}
 tau_response_controls: dict[str, dict[str, Any]] = {}
 render_lock = threading.RLock()
@@ -749,6 +763,14 @@ def resolve_reference_audio(path_value: str | Path, roots: list[Path] | None = N
 
 
 def reference_audio_fingerprint(path: Path, params: dict[str, float | int | bool]) -> dict[str, Any]:
+    # The fingerprint must cover exactly the inputs that affect
+    # model.prepare_conditionals (src/chatterbox/tts_turbo.py:217:
+    # `prepare_conditionals(self, wav_fpath, exaggeration=0.5, norm_loudness=True)`).
+    # The wav content is captured by sha256 + size + mtime_ns + path;
+    # exaggeration and norm_loudness are the only conditioning parameters.
+    # Generation-time inputs such as temperature deliberately do NOT appear
+    # here: they do not change the conditioning, and fingerprinting them would
+    # split the cache (and pin extra GPU tensor sets) for identical voices.
     stat = path.stat()
     material = {
         "path": str(path),
@@ -777,6 +799,7 @@ def prepare_voice_conditioning(ref_audio: Path | None, params: dict[str, float |
     cache_key = str(fingerprint["cache_key"])
     cached = voice_conditioning_cache.get(cache_key)
     if cached is not None:
+        voice_conditioning_cache.move_to_end(cache_key)
         model.conds = cached
         return {
             "reference_audio": str(ref_audio),
@@ -791,6 +814,8 @@ def prepare_voice_conditioning(ref_audio: Path | None, params: dict[str, float |
         norm_loudness=bool(params.get("norm_loudness", True)),
     )
     voice_conditioning_cache[cache_key] = model.conds
+    while len(voice_conditioning_cache) > conditioning_cache_max_entries():
+        voice_conditioning_cache.popitem(last=False)
     return {
         "reference_audio": str(ref_audio),
         "conditioning_cache_hit": False,
@@ -2487,6 +2512,7 @@ def cache_key_for_batch(
     ref_audio: str | None,
     asr_verify: bool = False,
     voice_delivery: dict[str, Any] | None = None,
+    temperature: float | None = None,
 ) -> tuple[str, dict[str, Any]]:
     knobs = emotion_knobs_from_delivery(voice_delivery or {})
     material = {
@@ -2505,6 +2531,12 @@ def cache_key_for_batch(
         },
         "asr_verify": asr_verify,
     }
+    # Request temperature reaches each chunk's actual generation params
+    # (SynthesisBatchRequest.temperature -> per-chunk SynthesisRequest), so two
+    # renders differing only by temperature must not share a cache key. Kept
+    # absent when unset so legacy (no-override) keys stay byte-identical.
+    if temperature is not None:
+        material["temperature"] = temperature
     encoded = json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest(), material
 
@@ -2745,6 +2777,7 @@ def health() -> dict[str, Any]:
         "model_loaded": model is not None,
         "model_load_seconds": model_load_seconds,
         "voice_conditioning_cache_size": len(voice_conditioning_cache),
+        "voice_conditioning_cache_max_entries": conditioning_cache_max_entries(),
         "reference_audio_roots": [str(root) for root in REFERENCE_AUDIO_ROOTS],
         "supported_tau_voice_render_request_schemas": list(
             SUPPORTED_TAU_VOICE_RENDER_REQUEST_SCHEMAS
@@ -3083,6 +3116,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         ref_audio=ref_audio,
         asr_verify=request.asr_verify,
         voice_delivery=batch_voice_delivery,
+        temperature=request.temperature,
     )
     chunk_results: list[dict[str, Any]] = []
     failed_gates: list[str] = []

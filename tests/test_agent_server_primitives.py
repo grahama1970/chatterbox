@@ -33,11 +33,15 @@ from chatterbox.agent.server import (
     accepted_audio_cache_material,
     apply_blessed_qra_memory_gate,
     append_with_crossfade,
+    cache_key_for_batch,
     candidate_variants,
+    conditioning_cache_max_entries,
     duck_playback,
     find_blessed_qra_match,
     load_accepted_audio_cache,
+    prepare_voice_conditioning,
     qra_similarity,
+    reference_audio_fingerprint,
     resolve_reference_audio,
     safe_resolve_within,
     save_accepted_audio_cache,
@@ -639,6 +643,199 @@ def test_batch_temperature_override_reaches_chunk_generation_params(tmp_path: Pa
     with pytest.raises(ValidationError):
         SynthesisRequest(text="hello", temperature=0.04)
     assert SynthesisBatchRequest(answer_text="hello").temperature is None
+
+
+class _ConditioningFakeModel:
+    def __init__(self) -> None:
+        self.conds: object = None
+        self.prepared: list[str] = []
+
+    def prepare_conditionals(self, ref_audio: str, **_: object) -> None:
+        self.prepared.append(ref_audio)
+        self.conds = ref_audio
+
+
+def test_voice_conditioning_cache_evicts_oldest_at_bound(tmp_path: Path, monkeypatch) -> None:
+    """Each cached entry holds GPU tensors; the LRU must evict at the bound."""
+    from collections import OrderedDict
+
+    root = tmp_path / "voices"
+    root.mkdir()
+    refs = []
+    for index in range(3):
+        ref = root / f"ref-{index}.wav"
+        ref.write_bytes(b"RIFF-" + str(index).encode())
+        refs.append(ref)
+
+    fake = _ConditioningFakeModel()
+    monkeypatch.setattr(server, "model", fake)
+    monkeypatch.setattr(server, "REFERENCE_AUDIO_ROOTS", [root])
+    cache: OrderedDict[str, object] = OrderedDict()
+    monkeypatch.setattr(server, "voice_conditioning_cache", cache)
+    monkeypatch.setenv("CHATTERBOX_CONDITIONING_CACHE_MAX", "2")
+    assert conditioning_cache_max_entries() == 2
+
+    def prepare(ref: Path) -> dict:
+        return prepare_voice_conditioning(ref, {"exaggeration": 0.0, "norm_loudness": True})
+
+    first = prepare(refs[0])
+    second = prepare(refs[1])
+    assert first["conditioning_cache_hit"] is False
+    assert second["conditioning_cache_hit"] is False
+    assert len(cache) == 2
+
+    # Third distinct voice fits only by evicting the oldest (refs[0]).
+    third = prepare(refs[2])
+    assert third["conditioning_cache_hit"] is False
+    assert len(cache) == 2
+    assert fake.prepared == [ref.resolve().as_posix() for ref in refs]
+    assert list(cache.values()) == [refs[1].resolve().as_posix(), refs[2].resolve().as_posix()]
+
+    # refs[0] was evicted: it must re-prepare, not serve a stale hit.
+    reprepared = prepare(refs[0])
+    assert reprepared["conditioning_cache_hit"] is False
+    assert len(cache) == 2
+
+    # A still-resident entry is a hit and refreshes its recency.
+    hit = prepare(refs[2])
+    assert hit["conditioning_cache_hit"] is True
+    assert len(cache) == 2
+
+    # The bound is clamped to at most 32 even with a huge env value.
+    monkeypatch.setenv("CHATTERBOX_CONDITIONING_CACHE_MAX", "999")
+    assert conditioning_cache_max_entries() == 32
+
+
+def test_conditioning_fingerprint_covers_exactly_prepare_conditionals_inputs(tmp_path: Path) -> None:
+    """prepare_conditionals(wav, exaggeration, norm_loudness) is the complete
+    conditioning input set (tts_turbo.py); the fingerprint must mirror it."""
+    ref = tmp_path / "voice.wav"
+    write_tiny_wav(ref)
+
+    base = reference_audio_fingerprint(ref, {"exaggeration": 0.4, "norm_loudness": True})
+    assert set(base) == {"path", "mtime_ns", "size", "sha256", "exaggeration", "norm_loudness", "cache_key"}
+
+    # Temperature and other generation-time params do not affect conditioning:
+    # they must not change the cache key.
+    hot = reference_audio_fingerprint(ref, {"exaggeration": 0.4, "norm_loudness": True, "temperature": 1.3})
+    cool = reference_audio_fingerprint(ref, {"exaggeration": 0.4, "norm_loudness": True, "temperature": 0.2})
+    assert hot["cache_key"] == base["cache_key"] == cool["cache_key"]
+
+    # Actual conditioning inputs DO change the key.
+    assert reference_audio_fingerprint(ref, {"exaggeration": 0.9, "norm_loudness": True})["cache_key"] != base["cache_key"]
+    assert reference_audio_fingerprint(ref, {"exaggeration": 0.4, "norm_loudness": False})["cache_key"] != base["cache_key"]
+
+
+def test_accepted_and_batch_cache_keys_distinguish_temperature(tmp_path: Path) -> None:
+    """Same text + reference, different temperature -> different cache key,
+    so a temperature A/B can never share a cached render."""
+    ref = tmp_path / "voice.wav"
+    write_tiny_wav(ref)
+
+    def accepted_key(temperature: float | None) -> str:
+        request = SynthesisRequest(text="hello world", ref_audio=str(ref), temperature=temperature)
+        material = accepted_audio_cache_material(
+            request,
+            ref_audio_path=ref,
+            asr_max_wer=0.1,
+            asr_max_duration_ratio=1.5,
+            asr_max_candidates=2,
+        )
+        return accepted_audio_cache_key(material)
+
+    assert accepted_key(0.5) != accepted_key(0.9)
+    assert accepted_key(0.5) != accepted_key(None)
+    assert accepted_key(0.5) == accepted_key(0.5)
+
+    plan = {
+        "answer_text_sha256": "a" * 64,
+        "completion_cue_sha256": None,
+        "chunks": [{"text_sha256": "b" * 64, "delivery_stage": "positive"}],
+        "max_chars": 300,
+    }
+    delivery = {"tone": "playful_light", "requested_tone": "playful_light", "delivery_stage": "positive"}
+    default_key, default_material = cache_key_for_batch(plan, ref_audio=str(ref), voice_delivery=delivery)
+    hot_key, hot_material = cache_key_for_batch(
+        plan, ref_audio=str(ref), voice_delivery=delivery, temperature=0.95
+    )
+    cool_key, _ = cache_key_for_batch(plan, ref_audio=str(ref), voice_delivery=delivery, temperature=0.4)
+    assert hot_key != cool_key != default_key
+    assert hot_key != default_key
+    # Unset temperature keeps the legacy key byte-identical.
+    assert "temperature" not in default_material
+    assert hot_material["temperature"] == 0.95
+
+
+def test_stream_batch_explicit_tone_holds_tone_derived_stage_on_every_chunk(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Endpoint-level regression: the stream path must report the tone-derived
+    delivery stage on every chunk (plan, chunk request, applied controls) and
+    never inherit a positional DEFAULT_ARC stage like slightly_concerned."""
+    ref = tmp_path / "embry.wav"
+    write_tiny_wav(ref)
+    monkeypatch.setattr(server, "REFERENCE_AUDIO_ROOTS", [tmp_path])
+    monkeypatch.setattr(server, "OUT_DIR", tmp_path / "out")
+    monkeypatch.setattr(server, "turn_controls", {})
+    monkeypatch.setattr(server, "STREAM_MANIFEST_INDEX", {})
+    monkeypatch.setitem(
+        sys.modules,
+        "torchaudio",
+        types.SimpleNamespace(load=lambda path: (__import__("torch").zeros((1, 960)), 24000)),
+    )
+
+    captured: list[SynthesisRequest] = []
+
+    def fake_synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, object]:
+        write_tiny_wav(out_path)
+        captured.append(request)
+        return {
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "audio": str(out_path),
+            "duration_seconds": 1.0,
+            "metrics": {"duration_seconds": 1.0, "bytes": out_path.stat().st_size},
+            "pace_effect": {"applied": False},
+            "failed_gates": [],
+        }
+
+    monkeypatch.setattr(server, "synthesize_to_file", fake_synthesize_to_file)
+
+    response = TestClient(server.app).post(
+        "/synthesize-batch-stream",
+        json={
+            "answer_text": (
+                "YOU DID IT!!! The whole checklist ran end to end without a single failed gate. "
+                "Every single assertion came back green on the first honest pass."
+            ),
+            "max_chars": 80,
+            "tone": "playful_light",
+            "ref_audio": str(ref),
+            "use_blessed_qra_cache": False,
+            "include_completion_cue": False,
+            "label": "stream-explicit-tone-arc",
+        },
+    )
+
+    assert response.status_code == 200
+    assert len(response.content) > 0  # real PCM left the streaming path
+    assert [request.delivery_stage for request in captured] == ["positive", "positive"]
+    assert all(
+        request.voice_delivery["delivery_stage"] == "positive" for request in captured
+    )
+    assert not any(
+        "slightly_concerned" in str(request.voice_delivery) for request in captured
+    )
+
+    # The persisted plan receipt (plan + applied_controls) agrees with the wire.
+    receipt = json.loads(
+        (tmp_path / "out" / "stream-explicit-tone-arc" / "render_plan.json").read_text()
+    )
+    assert [chunk["delivery_stage"] for chunk in receipt["plan"]["chunks"]] == ["positive", "positive"]
+    for control in receipt["applied_controls"]:
+        assert control["normalized"]["delivery_stage"] == "positive"
+        assert control["applied"]["delivery_stage"] == "positive"
 
 
 def test_installed_emotion_tokens_are_detected_and_interpreted(monkeypatch) -> None:
