@@ -62,10 +62,13 @@ from chatterbox.agent.presets import (
     VOICE_DELIVERY_EFFECT,
     effective_delivery_stage,
     generation_params_for_stage,
+    model_tag_vocabulary,
     normalize_delivery_stage,
     normalize_tone,
     normalize_voice_token,
     pace_tempo_factor,
+    set_runtime_tag_vocabulary,
+    tag_vocabulary_classes,
 )
 
 
@@ -150,7 +153,7 @@ class SynthesisRequest(BaseModel):
     pause_strategy: str | None = Field(default=None, max_length=120)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
     backend: str | None = Field(default=None, max_length=80)
-    temperature: float | None = Field(default=None, ge=0.05, le=5.0)
+    temperature: float | None = Field(default=None, ge=0.05, le=1.5)
     top_p: float | None = Field(default=None, ge=0.0, le=1.0)
     top_k: int | None = Field(default=None, ge=1, le=5000)
     repetition_penalty: float | None = Field(default=None, ge=1.0, le=2.0)
@@ -177,6 +180,7 @@ class SynthesisBatchRequest(RenderPlanRequest):
     pause_strategy: str | None = Field(default=None, max_length=120)
     voice_delivery: dict[str, Any] = Field(default_factory=dict)
     backend: str | None = Field(default=None, max_length=80)
+    temperature: float | None = Field(default=None, ge=0.05, le=1.5)
     delivery_arc: list[dict[str, str]] | None = None
     render_chunks: list[dict[str, Any]] | None = None
     include_completion_cue: bool = True
@@ -835,6 +839,8 @@ def voice_delivery_for_request(request: SynthesisRequest | SynthesisBatchRequest
         **CHATTERBOX_TAG_HANDLING,
         "requested_tags": [str(tag) for tag in requested_tags],
         "detected_tags": detected_tags,
+        "accepted_tags": list(model_tag_vocabulary()),
+        "accepted_tag_classes": tag_vocabulary_classes(),
     }
     # Explicit affect is a direct instruction and keeps its base-model routing;
     # tone-derived calibration yields to tag realization, because a spoken
@@ -2685,6 +2691,10 @@ def load_model() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     model = ChatterboxTurboTTS.from_pretrained(device=DEVICE)
+    # Receipts must describe the tokenizer's real tag vocabulary (vocal events
+    # AND emotion-delivery tokens like [happy]), not just the static nine.
+    added_vocab = getattr(getattr(model, "tokenizer", None), "get_added_vocab", dict)()
+    set_runtime_tag_vocabulary(added_vocab)
     model_load_seconds = round(time.perf_counter() - started, 3)
 
 
@@ -3055,6 +3065,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
         pause_after_ms=request.pause_after_ms,
         completion_cue=request.completion_cue,
         arc=request.delivery_arc,
+        tone=batch_voice_delivery.get("requested_tone"),
     )
     persist_render_plan_receipt(
         batch_dir,
@@ -3103,6 +3114,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             pause_strategy=request.pause_strategy,
             voice_delivery={**batch_voice_delivery, "delivery_stage": chunk["delivery_stage"]},
             backend=request.backend,
+            temperature=request.temperature,
         )
         base_filename = f"chunk_{chunk['index']:02d}_{chunk['delivery_stage']}"
         out_path = batch_dir / f"{base_filename}.wav"
@@ -3160,6 +3172,7 @@ def synthesize_batch(request: SynthesisBatchRequest) -> dict[str, Any]:
             pause_strategy=request.pause_strategy,
             voice_delivery={**batch_voice_delivery, "delivery_stage": "closing"},
             backend=request.backend,
+            temperature=request.temperature,
         )
         if request.asr_verify and asr_api_key:
             completion_result = synthesize_asr_accepted_to_file(
@@ -3377,6 +3390,7 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
             pause_after_ms=request.pause_after_ms,
             completion_cue=request.completion_cue,
             arc=request.delivery_arc,
+            tone=stream_voice_delivery.get("requested_tone"),
         )
     persist_render_plan_receipt(
         batch_dir,
@@ -3486,6 +3500,7 @@ def synthesize_batch_stream(request: SynthesisBatchRequest) -> StreamingResponse
                 pause_strategy=request.pause_strategy,
                 voice_delivery={**stream_voice_delivery, "delivery_stage": item.get("delivery_stage")},
                 backend=request.backend,
+                temperature=request.temperature,
             )
             out_path = batch_dir / f"stream_{item['index']:02d}_{item.get('delivery_stage', 'neutral')}.wav"
             result = synthesize_to_file(chunk_request, out_path)

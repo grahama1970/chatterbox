@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 
@@ -153,6 +154,25 @@ def effective_delivery_stage(*, tone: str | None, delivery_stage: str | None) ->
     return normalize_delivery_stage(delivery_stage) or delivery_stage_for_tone(tone)
 
 
+def tone_delivery_arc(tone: str | None) -> list[dict[str, str]] | None:
+    """Flat single-stage arc for an explicit request tone; None without a tone.
+
+    The positional DEFAULT_ARC opens on slightly_concerned, which an explicit
+    celebratory tone must not inherit (a two-chunk "YOU DID IT!!!" render was
+    heard as confused/questioning on chunk 1). With an explicit tone, every
+    chunk holds that tone's mapped stage; without one, DEFAULT_ARC stands.
+    """
+    if not tone or not str(tone).strip():
+        return None
+    return [
+        {
+            "stage": delivery_stage_for_tone(str(tone)),
+            "tone": normalize_tone(str(tone)),
+            "role": "explicit_request_tone_held_across_chunks",
+        }
+    ]
+
+
 TURBO_SUPPORTED_PARAMS = {
     "temperature",
     "top_p",
@@ -230,12 +250,61 @@ CHATTERBOX_EVENT_TAGS: tuple[str, ...] = (
 TAG_CONSUMING_BACKENDS: frozenset[str] = frozenset({"chatterbox_turbo"})
 
 
-def detect_event_tags(text: str | None) -> list[str]:
-    """Native event tags present in the render text, in first-appearance order."""
+# Bracket-shaped tag tokens as installed in the Turbo tokenizer's added
+# vocabulary (e.g. "[laugh]" -> 50275, "[happy]" -> 50265).
+TAG_TOKEN_PATTERN = re.compile(r"\[[a-z][a-z ]*\]")
+
+
+# Vocabulary actually read from the loaded Turbo tokenizer at startup; falls
+# back to the nine native event tags until a model supplies the real set.
+RUNTIME_TAG_VOCABULARY: tuple[str, ...] = CHATTERBOX_EVENT_TAGS
+
+
+def extract_tag_tokens(added_vocab: Any) -> tuple[str, ...]:
+    """Bracket-shaped tag tokens from a tokenizer's added-vocabulary mapping."""
+    mapping = added_vocab if isinstance(added_vocab, dict) else {}
+    return tuple(sorted({str(token) for token in mapping if TAG_TOKEN_PATTERN.fullmatch(str(token))}))
+
+
+def set_runtime_tag_vocabulary(added_vocab: Any) -> bool:
+    """Adopt the loaded tokenizer's tag vocabulary for detection and receipts.
+
+    Keeps the template receipts (CHATTERBOX_TAG_HANDLING, VOICE_DELIVERY_EFFECT)
+    honest: accepted_tags must describe what the model actually consumes, or a
+    natively-consumed installed token like [happy] would be reported as not
+    interpreted. Returns False (and changes nothing) when no tag tokens found.
+    """
+    global RUNTIME_TAG_VOCABULARY
+    tags = extract_tag_tokens(added_vocab)
+    if not tags:
+        return False
+    RUNTIME_TAG_VOCABULARY = tags
+    CHATTERBOX_TAG_HANDLING["accepted_tags"] = list(tags)
+    VOICE_DELIVERY_EFFECT["fields"]["paralinguistic_tags"]["accepted_tags"] = list(tags)
+    return True
+
+
+def model_tag_vocabulary() -> tuple[str, ...]:
+    """Tag vocabulary read from the loaded Turbo tokenizer (event-tag fallback)."""
+    return RUNTIME_TAG_VOCABULARY
+
+
+def tag_vocabulary_classes() -> dict[str, list[str]]:
+    """Vocal-event vs emotion-delivery split of the runtime tag vocabulary."""
+    vocabulary = model_tag_vocabulary()
+    return {
+        "vocal_event": [tag for tag in vocabulary if tag in CHATTERBOX_EVENT_TAGS],
+        "emotion_delivery": [tag for tag in vocabulary if tag not in CHATTERBOX_EVENT_TAGS],
+    }
+
+
+def detect_event_tags(text: str | None, vocabulary: tuple[str, ...] | None = None) -> list[str]:
+    """Installed tag tokens present in the render text, in first-appearance order."""
     if not text:
         return []
     lowered = text.lower()
-    found = [(lowered.find(tag), tag) for tag in CHATTERBOX_EVENT_TAGS if tag in lowered]
+    known = vocabulary if vocabulary is not None else model_tag_vocabulary()
+    found = [(lowered.find(tag), tag) for tag in known if tag in lowered]
     return [tag for _, tag in sorted(found)]
 
 

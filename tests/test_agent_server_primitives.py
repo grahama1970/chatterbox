@@ -10,9 +10,14 @@ import time
 import types
 import wave
 
+import pytest
+from pydantic import ValidationError
+
+from chatterbox.agent import presets
 from chatterbox.agent.chunking import (
     build_render_plan,
     build_render_plan_from_chunks,
+    compile_render_plan,
     split_spoken_chunks,
 )
 import chatterbox.agent.server as server
@@ -515,6 +520,161 @@ def test_synthesize_batch_exposes_top_level_pace_effect(tmp_path: Path, monkeypa
     assert result["pace_effect"]["applied"] is True
     assert result["pace_effect"]["tempo_factor"] == 1.18
     assert result["pace_effect"]["duration_seconds"] == {"input": 1.18, "output": 1.0}
+
+
+def test_explicit_tone_replaces_positional_default_arc_in_batch_plan(tmp_path: Path, monkeypatch) -> None:
+    """An explicit celebratory tone must not open chunk 1 slightly_concerned."""
+    ref = tmp_path / "embry.wav"
+    write_tiny_wav(ref)
+    monkeypatch.setattr(server, "REFERENCE_AUDIO_ROOTS", [tmp_path])
+    monkeypatch.setattr(server, "OUT_DIR", tmp_path / "out")
+    captured_stages: list[str | None] = []
+
+    def fake_synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, object]:
+        write_tiny_wav(out_path)
+        captured_stages.append(request.delivery_stage)
+        return {
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "audio": str(out_path),
+            "duration_seconds": 1.0,
+            "metrics": {"duration_seconds": 1.0, "bytes": out_path.stat().st_size},
+            "pace_effect": {"applied": False},
+            "failed_gates": [],
+        }
+
+    monkeypatch.setattr(server, "synthesize_to_file", fake_synthesize_to_file)
+    monkeypatch.setattr(server, "combine_audio_segments", fake_combine_audio_segments_for_plan_tests)
+
+    batch_text = (
+        "YOU DID IT!!! The whole checklist ran end to end without a single failed gate. "
+        "Every single assertion came back green on the first honest pass."
+    )
+    result = synthesize_batch(
+        SynthesisBatchRequest(
+            answer_text=batch_text,
+            max_chars=80,
+            tone="playful_light",
+            ref_audio=str(ref),
+            use_blessed_qra_cache=False,
+            include_completion_cue=False,
+            label="batch-explicit-tone-arc",
+        )
+    )
+
+    assert result["ok"] is True
+    # Every chunk derives from the tone mapping; the positional slightly_concerned
+    # opening is gone from both the plan and the chunk synthesis requests.
+    assert [c["delivery_stage"] for c in result["render_plan"]["chunks"]] == ["positive", "positive"]
+    assert captured_stages == ["positive", "positive"]
+
+    # Without a tone, the positional DEFAULT_ARC behavior is preserved.
+    default_plan = compile_render_plan(answer_text=batch_text, max_chars=80)
+    assert [c["delivery_stage"] for c in default_plan["chunks"]] == ["slightly_concerned", "satisfied"]
+
+    # An explicit per-request arc still wins over the tone derivation.
+    explicit_plan = compile_render_plan(
+        answer_text=batch_text,
+        max_chars=80,
+        tone="playful_light",
+        arc=[{"stage": "neutral", "tone": "plain", "role": "caller_arc"}],
+    )
+    assert [c["delivery_stage"] for c in explicit_plan["chunks"]] == ["neutral", "neutral"]
+
+
+def fake_combine_audio_segments_for_plan_tests(segments, out_path, *, crossfade_ms=20):
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    write_tiny_wav(out_path)
+    return {"path": str(out_path), "exists": True, "bytes": out_path.stat().st_size, "duration_seconds": 1.0}
+
+
+def test_batch_temperature_override_reaches_chunk_generation_params(tmp_path: Path, monkeypatch) -> None:
+    ref = tmp_path / "embry.wav"
+    write_tiny_wav(ref)
+    monkeypatch.setattr(server, "REFERENCE_AUDIO_ROOTS", [tmp_path])
+    monkeypatch.setattr(server, "OUT_DIR", tmp_path / "out")
+    captured_temperatures: list[float | None] = []
+
+    def fake_synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, object]:
+        write_tiny_wav(out_path)
+        captured_temperatures.append(request.temperature)
+        return {
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "audio": str(out_path),
+            "duration_seconds": 1.0,
+            "metrics": {"duration_seconds": 1.0, "bytes": out_path.stat().st_size},
+            "generation_params": {"temperature": request.temperature},
+            "pace_effect": {"applied": False},
+            "failed_gates": [],
+        }
+
+    monkeypatch.setattr(server, "synthesize_to_file", fake_synthesize_to_file)
+    monkeypatch.setattr(server, "combine_audio_segments", fake_combine_audio_segments_for_plan_tests)
+
+    result = synthesize_batch(
+        SynthesisBatchRequest(
+            answer_text=(
+                "YOU DID IT!!! The whole checklist ran end to end without a single failed gate. "
+                "Every single assertion came back green on the first honest pass."
+            ),
+            max_chars=80,
+            temperature=0.95,
+            ref_audio=str(ref),
+            use_blessed_qra_cache=False,
+            include_completion_cue=False,
+            label="batch-temperature-override",
+        )
+    )
+
+    assert result["ok"] is True
+    assert captured_temperatures == [0.95, 0.95]
+    assert [chunk["generation_params"]["temperature"] for chunk in result["chunks"]] == [0.95, 0.95]
+
+    # Bounds are enforced on both synthesis request models.
+    with pytest.raises(ValidationError):
+        SynthesisBatchRequest(answer_text="hello", temperature=1.6)
+    with pytest.raises(ValidationError):
+        SynthesisRequest(text="hello", temperature=0.04)
+    assert SynthesisBatchRequest(answer_text="hello").temperature is None
+
+
+def test_installed_emotion_tokens_are_detected_and_interpreted(monkeypatch) -> None:
+    """[happy] is native Turbo vocabulary (added token 50265); the receipt must
+    never claim a natively-consumed installed token was not interpreted."""
+    monkeypatch.setattr(
+        presets,
+        "RUNTIME_TAG_VOCABULARY",
+        presets.CHATTERBOX_EVENT_TAGS + ("[happy]",),
+    )
+    request = SynthesisRequest(text="You did it. [happy]")
+
+    delivery = server.voice_delivery_for_request(request)
+
+    assert delivery["tag_handling"]["detected_tags"] == ["[happy]"]
+    assert "[happy]" in delivery["tag_handling"]["accepted_tags"]
+    assert delivery["tag_handling"]["accepted_tag_classes"]["emotion_delivery"] == ["[happy]"]
+    assert "[laugh]" in delivery["tag_handling"]["accepted_tag_classes"]["vocal_event"]
+
+    server.apply_tag_handling_backend(delivery, "chatterbox_turbo")
+
+    assert delivery["tag_handling"]["tags_interpreted"] is True
+    assert delivery["tag_handling"]["applied_tags"] == ["[happy]"]
+
+
+def test_set_runtime_tag_vocabulary_adopts_tokenizer_added_vocab() -> None:
+    try:
+        assert presets.set_runtime_tag_vocabulary({"[happy]": 50265, "[laugh]": 50275, "hello": 1}) is True
+        assert presets.model_tag_vocabulary() == ("[happy]", "[laugh]")
+        assert presets.CHATTERBOX_TAG_HANDLING["accepted_tags"] == ["[happy]", "[laugh]"]
+        # No tag-shaped tokens -> nothing changes.
+        assert presets.set_runtime_tag_vocabulary({"plain": 1}) is False
+        assert presets.model_tag_vocabulary() == ("[happy]", "[laugh]")
+    finally:
+        presets.set_runtime_tag_vocabulary({tag: index for index, tag in enumerate(presets.CHATTERBOX_EVENT_TAGS)})
+        assert set(presets.model_tag_vocabulary()) == set(presets.CHATTERBOX_EVENT_TAGS)
 
 
 def test_tau_voice_render_request_maps_to_batch_request() -> None:

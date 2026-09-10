@@ -7,6 +7,8 @@ import json
 import re
 from typing import Any
 
+from .presets import delivery_stage_for_tone, tone_delivery_arc
+
 RENDER_PLAN_SCHEMA = "chatterbox.render_plan.v1"
 
 DEFAULT_ARC = [
@@ -132,14 +134,16 @@ def build_render_plan(
     pause_after_ms: int = 250,
     completion_cue: str | None = None,
     arc: list[dict[str, str]] | None = None,
+    tone: str | None = None,
 ) -> dict[str, Any]:
     requested_max_chars = max_chars
     effective_max_chars = min(max_chars, 300)
     chunks = split_spoken_chunks(answer_text, max_chars=effective_max_chars)
     planned_chunks = []
     total = len(chunks)
+    stages = arc or tone_delivery_arc(tone)
     for index, text in enumerate(chunks, start=1):
-        stage = stage_for_chunk(index, total, arc=arc)
+        stage = stage_for_chunk(index, total, arc=stages)
         planned_chunks.append(
             {
                 "index": index,
@@ -241,11 +245,14 @@ def compile_render_plan(
     pause_after_ms: int = 250,
     completion_cue: str | None = None,
     arc: list[dict[str, str]] | None = None,
+    tone: str | None = None,
 ) -> dict[str, Any]:
     """Single side-effect-free plan compiler shared by every render entry point.
 
     Caller-supplied `render_chunks` win over `answer_text` splitting; the
     returned plan always carries the versioned schema and a stable digest.
+    An explicit `tone` with no explicit `arc` replaces the positional DEFAULT_ARC
+    with the tone's mapped stage on every chunk (see tone_delivery_arc).
     """
     if render_chunks:
         plan = build_render_plan_from_chunks(
@@ -253,6 +260,7 @@ def compile_render_plan(
             max_chars=max_chars,
             fallback_pause_after_ms=pause_after_ms,
             completion_cue=completion_cue,
+            tone=tone,
         )
     else:
         plan = build_render_plan(
@@ -261,6 +269,7 @@ def compile_render_plan(
             pause_after_ms=pause_after_ms,
             completion_cue=completion_cue,
             arc=arc,
+            tone=tone,
         )
     plan["plan_schema"] = RENDER_PLAN_SCHEMA
     plan["render_plan_digest"] = render_plan_digest(plan)
@@ -273,6 +282,7 @@ def build_render_plan_from_chunks(
     max_chars: int = 300,
     fallback_pause_after_ms: int = 250,
     completion_cue: str | None = None,
+    tone: str | None = None,
 ) -> dict[str, Any]:
     """Build a render plan from caller-owned chunk boundaries."""
     requested_max_chars = max_chars
@@ -285,7 +295,14 @@ def build_render_plan_from_chunks(
         if not text:
             continue
         answer_text_parts.append(text)
-        stage = str(chunk.get("delivery_stage") or stage_for_chunk(index, total)["stage"])
+        chunk_tone = chunk.get("tone") or tone
+        stage = (
+            str(chunk["delivery_stage"])
+            if chunk.get("delivery_stage")
+            else delivery_stage_for_tone(str(chunk_tone))
+            if chunk_tone
+            else stage_for_chunk(index, total)["stage"]
+        )
         pause_after_ms = chunk.get("pause_after_ms")
         if pause_after_ms is None:
             pause_after_ms = fallback_pause_after_ms if index < total else 0
