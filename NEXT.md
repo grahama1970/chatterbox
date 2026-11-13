@@ -6416,3 +6416,30 @@ t
      audit is what found the second half and the interrupt_sfx sibling.
      Verification: before/after on one mixed clip per file; 29/29 harness; 74/74 frozen 0 failures; run.sh rc=0; sanity
      rc=0; packet 11/11 zero drift; doc live == origin; board PASS.
+156. [x] verdict-watch credited surf's PASS-22 submission to pass 31 - attribution now requires the packet's FULL binding set.
+     HOW IT SURFACED: after closing item 155 with no open item left, I checked whether any verdict was ready instead of
+     assuming. `verdict-watch --require-ready` reported "SUBMITTED_NO_RESPONSE cb-A7-pass31.txt dir=surf-cb-A22" - but I
+     never delegated pass 31. Opening that directory: packet.md is 117,533 B sha f48aaff1d6dc, timestamped 21:57, size
+     and prompt ("Packet A pass 22") identify it as surf's PASS 22 submission, while pass 31 is 226,716 B sha
+     f7b355a90936 and was built at 22:24 - AFTER the directory existed. A packet cannot be reviewed before it exists.
+     THE DEFECT: candidates were chosen by `hits >= min(2, len(hashes))`. A new revision normally reuses most artifacts,
+     so TWO shared hashes were enough to bind an older submission to a newer packet. Measured: A22's transport surface
+     carries 4 of pass 31's 11 bound hashes - well past a bar of 2. The same rule would have credited the void B4 pass-4
+     directory to pass 5 (its surface carries 5 hashes with 1 of pass 5's missing).
+     THE COST THIS WOULD HAVE HAD: a pass-22 FAIL verdict read as pass 31's, applied "first-class" to bytes it never
+     described - the exact stale-verdict failure this whole pipeline exists to prevent, arriving through the watcher.
+     FIX in outputs/verdict-watch.py: a directory belongs to a packet only when EVERY hash the packet binds appears in
+     that directory's transport surface (`hashes <= carried`); anything less is a different revision.
+     PROVEN BOTH WAYS with a self-test against a synthetic surf root (a matcher that never matches would be as useless as
+     one that matches anything):
+       - genuine submission (packet.md == the packet)            -> attributed surf-cb-GOOD, SUBMITTED_NO_RESPONSE
+       - a real EARLIER packet (pass 19, 101,790 B) alone        -> attributed None, NO_SUBMISSION_FOUND
+       - both directories present                               -> attributed surf-cb-GOOD (newest match was not enough)
+     FIRST SELF-TEST WAS INVALID and is recorded rather than quietly replaced: I built the "stale" copy by zeroing ONE
+     occurrence of one bound hash, but every bound hash appears several times in its packet (binding table plus the
+     per-file headers), so the subset still held and the stale directory matched. The test only became discriminating
+     when the stale candidate was a genuinely different packet. A control can pass for the wrong reason.
+     LIVE AFTER: all three awaited packets report NO_SUBMISSION_FOUND - which is the TRUTH, not a regression: pass 31 has
+     not been submitted yet, pass 19 was never submitted, and B4 pass 5's only directory is the void pass-4 one.
+     Verification: live states before/after on the real surf root; the three-case self-test above; the misattributing
+     directory's size, sha and timestamp compared against pass 31's.
