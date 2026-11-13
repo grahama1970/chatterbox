@@ -6755,3 +6755,62 @@ t
      those two clone candidates is the remaining gap.
      Verification: 77 repos enumerated; 310 rows collected; narrator-vocabulary match count 0; chatterbox public audio paths
      listed; the two clone candidates confirmed present by `gh api .../contents`.
+
+170. [x] A31 came back FAIL on 9 of 11 files - applied FIRST-CLASS, with the transport defect documented rather than papered over.
+     THE VERDICT: surf relayed PACKET VERDICT FAIL, response /tmp/surf-cb-A31/response.md sha256
+     ddb70e3bb81239f505f1f3ddbe7b91bafa426a7a54837bc73da2e04e6092e136 (preserved at
+     outputs/reviews/a7-pass31-FAIL-20261113.md, same hash). Per-file, verbatim: fs_ops, spyke_render, interrupt_sfx,
+     test_a7_pass10_repairs, wav_guard, sfx_verify, test_wg_pass2_repairs, test_sfx_library_regression and
+     test_render_tag_evidence FAIL; test_record_packet and tests/run.sh PASS. The reviewer verified the sha of ALL 11
+     embedded artifacts, so each per-file verdict is bound to bytes that are still current.
+     TRANSPORT DEFECT, independently confirmed by me: the runner appended ONE newline to the attachment - requested
+     226,716 B f7b355a9, attached 226,717 B b589642e, and `attached == requested + newline` is True. The reviewer therefore
+     refused whole-packet identity and said so; that refusal is CORRECT and is not a verdict on identity. Consequence
+     recorded: the packet-level claim for A31 is UNVERIFIED while the file-level claims are valid. Surf is fixing the
+     attachment assembly; no source bytes were rewritten.
+     RECORDING IT EXPOSED TWO TOOL DEFECTS, both fixed rather than worked around:
+       1. verdict-intake.py was all-or-nothing per PLAN GROUP. A7's group spans retired packets (10 paths, including
+          tests/test_prove8.py which pass 31 never bound), so a fully hash-bound verdict on the packet's 4 files could not
+          be applied at all. Added `--packet`: the required set is exactly what the reviewer saw, and all-or-nothing then
+          applies per packet+group. That is stricter where it matters (every bound file needs a current hash-bound
+          verdict) and stops demanding verdicts for files no packet carried.
+       2. intake recorded the RESPONSE PATH as `review_packet`. That broke packet-group-coverage-v6 ("packet not
+          delegated" for run.sh and test_record_packet.py) and verdict-unblock-matrix-check (MATRIX_DRIFT, 173 field
+          differences). Now `review_packet` is the packet and `review_response` is the verdict artifact; the matrix was
+          re-synced from the manifest projection.
+     RESULTS: A7 -> 0 PASS / 4 FAIL applied; GUARDS-WAVGUARD -> 2 PASS / 5 FAIL applied; manifest rows carry
+     review_state FAILED and landable_now false for every failing file (a FAIL is a first-class state, not a note).
+     Board back to `sweep: PASS (15 guards)` - the guards caught my own inconsistency within the same turn, which is
+     exactly what they exist for.
+     Verification: response hash matches surf's; attachment = packet + one newline by byte compare; 9 FAIL / 2 PASS rows in
+     the manifest with reviewed_sha256 set; coverage and matrix guards green; sweep PASS (15 guards).
+
+171. [ ] Repair the nine A31 FAIL files to the reviewer's findings, in this order, each reproduced BEFORE the fix.
+     THE FINDINGS, by the reviewer's own labels (response lines cited so the wording is checked, not trusted):
+       - WG-06 remains PARTIAL: "selected mono passed with original channels=2" - the stereo path can still pass a fixture
+         the mono path refuses.
+       - WG-07 remains PARTIAL: 3200 zeros + 640 amplitude-8000 1kHz sine samples + [8000,-8000] yields an ACTUAL active
+         tail of 40.125 ms while the gate reports a 60 ms run. The partial final window (2 samples) is being counted as a
+         full 20 ms window, so active_run_s overstates duration. Fix by summing REAL window durations, never
+         windows x constant.
+       - A31-FS-01 (major, line 73): replacement verification can BLOCK on a substituted FIFO.
+       - A31-SP-01 (major, line 83): overwrite recovery tracks the wrong inode.
+       - A31-FS-02 (major, line 98): replacement cleanup deletes FOREIGN names.
+       - WG-12 (major, line 108): the generator still rejects a clean channel because its sibling clips.
+       - WG-13 (major, line 126): consumers still select a loud sparse channel over a valid sustained channel - the
+         sfx_verify/interrupt_sfx fixes filtered CLIPPED siblings but still rank by AC RMS, so a loud sparse channel wins.
+         Selection must be "a channel that PASSES", as in wav_guard.
+       - A31-TAG-01 (major, line 148): empty tag evidence permits a successful tagged render.
+       - A31-PROOF-01..05 (major): the mutation controls are themselves weak - SP-28's alleged mutation never executes
+         (line 162); SV-26's baseline and mutant receive different fault conditions (182); the WG regression assertions do
+         not protect the claimed consumer behaviour (198); tag tests miss loss at the real forwarding boundary (208); the
+         library regression does not detect a verdict flip (224). Each needs the mutant to execute the mutated PRODUCTION
+         path and the assertion to observe the EFFECT the finding describes.
+     CONFIRMED FIXED by this review and NOT to be re-litigated: SP-30, IS-28 (detection/refusal only, not prevention),
+     WG-09's shared helper, WG-10, WG-11.
+     ORDER: structural FS/SP defects first (they can destroy or mis-track files), then the two measurement defects
+     (WG-07 run duration, WG-06 mono/stereo parity), then the two selection defects (WG-12/13), then A31-TAG-01, then the
+     five proof controls last so each repair arrives with a mutant that actually runs.
+     DO NOT: submit another packet until every bound file is fixed and its control executes; claim a PARTIAL closed
+     without the reviewer's exact fixture; weaken a gate to make the board green.
+     OWNER: this session; surf for the next submission once a packet exists beyond the repaired bytes.
