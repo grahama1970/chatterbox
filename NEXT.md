@@ -7231,7 +7231,7 @@ t
      with `verdict-intake.py` and open the repair item from its findings. No resubmission.
      OWNER: surf (extraction); this session (verify + intake + repairs).
 
-182. [~] 30-min GPU window granted to the researcher's S3 audio-token adapter experiment; the Chatterbox
+182. [x] 30-min GPU window granted to the researcher's S3 audio-token adapter experiment; the Chatterbox
      service is STOPPED for it and MUST be restored.
        - Request: 30-min window, one bounded adapter run + evaluation, coordinate :8018 stop.
        - Measured before: RTX A5000 24,564 MiB total, 19,033 used, ~5,006 free; service
@@ -7245,5 +7245,15 @@ t
        - RESTORE (owned by this session): `docker start embry-voice-chatterbox-1`, then verify
          `/health` returns `ok:true, live:true` and `:8018` is listening again. Close this item only after
          that read-back.
-     OWNER: this session (restore + verification); researcher (the bounded run).
+       - WINDOW CLOSED EARLY by the researcher: "GPU RELEASED: hearty-label-training finished
+         successfully ... Restore :8018 now ... No more GPU work planned." One 500-update run,
+         baseline/trained outputs captured; CPU scoring next.
+       - RESTORE read-back (not the start command): `docker start embry-voice-chatterbox-1` ->
+         container `Up (healthy)`; `:8018` listening; `/health` returns `ok=True live=True
+         mocked=False engine=chatterbox_turbo device=cuda model_loaded=True`. GPU after restore:
+         14,477 MiB used / 9,644 free (model reloaded), i.e. back to its pre-window regime.
+       - The hard-stop scheduler job `BtAN4-4u4b` was REMOVED after the verified restore (window ended
+         early; no stale job left behind).
+     OWNER: this session (closed with the read-back); researcher (run finished, artifacts in
+     /tmp/hearty-laugh-proof/train/).
 
