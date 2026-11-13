@@ -7239,7 +7239,9 @@ t
        - Action: `docker stop embry-voice-chatterbox-1` at 2026-11-13T13:34:10Z; `:8018` verified closed;
          free VRAM after = 12,587 MiB.
        - Bound: hard end 14:04:10Z. Researcher told not to restart the service and to report start/finish,
-         peak VRAM and proof paths. A one-shot schedule was set to fire at the hard end.
+         peak VRAM and proof paths. A one-shot schedule was set to fire at the hard end
+         (scheduler job `BtAN4-4u4b`, scheduled 2026-11-13T14:04:36Z) — verified created by the
+         scheduler's own receipt.
        - RESTORE (owned by this session): `docker start embry-voice-chatterbox-1`, then verify
          `/health` returns `ok:true, live:true` and `:8018` is listening again. Close this item only after
          that read-back.
