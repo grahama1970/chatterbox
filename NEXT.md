@@ -7702,5 +7702,19 @@ t
      destination (quoted packet sha 416e15d1…, 11 per-file VERDICT lines, PACKET VERDICT), then
      intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
      Packet: `/tmp/cb-A7-pass36.txt` 288,999 B `416e15d131eca39d…`, `ALL_FROZEN` (receipt `0d7734d3…`).
+     WRAPPER REFUSAL, DELIVERY EVIDENCED BY THE DESTINATION (2026-11-13T20:42Z):
+       - Refusal verbatim, preserved: "ChatGPT submit is unproven: activity appeared but no user turn
+         equals the intended prompt; do not treat this round as delivered". Wrapper artifacts:
+         `response.md.receipt.json` sha `f57d8d5af5da4762…` (status prepared_prompt,
+         submitted_to_chatgpt False), `/tmp/surf-A36-submit.log` sha `b4b6f5c30fd5a354…`, heartbeat
+         20:42:01Z phase=failed page_state=submit_failed, extract fallbacks 3 exhausted.
+       - Destination read-back from surf (read-only): the current USER turn contains
+         cb-A7-pass36.txt with the exact requested hash `416e15d131eca39d…` and sentinel
+         `WEBGPT_DONE:20261113T204103Z:fcf6c9a3`; the reviewer is reading/verifying and running
+         commands. URL https://chatgpt.com/c/6af6a869-9040-83ea-8ad1-3e3b787aaf42, tab 837460277.
+         NO final verdict yet.
+       - Decision: NO retry (a second submission would duplicate the packet in the same conversation).
+         Delivery is established by the destination, exactly as for A34b; the VERDICT is not received
+         and this item stays awaiting surf's extraction.
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
