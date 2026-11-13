@@ -6728,3 +6728,30 @@ t
      references licensed. The rights question is unchanged and remains the reason nothing here is committed.
      Verification: check-ignore for both file types (IGNORED); addable count 115 files present / 0 addable; dry-run add
      refuses; origin blob equality; 115 files still on disk.
+
+169. [x] Account-wide public-repo audio audit: 310 audio files across 10 of 77 public repos, and ZERO narrator/audiobook references committed.
+     WHY ACCOUNT-WIDE: item 168 closed ONE publication path for the no-rights narrator set (58 provenance sidecars addable from
+     the public chatterbox repo). The standing rule is that an exposure task starts with an account-wide audit, not with the
+     single case that prompted it - the 2026-09-23 secrets incident happened because the agent hunted one value while other
+     repos held live exposures.
+     METHOD: `gh repo list grahama1970 --limit 300 --json name,visibility` -> 77 PUBLIC repos; for each, listed the committed
+     tree (`gh api repos/<r>/git/trees/HEAD?recursive=1`) and filtered audio extensions (wav/mp3/m4a/flac/ogg/opus/aac).
+     Read-only; nothing cloned, nothing modified.
+     RESULT - 310 files in 10 repos: aider-daemon 111 (1.8 MB), opencode 90 (0.5 MB), ghostex-linux 33 (0.4 MB),
+     agent-stack-public 23 (5.3 MB), chatterbox 20 (12.1 MB), RealtimeSTT 19 (4.4 MB), bifrost 7 (1.3 MB), YuE-Interface 4
+     (4.6 MB), chutes 2 (0.3 MB), PocketFlow 1 (0.1 MB). Largest: YuE `assets/logo/yue.mp3` 3.3 MB; chatterbox e2e probe
+     WAVs 2.3 / 1.3 / 1.2 MB; agent-stack-public's two `voice_clone_candidates` 0.9 MB each; a battle score `.ogg` 0.6 MB.
+     THE DECISIVE NEGATIVE: matching the narrator/source vocabulary (Longworth, Osmanski, Tchaikovsky, Wincott, McCabe,
+     all-star, horus_rising, narrator) against every committed audio path returns **0 matches**. The 115-file narrator
+     reference set exists only locally in chatterbox (now ignored) and in the off-git backup - it was never published.
+     chatterbox's own 20 public audio files are `docs/listening_study/stimuli` and `logs/e2e-all-features-20260717/*` - test
+     and evidence recordings, not source material.
+     ONE ITEM LEFT FOR THE OWNER, not for me to assume: `agent-stack-public/skills/persona-dream/voice_clone_candidates/
+     embry_kling_clone_candidate.wav` and `horus_kling_clone_candidate.wav` are committed voice-clone samples in a public
+     repo. Whether their provenance is clean is an owner rights call, not something path inspection can settle; flagged, not
+     changed, and NOT deleted (deleting a public artifact is a destructive, owner-level action).
+     SCOPE, stated plainly: this is a METADATA audit - paths, names and sizes. It cannot prove absence for an audio file that
+     was renamed away from its source vocabulary, and no audio content was listened to. A content-level rights review of
+     those two clone candidates is the remaining gap.
+     Verification: 77 repos enumerated; 310 rows collected; narrator-vocabulary match count 0; chatterbox public audio paths
+     listed; the two clone candidates confirmed present by `gh api .../contents`.
