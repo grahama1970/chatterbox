@@ -6156,18 +6156,50 @@ t
      Verification: control onset 0.07 s, pre-onset RMS 1.6-2.7% of speech; chuckle longest internal gap 0.33 s -> 0.54 s;
      durations 2.66 / 3.06 / 3.06 / 3.30 s from the four requested renders (seq 20-23).
 
-147. [ ] If a tag renders as silence on /render, decide what the product should claim - and correct the doc, not the belief.
-     WHAT IS NOW MEASURED: an approved singular tag on /render lengthens the clip (median 2.56 -> 2.88 s, exact p=0.0043)
-     and leaves `tone_effective` at neutral_warm in 12/12 runs; the added time is silence before onset (1.6-2.7% of speech
-     RMS) plus a longer internal gap, not an audible sigh/gasp/chuckle. ASR hears no tag word, so it is neither spoken nor
-     rendered as an event on this path.
-     WHY THIS IS A DECISION ITEM, NOT A BUG REPORT: emotion delivery may be intended to come from the compiled plan plus
-     confirmed SFX clips (the interrupt_sfx splice path), with tags only pacing. If so, the SKILL/doc text must say that
-     plainly, because "tags steer delivery" is now measurably false for /render and a reader will infer emotion from a
-     tag that only inserts silence. If instead tags were SUPPOSED to render events here, this is a defect against the
-     service, not a doc fix.
-     DO, in order: (1) read what the docs and DESIGN actually claim about tags on the render path; (2) check whether any
-     OTHER path applies them (compiled plan / speak.py) so the claim can be narrowed to the path that works; (3) then
-     either correct the wording or file the defect - with this item's numbers as the evidence.
-     OWNER: this session (code/doc facts); Graham (whether pacing-only tags are acceptable product behaviour).
+147. [x] The doc now says what is MEASURED about tags on /render, and the two code facts behind it are pinned.
+     CODE FACTS, read from the paths rather than inferred from the skill text:
+     - `/render` forwards `req.text` VERBATIM into `render_turn`, which posts `{"text": text, ...}` to the engine's
+       `/synthesize` (render_service.py:169-170, spyke_render.py:519-525). It does not strip or rewrite tags.
+     - `/render`'s OWN receipt has 24 keys and contains NEITHER `tag_handling` NOR `affect_effect` (verified on the
+       item-144 call, not on a fresh assumption).
+     - The ENGINE's `/synthesize` response DOES carry them: `tag_handling.tags_interpreted: true`,
+       `applied_tags: ["[sigh]"]`, `tags_interpreted_reason: backend_chatterbox_turbo_consumes_event_tags_natively`,
+       `unknown_tag_behavior: synthesized_as_literal_text`; `affect_effect.applied: false` with reason
+       "affect_knobs_not_applied__render_kept_on_tag_consuming_backend_for_inline_event_tags"; `pace_effect.applied:
+       false`, `reason: no_pace_requested`, input==output 2.96 s.
+     - The fields the doc used to promise are populated on the CLI path only: speak.py:787 reads
+       `service_json["tag_handling"].tags_interpreted`, speak_core.py:957 copies `tag_handling` into the receipt.
+     SO THE OLD WORDING WAS HALF-TRUE AND THEREFORE MISLEADING: "the receipt's tag_handling / affect_effect fields record
+     which side of that tradeoff you got" is true for the CLI receipt and FALSE for /render's, where the engine's own tag
+     evidence is silently dropped.
+     DOC CORRECTED (SKILL.md, landed 632c94f3c0774a15eb5e9be047143674e2e84092; origin blob sha256
+     95bb0d32cad72105b344bece0c4784ffda2dcd0c0f6f5bd16678d3e8198ea5c3 == local): it now states the engine's
+     tags_interpreted/applied_tags facts, scopes the receipt fields to the CLI path, and adds a measured paragraph: a
+     leading singular tag adds ~0.3 s (median 2.56 -> 2.88 s, 6 renders/arm, exact p=0.0043), tone stays neutral_warm
+     12/12, the added time is near-silence before onset (1.6-2.7 % of speech RMS) plus a longer internal gap, ASR hears no
+     tag word, and `/render`'s receipt cannot show the engine's tag evidence. Conclusion stated plainly: a tag on this path
+     is PACING, never delivered emotion; audible delivery comes from owner-confirmed SFX spliced at sentence boundaries.
+     THIS IS A DOC FIX, NOT A BELIEF FIX: nothing was relaxed, no claim was invented to cover the gap, and the gap itself
+     is opened as its own item below rather than buried in prose.
+     Verification: 24-key /render receipt with no tag fields; engine response with tags_interpreted true; old wording quoted
+     from SKILL.md:230-234 before the edit; landed commit 632c94f3 and origin blob == local (95bb0d32).
+
+148. [ ] /render silently drops the engine's tag evidence, and pacing-only tags need an owner answer.
+     WHY IT IS A REAL GAP: the engine reports `tag_handling.tags_interpreted: true` with the tag in `applied_tags`, plus
+     `affect_effect` and `pace_effect` - and `/render` throws all of it away, so a caller reading the /render receipt
+     cannot tell whether a tag was consumed, ignored, or spoken literally. That is exactly the "cannot see the evidence"
+     failure this project keeps removing elsewhere; the fix is to forward those engine fields into the /render receipt
+     rather than to keep documenting their absence.
+     TWO PARTS:
+     1. CODE (needs a reviewer receipt - a .py change): add `tag_handling`, `affect_effect` and `pace_effect` to the
+        /render receipt, copied verbatim from the validated engine response (no recomputation, no defaults that could
+        imply a tag was applied when it was not). Add a control: a tag render must show tags_interpreted=true and list the
+        tag; a no-tag render must show it absent; and a render whose engine response lacks the fields must fail closed
+        rather than emit an empty object.
+     2. OWNER DECISION, Graham: is PACING-ONLY acceptable product behaviour for inline tags? The measurement says a tag
+        currently buys time, not emotion. If that is the intended design, the doc now says so and this closes. If tags
+        were supposed to sound like events on /render, then the service, not the doc, is the defect - and that is a
+        different repair with a different gate.
+     Do NOT implement part 1 by changing the engine or by fabricating fields; the engine already sends them.
+     OWNER: this session (code + control); Graham (acceptability).
 
