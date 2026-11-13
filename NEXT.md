@@ -7202,29 +7202,31 @@ t
        - Submitted via surf: ACK A34 confirmed the exact 278,355 B / `945f9f20…` attachment with the
          packet's own review prompt, one attempt only. The verdict is tracked in 181.
 
-181. [~] The pass-34 verdict. Submission attempt 1 is REFUSED at the transport; NO verdict exists.
-     The awaited event arrived and was intaked FIRST-CLASS (it is a refusal, not a review result).
-       - Refusal, verbatim: "Error: ChatGPT prompt composer is not empty before submit; clear the draft
-         or use a fresh reviewer tab".
-       - Receipt read-back (not surf's prose): `status=prepared_prompt`,
-         `submitted_to_chatgpt=False`, proof_status `not_submitted`,
-         final_transport_state `delivery_unknown`, diagnosis `composer_not_empty`,
-         extract fallback `submit_failed` after 3 attempts, controlled tab 837460235.
-       - NO response file, NO received-byte proof, NO 11 VERDICT lines, NO PACKET VERDICT. The packet was
-         NOT reviewed; the A33 verdict remains the last real verdict.
-       - Packet identity is UNCHANGED and re-verified locally this turn:
-         `/tmp/cb-A7-pass34.txt` 278,355 B sha256
-         `945f9f2066da31311a693a77dd67544e1fea147b25b751206999226d357441dd`. The freeze and the per-group
-         records still describe exactly these bytes; no rebuild is needed for a transport retry.
-       - Evidence preserved with hashes: `outputs/reviews/a34-refused-20261113/`
-         (transport summary 2,231 B `8f4b1ceae796cb24…`, receipt 741 B `0547105bb4b87b0a…`,
-         submit log 531 B `ad7fe13e71051868…`, plus `intake.json` binding the packet identity).
-       - Why this is NOT a resubmission: surf's own applied action is "clear the composer/stopped
-         generation state, or use a fresh foreground reviewer/project tab before retrying". The failed
-         attempt left no draft sentinel; the repair is the composer clear, which surf owns.
-     NEXT ACTION (owned by surf): clear the ChatGPT composer / stopped-generation state, confirm the
-     composer is empty, then submit the SAME frozen packet as a NEW attempt with the same prompt. Report
-     the same way: response path, size, sha256, conversation URL, sentinel, or the exact refusal.
-     When a verdict arrives: verify it quotes packet sha `945f9f2066da…` and gives 11 per-file VERDICT
-     lines, then apply it per group with `verdict-intake.py` and open the repair item from its findings.
-     OWNER: surf (transport repair + submission); this session (intake, then repairs).
+181. [~] The pass-34 verdict. DELIVERY IS ESTABLISHED BY THE DESTINATION; the verdict is still being
+     written (no response file yet). Attempt 1 (A34) was refused before any send; attempt 2 (A34b) sent
+     and was acknowledged BY THE REVIEWER.
+       - A34 (attempt 1): transport refusal "ChatGPT prompt composer is not empty before submit; clear
+         the draft or use a fresh reviewer tab"; `submitted_to_chatgpt=False`. Preserved at
+         `outputs/reviews/a34-refused-20261113/` (packet unchanged, not resent by me).
+       - A34b (attempt 2): composer repair verified by surf (stale B6 sentinel 34b8e30b cleared; two
+         readiness readbacks `empty=true`, `stop=false`). Wrapper then returned its own refusal:
+         "Error: ChatGPT submit is unproven: activity appeared but no user turn equals the intended
+         prompt; do not treat this round as delivered". The RECEIPT still reads `status=prepared_prompt`,
+         `submitted_to_chatgpt=False`, and `response.md` does not exist.
+       - DELIVERY EVIDENCE COMES FROM THE DESTINATION, not the wrapper: the live reviewer independently
+         read back "The packet is 278,355 bytes, with SHA256
+         945f9f2066da31311a693a77dd67544e1fea147b25b751206999226d357441dd. All 11 embedded sources
+         match their declared hashes." Conversation
+         https://chatgpt.com/c/6af6a869-9040-83ea-8ad1-3e3b787aaf42, sentinel
+         `WEBGPT_DONE:20261113T060422Z:4847372a`. The review is RUNNING.
+       - This is the SAME standard used for A33: a wrapper that cannot prove the user turn does not
+         erase a destination that reports the packet's exact byte count and all 11 declared hashes.
+       - Preserved with hashes at `outputs/reviews/a34b-delivery-20261113/` (receipt 745 B
+         `24050fc96486f9e3…`, transport summary 2,323 B `4a0949128c545ab4…`, submitted.md 568 B
+         `1d5dda016dbb12b6…`, meta 3,598 B `461a75683e17069a…`, submit log 552 B `99dd8f92ca60bebd…`,
+         plus `intake.json` binding packet identity + the refusal + the destination readback).
+       - Packet identity unchanged and re-verified: 278,355 B, sha256 `945f9f20…`. No rebuild needed.
+     NEXT ACTION (owned by surf): extract the response when the review completes. On arrival I verify it
+     quotes `945f9f2066da…` and gives 11 per-file VERDICT lines + PACKET VERDICT, then apply per group
+     with `verdict-intake.py` and open the repair item from its findings. No resubmission.
+     OWNER: surf (extraction); this session (verify + intake + repairs).
