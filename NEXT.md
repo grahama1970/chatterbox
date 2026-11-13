@@ -6015,3 +6015,23 @@ t
      Verification: next-md-check.py rc=1 on the damaged file with the three real problems named; rc=0 after restoration;
      board-sweep.sh -> PASS (12 guards); queue parses with no duplicates and no missing numbers.
 
+141. [x] NEXT.md itself was UNTRACKED - 6,017 lines and 140 evidence-bearing items living only on this disk. Now landed.
+     HOW IT SURFACED: checking whether the queue was committed in the chatterbox repo, `git ls-files --error-unmatch
+     NEXT.md` failed. `git check-ignore` said it was not ignored - it had simply never been added, which is the exact
+     shape of the earlier `sparta_metrics.py` loss: an untracked file that a cleanup sweep can remove while every check
+     still reports healthy.
+     LANDED f45a6636fde4fccb21ebc168ce35e5c0156c4d42 on origin/main via gh-land with the single explicit path NEXT.md
+     (not a repo-wide add; the working tree also carries unrelated dirt - docs/proofs/tone_calibration_matrix.json,
+     .pi/, .tmp-tagfx/, voices/ - which was left alone).
+     VERIFIED BY READ-BACK, not by the tool's own success line:
+       `git show origin/main:NEXT.md | sha256sum` -> 0dab86f0680db175578ee61a8b2e075098ce4d2885d5db2c521223c7fb3dfb16
+       local NEXT.md                           -> 0dab86f0680db175578ee61a8b2e075098ce4d2885d5db2c521223c7fb3dfb16
+       `git show --stat f45a6636` -> NEXT.md | 6017 +++ ; 1 file changed, 6017 insertions(+)
+     The local branch now reads "behind 1" because gh-land lands by plumbing; that divergence is expected steady state,
+     not a blocker, and the content is proven identical above.
+     WHY IT MATTERS BEYOND BOOKKEEPING: every verdict, every withdrawn packet hash, and every reason a packet is dead
+     lived only in this file. Losing it would have left the three live packets (pass 27 / pass 19 / B4 pass 5)
+     indistinguishable from the eleven withdrawn ones.
+     Verification: origin blob hash == local hash (0dab86f0); commit f45a6636 exists on origin/main with one file and
+     6017 insertions.
+
