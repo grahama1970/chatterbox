@@ -6675,7 +6675,7 @@ t
      Verification: git status before/after; diff -rq rc=0; 115/115 and equal byte totals; equal aggregate WAV hash;
      `gh repo view` visibility PUBLIC; `git ls-tree origin/main NEXT.md` present.
 
-167. [~] The modified tone-calibration proof is IDENTIFIED and preserved - but it cannot be verified until the engine is back.
+167. [x] The modified tone-calibration proof is IDENTIFIED and preserved - but it cannot be verified until the engine is back.
      WHAT WAS DIRTY: `docs/proofs/tone_calibration_matrix.json` (808 insertions, 216 deletions) sitting modified in a PUBLIC
      repo with no recorded provenance for the regeneration. Item 166 left it alone rather than land a changed measurement
      blind; this item resolves what it actually is.
@@ -6704,6 +6704,28 @@ t
      key-set comparison showed zero removals; parked copy hash identical; `DEFAULT_BASE_URL` read from the script, not
      assumed.
 
+
+     RESULT - the modified matrix is a LEGITIMATE PRODUCER OUTPUT, verified by regenerating it:
+       - The producer was first BLOCKED by a stale path assumption, not by audio: it mapped the
+         engine's container path via `/out/` while the rebuilt container writes
+         `/var/lib/embry-artifacts/…`, so it raised "rendered wav missing on host". That is a
+         consumer/producer mapping defect, and it is why this verification could never have
+         succeeded before a restart. Fixed with an explicit, env-overridable mapping
+         (`CHATTERBOX_ARTIFACT_HOST_ROOT`, default `/mnt/storage12tb/embry-voice/artifacts`) that
+         still honours the old `/out/` shape.
+       - Regeneration against the live engine: rc=0, `RESULT: PASS (tone_matrix)`,
+         /tmp/tone-matrix-regen.json 21,792 B. The run wrote ONLY to /tmp, so the repo file was never
+         clobbered (`docs/proofs/tone_calibration_matrix.json` is still 65c962a0…, byte-identical to
+         the parked copy).
+       - STRUCTURAL comparison of regenerated vs the dirty working file: 386 keys in both, ZERO keys
+         unique to either side, the `noise_floor` key set identical (19 keys), `pass` true in both,
+         and 15 classification entries in both. Values differ run to run because rendering is not
+         deterministic; the SHAPE is exactly what the producer emits. The additive
+         `noise_floor.spread.*` fields are therefore the producer's own output, not an unexplained
+         edit - which was the whole question.
+     NOT LANDED, deliberately: the producer mapping fix is a `.py` change (needs a cross-provider
+     reviewer receipt), and the regenerated matrix is a fresh run whose numbers should land WITH that
+     fix rather than ahead of it. Both are queued below.
 168. [x] Closed the last publication path for the no-rights narrator references: 58 provenance sidecars were addable from a PUBLIC repo.
      THE HAZARD, MEASURED BEFORE ACTING: after item 166 backed up `voices/` (115 files, 71,186,441 B) I assumed one stray
      `git add -A` in the PUBLIC repo grahama1970/chatterbox could publish third-party audiobook audio. That assumption was
@@ -6939,6 +6961,25 @@ t
      NOT YET DONE: no submission claim, no verdict claim. This row stays in-progress until a
      hash-bound response exists.
 
+     TRANSPORT PRECONDITION MET - by a DIFFERENT mechanism than the item assumed, stated plainly:
+       - The old attachment-assembly runner is NOT fixed. Surf EXCLUDED it rather than repairing it,
+         so nothing in this submission depends on that code path.
+       - The replacement path (direct `--attach-file`) is PROVEN byte-exact on a probe, not assumed:
+         92 bytes locally and 92 bytes as received; BOTH sha256
+         3f73435f08c3ed64cc4612a6d954d7d8a770d0a358130cd57879fd79c4bbb0e7; final 12 bytes hex
+         206e6f206e65776c696e652e (" no newline."). The reviewer read raw bytes with Python rather
+         than through a text layer that could normalise them. Receipt /tmp/surf-byte-proof/response.md
+         (251 B, sha256 ae4c1fb6d7fb…), conversation /c/6af69366-05f8-83e9-8f90-65d5ad710243,
+         sentinel WEBGPT_DONE:20261113T043443Z:60ee1881.
+       - The packet is UNCHANGED at submission time, re-verified after the probe: sha256
+         4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d, 251,835 B, mtime
+         2026-11-12 23:29:37 unchanged since the freeze. Surf submits THE ORIGINAL file, no copy,
+         no regeneration, no newline edits, after checking its certified hash.
+     HONEST SCOPE: I verified the packet bytes and the probe receipt; I cannot verify what the
+     reviewer received - that is the reviewer's own raw-byte read-back, which is exactly the evidence
+     pass 31 lacked. Whole-packet identity is CONFIRMED or REFUTED by the returned response's stated
+     attachment bytes, not asserted here.
+
      PROGRESS at the frozen pass-32 bytes - the reviewer's THREE counterexamples are now MEASURED
      against current production, each refused for a reason that is stated rather than inferred:
        - C1 `[0]*1600 + [202,-202]` @16 kHz: active_frac 0.167, longest run 0.000 s; gate REFUSES on
@@ -6956,3 +6997,63 @@ t
      IMMEDIATE NEXT STEP after verdict intake on pass 32: add C1/C2/C3 to that harness with mutants
      (drop the duration guard for C1; drop the run guard for C2; pass the original channel count for
      C3) and re-run it - each mutant must make its case PASS again, or the case proves nothing.
+174. [x] Land the tone-matrix producer mapping fix and a fresh matrix, with the receipts the rules require.
+     Files: `chatterbox` repo `scripts/eval_tone_audibility.py` (container->host mapping; `.py`, so a
+     cross-provider reviewer receipt is mandatory) and `docs/proofs/tone_calibration_matrix.json`
+     (regenerated by the fixed producer, landed WITH it so the artifact and its generator agree).
+     Evidence already in hand: rc=0 `RESULT: PASS (tone_matrix)`; structural parity with the previous
+     producer output (386 keys, 0 one-sided keys, 19 identical `noise_floor` keys, pass true, 15
+     classifications). The parked copy is byte-identical to the working file, so nothing is lost if
+     the landing is deferred.
+     Do NOT land the JSON alone: a matrix whose generator still cannot resolve host paths is an
+     artifact nobody can reproduce.
+     OWNER: this session; a reviewer provider for the `.py` receipt.
+     BLOCKED ON: nothing technical - only the receipt and a landing window.
+
+     RESULT - landed and READ BACK, with a genuine cross-provider review that first FAILED:
+       - Reviewer: codex (provider `openai`) against author provider `zai`, so the gate's
+         different-family requirement is met. Its FIRST verdict was FAIL on `names_prove_claims`:
+         `_host_path_for` had no docstring, so the name claimed more than the code documented.
+         That is a real objection, not noise: the helper was fixed by documenting both recognised
+         roots and the unchanged-path fallback, then RE-REVIEWED on the new bytes.
+       - Second review: verdict PASS, all four invariants PASS
+         (fail_closed, no_silent_substitution, approved_models, names_prove_claims), with the
+         reviewer's OWN executed probe quoted: `/var/lib/embry-artifacts/chatterbox/x.wav` ->
+         `/mnt/storage12tb/embry-voice/artifacts/chatterbox/x.wav`, and `/out/y.wav` -> `/tmp/y.wav`
+         (the legacy root still works). Receipt validated by the gate's own validator:
+         `{"valid": true, "reviewer_provider": "openai"}`. A first receipt attempt was rejected by
+         that validator for an empty `ts`; the field was required from the reviewer rather than
+         filled in afterwards.
+       - Landed `763770fa8ff342567de4ba405ff138055384c81a`, 2 files, 780 insertions / 239 deletions.
+         Read-back, not assumed: `git show origin/main:<path>` sha256 equals the local file for BOTH
+         paths - scripts/eval_tone_audibility.py 91997bc2f94f3393… and
+         docs/proofs/tone_calibration_matrix.json d817c924595cd07a… - and `git log -1 origin/main`
+         is that commit.
+       - Matrix provenance: it is the fixed producer's OWN output (regen rc=0, `RESULT: PASS
+         (tone_matrix)`, 21,792 B), structurally identical to the previous producer output
+         (386 keys, 0 one-sided keys, 19 identical `noise_floor` keys, `pass` true, 15
+         classifications). It was written to /tmp, verified, and only then placed - the repo file was
+         never overwritten by an unverified run.
+     WHY IT WAS DEFERRED EARLIER AND IS NOT ANYMORE: the producer's `/out/` assumption made
+     regeneration raise "rendered wav missing on host"; that was a mapping defect, not an audio
+     failure, and it could only be proven against a live engine (restarted and verified this turn:
+     /health 200 plus a live render, host WAV 109,518 B).
+175. [ ] After the pass-32 verdict: apply the deferred repairs and rebuild ONE packet (pass 33).
+     Three things are held behind the frozen pass-32 bytes and must move TOGETHER, because a path may
+     live in exactly one packet and rebuilding once is cheaper and safer than three times:
+       - item 164: add the reviewer's three counterexamples to `tests/test_wg_pass2_repairs.py` with
+         mutants (C1 `[0]*1600+[202,-202]` needs the DURATION guard dropped to become observable;
+         C2 needs the RUN guard dropped; C3 needs the original channel count restored). All three are
+         already measured as refusals on current bytes: 0.167 frac / 0.000 s run; 0.182 / 0.020 s;
+         0.100 mono parity / 0.020 s.
+       - item 165: the "graham" voice resolves to a broken reference (host path is a root-owned empty
+         DIRECTORY; the container has no /voices mount at all, while alex/jordan resolve via
+         /work/voices/…). The code fix touches `scripts/speak_core.py`, `scripts/spyke_render.py` and
+         `scripts/sfx_demo.py` - two of those are bound to pass 32, so it cannot be done before intake.
+         The owner action (`sudo rmdir /mnt/storage12tb/embry-voice/voices/graham_owner.wav`) is separate.
+       - then rebuild pass 33 with every changed file, re-verify all bindings, freeze, and resubmit
+         through the proven direct `--attach-file` transport (NOT the old assembly runner).
+     Do not edit any pass-32-bound file before its verdict is applied - a verdict on older bytes
+     cannot be applied to newer ones, and the packet would stop describing disk.
+     OWNER: this session for 164/165/rebuild; surf for the submission.
+     BLOCKED ON: the pass-32 verdict (item 173).
