@@ -6472,3 +6472,40 @@ t
      run ATTRIBUTION_BROKEN rc=1 crediting surf-cb-OLD; live verdict-watch states for pass 31/19/B4-5 all
      NO_SUBMISSION_FOUND, which is the truth until surf submits them.
 
+158. [x] The review QUEUE is now machine-checked: every awaiting row is hash-pinned and refused if withdrawn (15th guard).
+     THE FAILURE THIS ANSWERS: after I sent pass 31, surf walked my superseded chain one submission at a time -
+     "A24 replaces 22/23", then A25, A26, A27, A28, A29 - naming five withdrawn packets in sequence, none of which was
+     live. Root cause on my side was structural, not surf's carelessness: `delegations-20261112.json` stored only a
+     PATH per awaiting artifact, so nothing recorded WHICH BYTES were queued, and nothing refused a packet already in
+     `withdrawn_packets`. Each wrong submission burns a review cycle and returns a verdict on dead bytes.
+     FIX, two parts:
+       - `record-packet.py` now writes `packet_sha256` on every awaiting row (bytes pinned at delegation time, not
+         just a path); the live rows were backfilled the same way - 20 rows across 3 packets, 0 withdrawn rows found.
+       - `outputs/awaiting-packets-guard.py`, wired as the 15th board-sweep guard, fails when any queued packet is
+         (a) in `withdrawn_packets`, (b) missing from disk, (c) unpinned (no `packet_sha256` - an unpinned row cannot
+         prove what was queued, which is how the chain stayed invisible), or (d) moved since delegation (pinned hash !=
+         current hash).
+     LIVE RESULT: "cb-A7-pass19.txt 5 artifact(s) queued / cb-A7-pass31.txt 11 artifact(s) queued / cb-B4-pass5.txt 4
+     artifact(s) queued - 3 queued packet(s), all live and hash-pinned", VERDICT: AWAITING_PACKETS_LIVE; board
+     `sweep: PASS (15 guards)`.
+     ALSO: surf's queue is corrected to A31 (f7b355a9) -> A19 (b1ad7fa0) -> B4p5 (53186cca), and it confirmed the exact
+     hash before submission. The withdrawn chain is 17/18/20/22/23/24/25/26/27/28/29/30.
+     Verification: guard rc=0 on the real delegations file; 20 rows pinned; board PASS with 15 guards.
+
+159. [x] The reviewer's THREE EXACT counterexamples were tested against current bytes - all three now REFUSE.
+     Item 153 said the PARTIALs could only be closed with the reviewer's own inputs; surf supplied them verbatim, so the
+     claim no longer rests on my constructed clips:
+     - WG-07 "mono 16 kHz [0]*1600 + [202,-202]" (an impulse at the END, 1,602 frames): active_frac 0.167, longest run
+       0.020 s -> REFUSED "no sustained stretch: longest active run 0.020s < 0.06s".
+     - WG-07 verifier variant "320 samples of amplitude-8000 1 kHz tone + 2,880 zeros + [8000,-8000]": active_frac
+       0.182, run 0.020 s -> REFUSED for the same reason. (Two active windows separated by silence still give a
+       one-window maximum run, which is the whole point of measuring a RUN rather than counting active windows.)
+     - WG-06 "identical stereo L/R, 3,200 frames, first 320 per channel amplitude-8000 1 kHz sine then zeros": the old
+       verifier reported active_frac .20 where mono/correct stereo gives .10. Current code measures .100 and refuses on
+       the fraction gate; the mono equivalent of the same per-channel samples also measures .100 and refuses. So the
+       stereo/mono DISAGREEMENT the reviewer found is gone, and the number it lands on is the correct one.
+     WHAT THIS SETTLES: WG-06 PARTIAL and WG-07 PARTIAL are closed against the reviewer's own counterexamples, not
+     against cases I invented, and not by argument. What it does NOT settle: whether these three were the reviewer's
+     complete set - if a further input exists it gets the same treatment.
+     Verification: three constructed inputs at the stated rates, measured through the shipped wav_guard/sfx_verify
+     (frac/run/verdict printed above); stereo and mono equivalents agree at .100.
