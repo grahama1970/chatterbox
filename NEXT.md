@@ -6319,20 +6319,60 @@ t
      Verification: WG-09 before/after on one constructed clip; WG-10 before/after on one forced named stage; WG-11 mutant;
      21/21 harness; run.sh rc=0; sanity rc=0; packet re-hash 11/11 zero drift; board PASS.
 
-153. [ ] Reproduce WG-06 PARTIAL and WG-07 PARTIAL from the wav_guard FAIL - or record precisely why they cannot be.
-     WHAT THE REVIEWER SAID, verbatim: "WG-06 PARTIAL (major), wav_guard.py:228-231 and sfx_verify.py:257,432-433" and
-     "WG-07 PARTIAL (major), wav_guard.py:247,253-261: the partial-window recount still admits some inputs. Line 19 shows
-     it reaching the verifier with a category-valid clip."
-     WHAT IS ALREADY TRUE: WG-09's fix rewrote the selection block WG-06 points at (any channel that PASSES rather than
-     max-ac_rms), constant-DC stereo is still refused under control, and the trailing-partial-window logic WG-07 cites is
-     covered by its own case. Neither fact CLOSES a PARTIAL, because the reviewer observed an input that still slips
-     through and did not name it.
-     PLAN, in order: (1) ask surf for the exact WG-07 clip/bytes that "reached the verifier with a category-valid clip" -
-     a named input converts a guess into a test; (2) absent that, construct the adversarial shapes the line refs imply
-     (a silent tail shorter than one window, a clip whose only activity is in the final partial window, and a stereo clip
-     where one channel is constant DC and the other is a real sustained tone) and measure each against the CURRENT gate;
-     (3) for anything that still passes a gate it should fail, fix and add a mutant control; (4) for anything that cannot
-     be reproduced, record the exact attempt and result rather than declaring the PARTIAL resolved.
-     Do NOT close these by citing the WG-09 fix or by argument; a PARTIAL is closed by a reproduction that no longer
-     reproduces, or it stays open.
-     OWNER: this session; surf supplies the reviewer's input if available.
+153. [x] Both PARTIALs reproduced on CURRENT bytes with exact inputs - neither needed the reviewer's clip to show the defect.
+     WG-07 PARTIAL ("the partial-window recount still admits some inputs") - REPRODUCED. Input: one isolated 20 ms window
+     of [202,-202] followed by five whole windows of digital silence (1,920 frames at 16 kHz, i.e. 6 windows). Measured:
+     active_frac = 1/6 = 0.167, and `sustained_problem` returned None - the clip was ACCEPTED, although its only sound is
+     a single 20 ms impulse. The 12-window variant (2 impulse windows + 10 silent) also reads 0.167 and is accepted. Root
+     cause is visible in the gate: MIN_ACTIVE_FRAC = 0.15 is applied to a FRACTION only, so shrinking the clip raises the
+     fraction of an isolated impulse above the bar - the exact failure the gate's own message ("an isolated impulse is not
+     a sustained sound") claims to prevent. A fraction with no minimum RUN length is not a sustained-sound test.
+     WG-06 PARTIAL (sfx_verify.py:257,432-433) - REPRODUCED. Input: stereo PCM16, ch0 hard-clipped at 32767 (>= 0.999),
+     ch1 a clean sustained 440 Hz tone at amplitude 8000. Measured: `read_audio` returned None, refusing the WHOLE clip.
+     `sfx_verify` clips on `np.abs(pcm).max()` over all samples, so ONE clipped channel rejects a clip whose other channel
+     is perfectly valid - the same class of error as WG-09 in wav_guard, in a second file, which is why the reviewer called
+     the class PARTIAL rather than fixed. (At ch0 = 32000, i.e. 0.977, the clip was accepted: the threshold is the whole
+     difference.)
+     WHAT I DID NOT DO: did not patch yet, and did not declare either PARTIAL closed by argument. Both fixes change gate
+     behaviour, so each needs its own control and mutant, and one of them constrains the shared gate every harness uses -
+     that is a separate, measured change, not a footnote to a reproduction item.
+     DECISIVE EVIDENCE ALREADY MEASURED FOR THE WG-07 FIX: longest consecutive active run across all 74 frozen library
+     clips is {4: 1, 7: 1, 8: 1, 9: 1, 11: 3, 13: 1, 14: 3, 16: 3, 17: 1, 18: 1, 19: 5, 20: 3, 21: 4, 22: 3, 23: 1,
+     24: 4, 25: 1, 26: 1, 27: 5, 28: 2, 29: 2, 30: 1, 31: 1, 34: 1, 36: 5, 37: 1, 38: 1, 39: 1, 40: 1, 43: 1, 47: 1,
+     48: 1, 54: 2, 63: 2, 66: 1, 67: 1, 84: 1, 97: 1, 98: 1, 99: 1, 108: 1, 113: 1} windows - the MINIMUM is 4 windows
+     (80 ms). A 3-window (60 ms) minimum-run rule therefore closes the impulse loophole and rejects ZERO legitimate clips;
+     that number, not a preference, decides the threshold. Measured with the correct API (pcm16(data) for info, then
+     samples16(data, info)); my first attempt reported 74 read failures because I called samples16 with one argument -
+     recorded so the wrong number is not mistaken for data.
+     Verification: WG-07 accepted at active_frac 0.167 for 6- and 12-window impulse clips; WG-06 refused (read_audio None)
+     for clipped-ch0 + clean-ch1 and accepted at 0.977; 74/74 frozen clips measured, longest-run minimum 4 windows.
+     Fixes opened as the next two items, each with its control and mutant.
+
+154. [ ] Fix WG-07: require a minimum sustained RUN, not only a fraction of windows.
+     REPRODUCTION (item 153): a 6-window clip whose only sound is one 20 ms impulse of [202,-202] measures active_frac
+     0.167 and is ACCEPTED; the 12-window variant is accepted too. MIN_ACTIVE_FRAC = 0.15 alone cannot distinguish a
+     sustained sound from an isolated impulse in a short clip.
+     MEASURED THRESHOLD: across all 74 frozen clips the longest active run is at least 4 windows (80 ms); the minimum is 4.
+     So MIN_ACTIVE_RUN_S = 0.06 (3 windows) closes the loophole and rejects zero legitimate library clips.
+     PLAN: add `active_run_s` to signal_health's return (compute the longest consecutive run of active windows, including
+     the partial window); enforce it in sustained_problem after the fraction check; thread `active_run_s` through every
+     consumer that RECONSTRUCTS a health dict rather than passing signal_health's output - `interrupt_sfx.measure` builds
+     {"ac_rms","ac_pp","active_frac"} for `_sustained_problem` at interrupt_sfx.py:324, so if it is not threaded the new
+     check silently refuses every clip (or is silently skipped, which is worse). Controls: the 6-window impulse clip must
+     be REFUSED; a 4-window sustained tone must be ACCEPTED; a mutant that deletes the run check must ACCEPT the impulse
+     (so the case proves the check runs); and the 74-clip frozen regression must still be 74/74 with 0 mechanical
+     failures - that harness is the guard against a threshold that breaks the library.
+     OWNER: this session.
+
+155. [ ] Fix WG-06 partial: clip detection must be per channel, not max over all samples.
+     REPRODUCTION (item 153): stereo with ch0 hard-clipped at 32767 and ch1 a clean sustained tone -> `read_audio` returns
+     None and refuses the whole clip; at ch0 = 32000 (0.977) the same clip is accepted. `sfx_verify` tests
+     `np.abs(pcm).max()` across every sample, so one bad channel rejects a clip whose other channel is valid - the same
+     defect class as WG-09, in a second file.
+     PLAN: judge clipping per channel and refuse only when EVERY channel clips (with the failing channel named in the
+     reason), consistent with the "any channel that passes" rule now used by wav_guard; keep the exact threshold. Controls:
+     clipped-ch0 + clean-ch1 must be ACCEPTED with the best channel used; all-channels-clipped must be REFUSED; a mutant
+     that restores the global max must be CAUGHT.
+     NOTE: `interrupt_sfx.gate` also applies a whole-file peak clipping rule (MAX_PEAK 0.999) - audit it in the same pass
+     rather than fixing one file and leaving the sibling, which is how this class survived WG-09.
+     OWNER: this session.
