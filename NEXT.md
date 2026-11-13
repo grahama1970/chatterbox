@@ -7041,7 +7041,14 @@ t
      executing commands. Conversation https://chatgpt.com/c/6af69366-05f8-83e9-8f90-65d5ad710243,
      sentinel WEBGPT_DONE:20261113T052119Z:b7be33b9. surf's own verdict on the conflict: "UNDELIVERED
      conflicts with independent destination evidence"; the refusal stays in the transport summary.
-     STATUS: review running, NO VERDICT YET. AWAITING surf for the report on THESE bytes; on receipt verify
+     RECEIPT EVIDENCE, CHECKED LATER AND IT CORRECTS THE ABOVE: `/tmp/surf-cb-A33/response.md.receipt.json`
+     (schema `surf.webgpt_submit_receipt.v1`, receipt_at 2026-11-13T05:21:19Z) reads `status:
+     "prepared_prompt"`, `submitted_to_chatgpt: false`, `raw_output` 0 B, no `response.md`. So the packet was
+     PREPARED, not submitted; the surf DOM read remains a claim I did not verify myself. The SAME state holds
+     for add1 (`05:23:28Z`) and B7 (`05:40:18Z`) - three submissions, one shared transport boundary
+     (`requested_tab_id 837460232`, `prepared_prompt_is_transport_proof: false` in every receipt). That shared
+     boundary is surf's to repair and I do not touch the browser.
+     STATUS: NOT SUBMITTED; no verdict exists. AWAITING surf for the report on THESE bytes; on receipt verify
      it quotes 270,820 / 66489b5f… (a report that does not quote the packet sha is
      STALE_RESPONSE_SUPERSEDED), then intake per group (A7, GUARDS-WAVGUARD) with
      `verdict-intake.py --packet /tmp/cb-A7-pass33.txt`, preserve under
