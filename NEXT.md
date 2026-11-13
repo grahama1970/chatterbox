@@ -6229,3 +6229,42 @@ t
      Deciding it myself would be exactly the silent default this project keeps punishing.
      OWNER: Graham. Evidence ready at items 145, 146, 147 and 148; no further measurement is blocked on him.
 
+150. [x] The tag-evidence fix was proven in the MODULE while the live :8799 service still ran the OLD code - now restarted and verified live.
+     THE TRAP THIS CAUGHT: item 148's controls import `spyke_render` from disk, so they pass whether or not the long-running
+     service has the new code loaded. Checking the process instead of trusting the tests:
+       source mtime : 2026-11-12 21:45:48
+       service start: 2026-11-12 14:12:13  -> the service PREDATED the edit by ~7.5 hours
+     BEFORE (live :8799, tag render "[sigh] ..."): HTTP 200 with 24 keys; `tag_handling`, `affect_effect`,
+     `pace_effect` ALL ABSENT - i.e. the deployed receipt was still hiding the engine's tag evidence.
+     RESTART: SIGTERM the old PID, relaunched via setsid/nohup from the skill directory; /health 200 after 2 s; new PID
+     started 21:49:32 (after the 21:45:48 source mtime), so the running code is the reviewed code.
+     AFTER (same request, live): HTTP 200 with 27 keys - the three new fields are present, and the values are the engine's:
+       tag render   -> tag_handling.tags_interpreted=True, applied_tags=["[sigh]"], affect_effect.applied=False,
+                       pace_effect.applied=False
+       no-tag render-> tag_handling.tags_interpreted=False, applied_tags=[], detected_tags=[], affect/pace False
+     So the fix is live, and the immutability rule held throughout (each render used a unique seq; no media name was
+     reused).
+     A REAL FIXTURE-vs-ENGINE DIFFERENCE THE LIVE CHECK EXPOSED: my item-148 control assumes a no-tag response carries NO
+     `tag_handling` (returns None), but the ENGINE always sends the block, using `tags_interpreted: false` with empty
+     lists. The helper is correct either way - it forwards what exists and raises only when a tag is present and the
+     evidence is missing - but the control only covers the absent shape. Opened below rather than patched now, because
+     `tests/test_render_tag_evidence.py` is bound in pass 28, which is in review; touching it again would strand that
+     packet for the third time in a row.
+     WHAT THIS DOES NOT PROVE: that the tag sounds like an event. Item 146 measured the added ~0.32 s as near-silence;
+     the receipt now faithfully reports tags_interpreted=true, which is the engine's claim about routing, not an audible
+     outcome. The owner decision (pacing-only acceptability) is item 149.
+     Verification: before 24 keys / after 27 keys on live /render; tag_handling.tags_interpreted True with
+     applied_tags ["[sigh]"]; no-tag tags_interpreted False with empty applied/detected lists; service start time
+     21:49:32 > source mtime 21:45:48; /health 200.
+
+151. [ ] Cover the engine's EXPLICIT no-tag evidence shape in the tag-evidence control - after pass 28 leaves review.
+     WHAT IS MISSING: tests/test_render_tag_evidence.py asserts that a no-tag render with no `tag_handling` in the response
+     yields None. The live engine actually always sends `tag_handling` with `tags_interpreted: false`, `applied_tags: []`
+     and `detected_tags: []` (measured on :8799 at 21:52 after the item-150 restart). The helper forwards both shapes
+     correctly, but only the absent shape is under test, so a future edit that swallowed a false-but-present block would
+     not be caught.
+     WHY IT WAITS: that file is bound in /tmp/cb-A7-pass28.txt, which is in review. Adding a fourth case now would move the
+     binding and strand the packet again (it has already been reissued three times for exactly this). The fix is one case
+     asserting the false-shape is forwarded verbatim, plus a mutant that drops present-but-false evidence.
+     OWNER: this session, when pass 28's verdict lands.
+
