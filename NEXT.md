@@ -6674,3 +6674,32 @@ t
      is one local scheduling file, left as local state.
      Verification: git status before/after; diff -rq rc=0; 115/115 and equal byte totals; equal aggregate WAV hash;
      `gh repo view` visibility PUBLIC; `git ls-tree origin/main NEXT.md` present.
+
+167. [~] The modified tone-calibration proof is IDENTIFIED and preserved - but it cannot be verified until the engine is back.
+     WHAT WAS DIRTY: `docs/proofs/tone_calibration_matrix.json` (808 insertions, 216 deletions) sitting modified in a PUBLIC
+     repo with no recorded provenance for the regeneration. Item 166 left it alone rather than land a changed measurement
+     blind; this item resolves what it actually is.
+     PRODUCER: `scripts/eval_tone_audibility.py` (schema `chatterbox.tone_calibration_matrix.v1`), which renders a
+     same-parameter noise floor through `DEFAULT_BASE_URL = "http://localhost:8018"`. That engine is DOWN on purpose
+     (researcher GPU window), so the file cannot be regenerated or checked end-to-end right now.
+     CONSUMER: `src/chatterbox/agent/server.py:2733` `tone_calibration_matrix_receipt()` reads `classification`,
+     `noise_floor.spread` and `generated`, and reports `matrix_unreadable` on a bad file. Reading the MODIFIED file through
+     that consumer returns `status: calibrated` with `spread` present - i.e. the file is structurally sound for its only
+     consumer, which is stronger than "it parses".
+     DIFF SHAPE: purely ADDITIVE. Zero keys removed; the additions are `noise_floor.spread.*` (duration_s, rms, peak,
+     clipping_fraction, f0_median_hz, f0_std_hz, longest_pause_ms, pause_count, ...) alongside changed measured values.
+     Measured content of the new block: duration_s 1.48, rms 0.0083, peak 0.2732, clipping_fraction 0.0, f0_median_hz 10.1,
+     f0_std_hz 11.4 - consistent with a NOISE FLOOR render (near-silence), not with a spoken utterance, so the numbers are
+     not obviously wrong.
+     PRESERVED: copied to /mnt/storage12tb/embry-voice/parked/tone_calibration_matrix.modified-20261113.json, sha256
+     65c962a009ff4ef310e3eaee4e0899ba4aafc85fd2b6cc950d8ea571635212a7, identical to the working copy.
+     LEFT DIRTY ON PURPOSE - and this is the judgement, not an omission: restoring the tracked bytes would DESTROY the run
+     that produced this diff, which may belong to another lane. Reversible over destructive; the copy above means the data
+     survives either way, and `git status` keeps the change visible so nobody mistakes it for landed truth.
+     WHEN IT UNBLOCKS (engine restart, after the researcher closes the window): restart verification gains a THIRD step
+     beyond /health 200 and a live render - run `eval_tone_audibility.py` against the restored :8018 and compare its output
+     to this file. If it reproduces these numbers, land the file WITH the receipt; if it does not, park it and say so. Until
+     then the file is "modified, unverified", never "regenerated".
+     Verification: producer/consumer located by grep and read directly; consumer call returned `calibrated` + spread; diff
+     key-set comparison showed zero removals; parked copy hash identical; `DEFAULT_BASE_URL` read from the script, not
+     assumed.
