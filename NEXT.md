@@ -7803,10 +7803,49 @@ t
      SUBMITTED via surf with path/size/sha and the A37 binding rule (quote `88d1a770…`; earlier
        passes' verdicts must not be intaked). Verdict tracked in 199.
 
-199. [~] The pass-37 verdict. Awaiting surf's submission/extraction; delivery verified from the
+199. [x] The pass-37 verdict. Awaiting surf's submission/extraction; delivery verified from the
      destination (quoted packet sha `88d1a770…`, 11 per-file VERDICT lines, PACKET VERDICT), then
      intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
      Packet: `/tmp/cb-A7-pass37.txt` 291,405 B `88d1a770d626a55b…`, `ALL_FROZEN` (receipt
      `864c4c97b2bfff3b…`).
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
+
+     VERDICT RECEIVED, VERIFIED, INTAKED (2026-11-13T21:50Z): surf finished in a FRESH tab
+       (837460281, conversation /c/6af783cf-2db8-83ea-8bd1-97c00e9e6b83) because the old conversation
+       held an unidentified draft, which was left untouched; submitted_to_chatgpt=True,
+       proof_status=response_proven, sentinel `WEBGPT_DONE:20261113T214027Z:0bedc1d5`.
+       My verification of the artifact:
+         * `/tmp/surf-cb-A37/response.md` 15,707 B sha256 `545f2cde88d45134…`, preserved at
+           `outputs/reviews/a7-pass37-FAIL-20261113.md` (sha VERIFIED identical).
+         * Quotes `PACKET SHA256 88d1a770d626a55b…` twice, exactly 11 `VERDICT` lines at the packet's
+           own hashes, `PACKET VERDICT: FAIL`.
+         * Applied per group: A7 -> 2 PASS / 2 FAIL (manifest 39,677 B sha `747792bf9ed77835…`);
+           GUARDS-WAVGUARD -> 6 PASS / 1 FAIL (manifest 41,330 B sha `5ae0748593f0d168…`).
+       RESULT: 8 PASS / 3 FAIL — the SAME three files for the fifth round AND a new class: the findings
+       are now about the INTERVAL between writing the memfd and sealing it.
+
+200. [ ] REPAIR the A37 findings on the pass-37 bytes (8 PASS / 3 FAIL), each reproduced FIRST, then
+     rebuild ONE packet (pass 38). Source: `outputs/reviews/a7-pass37-FAIL-20261113.md`.
+     THE NEW CLASS (this is the important part): sealing a descriptor does not protect the window
+     BEFORE the seal. Both ASR paths write, then seal; a same-user writer can reopen
+     `/proc/self/fd/<fd>` O_RDWR and overwrite the bytes in that window, and the seal then locks in the
+     SUBSTITUTED content. The fix is not another flag: after sealing, READ THE DESCRIPTOR BACK and
+     require its digest to equal the digest of the bytes that were measured; anything else fails
+     closed. That makes the window harmless instead of trying to make it impossible.
+       - A37-SP-01 MAJOR `spyke_render.py:775-795` (sidecar checks `779-784`, WAV-only digest `794`)
+         - a receipt can be rewritten during publication while the render still reports success; the
+         sidecar checks verify the INODE but not the CONTENT.
+       - A37-IS-01 MAJOR `interrupt_sfx.py:308-319` (branches `315-319`, `325,337-355`; propagation
+         `485-49x`) - generator ASR input is not bound to the measured snapshot across the
+         write->seal window (executed: 19,244-byte 300 Hz WAV overwritten with 700 Hz before seal).
+       - A37-SV-01 MAJOR `sfx_verify.py:385-399` (branches `392-398`, `410-415`; propagation
+         `499,567-574,604-611`) - verifier reports the ORIGINAL digest while ASR consumes substituted
+         audio (executed: 16,044-byte 1 kHz WAV).
+       - A37-FS-01 MINOR `fs_ops.py:156-162` (cleanup `207-212`) - replacement-directory
+         initialization remains outside cleanup.
+       - A37-IS-02 MINOR `interrupt_sfx.py:674-679` - snapshot publication has the same
+         initialization cleanup gap.
+     Then: rebuild ONE packet (pass 38) with every changed file, record per group, freeze, submit via
+     surf. A FAIL is a valid outcome; never weaken a gate.
+     OWNER: this session (repairs/rebuild); surf (submission/extraction).
 
