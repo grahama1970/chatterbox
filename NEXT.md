@@ -7080,8 +7080,69 @@ t
            and sha256 `530eec11344e…` from the raw attachment and to STOP on mismatch. NOTE the receipt's own
            honesty field: `prepared_prompt_is_transport_proof: false` — this proves SUBMISSION, not that the
            reviewer received identical bytes; only the reviewer's stated count+sha can do that.
-           STATUS: submitted, NO response yet (raw output absent). AWAITING the B6 report.
+           STATUS: SUBMITTED AND ANSWERED - verdict APPLIED first-class (see below).
          Neither refusal changes any packet byte; both packets remain FROZEN and recorded.
-     ON RECEIPT: verify each packet's stated byte count + sha256, then `verdict-intake.py --packet <packet>`
-     for its group (A7 resp. B4). Never hand-edit the manifest.
+     B6 VERDICT RETURNED AND APPLIED (B4 group), with whole-packet identity certified by the reviewer:
+       - response `/tmp/surf-cb-B6/response.md` 14,467 B sha256
+         `48213af71d92984aa6f7aaaa17b4312b56e052805a9a1bde3eb8f832dbff22f9`, preserved at
+         `/mnt/storage12tb/skills/chatterbox-speak/outputs/reviews/b4-pass6-FAIL-20261113.md` (sha VERIFIED
+         identical). Reviewer stated received 91,858 bytes and `530eec11344e…`, plus all three embedded
+         source hashes; sentinel WEBGPT_DONE:20261113T052451Z:34b8e30b; conversation
+         https://chatgpt.com/c/6af69f26-61a4-83ea-b28e-ff2c78b2a59c.
+       - Intake: `verdict-intake.py --group B4 --report <preserved> --packet /tmp/cb-B4-pass6.txt --apply`
+         -> APPLIED 1 PASS (test_core_contract 2c5d2c43…) / 2 FAIL (arc_chart 17ccab9c…, speak_core
+         66407074943a…), manifest 38,864 B sha256 `e6682e5b93f46fe35b1e959cdff355b7ad074e15dc1886029957033ef7b193c4`.
+         PACKET VERDICT: FAIL (4 major + 3 minor findings, no blocker). The reviewer separately CONFIRMED the
+         item-165 voice-root repair is present at `scripts/speak_core.py:260`.
+       - REMINDER: the file-level FAILs are about OTHER defects in those files (item 178), not about whether
+         the packet described its bytes - it did, exactly.
+     add1 REMAINS UNSUBMITTED (composer-draft refusal, no retry) and A33's review report has not returned, so
+     this item stays open on those two.
+     ON RECEIPT (add1/A33): verify each packet's stated byte count + sha256, then
+     `verdict-intake.py --packet <packet>` for its group. Never hand-edit the manifest.
      OWNER: surf (submission); this session (intake).
+
+178. [x] Repair the B6 findings in `scripts/speak_core.py` and `scripts/arc_chart.py`, each reproduced on the
+     OLD bytes first, then reissue ONE B-group packet (B pass 7) and submit it through surf.
+     DONE. Every finding reproduced BEFORE the fix, fixed, and re-proved; the packet is built, verified,
+     recorded, frozen, and its submission is delegated (receipt tracked in 179).
+       - B6-SC-01 (invalid WAV format accepted) REPRODUCED: PCM control -> (240, 24000); tag 65535 ->
+         (240, 24000) accepted by `_validate_wav_bytes` while `wave.open` said "unknown format: 65535".
+         FIXED: only PCM/1 is accepted, refused before frames are derived. VERIFIED: control (240, 24000);
+         tag 65535 raises `ServiceCallFailed`.
+       - B6-SC-02 (direct batch plan sent an empty transcript) REPRODUCED: direct plan -> `answer_text: ''`
+         on the wire while `build_plan` produced 'Hello.'. FIXED: one `_chunks_transcript` helper used by
+         both paths, and the payload boundary refuses an empty batch transcript before hashing/POST.
+         VERIFIED on the bytes the server received: 'Hello.'; an all-whitespace plan is refused AND
+         `posts` does not increase.
+       - B6-AC-01 (directory PATHNAME vs identity) REPRODUCED with the reviewer's race: rc=0 and the
+         protected input overwritten (GONE). FIXED: directory `(st_dev, st_ino)` captured before the open
+         and compared with `fstat(dir_fd)` after. VERIFIED: SystemExit and the input receipt still parses.
+       - B6-AC-02 (by-name publication accepted substituted staging) REPRODUCED: rc=0, published
+         `ATTACKER BYTES`. FIXED: the staging descriptor and identity are held THROUGH publication and the
+         published inode is verified against the staged inode. VERIFIED: SystemExit naming both inodes.
+       - B6-SC-03 (no override audit marker) FIXED: receipt now carries `rendered_transcript`,
+         `text_override` and `override_reason`; VERIFIED together with the unmarked-override refusal.
+       - B6-AC-03 (relative wav crash) FIXED: resolved against the RECEIPT's directory; parent-relative
+         URLs are legitimate. VERIFIED: wav_path resolves absolutely and generated HTML contains
+         "../audio.wav".
+       - B6-TC-01 (clipped-gain test too weak) FIXED: asserts max safe peak >= 32760 and gain
+         ~20*log10(32767/32000)=0.206 dB within 0.05, which the reviewer's mutant (peak 32000, 0.0 dB) fails.
+       - Retained controls: all of the above live in `scripts/test_core_contract.py` and drive PRODUCTION;
+         at these bytes it prints `PASS_CORE_IMPORT_CONTRACT`.
+       - Packet: `/tmp/cb-B4-pass7.txt` 107,759 B sha256
+         `ea9f2b71bc8194abd28ba4daa0c846c313bd237d266fcdba1d93f877c85c6d2d`, binds 3 files
+         (speak_core 3ac73ce6b20e…, arc_chart cfce6214222f…, test_core_contract de77f4ae27da…), 3
+         bindings verified with 0 mismatches and 3 embedded sections equal to disk. Recorded for B4;
+         `submission-freeze.py` -> `ALL_FROZEN` (governed=3), receipt `8bb711b086c7…`.
+       - Submission delegated to surf with the exact path/size/sha; surf ACKed: "direct original attachment
+         only, 107759 bytes / ea9f2b71…, reviewer must verify raw-byte identity". No receipt yet -> 179.
+     OWNER: this session (repairs/rebuild done); surf (submission).
+179. [~] Obtain the B pass 7 submission receipt from surf, then intake its verdict FIRST-CLASS.
+     AWAITING surf: the packet is frozen and the submission is ACKed, but submission is not proven until a
+     receipt exists. On receipt verify the report STATES 107,759 bytes and sha256 `ea9f2b71…` (a report that
+     does not quote the packet sha is STALE_RESPONSE_SUPERSEDED), then run
+     `verdict-intake.py --group B4 --report <preserved> --packet /tmp/cb-B4-pass7.txt --apply`, preserve the
+     response under `outputs/reviews/b4-pass7-<PASS|FAIL>-<date>.md`, and set landable_now=false for FAILs.
+     A FAIL is a valid outcome; repair findings by reproducing them first.
+     OWNER: surf (receipt); this session (intake).
