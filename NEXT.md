@@ -6785,7 +6785,7 @@ t
      Verification: response hash matches surf's; attachment = packet + one newline by byte compare; 9 FAIL / 2 PASS rows in
      the manifest with reviewed_sha256 set; coverage and matrix guards green; sweep PASS (15 guards).
 
-171. [ ] Repair the nine A31 FAIL files to the reviewer's findings, in this order, each reproduced BEFORE the fix.
+171. [x] Repair the nine A31 FAIL files to the reviewer's findings, in this order, each reproduced BEFORE the fix.
      THE FINDINGS, by the reviewer's own labels (response lines cited so the wording is checked, not trusted):
        - WG-06 remains PARTIAL: "selected mono passed with original channels=2" - the stereo path can still pass a fixture
          the mono path refuses.
@@ -6814,3 +6814,68 @@ t
      DO NOT: submit another packet until every bound file is fixed and its control executes; claim a PARTIAL closed
      without the reviewer's exact fixture; weaken a gate to make the board green.
      OWNER: this session; surf for the next submission once a packet exists beyond the repaired bytes.
+
+     RESULT: all nine findings repaired, EACH REPRODUCED ON THE OLD BYTES FIRST, and every control
+     proved by a mutant that executes the mutated PRODUCTION path.
+       - A31-FS-01: witness BLOCKED before (rc=124 under a 12 s timeout, the signature of the defect);
+         now raises ValueError "not a regular file" in well under a second. Fix: both verification
+         boundaries read through digest_regular/read_regular_bounded instead of an unchecked
+         Path(...).read_bytes() reopen. Mutant (read_bytes restored) blocks again -> caught.
+       - A31-FS-02: witness printed "foreign name DELETED" before; now the planted name survives in a
+         parked .foreign directory AND a RuntimeWarning reports it. Mutant (unconditional rmtree)
+         deletes it -> caught.
+       - A31-SP-01: before, registered_ino=181841111 vs installed_ino=181841114 (recovery would call
+         our own published file foreign); now registered == installed via an on_install hook called
+         immediately before the mutating rename. Mutant (hook removed) registers nothing -> caught.
+       - WG-07 PARTIAL: the reviewer's exact fixture (3,200 zeros + 640 amp-8000 1 kHz samples +
+         [8000,-8000]) now reports active_run_s 0.040125 s - the REAL tail - instead of 60 ms.
+         Mutant (windows x 20 ms) overstates to 0.06 -> caught.
+       - WG-06 PARTIAL: the selected mono data is now measured with channels=1; the dual-mono fixture
+         reports active_frac 0.10 (was 0.20 when the mono data was re-split by the original channel
+         count). Mutant (original channel count) reports 0.20 -> caught.
+       - WG-12: gate now judges the SELECTED channel: the retained CLIP_MIX is ACCEPTED with
+         peak_raw 0.244141 although the sibling peak is 0.999969; an all-clipped clip is still refused
+         ("selected channel clipping: peak=1.000"). Mutant (global channel_peak restored) refuses the
+         clean clip -> caught.
+       - WG-13: both consumers select a channel that PASSES: the reviewer's L(loud sparse)/R(quiet
+         sustained) fixture now passes the gate (peak 0.0366, active_frac 1.00, run 1.000) and the
+         verifier selects the same channel. Mutant (sustain filter removed) picks the loud sparse
+         channel and the gate refuses -> caught.
+       - A31-TAG-01: an EMPTY tag_handling block is refused for tag-bearing text while a POPULATED
+         tags_interpreted=False block is still forwarded verbatim. Mutant (shape check removed)
+         accepts the empty block -> caught.
+       - A31-PROOF-01: the SP-28 mutant now EXECUTES the production lookup - park_calls=1, the staging
+         name is destroyed, nothing is left - instead of 0 calls against a copied namespace.
+       - A31-PROOF-02: baseline and mutant receive the IDENTICAL injected mismatch, plus an
+         unmodified-production-with-same-fault control that refuses, so the difference is the guard.
+       - A31-PROOF-03: the WG controls assert VERDICTS and CONSUMER measurements at the production
+         boundary, not just helper fields.
+       - A31-PROOF-04: the tag tests now drive the REAL render_turn with a fake service response and a
+         scratch WAV, comparing both the returned receipt AND the persisted sidecar; the mutant that
+         deletes the evidence kwargs at the receipt boundary is caught.
+       - A31-PROOF-05: the library regression now REQUIRES the expected ACOUSTIC_ONLY verdict, and a
+         mutant that flips it to FAIL is detected.
+     HARNESSES: tests/run.sh -> rc=0, "tests: all retained harnesses PASS", PUBLISH_BY_NAME clean.
+     test_a7_pass10_repairs 57/57 (was 51), test_wg_pass2_repairs 38/38 (was 29),
+     test_render_tag_evidence 14/14 (was 9), library regression includes the new verdict checks.
+     Two defects found in the retained controls themselves and fixed rather than papered over: a
+     WG-06 fixture used the category "sigh" (not in the vocabulary) so check() returned before
+     measuring - the mutant "passed" on 0.0 != 0.1, a vacuous green I rejected; and two anchors
+     (PER_CHANNEL/SV_MEAN) plus the tag absence-guard mutant had been invalidated by these repairs.
+     SCOPE: the engine stays DOWN for the researcher's GPU window (Exited(0), health 000); no live
+     render was used as evidence in this item, and the next packet must be rebuilt from these bytes.
+
+172. [ ] Rebuild and resubmit a NEW packet (pass 32) from the repaired bytes - never reuse pass 31.
+     The nine FAIL files are repaired and every control executes; what remains is a packet that
+     describes THESE bytes. Requirements: write a NEW packet path (pass 31 stays withdrawn/dead),
+     include all 11 artifacts bound by pass 31 plus any file whose bytes changed in item 171, record
+     it with record-packet.py so the awaiting row is hash-pinned, verify EVERY binding re-hashes to
+     what the packet names (assert the row count - a regex that matches nothing is not "0 stale"),
+     and confirm packet_sha256 before delegating.
+     TRANSPORT PRECONDITION, not a formality: the A31 submission arrived with ONE newline appended
+     (226,716 B f7b355a9 -> 226,717 B b589642e), which is why whole-packet identity was refused.
+     Do not submit until surf reports its attachment assembly fixed AND a probe packet arrives
+     byte-identical to what was sent; a mutated attachment costs a full review cycle.
+     Then delegate to surf with the exact sha256 and paths, and await a hash-bound verdict.
+     OWNER: this session for the build/verify; surf for the transport and submission.
+     BLOCKED ON: surf's attachment fix (reported in progress); do not weaken or skip the identity check.
