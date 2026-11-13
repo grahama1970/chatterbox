@@ -7381,3 +7381,19 @@ t
          requested pending that listening.
      OWNER: this session (verified + paused); researcher (identity/sustain eval); Graham (listening).
 
+189. [x] RENDERED spyke's seq-42 turn (1,205 chars, 5 over the 1,200 service limit) by the same
+       caller-plan contract as 184.
+       - Text file: `/tmp/spyke-ml-text.txt`, 1,211 B / 1,205 chars, sha256 `b31af4edd48c057b…`.
+         It ends with ONE trailing newline; a newline is not speakable, so the rendered text is the file
+         minus that single `\n` (1,210 B / 1,204 chars, sha256 `db248d2812250777…`). The delta is
+         disclosed in the sidecar, not hidden; the skill receipt's `original_text` is byte-identical to
+         the speakable text (verified), and both hashes are recorded so spyke can bind either way.
+       - Rendered with normalization OFF, 2 chunks (max 1,099), single-space join verified equal to the
+         speakable text. Voice embry, tone calm_precise, model native Chatterbox Turbo (not ElevenLabs).
+       - Delivered: `/mnt/storage12tb/embry-voice/turns/spyke-seq42-20261113T161317Z-f50e61193ed9.wav`
+         1,223,598 B, sha256 `f50e61193ed9fe9d…`, duration 25.49 s; sidecar receipt
+         `…f50e61193ed9.receipt.json` sha256 `3e0ac8fd8c7b9ed4…`. No posting performed.
+       - Stated boundary: the skill receipt schema has no `text_sha256` field; the sidecar carries the
+         full-text hashes and says so explicitly, rather than inventing a field.
+     OWNER: this session (done).
+
