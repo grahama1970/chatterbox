@@ -7716,5 +7716,11 @@ t
        - Decision: NO retry (a second submission would duplicate the packet in the same conversation).
          Delivery is established by the destination, exactly as for A34b; the VERDICT is not received
          and this item stays awaiting surf's extraction.
+       - MIS-INTAKE GUARD (surf's warning, 20:42Z): A35's verdicts are ABOVE A36 in the same
+         conversation. Any extracted response MUST be bound to sentinel `fcf6c9a3` AND quote
+         `PACKET SHA256 416e15d131eca39d…`; A35's report (`945f9f20…`/`eebccef7…` era) must never be
+         intaked against pass 36. Live state at 20:42Z: attachment visibly present, assistant still
+         working ("Reproducing overwrite guard failure"), no final answer, and it has not yet stated
+         an independently computed byte count/hash.
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
