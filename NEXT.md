@@ -6574,3 +6574,40 @@ t
      exact failure it exists to catch.
      Verification: pre-fix stub sweep showing PASS "ok" for a silent guard; post-fix stub run with the three cases above;
      real sweep PASS (15 guards) with 15 PASS lines each carrying a verdict.
+
+163. [x] Fail-closed verified FOR REAL during the intentional engine outage - 502 in 0 s, no artifact, no receipt.
+     WHY THIS IS EVIDENCE AND NOT A ROUTINE CHECK: the engine is down on purpose (researcher GPU window, stopped
+     2026-11-13T03:40:34Z). An outage is the one time the fail-closed contract actually executes, and until now every
+     assertion about it came from tests with the engine UP or from a code reading. So I probed the live path while it was
+     genuinely unavailable:
+       POST http://127.0.0.1:8799/render {"text":"outage probe","speaker":"alex","thread":"outage-probe","seq":1}
+       -> HTTP 502, elapsed 0 seconds, body {"ok": false, "error": "ConnectError: [Errno 111] Connection refused",
+          "queue_depth": 0}
+       -> NO turn file matching outage-probe, therefore NO WAV and NO receipt claiming success.
+     THREE THINGS THIS ESTABLISHES that a passing unit test would not: (1) the failure is FAST and structured rather than
+     a hang or a timeout - the caller gets a machine-readable false; (2) it does NOT fabricate an artifact - the turns
+     directory has no partial WAV and the receipt path is never reached, so a downstream reader cannot mistake an outage
+     for a render; (3) the error names the real cause (connection refused) instead of a generic failure, which is what
+     makes triage possible without the service log.
+     SCOPE: this proves the no-artifact/fail-fast path for the /render service during a total engine outage. It does not
+     prove behaviour under a SLOW engine (accepts the connection, then stalls), which is a separate failure mode and is
+     not what this window created.
+     HOUSEKEEPING WHILE DOWN: `sanity.sh` performs a live render, so it is NOT run during this window and its failure now
+     would mean "engine intentionally down", not a regression; the 15-guard board sweep is file-based and still PASSES.
+     Verification: the HTTP code, elapsed 0 s, exact JSON body, and an empty turn search for the probe thread, all taken
+     while docker reports the container Exited (0) and :8018 answers HTTP 000.
+
+164. [~] BLOCKED on the in-flight review: retain the reviewer's three counterexamples as harness cases (cannot edit now).
+     WHAT IS PENDING: item 159 measured surf's three exact WG3 counterexamples against the current gates and all three
+     refuse, but only as one-off measurements. Retaining them as cases in `tests/test_wg_pass2_repairs.py` (with mutants)
+     is what stops a future edit from silently re-opening the impulse loophole - the same standard every other finding in
+     that harness meets.
+     WHY IT CANNOT BE DONE NOW: that file AND `tests/run.sh` are both bound in /tmp/cb-A7-pass31.txt, which is PREPARED
+     and being submitted for review. Editing either one moves a bound hash and voids the packet - the precise churn that
+     killed passes 28/29/30 and that item 158's guard now exists to make visible.
+     WHEN IT UNBLOCKS: as soon as pass 31 leaves the queue (verdict received). The cases to add, with the exact shapes
+     surf relayed: mono 16 kHz `[0]*1600 + [202,-202]` (trailing impulse, frac 0.167/run 0.020 s -> refuse); `320 samples
+     of amplitude-8000 1 kHz tone + 2880 zeros + [8000,-8000]` (0.182/0.020 -> refuse); identical stereo L/R over 3,200
+     frames (must measure 0.100, matching mono, never the old verifier's 0.20). Each needs a mutant that restores the
+     defective behaviour, or the case proves nothing.
+     OWNER: surf (verdict on pass 31); this session then edits the harness and reissues a packet.
