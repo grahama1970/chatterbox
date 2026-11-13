@@ -6647,3 +6647,30 @@ t
      broken. Verifying the consumer's view, not just the host's, is the difference.
      Verification: stat/read of the host path (is_dir, uid 0:0, IsADirectoryError); docker inspect mount list showing no
      /voices; presence and sizes of the two /work-mounted narrator references.
+
+166. [x] Untracked-state triage: the 69 MB narrator reference set is PUBLIC-REPO-UNSAFE and had no backup - backed up outside git, scratch parked, one modified proof file left unlanded.
+     WHY THIS NEEDED DOING NOW: `git status` in the chatterbox checkout showed `?? voices/` (115 files, 71,186,441 B) next
+     to `?? NEXT.md`, `?? .pi/`, `?? .tmp-tagfx/` and a modified `docs/proofs/tone_calibration_matrix.json`. An untracked
+     record is lost work waiting to happen - the rule that got NEXT.md landed in item 141 - but the reflex "commit the
+     untracked thing" would have been a serious mistake here.
+     THE DECISIVE FACT: `gh repo view` reports grahama1970/chatterbox visibility **PUBLIC**, and voices/ holds narrator
+     references EXTRACTED FROM AUDIOBOOKS - the sidecars name the sources outright (e.g.
+     `alex_longworth.provenance.json`: book "Horus_Rising_The_Horus_Heresy_Book_1-LC_64_22050_stereo", narrator Toby
+     Longworth, source window 15877 s). Only ONE sidecar carries a rights field at all (graham_owner: "Owner's own voice;
+     self-recorded"), and zero sidecars say UNVERIFIED-in-so-many-words - i.e. there is no rights clearance for the rest.
+     Committing them would publish third-party audiobook audio in a public repository. NOT DONE, deliberately.
+     DURABILITY INSTEAD OF PUBLICATION: copied to /mnt/storage12tb/embry-voice/references-voices and verified byte-for-byte
+     - `diff -rq` rc=0 with no output, 115/115 files, 71,186,441 B on both sides, and the aggregate of per-file WAV
+     sha256s identical (a3b5d355077dcdcc). The repo copy stays because the engine reads it through the /work mount; the
+     backup is what survives a checkout accident.
+     SCRATCH PARKED, REVERSIBLY: `.tmp-tagfx/` (984 K; v10.py / v10b.py / v10c.py plus an `events/` dir) moved to
+     /mnt/storage12tb/embry-voice/parked/tmp-tagfx-20261113 - a move, not a delete, so nothing is destroyed.
+     LEFT ALONE ON PURPOSE: `docs/proofs/tone_calibration_matrix.json` is modified (808 insertions, 216 deletions; measured
+     durations changed, e.g. 10.72 -> 8.00) with NO recorded provenance for the regeneration. Landing a changed measurement
+     file blind is exactly how a false proof gets committed, so it stays dirty and is flagged here instead.
+     EXPLAINED, NOT A DEFECT: `?? NEXT.md` looks alarming but `git ls-tree origin/main NEXT.md` shows the file IS on
+     origin (last commit baee8d4). gh-land lands through plumbing without touching the local index, so the checkout still
+     reports it untracked - expected behaviour of this workflow, verified rather than assumed. `.pi/schedule-prompts.json`
+     is one local scheduling file, left as local state.
+     Verification: git status before/after; diff -rq rc=0; 115/115 and equal byte totals; equal aggregate WAV hash;
+     `gh repo view` visibility PUBLIC; `git ls-tree origin/main NEXT.md` present.
