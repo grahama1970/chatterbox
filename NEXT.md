@@ -6903,7 +6903,7 @@ t
      Verification commands: the builder's own asserts (binding count 11, 0 mismatches, 11 sections ==
      disk), sha256sum of the packet, the delegation pin check above, awaiting-packets-guard, and
      board-sweep.sh (PASS, 15 guards).
-173. [ ] Submit pass 32 to surf and obtain a hash-bound verdict on THESE bytes.
+173. [~] Submit pass 32 to surf and obtain a hash-bound verdict on THESE bytes.
      Packet: /tmp/cb-A7-pass32.txt 251,835 B sha256
      4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d (11 bindings; recorded and
      hash-pinned in the awaiting queue).
@@ -6918,3 +6918,23 @@ t
      A FAIL is a valid outcome here; do not weaken a gate or a control to avoid one.
      OWNER: this session (delegation + intake); surf (transport).
      BLOCKED ON: surf's attachment-assembly fix.
+
+     STATE: delegated and FROZEN; awaiting the transport probe, then a verdict.
+       - Packet frozen for the duration of the submission: `submission-freeze.py --packet
+         /tmp/cb-A7-pass32.txt` -> VERDICT: ALL_FROZEN, receipt submission-freeze.json sha256
+         9502c87fce7f6ecc9722f754e35ddaa344443557636650803a8996a530d94ee2. Re-checked after the
+         freeze: sha256 4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d,
+         251,835 B, mtime unchanged - the bytes under submission are the bytes that were verified.
+       - Queue state: 11 delegation rows name this packet and pin that sha; awaiting-packets-guard
+         -> AWAITING_PACKETS_LIVE (3 queued packets, all live and hash-pinned); no row points at pass 31.
+       - SURF ACKNOWLEDGED with the right condition, verbatim in substance: it will first inspect
+         attachment assembly, then send a SEPARATE small byte-identity probe and compare the
+         reviewer's received sha256 with the local file; pass 32 will NOT be submitted unless that
+         comparison matches exactly, and it will copy the certified bytes without regeneration or
+         newline changes. That is the pass-31 failure mode being closed before it can repeat.
+     WHAT REMAINS: surf's probe result and submission receipts (response path + sha256 + sentinel),
+     then verdict-intake with `--packet` so the verdict applies all-or-nothing to the 11 bound files.
+     A FAIL is an acceptable outcome; the packet is not to be rebuilt to avoid one, and no control or
+     gate may be weakened to make the board green.
+     NOT YET DONE: no submission claim, no verdict claim. This row stays in-progress until a
+     hash-bound response exists.
