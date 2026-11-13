@@ -7309,3 +7309,33 @@ t
          page and confirm with the free `usage` command around ONE probe clip before any fan-out.
      OWNER: this session (routing only); researcher owns generation.
 
+186. [x] TOOL-OWNED ElevenLabs step for the researcher: usage read + ONE bounded Embry sigh probe in the
+       context that actually holds the credentials (theirs returned "No ElevenLabs API key found.").
+       - Usage (counts only, `/v1/user/subscription` via `skills/ops-elevenlabs/run.sh usage`):
+         `tier=creator`, `characters_used=20076`, `character_limit=363000`, `remaining=342924`,
+         `used_pct=5.5`, `resets_unix=1795284254`. Re-read immediately after the probe still showed
+         20076, so no credit delta is claimed; re-read later for the true cost.
+       - Probe attempt 1 (lossless, skill's advertised default) REFUSED before any audio: HTTP 403
+         `subscription_required`, "Output format 'wav_44100' is only available on the Pro tier and above"
+         (`output_format_not_allowed`). No charge, no file.
+       - Probe attempt 2 (ONE generation, creator-safe default) SUCCEEDED:
+         `/tmp/embry-sigh-probe/embry-sigh-probe.mp3`, 61,065 B, 3.787755 s, `mp3_44100_128`,
+         model `eleven_v3`, voice `orfFiGOiB0Kn2nOHPNIP` (embry-nonverbal), text
+         `"Mm. [sigh] Alright, let's keep going."`, sha256 `afff728bfaa4f036…`.
+       - Boundary stated to the researcher: this asset is TAGGED SPEECH containing a sigh in a carrier
+         sentence, not an isolated sigh event; extraction/eval stay theirs. Exactly one generation - no
+         fan-out, no batch, no retraining, no new clone. No key/config/env was read or copied.
+
+187. [ ] FIX the ops-elevenlabs default-format defect found by the probe.
+       Evidence: `tts` defaults to `LOSSLESS` = `wav_44100`; on this account (`tier=creator`) that request
+       is refused 403 `output_format_not_allowed` ("only available on the Pro tier and above"), so the
+       skill's documented default and its advertised lossless path fail for the actual plan, while
+       `references/api-surface.md:24` says the API default is `mp3_44100_128`.
+       Scope: make the CLI's default follow the account's tier (or fall back to `mp3_44100_128` on
+       `subscription_required` with the refusal recorded in the receipt), and correct SKILL.md so the
+       documented default matches what a creator-tier account can actually request. Acceptance: on this
+       account `run.sh tts ...` with no `--format` either produces audio or fails closed naming the tier
+       and the allowed format, with a receipt; no silent downgrade. Do NOT spend a generation to test
+       beyond one probe unless the researcher asks.
+     OWNER: this session (skill fix); researcher (their experiment).
+
