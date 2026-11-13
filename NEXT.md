@@ -5851,13 +5851,15 @@ t
 .
 133. [~] Awaiting surf verdicts. Three packets are live and bound; nothing here is blocked on me.
      LIVE (re-hashed against the tree, zero drift, as recorded in delegations-20261112.json):
-       /tmp/cb-A7-pass27.txt  4851b66a86f8cb07  10 files  (adversarial set: fs_ops, stereo measurement, wav_guard,
-                                                             both retained harnesses, tests/run.sh)
+         /tmp/cb-A7-pass31.txt  f7b355a909363e8e  11 files  (CURRENT: fs_ops, spyke_render, interrupt_sfx,
+                                                              wav_guard, sfx_verify, both A7/WG harnesses,
+                                                              library regression, record-packet, tag evidence,
+                                                              tests/run.sh; supersedes 28/29/30)
        /tmp/cb-A7-pass19.txt  b1ad7fa081324d5a   5 files  (narrator/speak/review_store)
        /tmp/cb-B4-pass5.txt   53186cca51e6ee37   5 files  (B4 rebuilt at current bytes)
-     WITHDRAWN, each with a reason in `withdrawn_packets`: A7 17/18/20/22/23/24/25/26, wav_guard pass 2/3, B4 pass 2/4.
-     25 and 26 died for the same honest reason - a new harness moved tests/run.sh - which is why pass 27 is final and I
-     have stopped touching these files while the review is in flight.
+       WITHDRAWN, each with a reason in `withdrawn_packets`: A7 17/18/20/22/23/24/25/26/27/28/29/30,
+       wav_guard pass 2/3, B4 pass 2/4. Passes 28-30 died the same honest way each time: a repair moved a
+       bound file, so the packet no longer described the tree - withdraw, reissue, re-send the hash.
      A response that does not quote the hash above is STALE_RESPONSE_SUPERSEDED, not a verdict; a FAIL lands as a
      first-class FAIL row at the reviewed bytes and becomes a repair item, never a silent pass.
      WHEN A VERDICT ARRIVES: verdict-watch.py --require-ready -> verdict-intake.py --group <group> --apply ->
@@ -6443,3 +6445,30 @@ t
      not been submitted yet, pass 19 was never submitted, and B4 pass 5's only directory is the void pass-4 one.
      Verification: live states before/after on the real surf root; the three-case self-test above; the misattributing
      directory's size, sha and timestamp compared against pass 31's.
+
+157. [x] The verdict-watch attribution fix is now a WIRED guard (14th sweep guard), not a proof I have to remember.
+     WHY: item 156 fixed the misattribution and proved it by hand once, against live /tmp directories. A proof that
+     depends on a hand run is the failure mode this project keeps paying for ("a rule that needs remembering to grep is
+     not a gate"). The guard re-proves the discrimination on every sweep from SYNTHESIZED packets, so it depends on no
+     live packet, delegation row, or surviving /tmp directory.
+     outputs/verdict-watch-attribution-guard.py: builds a new revision binding A,B,C and an older revision sharing A,B
+     with C changed to D - the real shape of a revision that preserves most artifacts - then asserts (1) a genuine
+     submission IS attributed, (2) the older revision is NOT, (3) with both present the genuine directory wins. It prints
+     VERDICT: ATTRIBUTION_OK / ATTRIBUTION_BROKEN and is wired into board-sweep.sh, now 14 guards.
+     TWO INVALID CONTROLS FOUND BY RUNNING, both recorded because each could have shipped a useless guard:
+     - FIRST mutation run failed for the WRONG REASON: the mutant copy of verdict-watch.py sat in /tmp and died with
+       FileNotFoundError on its own manifest, so "the guard caught it" proved nothing about the rule. The guard now
+       supplies a minimal manifest, so the mutant exercises the attribution rule itself.
+     - SECOND mutation run PASSED: the fixture's older packet shared only ONE hash with the new one, and the OLD rule
+       also required two, so the mutation was invisible. Rebuilt with a 2-of-3 overlap, which is what actually
+       distinguishes the rules.
+     MUTATION CONTROLS, final: live rule -> ATTRIBUTION_OK 3/3; old `hits >= min(2, ...)` rule restored -> 2/3 with
+     "an OLDER revision is NOT attributed" FAILING at surf-cb-OLD (the exact wrong attribution the production defect
+     produced). The guard can fail, and it fails on the rule.
+     ALSO CORRECTED IN PLACE: item 133's live list named /tmp/cb-A7-pass27.txt as one of three live packets. Pass 27 was
+     withdrawn, and pass 31 is the live A7 packet (f7b355a9, 11 files). The list is now pass 31 / pass 19 / B4 pass 5,
+     with 28-30 added to the withdrawn set and the reason they died stated once.
+     Verification: board-sweep PASS (14 guards) with "PASS verdict-watch-attribution-guard.py ATTRIBUTION_OK"; mutant
+     run ATTRIBUTION_BROKEN rc=1 crediting surf-cb-OLD; live verdict-watch states for pass 31/19/B4-5 all
+     NO_SUBMISSION_FOUND, which is the truth until surf submits them.
+
