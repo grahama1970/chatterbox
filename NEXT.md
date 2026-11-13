@@ -7698,7 +7698,7 @@ t
        (pass 36 governed=11 FROZEN=11), receipt sha `0d7734d33117a56d…`.
      SUBMITTED via surf with path/size/sha and the established reply shape. Verdict tracked in 197.
 
-197. [~] The pass-36 verdict. Awaiting surf's submission/extraction; delivery verified from the
+197. [x] The pass-36 verdict. Awaiting surf's submission/extraction; delivery verified from the
      destination (quoted packet sha 416e15d1…, 11 per-file VERDICT lines, PACKET VERDICT), then
      intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
      Packet: `/tmp/cb-A7-pass36.txt` 288,999 B `416e15d131eca39d…`, `ALL_FROZEN` (receipt `0d7734d3…`).
@@ -7723,4 +7723,46 @@ t
          working ("Reproducing overwrite guard failure"), no final answer, and it has not yet stated
          an independently computed byte count/hash.
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
+
+     VERDICT RECEIVED, VERIFIED, INTAKED (2026-11-13T21:30Z): surf finished and extracted, no
+       resubmission, no extraction error; raw contains exactly one
+       `WEBGPT_DONE:20261113T204103Z:fcf6c9a3`.
+       My verification of the artifact:
+         * `/tmp/surf-cb-A36/response.md` 13,634 B sha256 `6f36ccde38268cdb…`, preserved at
+           `outputs/reviews/a7-pass36-FAIL-20261113.md` (sha VERIFIED identical).
+         * Quotes `PACKET SHA256 416e15d131eca39d…` twice, exactly 11 `VERDICT <path> <sha256>`
+           lines at the packet's own hashes, `PACKET VERDICT: FAIL`.
+         * Applied per group (`verdict-intake.py --apply`): A7 -> 2 PASS / 2 FAIL (manifest 39,677 B
+           sha `3d00ef0650018845…`); GUARDS-WAVGUARD -> 6 PASS / 1 FAIL (manifest 41,330 B sha
+           `cc3dbc5444b2c13b…`).
+       RESULT: 8 PASS / 3 FAIL - the SAME three files for the fourth round (`spyke_render.py`,
+       `interrupt_sfx.py`, `sfx_verify.py`).
+
+198. [ ] REPAIR the A36 findings AND make the structural change the fourth round on the same three
+     files justifies. Source: `outputs/reviews/a7-pass36-FAIL-20261113.md`.
+     TREND: pass 33 5P/6F (9 major), pass 34 7P/4F (7 major), pass 35 8P/3F (5 major), pass 36 8P/3F
+     with a NEW self-inflicted regression (A36-SP-01: valid overwrite renders now fail the dirfd inode
+     check and skip restoration). Narrow patches are producing regressions faster than they close
+     findings, so this round replaces the mechanism instead of patching it again:
+       (a) ONE publication transaction helper, dirfd-scoped, used by sidecars AND WAV, with
+           overwrite (replace) and no-replace both expressed through it - the separate
+           `_publish`/`_discard_if_ours`/`_restore_backup` paths are what keep disagreeing;
+       (b) DROP the named-staging fallback for these paths (sealed memfd or O_TMPFILE only) so
+           "park the fallback name" logic disappears instead of being maintained;
+       (c) seal ASR input with `fcntl` `F_ADD_SEALS` (`F_SEAL_WRITE|F_SEAL_GROW|F_SEAL_SHRINK`) after
+           the last write, so "the memfd remains writable" cannot be true even for this process;
+       (d) apply the SAME immutable-input rule to the verifier's separate ASR path.
+     FINDINGS:
+       - A36-SP-01 MAJOR (REGRESSION I introduced) `spyke_render.py:775,782` (comparison `:716-727`,
+         recovery bypass `:803-811`) - valid `allow_overwrite=True` renders fail the new inode check
+         and SKIP restoration.
+       - A35-IS-01 NOT FIXED MAJOR `interrupt_sfx.py:300-308` (fallback `:333-342`, association
+         `:953-954`) - the memfd remains WRITABLE, so different bytes can reach ASR.
+       - A36-SV-01 MAJOR `sfx_verify.py:370-386` (hash assignment `:471`, transcript attach
+         `:539-540`) - the verifier's ASR path accepts substituted audio AND deletes the replacement.
+       - A35-IS-02 PARTIAL MINOR `interrupt_sfx.py:333-336` - fallback directory init still precedes
+         the cleanup scope.
+     Then: rebuild ONE packet (pass 37) with every changed file, record per group, freeze, submit via
+     surf. Do not ship an overwrite-path change without an executed allow_overwrite render proof.
+     OWNER: this session (repairs/rebuild); surf (submission/extraction).
 
