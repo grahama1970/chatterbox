@@ -6531,3 +6531,25 @@ t
      mechanism that catches exactly this kind of silent doc move.
      Verification: doc live sha == origin blob; board `sweep: PASS (15 guards)`; the three counterexample measurements are
      item 159's, re-cited here as the basis for the corrected text.
+
+161. [x] Pass 31 verified FROZEN before submission (11/11 bindings match the tree) and the engine was released for the researcher's owner-directed GPU window.
+     FREEZE CHECK, run because surf was about to submit: the in-flight packet must describe the tree it names, and a
+     packet that moved mid-review is the defect that killed passes 28/29/30. Measured: /tmp/cb-A7-pass31.txt 226,716 B
+     sha256 f7b355a909363e8e3211354b68e44b3b08af9b794688820382ce7679271321a9; the awaiting row's pinned
+     `packet_sha256` MATCHES that hash; all 11 bindings re-hashed against skills/chatterbox-speak and 0 are stale or
+     missing; awaiting-packets-guard reports 3 queued packets all live and hash-pinned (AWAITING_PACKETS_LIVE).
+     A CHECK THAT PASSED FOR THE WRONG REASON, recorded: my first binding check regexed for a `skills/` prefix the packet
+     does not use, matched ZERO rows, and printed "0 stale" - a vacuous pass. Re-run against the packet's real format
+     ("  <path>  sha256 <hex>") with an assertion that exactly 11 rows were found, and only then were the 11 OK lines
+     evidence. A count of zero checked items is not a clean result.
+     GPU WINDOW (researcher seq 24, owner-directed): asked for the ~7.8 GB the :8018 engine holds for a Higgs TTS 3
+     measurement, 30-60 min. Stopped BY ME as the service owner - the researcher correctly did not touch the container.
+     BEFORE: embry-voice-chatterbox-1 Up 3 hours (healthy), health HTTP 200, GPU 15,048 MiB used.
+     AFTER: Exited (0) at 2026-11-13T03:40:34Z, health HTTP 000 (unreachable), GPU 11,047 MiB used (~4 GB freed; the
+     remainder is other tenants, not the engine). Ollama left running, no model loaded, as the researcher asked.
+     RESTART PROTOCOL: the engine stays DOWN until the researcher signals the window is closed; on restart I verify
+     /health 200 AND a live render before calling it up, not merely `docker start` returning. `sanity.sh` performs a LIVE
+     RENDER, so it must not be run during this window - its failure now would mean "engine intentionally down", not a
+     regression. The board sweep is unaffected: all 15 guards are file-based and PASS with the engine down.
+     Verification: docker ps -a shows Exited (0); health 000; GPU used 15048 -> 11047 MiB; packet pinned hash MATCH;
+     11/11 bindings OK; AWAITING_PACKETS_LIVE; sweep PASS (15 guards).
