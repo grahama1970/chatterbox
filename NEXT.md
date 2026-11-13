@@ -6376,15 +6376,43 @@ t
      identities re-recorded (cbf3d9561368); board PASS (13 guards).
      Verification: before/after on the same constructed clip; alex-chuckle active_run_s 0.34; 24/24 harness; 74/74 frozen
      with 0 mechanical failures; run.sh rc=0; sanity rc=0; packet 11/11 zero drift; board PASS.
-155. [ ] Fix WG-06 partial: clip detection must be per channel, not max over all samples.
-     REPRODUCTION (item 153): stereo with ch0 hard-clipped at 32767 and ch1 a clean sustained tone -> `read_audio` returns
-     None and refuses the whole clip; at ch0 = 32000 (0.977) the same clip is accepted. `sfx_verify` tests
-     `np.abs(pcm).max()` across every sample, so one bad channel rejects a clip whose other channel is valid - the same
-     defect class as WG-09, in a second file.
-     PLAN: judge clipping per channel and refuse only when EVERY channel clips (with the failing channel named in the
-     reason), consistent with the "any channel that passes" rule now used by wav_guard; keep the exact threshold. Controls:
-     clipped-ch0 + clean-ch1 must be ACCEPTED with the best channel used; all-channels-clipped must be REFUSED; a mutant
-     that restores the global max must be CAUGHT.
-     NOTE: `interrupt_sfx.gate` also applies a whole-file peak clipping rule (MAX_PEAK 0.999) - audit it in the same pass
-     rather than fixing one file and leaving the sibling, which is how this class survived WG-09.
-     OWNER: this session.
+155. [x] WG-06 PARTIAL fixed in BOTH files the reviewer named: clipping is judged per channel, and channel selection no longer favours the defective channel.
+     REPRODUCTION (item 153, repeated as the before-state): stereo PCM16, ch0 hard-clipped at 32767, ch1 a clean
+     sustained 440 Hz tone -> `sfx_verify.read_audio` returned None, refusing a clip that HAS a valid channel; the same
+     clip at ch0 = 32000 (0.977) was accepted. The code tested `np.abs(pcm).max()` over EVERY sample while its own
+     comment claimed per-channel clipping.
+     SECOND HALF, found by reading the code after reproducing the first: the surviving channel was chosen by ENERGY
+     (`(pcm ** 2).sum(axis=0)`), and a clipped or DC-offset channel carries more energy than a clean quiet one - so even
+     with the refusal relaxed, the channel that got measured could be the defective one. This is the WG-09 class in a
+     second file, which is why the reviewer called it PARTIAL rather than fixed.
+     FIXES: refusal only when EVERY channel clips (threshold unchanged at 0.999); surviving channel chosen by AC RMS
+     (DC removed) among channels that are NOT clipped - the same "any channel that passes" rule wav_guard uses after
+     WG-09. SIBLING AUDIT the item demanded: `interrupt_sfx.measure` chose its channel by AC RMS alone, so a hard-clipped
+     channel could be selected and `gate()` then reported "clipping" for a clip whose other channel was clean; it now
+     prefers a non-clipped channel and falls back to all channels only when every one clips, so a genuinely clipped clip
+     is still named.
+     AFTER: clipped-ch0 + clean-ch1 ACCEPTED on the clean channel (peak 0.2441, rms 0.1727, zcr 876); both channels
+     clipped REFUSED; ch0 DC offset + clean ch1 ACCEPTED (chooses the clean channel); interrupt_sfx measures peak 0.2441
+     on the mixed clip instead of the clipped 1.0.
+     CONTROLS: tests/test_wg_pass2_repairs.py b339484ce753, 29/29, five WG-06P cases each with a mutant: mixed ACCEPTED,
+     all-clipped REFUSED, global-max mutant CAUGHT (refuses the mixed clip again), interrupt_sfx non-clipped measurement,
+     and a clipped-channel-eligible mutant CAUGHT (reports clipping, peak 1.0).
+     TWO CONTROL DEFECTS FOUND BY RUNNING, NOT BY REASONING:
+     - The first WG-06P mutant was NOT caught because my fixture's clipped channel was a CONSTANT 32767 - no variation,
+       so AC-RMS selection avoided it even under the mutant (mutant peak 0.2441, control failed). Replaced with a
+       hard-clipped square wave (peak 1.0 AND enormous variation), which actually exercises the rule.
+     - Two pre-existing mutant anchors in the harness (PER_CHANNEL for interrupt_sfx, SV_MEAN for sfx_verify) pinned the
+       production text this repair replaced, so they silently stopped applying; the harness caught them at anchor count 0
+       and both were re-pointed. A mutant that no longer matches production is a dead control, not a passing one.
+     GATES: tests/run.sh rc=0 with all harnesses PASS and PUBLISH_BY_NAME: clean; sanity.sh rc=0 with a live render; the
+     74-clip frozen regression 74/74 with 0 mechanical failures.
+     PACKET /tmp/cb-A7-pass31.txt 226,716 B sha256
+     f7b355a909363e8e3211354b68e44b3b08af9b794688820382ce7679271321a9, 11 bindings, 0 stale, 0 missing, recorded
+     through record-packet.py; pass 30 WITHDRAWN with its reason. Doc landed 9e11b4c2132204579c3d4e8fff29cf233ab6ed43;
+     identities re-recorded (e5be8799ee0d); board PASS (13 guards).
+     SCOPE NOTE: this closes the WG-06 PARTIAL as the reviewer framed it (sfx_verify:257,432-433) and the wav_guard
+     selection region WG-06 cited was already rewritten by the WG-09 fix. WG-07's PARTIAL was closed separately in item
+     154. Nothing here claims the whole stereo/impulse class is exhausted; the class was audited file by file, and the
+     audit is what found the second half and the interrupt_sfx sibling.
+     Verification: before/after on one mixed clip per file; 29/29 harness; 74/74 frozen 0 failures; run.sh rc=0; sanity
+     rc=0; packet 11/11 zero drift; doc live == origin; board PASS.
