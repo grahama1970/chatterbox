@@ -7481,6 +7481,12 @@ t
        each side and no carrier word inside the span; a HUMAN identity verdict (reviewer + utc +
        verbatim) is mandatory and ASR/token-reload are not identity; receipt binds tag, source
        utterance sha, span start/end, span sha, rms/peak, asr_window_text, gaps, verdict, rights.
+     RECEIVING CONVENTION (agreed with the researcher 2026-11-13):
+       - the human verdict on the accepted FULL utterance is the exact string "its good enough"; its
+         timestamp was not retained, so it is stored as UNKNOWN - never invented, never backfilled;
+       - an identity verdict requires reviewer + verbatim text; a missing timestamp is recorded unknown
+         and does not by itself block research-only storage, but it can never be upgraded to production;
+       - the original 62-token source event stays status=unresolved in every artifact that references it.
      BLOCKED ON: the researcher's contract/decoder/evidence (external lane). No production edit is made
      until a pilot tag passes the identity gate.
      OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
