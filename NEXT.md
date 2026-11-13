@@ -7824,7 +7824,7 @@ t
        RESULT: 8 PASS / 3 FAIL — the SAME three files for the fifth round AND a new class: the findings
        are now about the INTERVAL between writing the memfd and sealing it.
 
-200. [ ] REPAIR the A37 findings on the pass-37 bytes (8 PASS / 3 FAIL), each reproduced FIRST, then
+200. [x] REPAIR the A37 findings on the pass-37 bytes (8 PASS / 3 FAIL), each reproduced FIRST, then
      rebuild ONE packet (pass 38). Source: `outputs/reviews/a7-pass37-FAIL-20261113.md`.
      THE NEW CLASS (this is the important part): sealing a descriptor does not protect the window
      BEFORE the seal. Both ASR paths write, then seal; a same-user writer can reopen
@@ -7848,4 +7848,50 @@ t
      Then: rebuild ONE packet (pass 38) with every changed file, record per group, freeze, submit via
      surf. A FAIL is a valid outcome; never weaken a gate.
      OWNER: this session (repairs/rebuild); surf (submission/extraction).
+
+     RESULT (2026-11-13): all 5 findings repaired at the cited paths, each reproduced FIRST and then
+     verified with the same attack.
+       - A37-IS-01 (MAJOR): I reproduced the write->seal window directly: writing `ORIGINAL`, opening
+         `/proc/self/fd/<fd>` O_RDWR and overwriting, THEN sealing produced sealed content
+         `SUBSTITUTED` - the seal locked in the wrong bytes. Fix: after sealing, READ THE DESCRIPTOR
+         BACK and require its digest to equal the measured snapshot. Verified: the same overwrite hook
+         now yields `RuntimeError: ASR input changed between write and seal; refusing to associate a
+         transcript with different bytes`.
+       - A37-SV-01 (MAJOR): same rule in the verifier's `transcribe()`; verified the hook returns
+         `AsrResult(ok=False, error="ASR input changed between write and seal (content unverified)")`.
+       - A37-SP-01 (MAJOR): sidecar publication verified the INODE only, so a receipt could be
+         rewritten during publication and the render still reported success. The exact staged bytes are
+         now digested and each published artifact's CONTENT is read back through the retained
+         directory descriptor. Verified with a hook that rewrites the receipt in place at its
+         publication boundary (same inode, different bytes): REFUSED with "published content does not
+         match the staged bytes (rewritten during publication)".
+       - A37-FS-01 (MINOR): chmod moved inside `replace_from_fd`'s cleanup scope. Verified: injected
+         chmod failure raises and leaves NO leftover directory.
+       - A37-IS-02 (MINOR): chmod and the payload open moved inside `_publish_snapshot`'s cleanup
+         scope with the descriptor starting absent. Verified: injected chmod failure raises OSError(1)
+         and leaves the destination directory EMPTY.
+     BUG I INTRODUCED AND CAUGHT IN THE SAME TURN: my first IS-02 edit left an unconditional
+       `os.close(fd)` in `finally`, so the injected failure surfaced as
+       `TypeError: 'NoneType' object cannot be interpreted as an integer` instead of the real error. The
+       probe caught it; the close is now guarded on `fd is not None` (verified before the suite ran).
+     TEST-SIDE: the serialization-only mutant pinned the literal text of the receipt staging line, which
+       this pass refactored to stage bytes through a named variable. The mutant now anchors the
+       REFACTORED production line (effects dropped from the sidecar only); `test_render_tag_evidence`
+       passes 20/20 - the assertion was not weakened.
+     HARNESS: `bash tests/run.sh` -> rc=0, "tests: all retained harnesses PASS",
+       `PUBLISH_BY_NAME: clean`.
+     PACKET pass 38: `/tmp/cb-A7-pass38.txt` 295,757 B sha256 `650947f6feda328e…`; 11 bindings, 0
+       mismatches, 11 sections match disk, 5/11 files changed (fs_ops, spyke_render, interrupt_sfx,
+       sfx_verify, test_render_tag_evidence).
+     RECORDS: A7 + GUARDS-WAVGUARD recorded; `submission-freeze.py` -> `VERDICT: ALL_FROZEN`, receipt
+       sha `d5fd9ba4f1335c76…`.
+     SUBMITTED via surf with path/size/sha and the A38 binding rule (quote `650947f6…`; earlier
+       passes' verdicts must not be intaked). Verdict tracked in 201.
+
+201. [~] The pass-38 verdict. Awaiting surf's submission/extraction; delivery verified from the
+     destination (quoted packet sha `650947f6…`, 11 per-file VERDICT lines, PACKET VERDICT), then
+     intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
+     Packet: `/tmp/cb-A7-pass38.txt` 295,757 B `650947f6feda328e…`, `ALL_FROZEN` (receipt
+     `d5fd9ba4f1335c76…`).
+     OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
