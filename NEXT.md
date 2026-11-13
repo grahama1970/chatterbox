@@ -7368,5 +7368,16 @@ t
          more probe with a different carrier strategy is the next step, not a batch.
        - Delivered to the researcher with path, bytes, duration, sha256, usage readings and the lossy
          Creator-MP3 provenance (no conversion claimed to restore lossless).
-     OWNER: this session (done); researcher (extraction/eval).
+       - OUTCOME, independently verified by this session (not transcribed from the report):
+         candidate `/tmp/embry-sigh-v2-review/sigh-candidate.wav`, 39,768 B, 0.450 s, 44.1 kHz mono,
+         sha256 `23ebb66b2aa1c4d0…`; WHOLE-FILE RMS `0.02594` = `-31.72 dBFS`, matching the researcher's
+         claimed inner-window figure exactly. Independent source-window measure (mp3 -> pcm, .40-.85 s)
+         = `0.02511` (`-32.00 dBFS`), consistent within mp3 decode.
+         First measurement attempt of mine was invalid (I windowed .40-.85 INSIDE a file that IS the
+         extracted .45 s slice); the corrected whole-file measure is the one above.
+         v1 gap was `-59.4 dBFS`, so v2 is ~28 dB stronger: the ACOUSTIC EVENT is present.
+       - Still NOT claimed: sigh identity and sustained-duration control. The researcher played the
+         candidate to Graham for the identity check; generation stays PAUSED and no third probe is
+         requested pending that listening.
+     OWNER: this session (verified + paused); researcher (identity/sustain eval); Graham (listening).
 
