@@ -7442,3 +7442,28 @@ t
          24 kHz, text fdd5ff38…525fd, audio 8e4c6bbf…f3ebd.
      OWNER: this session (measurement + boundary); spyke lane (thread attachment literal).
 
+193. [~] NATIVE S3 TOKEN PATH for event tags: collaborate with the researcher so chatterbox-speak can
+     render tagged events from saved codec codes instead of only ElevenLabs/turbo tags.
+     Verified from their artifacts this turn (not their prose):
+       - `/tmp/hearty-laugh-proof/audio_tokens.json`: label "hearty laugh", codec
+         `speech_tokenizer_v2_25hz`, 62 tokens, `source_sha256 3f53115e1fdee0bf…`.
+       - `receipt.json`: `valid_range [0,6560]`, `reload_exact True`, decoder Chatterbox S3Gen with the
+         neutral Embry reference, 24 kHz, 2.48 s, `output_sha256 b2b4a2c402e5627d…`.
+       - `RESULT.md`/`evaluation.json`: acoustic gate PASS 9/9; base spoke the label 12/12, trained 0/12;
+         identity NOT established (source ASR "Ha ha ha ha ha!" vs neutral-reference S3 round-trip
+         "No!"). So TOKENIZATION WORKS while EVENT IDENTITY is still unproven — token reload is not
+         identity, per this project's PO-02 boundary.
+     ASKED THE RESEARCHER FOR (no generation, no spend):
+       1. a token-file contract that also carries reference_voice, reference_audio_sha256, decoder and
+          output_sha256 in one object;
+       2. the decoder entry point outside the proof container (callable/CLI + reference audio + device);
+       3. identity evidence PER TAG (ASR of the decoded event + human listen verdict), not token reload;
+       4. rights/provenance per tag asset (may tokens derived from owned audio ship in a skill fixture?);
+       5. ONE pilot tag (sigh or laugh): token file + decode command + WAV + identity evidence, to run
+          through `wav_guard`/`sfx_verify` before any wiring.
+     WHAT I SUPPLY: tag roster, verifier predicates, receipt schema, and a fail-closed adapter that
+     refuses any token asset lacking identity evidence.
+     BLOCKED ON: the researcher's contract/decoder/evidence (external lane). No production edit is made
+     until a pilot tag passes the identity gate.
+     OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
+
