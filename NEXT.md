@@ -7614,10 +7614,51 @@ t
        `ce898297bdb9e050…`, pass 35 governed=11 FROZEN=11).
      SUBMITTED to surf with path/size/sha and the required reply shape. Verdict tracked in 195.
 
-195. [~] The pass-35 verdict. Awaiting surf's extraction; delivery will be verified from the
+195. [x] The pass-35 verdict. Awaiting surf's extraction; delivery will be verified from the
      destination (packet sha quoted + 11 per-file VERDICT lines + PACKET VERDICT), then intaked per
      group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate is weakened.
      Packet identity: `/tmp/cb-A7-pass35.txt` 286,200 B `eebccef748ffa3c4…`. Frozen `ALL_FROZEN`
      (receipt `ce898297bdb9e050…`).
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
+
+     VERDICT RECEIVED, VERIFIED, INTaked (2026-11-13T20:30Z): surf reports FINISHED, no refusal;
+       submitted_to_chatgpt=True, proof_status=response_proven, heartbeat phase=completed/
+       page_state=response_detected, sentinel `WEBGPT_DONE:20261113T202758Z:8d4d5ea2` present in the
+       live DOM; dedicated reviewer window verified (desktop index1), operator desktop untouched.
+       My own verification of the artifact:
+         * `/tmp/surf-cb-A35/response.md` 16,830 B sha256 `1481b322265f7091…`, preserved at
+           `outputs/reviews/a7-pass35-FAIL-20261113.md` (sha VERIFIED identical).
+         * Quotes `PACKET SHA256 eebccef748ffa3c4…` twice, gives exactly 11 `VERDICT <path> <sha256>`
+           lines at the packet's own hashes, ends `PACKET VERDICT: FAIL`.
+         * Applied per group (`verdict-intake.py --apply`): A7 -> 2 PASS / 2 FAIL (manifest 39,677 B
+           sha `bf7a5319739f65bb…`); GUARDS-WAVGUARD -> 6 PASS / 1 FAIL (manifest 41,330 B sha
+           `8145e53b338a9155…`).
+       RESULT: 8 PASS / 3 FAIL. FAIL = `scripts/spyke_render.py`, `scripts/interrupt_sfx.py`,
+       `scripts/sfx_verify.py`. Repairs tracked in 196.
+
+196. [ ] REPAIR the A35 findings on the pass-35 bytes (8 PASS / 3 FAIL), each reproduced FIRST, then
+     rebuild ONE packet (pass 36). Source: `outputs/reviews/a7-pass35-FAIL-20261113.md`.
+     HONEST NOTE: `A35-SP-02` is a REGRESSION I introduced with the pass-34 SP-02 fix ("rendering into
+     a new output directory has regressed"), and `A34-SP-02` came back PARTIAL. Both are fixed by
+     understanding the identity gate's interaction with a NEWLY CREATED output directory, not by
+     another narrow patch.
+     MAJORS:
+       - A34-SP-02 PARTIAL `spyke_render.py:685-699,734-745,799` - temporary DIRECTORY replacement
+         still escapes the identity checks.
+       - A35-SP-01 `spyke_render.py:764-768` (skipped cleanup `:781-783`) - the directory-change
+         exception path LEAKS staged descriptors.
+       - A35-SP-02 `spyke_render.py:688-691`, before staging at `:723` - rendering into a new output
+         directory regressed.
+       - A35-IS-01 `interrupt_sfx.py:297-306,340-341` (association `:876,908-909`) - the inherited ASR
+         descriptor does NOT freeze the captured bytes.
+       - A35-SV-01 `sfx_verify.py:290-308` (rejection `:500-501`) - channel selection still omits the
+         verifier's raw-RMS floor.
+     MINORS:
+       - A35-IS-02 `interrupt_sfx.py:294-298` - ASR file-creation failure leaves an unhandled temp dir.
+       - A35-IS-03 `interrupt_sfx.py:655-663` (same pattern in ASR cleanup `:315-322`) - generator
+         cleanup silently ignores late-arriving leftovers.
+     Then: rebuild ONE packet with every changed file (bindings + sections verified against disk),
+     record per group, freeze, submit via surf with exact path/size/sha. A FAIL is a valid outcome;
+     never weaken a gate.
+     OWNER: this session (repairs/rebuild); surf (submission/extraction).
 
