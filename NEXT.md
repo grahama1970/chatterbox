@@ -6703,3 +6703,28 @@ t
      Verification: producer/consumer located by grep and read directly; consumer call returned `calibrated` + spread; diff
      key-set comparison showed zero removals; parked copy hash identical; `DEFAULT_BASE_URL` read from the script, not
      assumed.
+
+168. [x] Closed the last publication path for the no-rights narrator references: 58 provenance sidecars were addable from a PUBLIC repo.
+     THE HAZARD, MEASURED BEFORE ACTING: after item 166 backed up `voices/` (115 files, 71,186,441 B) I assumed one stray
+     `git add -A` in the PUBLIC repo grahama1970/chatterbox could publish third-party audiobook audio. That assumption was
+     WRONG and the check said so: `.gitignore:48 **/*.wav` already covers the audio, confirmed by
+     `git check-ignore -v voices/alex_longworth.wav` -> ignored by `.gitignore:48:**/*.wav`.
+     WHAT WAS ACTUALLY OPEN: the sidecars. `git check-ignore` reported `voices/alex_longworth.provenance.json` as ADDABLE,
+     `git ls-files --others --exclude-standard voices/` counted 58 such files, and `git add --dry-run voices/` listed them
+     one by one. Each names its source outright - book, narrator, source window (e.g. "Horus_Rising_The_Horus_Heresy_
+     Book_1...", Toby Longworth, 15877 s) - so staging them would publish the source chain for material with no rights
+     clearance, in a repository anyone can read.
+     FIX: `voices/` added to .gitignore as a directory rule with the reason in the file (rights unverified + public repo +
+     backup location), rather than one more pattern that would need remembering.
+     VERIFIED AFTER: `check-ignore` now reports IGNORED for both the .wav and the .provenance.json; `git ls-files --others
+     --exclude-standard voices/` returns 0; `git add --dry-run voices/` refuses with "The following paths are ignored";
+     `ls voices | wc -l` is still 115, so the engine's /work mount sees exactly what it saw before - a .gitignore changes
+     nothing about the filesystem.
+     LANDED: c16ffad70b336491cbfe5ebfa7b13f08ae86f239; `git show origin/main:.gitignore` contains `voices/` at line 62 and
+     its blob b415096fc57337c72011cecd1e5f1713ee62c6696d377a4acc702da1a5be80d7 is identical to the local file.
+     NOTE ON LOCAL STATUS: `git status` still shows ` M .gitignore` (and `?? NEXT.md`) because gh-land commits through
+     plumbing without touching the local index - the same explained behaviour recorded in item 166, not a stranded change.
+     WHAT THIS DOES NOT CLAIM: ignoring a path does not delete anything, does not tighten permissions, and does not make the
+     references licensed. The rights question is unchanged and remains the reason nothing here is committed.
+     Verification: check-ignore for both file types (IGNORED); addable count 115 files present / 0 addable; dry-run add
+     refuses; origin blob equality; 115 files still on disk.
