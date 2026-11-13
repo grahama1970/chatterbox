@@ -7348,11 +7348,25 @@ t
        - Consequence for the researcher: the tool-owned step no longer needs an explicit `--format` on
          this plan; it will pick mp3 and say so.
 
-188. [ ] SECOND ElevenLabs probe the researcher asked for: ONE cleaner, clearly audible, sustained sigh
+188. [x] SECOND ElevenLabs probe the researcher asked for: ONE cleaner, clearly audible, sustained sigh
      in the established Embry voice, with well-separated short speech carriers; preserve Creator MP3
      provenance (no upgrade), and read the usage delta afterwards. One generation only; no batch.
      Constraints: voice `orfFiGOiB0Kn2nOHPNIP` (embry-nonverbal), model `eleven_v3`, format
      `mp3_44100_128` (Pro-only wav is unavailable), short carriers, sigh tag between them.
-     Report to the researcher: path, bytes, duration, sha256, usage before/after; extraction/eval stay
-     theirs. OWNER: this session (tool-owned generation); researcher (extraction/eval).
+       - DONE, exactly ONE generation, no batch, no upgrade. Carrier chosen for well-separated short
+         speech: `"Right. [sigh] Right."` (singular tag between two very short carriers). Format was
+         OMITTED, which also exercised 187: the CLI printed "note: --format omitted; tier=creator ->
+         mp3_44100_128".
+       - Artifact: `/mnt/storage12tb/skills/chatterbox-speak/outputs/embry-sigh-probe-v2/embry-sigh-v2.mp3`,
+         23,030 B, 1.410612 s, sha256 `b4481653e1a4b48d…`, voice `orfFiGOiB0Kn2nOHPNIP`, model
+         `eleven_v3`, `mp3_44100_128`.
+       - Usage read before = 20,147 and after = 20,147 (immediate delta 0). An earlier read this session
+         was 20,076, so the account moved +71 characters between reads: metering LAGS, and "unchanged"
+         is not evidence of zero cost. Reported to the researcher as unknown cost, not free.
+       - HONEST BOUNDARY: audibility/sustain of the sigh in this file is NOT measured here; total
+         duration is 1.41 s and extraction/eval stay with the researcher. If it fails their gate, ONE
+         more probe with a different carrier strategy is the next step, not a batch.
+       - Delivered to the researcher with path, bytes, duration, sha256, usage readings and the lossy
+         Creator-MP3 provenance (no conversion claimed to restore lossless).
+     OWNER: this session (done); researcher (extraction/eval).
 
