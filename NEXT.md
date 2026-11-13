@@ -6865,7 +6865,9 @@ t
      SCOPE: the engine stays DOWN for the researcher's GPU window (Exited(0), health 000); no live
      render was used as evidence in this item, and the next packet must be rebuilt from these bytes.
 
-172. [ ] Rebuild and resubmit a NEW packet (pass 32) from the repaired bytes - never reuse pass 31.
+172. [x] Rebuild a NEW packet (pass 32) from the repaired bytes - never reuse pass 31.
+     (The RESUBMIT half is split into 173: it is blocked on surf's transport, and checking this
+     item off must not be read as a submission or a verdict.)
      The nine FAIL files are repaired and every control executes; what remains is a packet that
      describes THESE bytes. Requirements: write a NEW packet path (pass 31 stays withdrawn/dead),
      include all 11 artifacts bound by pass 31 plus any file whose bytes changed in item 171, record
@@ -6879,3 +6881,40 @@ t
      Then delegate to surf with the exact sha256 and paths, and await a hash-bound verdict.
      OWNER: this session for the build/verify; surf for the transport and submission.
      BLOCKED ON: surf's attachment fix (reported in progress); do not weaken or skip the identity check.
+
+     RESULT - the packet exists, describes the repaired bytes, and is recorded:
+       - /tmp/cb-A7-pass32.txt, 251,835 B, sha256
+         4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d, 11 bindings.
+       - 9 of the 11 artifacts differ from pass 31 (fs_ops, spyke_render, interrupt_sfx, wav_guard,
+         sfx_verify, test_a7_pass10_repairs, test_wg_pass2_repairs, test_sfx_library_regression,
+         test_render_tag_evidence); test_record_packet.py and tests/run.sh are unchanged.
+       - SELF-VERIFIED against disk, not assumed: 11 declared bindings re-hashed with 0 mismatches,
+         and all 11 embedded sections equal the file bytes on disk. The pass-31 packet embeds the OLD
+         fs_ops (its dump still shows the unchecked read_bytes), which is exactly why pass 31 could
+         not be reused.
+       - RECORDED: 11 delegation rows name /tmp/cb-A7-pass32.txt and pin packet_sha256 to the
+         digest above; `awaiting-packets-guard` -> VERDICT: AWAITING_PACKETS_LIVE (3 queued packets,
+         all live and hash-pinned). No manifest row still points at pass 31.
+       - BOOKKEEPING the new packet forced, all closed: harness-module-identities re-recorded
+         deliberately (IDENTITIES_BOUND); the landed doc now names pass 32 with its sha and size and
+         the doc checker returns DOC_CLAIMS_MATCH_STATE; the doc's manifest row was updated to the
+         landed blob (26377dbe06e2, commit ef0e48aa17) after `git show origin/main:...` proved
+         local == origin. Board: sweep PASS (15 guards).
+     Verification commands: the builder's own asserts (binding count 11, 0 mismatches, 11 sections ==
+     disk), sha256sum of the packet, the delegation pin check above, awaiting-packets-guard, and
+     board-sweep.sh (PASS, 15 guards).
+173. [ ] Submit pass 32 to surf and obtain a hash-bound verdict on THESE bytes.
+     Packet: /tmp/cb-A7-pass32.txt 251,835 B sha256
+     4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d (11 bindings; recorded and
+     hash-pinned in the awaiting queue).
+     HARD PRECONDITION, learned from pass 31: the last submission arrived with ONE newline appended
+     (requested 226,716 B f7b355a9 -> attached 226,717 B b589642e), so the reviewer correctly refused
+     whole-packet identity even though every embedded artifact hash verified. Do NOT submit until
+     surf confirms its attachment assembly is fixed AND a probe packet arrives BYTE-IDENTICAL
+     (sha256 of what the reviewer received == the sha above). A mutated attachment costs a full
+     review cycle and produces a partial, non-certifying verdict.
+     Then: delegate to surf with the exact path + sha, await the response, run verdict-intake with
+     --packet (all-or-nothing per packet+group), and record per-file PASS/FAIL first-class.
+     A FAIL is a valid outcome here; do not weaken a gate or a control to avoid one.
+     OWNER: this session (delegation + intake); surf (transport).
+     BLOCKED ON: surf's attachment-assembly fix.
