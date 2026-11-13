@@ -7065,6 +7065,15 @@ t
        - surf, explicitly: "Neither reissue has been attempted yet: no submission or refusal receipt exists
          for them ... collecting actual response before add1 then B6." So there is NO submission evidence
          for these two packets and this item is NOT complete until a receipt exists.
+       - ATTEMPT HISTORY (both are REFUSALS, not submissions; the repair is surf's, not mine to route around):
+         * add1 REFUSED on a newly created reviewer tab 837460232: "Error: ChatGPT prompt composer is not
+           empty before submit; clear the draft or use a fresh reviewer tab", log
+           `/tmp/surf-add1-submit.log` (SeedAcquisition refuse/seed_not_configured, ExtractFallback
+           submit_failed x3). No retry was performed. This is a transport/draft-ownership defect, not a
+           packet defect: the frozen bytes were never presented.
+         * B6 NOT ATTEMPTED yet; surf is diagnosing draft ownership read-only first to avoid duplicating an
+           in-flight request or overwriting a draft.
+         Neither refusal changes any packet byte; both packets remain FROZEN and recorded.
      ON RECEIPT: verify each packet's stated byte count + sha256, then `verdict-intake.py --packet <packet>`
      for its group (A7 resp. B4). Never hand-edit the manifest.
      OWNER: surf (submission); this session (intake).
