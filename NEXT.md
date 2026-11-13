@@ -6597,20 +6597,22 @@ t
      Verification: the HTTP code, elapsed 0 s, exact JSON body, and an empty turn search for the probe thread, all taken
      while docker reports the container Exited (0) and :8018 answers HTTP 000.
 
-164. [~] BLOCKED on the in-flight review: retain the reviewer's three counterexamples as harness cases (cannot edit now).
+164. [~] AWAITING the pass-33 verdict: retain the reviewer's three counterexamples as harness cases.
      WHAT IS PENDING: item 159 measured surf's three exact WG3 counterexamples against the current gates and all three
      refuse, but only as one-off measurements. Retaining them as cases in `tests/test_wg_pass2_repairs.py` (with mutants)
      is what stops a future edit from silently re-opening the impulse loophole - the same standard every other finding in
      that harness meets.
-     WHY IT CANNOT BE DONE NOW: that file AND `tests/run.sh` are both bound in /tmp/cb-A7-pass31.txt, which is PREPARED
-     and being submitted for review. Editing either one moves a bound hash and voids the packet - the precise churn that
-     killed passes 28/29/30 and that item 158's guard now exists to make visible.
+     WHY IT CANNOT BE DONE NOW: `tests/test_wg_pass2_repairs.py` is bound in /tmp/cb-A7-pass33.txt, which is IN
+     REVIEW at these bytes (reviewer confirmed 270,820 B / 66489b5f…). Editing it moves a bound hash and voids the
+     in-flight verdict - the same churn that killed passes 28/29/30 and that item 158's guard exists to surface.
+     This is now the ONLY reason it is open: the cases themselves are retained (see 175) as boundary refusals with
+     measured values, and the load-bearing duration/run/fraction mutants live in WG-07 where each is decisive.
      WHEN IT UNBLOCKS: as soon as pass 31 leaves the queue (verdict received). The cases to add, with the exact shapes
      surf relayed: mono 16 kHz `[0]*1600 + [202,-202]` (trailing impulse, frac 0.167/run 0.020 s -> refuse); `320 samples
      of amplitude-8000 1 kHz tone + 2880 zeros + [8000,-8000]` (0.182/0.020 -> refuse); identical stereo L/R over 3,200
      frames (must measure 0.100, matching mono, never the old verifier's 0.20). Each needs a mutant that restores the
      defective behaviour, or the case proves nothing.
-     OWNER: surf (verdict on pass 31); this session then edits the harness and reissues a packet.
+     OWNER: surf (verdict on pass 33, item 176); this session then adds the pass-mutants and reissues a packet.
 
 165. [~] The "graham" voice reference is broken in TWO independent ways, and my first read of it was too narrow.
      STARTING POINT (the defect I set out to check): /mnt/storage12tb/embry-voice/voices/graham_owner.wav is an EMPTY
@@ -6647,7 +6649,11 @@ t
      broken. Verifying the consumer's view, not just the host's, is the difference.
      Verification: stat/read of the host path (is_dir, uid 0:0, IsADirectoryError); docker inspect mount list showing no
      /voices; presence and sizes of the two /work-mounted narrator references.
-
+     OWNER: Graham (root: `sudo rmdir /mnt/storage12tb/embry-voice/voices/graham_owner.wav`, then supply a real
+     WAV on the /work root) and surf (submit `/tmp/cb-B4-pass6.txt` 91,858 B sha256
+     `530eec11344e4da181dcf1b833ff98d0af5abad305a55676693a5f4bb6e2a5eb`, which binds the fixed
+     `speak_core.py`). The CODE fix is done and frozen in that packet; the voice stays unusable until the
+     owner file exists.
 166. [x] Untracked-state triage: the 69 MB narrator reference set is PUBLIC-REPO-UNSAFE and had no backup - backed up outside git, scratch parked, one modified proof file left unlanded.
      WHY THIS NEEDED DOING NOW: `git status` in the chatterbox checkout showed `?? voices/` (115 files, 71,186,441 B) next
      to `?? NEXT.md`, `?? .pi/`, `?? .tmp-tagfx/` and a modified `docs/proofs/tone_calibration_matrix.json`. An untracked
@@ -6925,78 +6931,22 @@ t
      Verification commands: the builder's own asserts (binding count 11, 0 mismatches, 11 sections ==
      disk), sha256sum of the packet, the delegation pin check above, awaiting-packets-guard, and
      board-sweep.sh (PASS, 15 guards).
-173. [~] Submit pass 32 to surf and obtain a hash-bound verdict on THESE bytes.
-     Packet: /tmp/cb-A7-pass32.txt 251,835 B sha256
-     4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d (11 bindings; recorded and
-     hash-pinned in the awaiting queue).
-     HARD PRECONDITION, learned from pass 31: the last submission arrived with ONE newline appended
-     (requested 226,716 B f7b355a9 -> attached 226,717 B b589642e), so the reviewer correctly refused
-     whole-packet identity even though every embedded artifact hash verified. Do NOT submit until
-     surf confirms its attachment assembly is fixed AND a probe packet arrives BYTE-IDENTICAL
-     (sha256 of what the reviewer received == the sha above). A mutated attachment costs a full
-     review cycle and produces a partial, non-certifying verdict.
-     Then: delegate to surf with the exact path + sha, await the response, run verdict-intake with
-     --packet (all-or-nothing per packet+group), and record per-file PASS/FAIL first-class.
-     A FAIL is a valid outcome here; do not weaken a gate or a control to avoid one.
-     OWNER: this session (delegation + intake); surf (transport).
-     BLOCKED ON: surf's attachment-assembly fix.
+173. [x] Submit pass 32 to surf and obtain a hash-bound verdict on THESE bytes.
+     DONE - and pass 32 is now SUPERSEDED by pass 33, so this item closes rather than staying open.
+       - The verdict arrived with whole-packet identity certified for the first time: the reviewer stated
+         251,835 bytes and sha256 4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d, and
+         verified all 11 embedded source hashes. VERDICT: PACKET FAIL - 4 PASS, 7 FAIL.
+       - Preserved at `/mnt/storage12tb/skills/chatterbox-speak/outputs/reviews/a7-pass32-FAIL-20261113.md`
+         sha256 `e3947845feb8e17f533f7f69794113e7d293b463b6864a2a92c04a1a76fadabb` (VERIFIED by sha256sum
+         this turn: identical to /tmp/surf-cb-A32/response.md).
+       - Applied FIRST-CLASS with `verdict-intake.py --apply`: GUARDS-WAVGUARD 4 PASS / 3 FAIL and A7
+         0 PASS / 4 FAIL, before any repair was attempted. Every FAIL was then repaired and re-verified on
+         the OLD bytes first (see 175).
+       - Superseded: all 11 manifest rows now point at `/tmp/cb-A7-pass33.txt` and read
+         "NOT REVIEWED (current artifact)" with landable_now false (VERIFIED: 11 rows -> pass33, 0 ->
+         pass32). Pass 32's hash is dead and must never be queued again.
+     OWNER: this session (intake done); surf (pass-33 verdict, item 176).
 
-     STATE: delegated and FROZEN; awaiting the transport probe, then a verdict.
-       - Packet frozen for the duration of the submission: `submission-freeze.py --packet
-         /tmp/cb-A7-pass32.txt` -> VERDICT: ALL_FROZEN, receipt submission-freeze.json sha256
-         9502c87fce7f6ecc9722f754e35ddaa344443557636650803a8996a530d94ee2. Re-checked after the
-         freeze: sha256 4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d,
-         251,835 B, mtime unchanged - the bytes under submission are the bytes that were verified.
-       - Queue state: 11 delegation rows name this packet and pin that sha; awaiting-packets-guard
-         -> AWAITING_PACKETS_LIVE (3 queued packets, all live and hash-pinned); no row points at pass 31.
-       - SURF ACKNOWLEDGED with the right condition, verbatim in substance: it will first inspect
-         attachment assembly, then send a SEPARATE small byte-identity probe and compare the
-         reviewer's received sha256 with the local file; pass 32 will NOT be submitted unless that
-         comparison matches exactly, and it will copy the certified bytes without regeneration or
-         newline changes. That is the pass-31 failure mode being closed before it can repeat.
-     WHAT REMAINS: surf's probe result and submission receipts (response path + sha256 + sentinel),
-     then verdict-intake with `--packet` so the verdict applies all-or-nothing to the 11 bound files.
-     A FAIL is an acceptable outcome; the packet is not to be rebuilt to avoid one, and no control or
-     gate may be weakened to make the board green.
-     NOT YET DONE: no submission claim, no verdict claim. This row stays in-progress until a
-     hash-bound response exists.
-
-     TRANSPORT PRECONDITION MET - by a DIFFERENT mechanism than the item assumed, stated plainly:
-       - The old attachment-assembly runner is NOT fixed. Surf EXCLUDED it rather than repairing it,
-         so nothing in this submission depends on that code path.
-       - The replacement path (direct `--attach-file`) is PROVEN byte-exact on a probe, not assumed:
-         92 bytes locally and 92 bytes as received; BOTH sha256
-         3f73435f08c3ed64cc4612a6d954d7d8a770d0a358130cd57879fd79c4bbb0e7; final 12 bytes hex
-         206e6f206e65776c696e652e (" no newline."). The reviewer read raw bytes with Python rather
-         than through a text layer that could normalise them. Receipt /tmp/surf-byte-proof/response.md
-         (251 B, sha256 ae4c1fb6d7fb…), conversation /c/6af69366-05f8-83e9-8f90-65d5ad710243,
-         sentinel WEBGPT_DONE:20261113T043443Z:60ee1881.
-       - The packet is UNCHANGED at submission time, re-verified after the probe: sha256
-         4716bdaf9c76f34c94d131078b5b34fca300268595dec69da7e5c13dc5240a0d, 251,835 B, mtime
-         2026-11-12 23:29:37 unchanged since the freeze. Surf submits THE ORIGINAL file, no copy,
-         no regeneration, no newline edits, after checking its certified hash.
-     HONEST SCOPE: I verified the packet bytes and the probe receipt; I cannot verify what the
-     reviewer received - that is the reviewer's own raw-byte read-back, which is exactly the evidence
-     pass 31 lacked. Whole-packet identity is CONFIRMED or REFUTED by the returned response's stated
-     attachment bytes, not asserted here.
-
-     PROGRESS at the frozen pass-32 bytes - the reviewer's THREE counterexamples are now MEASURED
-     against current production, each refused for a reason that is stated rather than inferred:
-       - C1 `[0]*1600 + [202,-202]` @16 kHz: active_frac 0.167, longest run 0.000 s; gate REFUSES on
-         duration ("0.1s outside 0.15-2.0s"). The fraction alone would have looked active - that is
-         exactly why the fraction was never sufficient.
-       - C2 `320 samples 1 kHz tone + 2880 zeros + [8000,-8000]`: active_frac 0.182, run 0.020 s;
-         gate REFUSES ("no sustained stretch: longest active run < 0.06 s").
-       - C3 identical stereo, 3,200 frames per channel, tone in the first 320: measure active_frac
-         0.100, run 0.020 s; gate REFUSES (mostly silent). Mono parity holds at 0.100 - the stereo
-         path no longer reports the old 0.20.
-     WHY THE HARNESS CASES ARE NOT YET EDITED IN: `tests/test_wg_pass2_repairs.py` is one of the 11
-     artifacts bound by the FROZEN pass-32 packet that is in flight for review. Editing it now would
-     make the packet stop describing the bytes on disk, so the verdict could not be applied to
-     either version. The measurement above is therefore recorded, not landed.
-     IMMEDIATE NEXT STEP after verdict intake on pass 32: add C1/C2/C3 to that harness with mutants
-     (drop the duration guard for C1; drop the run guard for C2; pass the original channel count for
-     C3) and re-run it - each mutant must make its case PASS again, or the case proves nothing.
 174. [x] Land the tone-matrix producer mapping fix and a fresh matrix, with the receipts the rules require.
      Files: `chatterbox` repo `scripts/eval_tone_audibility.py` (container->host mapping; `.py`, so a
      cross-provider reviewer receipt is mandatory) and `docs/proofs/tone_calibration_matrix.json`
@@ -7038,22 +6988,83 @@ t
      regeneration raise "rendered wav missing on host"; that was a mapping defect, not an audio
      failure, and it could only be proven against a live engine (restarted and verified this turn:
      /health 200 plus a live render, host WAV 109,518 B).
-175. [ ] After the pass-32 verdict: apply the deferred repairs and rebuild ONE packet (pass 33).
-     Three things are held behind the frozen pass-32 bytes and must move TOGETHER, because a path may
-     live in exactly one packet and rebuilding once is cheaper and safer than three times:
-       - item 164: add the reviewer's three counterexamples to `tests/test_wg_pass2_repairs.py` with
-         mutants (C1 `[0]*1600+[202,-202]` needs the DURATION guard dropped to become observable;
-         C2 needs the RUN guard dropped; C3 needs the original channel count restored). All three are
-         already measured as refusals on current bytes: 0.167 frac / 0.000 s run; 0.182 / 0.020 s;
-         0.100 mono parity / 0.020 s.
-       - item 165: the "graham" voice resolves to a broken reference (host path is a root-owned empty
-         DIRECTORY; the container has no /voices mount at all, while alex/jordan resolve via
-         /work/voices/…). The code fix touches `scripts/speak_core.py`, `scripts/spyke_render.py` and
-         `scripts/sfx_demo.py` - two of those are bound to pass 32, so it cannot be done before intake.
-         The owner action (`sudo rmdir /mnt/storage12tb/embry-voice/voices/graham_owner.wav`) is separate.
-       - then rebuild pass 33 with every changed file, re-verify all bindings, freeze, and resubmit
-         through the proven direct `--attach-file` transport (NOT the old assembly runner).
-     Do not edit any pass-32-bound file before its verdict is applied - a verdict on older bytes
-     cannot be applied to newer ones, and the packet would stop describing disk.
-     OWNER: this session for 164/165/rebuild; surf for the submission.
-     BLOCKED ON: the pass-32 verdict (item 173).
+175. [x] After the pass-32 verdict: apply the deferred repairs and rebuild ONE packet (pass 33).
+     DONE for the repairs and the rebuild; the SUBMISSION RECEIPT is tracked in 176 (surf ACKed, packet frozen).
+       - item 164: the reviewer's three counterexamples are retained in `tests/test_wg_pass2_repairs.py`
+         as boundary REFUSALS with their measured values: C1 `[0]*1600+[202,-202]` frac 0.167 / run
+         0.000125 s; C2 run 0.020 s < 0.06; C3 identical stereo mono frac 0.100. No pass-mutants were
+         added: each clip is stopped by SEVERAL guards at once, so removing one leaves it refused by
+         another and a mutant disabling them all would admit the whole library - the load-bearing
+         guard mutants for duration/run/fraction already exist where each is DECISIVE (WG-07).
+       - item 165: `graham` now resolves on the SAME root as its siblings (`/work/voices/graham_owner.wav`)
+         in `speak_core.py`, `spyke_render.py` and `sfx_demo.py`. VERIFIED: the repo has no
+         `voices/graham_owner.wav` and `/mnt/storage12tb/embry-voice/voices/graham_owner.wav` is a
+         root-owned DIRECTORY, so the reference does not exist on any root; the voice stays unusable
+         until the owner supplies a file. Owner action unchanged: `sudo rmdir .../graham_owner.wav`.
+       - A32 verdict applied first-class before any edit, then EVERY finding repaired, each reproduced
+         on the OLD bytes first:
+         * A32-IS-01 (MAJOR): measurement and publication used different reads of the staging NAME.
+           Reproduced: a substitution after `gate()` published `NOT WAV` (7 bytes) while the run said
+           PASS. Now ONE snapshot is taken BEFORE measurement and carried through measure -> hash ->
+           publication; `_publish_snapshot` installs those bytes from a private 0700 directory. The
+           name-publish control is caught installing `NOT WAV`; recovery verifies the INSTALLED inode,
+           or the staged DIGEST when the interrupt fires inside publication (test_prove8 34/34).
+         * A31-FS-02 residual: cleanup now matches ownership by `(st_dev, st_ino)`, parks foreign names
+           in a `.foreign` dir and warns; the name-ownership mutant is caught.
+         * WG-13 residual: gate policy moved into `wav_guard` (`GATE_*` + `channel_eligible`);
+           `interrupt_sfx` aliases it and BOTH consumers select by the full eligibility rule.
+         * A31-TAG-01 residual: `tags_interpreted` must be a genuine bool; `None`/`"false"`/`0` are
+           refused without coercion, `False` is forwarded verbatim.
+         * A32-PROOF-01: production `spyke_render._publish` is driven in a fresh interpreter and
+           `created` is observed AT rename time (registered == installed, before the rename).
+         * A32-PROOF-02: the persisted sidecar is compared against ALL THREE dictionaries, and a
+           serialization-only mutant (receipt keeps evidence, sidecar loses effects) is caught.
+         * A32-PROOF-03: acoustic controls run with a scoped deterministic ASR substitute.
+         * A32-STAGE-01: a SUCCESSFUL render now parks its fallback `.spyke-stage-*` names too.
+       - Harnesses at these bytes: tests/run.sh rc=0 "all retained harnesses PASS", PUBLISH_BY_NAME
+         clean; A7 63/63, WG 41/41, tag 20/20, prove8 34/34, library regression 7/7 (verdict + flip).
+       - Pass 33: `/tmp/cb-A7-pass33.txt`, 270,820 B, sha256
+         `66489b5fc1de332518a0e4157afa3356c7698d0051ce15680721a21df6140aef`, 11 bindings with 0
+         mismatches and 11 embedded sections equal to disk, 8/11 changed vs pass 32. Recorded into both
+         A7 and GUARDS-WAVGUARD rows (record-packet.py, 11 claimed / 0 stale / 0 missing).
+         `submission-freeze.py` -> `cb-A7-pass33.txt FROZEN, governed=11, FROZEN=11`.
+       - Submission delegated to surf with the exact path/size/sha and the dead pass-32 hash; surf ACKed:
+         "pass 33 only, 270820 bytes, SHA256 66489b5f... direct --attach-file, received-byte identity
+         verification before review". No submission receipt yet -> 176.
+     OWNER: this session (repairs/rebuild done); surf (submission).
+176. [~] Obtain the pass-33 verdict from surf, then intake it FIRST-CLASS.
+     WRAPPER REFUSED, DESTINATION CONFIRMED. Wrapper: "ChatGPT submit is unproven: activity appeared but no
+     user turn equals the intended prompt" (/tmp/surf-A33-submit.log, SeedAcquisition refuse/
+     seed_not_configured, ExtractFallback submit_failed x3); surf did NOT relabel or resubmit. Independent
+     destination evidence, read-only: the live reviewer explicitly reported "The attachment matches:
+     270,820 bytes, SHA256 66489b5fc1de332518a0e4157afa3356c7698d0051ce15680721a21df6140aef" and is
+     executing commands. Conversation https://chatgpt.com/c/6af69366-05f8-83e9-8f90-65d5ad710243,
+     sentinel WEBGPT_DONE:20261113T052119Z:b7be33b9. surf's own verdict on the conflict: "UNDELIVERED
+     conflicts with independent destination evidence"; the refusal stays in the transport summary.
+     STATUS: review running, NO VERDICT YET. AWAITING surf for the report on THESE bytes; on receipt verify
+     it quotes 270,820 / 66489b5f… (a report that does not quote the packet sha is
+     STALE_RESPONSE_SUPERSEDED), then intake per group (A7, GUARDS-WAVGUARD) with
+     `verdict-intake.py --packet /tmp/cb-A7-pass33.txt`, preserve under
+     `outputs/reviews/a7-pass33-<PASS|FAIL>-<date>.md`, landable_now=false for FAILs.
+     OWNER: surf (report); this session (intake).
+177. [~] AWAITING surf: reissue the two rows whose bytes moved while their old packets still govern them.
+     PACKETS DONE AND FROZEN; SUBMISSION NOT YET ATTEMPTED (surf is finishing the pass-33 review first).
+     Books closed by evidence:
+       - `/tmp/cb-A7-add1-prove8.txt` 35,885 B sha256
+         `e8ded9a641e2fd834f6ffe24696b13790e6d3f39764b1ada60bb4f47bad9e83e`, binds ONLY
+         `tests/test_prove8.py` (34d0457645bf…), superseding the withdrawn pass 20 on that row so each path
+         still lives in exactly ONE packet. Self-verified: 1 binding, 1 embedded section == disk.
+       - `/tmp/cb-B4-pass6.txt` 91,858 B sha256
+         `530eec11344e4da181dcf1b833ff98d0af5abad305a55676693a5f4bb6e2a5eb`, binds
+         `scripts/speak_core.py` (66407074943a…, item 165 voice root) plus `scripts/arc_chart.py`
+         (17ccab9c1e3b…) and `scripts/test_core_contract.py` (2c5d2c43803b…) unchanged, so the B group has
+         one packet naming each file at one hash. Self-verified: 3 bindings, 3 sections == disk.
+       - `record-packet.py` recorded A7 (1 file) and B4 (3 files), 0 stale / 0 missing;
+         `submission-freeze.py` -> `VERDICT: ALL_FROZEN` (pass 33 11/11, A7-add1 1/1, B4-pass6 3/3), receipt
+         sha256 `d6bfba2bd55fb82b3fde1cbc693013cb4d261c379146ac9ebda6efec52e1b9c9`.
+       - surf, explicitly: "Neither reissue has been attempted yet: no submission or refusal receipt exists
+         for them ... collecting actual response before add1 then B6." So there is NO submission evidence
+         for these two packets and this item is NOT complete until a receipt exists.
+     ON RECEIPT: verify each packet's stated byte count + sha256, then `verdict-intake.py --packet <packet>`
+     for its group (A7 resp. B4). Never hand-edit the manifest.
+     OWNER: surf (submission); this session (intake).
