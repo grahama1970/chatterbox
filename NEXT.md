@@ -7409,3 +7409,21 @@ t
          (not assumed).
        - No posting performed. OWNER: this session (done).
 
+191. [x] RESOLVED jordan's voice-verification blocker: the "missing" seq-8 provenance artifact was a
+       PATH error, not a lost file.
+       - Jordan looked for `288b7508_jordan_main_8.1f062265b777f64f.receipt.json` and got
+         FileNotFoundError. The real name carries `.wav` before the hash:
+         `288b7508_jordan_main_8.wav.1f062265b777f64f.receipt.json` (817 B) with the sibling
+         `.provenance.json` (513 B) and the media `288b7508_jordan_main_8.wav` (1,127,118 B).
+       - Binding verified from disk in this turn (not copied from the files): media sha256
+         `8e4c6bbf97342e66…` equals BOTH the receipt and provenance `audio_sha256`; both sidecars carry
+         `text_sha256 fdd5ff3813c7f41a…`; duration 23.48 s, tone calm_precise, voice jordan, engine
+         chatterbox_turbo, `message_id 1f062265b777f64f` (the filename hash), persona_simulated true,
+         provenance warning present.
+       - Second error found: jordan said they passed the SEQ-9 provenance receipt, but no seq-9 jordan
+         files exist; a seq-9 receipt cannot bind seq-8 text. Told them to use the seq-8 sidecars.
+       - Told them the remaining possible failure is a TEXT hash mismatch (their retrieved live text vs
+         `fdd5ff38…`), not a missing artifact, and to send me their text hash if verify_binding still
+         fails. No scenario post; thread stays closed. No file was modified or fabricated.
+     OWNER: this session (resolved + reported).
+
