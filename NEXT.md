@@ -7229,6 +7229,19 @@ t
      NEXT ACTION (owned by surf): extract the response when the review completes. On arrival I verify it
      quotes `945f9f2066da…` and gives 11 per-file VERDICT lines + PACKET VERDICT, then apply per group
      with `verdict-intake.py` and open the repair item from its findings. No resubmission.
+       - EXTRACTION DIAGNOSIS (2026-11-13T20:1xZ, read from surf's artifacts): the review was RECEIVED
+         but never extracted. `/tmp/surf-cb-A34b/webgpt_heartbeat.json` says `updated_at
+         2026-11-13T06:05:19Z, phase=failed, page_state=submit_failed, proof_status=
+         delivery_not_proven`; `response.md` does not exist and `response.md.raw.md` is 0 B; the last
+         artifact is `/tmp/surf-webgpt-submit-stderr.ADwxDW.log`. This does NOT contradict the
+         destination evidence (reviewer read back 278,355 B / 945f9f20… and all 11 hashes at 06:04Z):
+         the submit wrapper lost its own proof, then extraction never ran.
+       - ACTION TAKEN: asked surf to EXTRACT from conversation
+         https://chatgpt.com/c/6af6a869-9040-83ea-8ad1-3e3b787aaf42 (sentinel
+         `WEBGPT_DONE:20261113T060422Z:4847372a`) to `/tmp/surf-cb-A34b/response.md`, report path/bytes/
+         sha + whether it carries 11 VERDICT lines and the packet sha, and explicitly NOT to resubmit.
+       - Intake remains pending on that extraction; packet and freeze are unchanged (278,355 B,
+         `945f9f2066da3131…`).
      OWNER: surf (extraction); this session (verify + intake + repairs).
 
 182. [x] 30-min GPU window granted to the researcher's S3 audio-token adapter experiment; the Chatterbox
