@@ -7139,8 +7139,16 @@ t
          only, 107759 bytes / ea9f2b71…, reviewer must verify raw-byte identity". No receipt yet -> 179.
      OWNER: this session (repairs/rebuild done); surf (submission).
 179. [~] Obtain the B pass 7 submission receipt from surf, then intake its verdict FIRST-CLASS.
-     AWAITING surf: the packet is frozen and the submission is ACKed, but submission is not proven until a
-     receipt exists. On receipt verify the report STATES 107,759 bytes and sha256 `ea9f2b71…` (a report that
+     AWAITING surf: the packet is frozen and the submission was ACKed, but it is NOT PROVEN SUBMITTED.
+     EVIDENCE FROM THE CURRENT ARTIFACTS (`/tmp/surf-cb-B7/`): `response.md.receipt.json` (schema
+     `surf.webgpt_submit_receipt.v1`, receipt_at 2026-11-13T05:40:18Z) reads `status: "prepared_prompt"` and
+     `submitted_to_chatgpt: false`, with `raw_output` 0 B and no `response.md`. The heartbeat in the SAME
+     directory says `phase: "submitted"`, `page_state: "waiting_for_acceptance"` - that CONTRADICTS the
+     receipt, and the receipt is the proof artifact, so this is recorded as PREPARED, NOT SUBMITTED until
+     surf reconciles it. `prepared_prompt_is_transport_proof` is false in both artifacts, as it was for B6.
+     The attach path is `/tmp/cb-B4-pass7.txt` and the sentinel is WEBGPT_DONE:20261113T054018Z:c9df3e1f.
+     On a real receipt (`submitted_to_chatgpt: true`) verify the report STATES 107,759 bytes and sha256
+     `ea9f2b71…` (a report that
      does not quote the packet sha is STALE_RESPONSE_SUPERSEDED), then run
      `verdict-intake.py --group B4 --report <preserved> --packet /tmp/cb-B4-pass7.txt --apply`, preserve the
      response under `outputs/reviews/b4-pass7-<PASS|FAIL>-<date>.md`, and set landable_now=false for FAILs.
