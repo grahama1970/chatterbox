@@ -7397,3 +7397,15 @@ t
          full-text hashes and says so explicitly, rather than inventing a field.
      OWNER: this session (done).
 
+190. [x] RENDERED spyke's seq-54 turn (2,364 chars, over the 1,200 limit) under the same chunked contract.
+       - Text: `/tmp/seq54-text.txt`, 2,372 B / 2,364 chars, sha256 `7cf4143f6e72ecb4…`. No trailing
+         newline and no internal newlines, so the speakable text is BYTE-IDENTICAL to the posted file;
+         `text_file_sha256 == speakable_text_sha256` (no delta to disclose this time).
+       - 3 chunks (max 1,095), single-space join verified equal to the text; normalization OFF.
+       - Delivered: `/mnt/storage12tb/embry-voice/turns/spyke-seq54-20261113T162542Z-27fefd8440c1.wav`
+         1,702,158 B, sha256 `27fefd8440c1a987…`, duration 35.46 s, tone calm_precise, voice embry
+         (native Chatterbox Turbo, live=true mocked=false); sidecar receipt sha256 `61aa298e79f6db51…`
+         carrying the full-text hash. The skill receipt's `original_text` was asserted equal to the file
+         (not assumed).
+       - No posting performed. OWNER: this session (done).
+
