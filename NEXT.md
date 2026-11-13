@@ -6035,3 +6035,82 @@ t
      Verification: origin blob hash == local hash (0dab86f0); commit f45a6636 exists on origin/main with one file and
      6017 insertions.
 
+142. [x] Ear-review surface verified live against the freeze - and it surfaced that TWO OWNER VERDICTS WERE DESTROYED.
+     SURFACE, measured this turn (not assumed from a previous turn):
+       :8797 /api/clips -> 200, 74 clips
+       ids match eval-freeze-v1.json exactly (74/74, missing [] extra []); per-category counts identical; every served
+       sha256 equals its frozen sha256 (0 mismatches) - so the owner would be judging the FROZEN bytes, not a drifted copy
+       :8018/health 200, :8799/health 200, :8798 200, :8801 200 (root paths 404 on 8018/8799 are expected; /health is 200)
+       manifest: 74 awaiting_owner_verdict, 6 excluded_nonconforming, 3 culled_content_failed
+     THE FINDING, quoted from the manifest itself rather than inferred: every entry's recovery_note reads "manifest was
+     overwritten by an incomplete SV-17 guard during a guard proof; rebuilt from the library WAVs plus the last full
+     verify report. Prior statuses (human_confirmed/superseded/generation_failed) were not recoverable and default to
+     awaiting_owner_verdict."
+     CONSEQUENCE: `sigh-weary` and `sigh-shaky` - the two clips the owner had already confirmed by ear - are back to
+     `awaiting_owner_verdict` with `reviewed_at_utc = null`. The production manifest contains ZERO human_confirmed rows.
+     No production artifact anywhere in outputs/ holds those two verdicts; the only post-verdict manifest found was
+     /tmp/rv-test (the ISOLATED item-118 proof), which is not production evidence.
+     WHY THIS MATTERS MORE THAN THE SURFACE CHECK: a GUARD PROOF wrote to the PRODUCTION manifest. That is the failure
+     mode where the tool that exists to protect data destroys it, and it has already cost the owner two listening
+     verdicts. The surface being up is the smaller half of this item.
+     Verification: curl /api/clips -> 74 clips, freeze id/category/sha256 cross-check 0 mismatches; /health 200 on 8018 and
+     8799; manifest statuses counted 74/6/3; recovery_note quoted verbatim; sigh-weary/sigh-shaky reviewed_at_utc null.
+
+143. [x] SV-17 guard proof can no longer write the production manifest (proven, and now a standing guard); the two lost verdicts are unrecoverable locally and are re-earned by the owner's single listening pass.
+     HAZARD, measured against the LIVE manifest with three alias forms, all refused with rc=2:
+     - `--out <production manifest>` -> "refusing to overwrite it";
+     - `--out` a SAME-FILESYSTEM hardlink to it (inode 303105262 on both names) -> "is a link to manifest.json";
+     - the recurrence case: `--manifest` points elsewhere while `--out` still names the library manifest -> refused.
+     The manifest is BYTE-IDENTICAL afterwards: sha256 2b0897083f26cfa6bdb6e4d64387f8784915698c718e95cd0a82792b2c021d25,
+     70,752 B (not merely "unchanged" - it matches the recorded value from before this work).
+     RETAINED, not remembered: outputs/sv17-production-guard.py is now the THIRTEENTH sweep guard and re-runs all three
+     probes plus the byte-identical assertion every sweep (board-sweep.sh -> PASS (13 guards), ~3.2 s).
+     A CHECKER THAT CANNOT FAIL PROVES NOTHING: `--self-test` runs the identical probes against a stub verifier that
+     exits 0 and writes nothing, and the guard reports that acceptance -> rc=0. So the refusal verdicts above are caused
+     by the production guard, not by the probe setup.
+     ONE OF MY OWN PROBES WAS INVALID FIRST AND IS RECORDED AS SUCH: I created the hardlink in /tmp, `ln` failed EXDEV,
+     `--out` therefore named a path that did not exist, and rc=0 "proved" the alias was accepted. The probe was rebuilt on
+     the manifest's own filesystem. A passing result for the wrong reason is how a guard quietly stops existing.
+     RECOVERY IS NOT POSSIBLE FROM LOCAL STATE, and I checked rather than assumed: the library manifest has ZERO
+     human_confirmed rows; sfx-library/fused-hmm/manifest.json has none; no review-event ledger mentions either id. The
+     only post-verdict manifest on disk is /tmp/rv-test (the isolated item-118 proof), which is not production evidence.
+     Both `sigh-weary` and `sigh-shaky` ARE in the frozen 74 (eval-freeze-v1.json), so the owner's single pass over the
+     74 re-earns them at :8797 - no separate task, and no `human_confirmed` row fabricated from a machine PASS.
+     DOC LANDED 95c005142ed64e431f07235b9bb686906622ed5b, which quotes the manifest's own recovery_note as the evidence of
+     loss rather than paraphrasing it.
+     Verification: three refusals rc=2; manifest sha256 2b0897083f26 == pre-work value; guard --self-test flags the stub;
+     board-sweep.sh -> PASS (13 guards); origin doc blob == local doc blob.
+
+144. [x] End-to-end product proof after the repair wave: /render speaks for all three speakers and every receipt binds the text.
+     WHY THIS CHECK: the last items changed wav_guard, sfx_verify and interrupt_sfx - the code that decides whether audio is
+     audible and whether a cue may be spliced. Everything so far proved those functions in isolation or against the frozen
+     library; none proved the PRODUCT still renders speech through the live service after those edits.
+     EVIDENCE per speaker (POST :8799/render, HTTP 200, then the ARTIFACT read back with wav_guard - the status alone is
+     never treated as proof):
+     - alex  -> wav /mnt/storage12tb/embry-voice/turns/spyke_alex_e2e-144_1.wav, voice=alex, 5.00 s, frames 120000 @24 kHz
+                mono PCM16, measured ac_rms 0.0384, active_frac 0.636, sustained_problem None
+     - jordan -> voice=jordan, 2.60 s, ac_rms 0.0551, active_frac 0.738, sha_ok True, text_ok True, no problem
+     - spyke  -> voice=embry (the SPEAKER_VOICE mapping, not "spyke"), 2.68 s, ac_rms 0.0526, active_frac 0.806, no problem
+     BINDING PROVEN BOTH WAYS on the alex call: sha256(wav bytes) == receipt.audio_sha256 (ec5d855c3b5b), and
+     sha256(the EXACT text sent, including the [chuckle] tag) == receipt.text_sha256 (7b080aacf2d7). So the receipt
+     describes the bytes on disk and the words actually requested, not a re-serialization.
+     SCOPE STATED HONESTLY: this proves the speech path. It does NOT prove cue splicing - the receipt carries no cue field,
+     and interruption SFX live in interrupt_sfx, which is proven by its own harnesses (MIN_S/MAX_S, MAX_PEAK, IS-28),
+     not by /render. The [chuckle] tag was accepted (text bound) and did not produce a spliced cue on this path.
+     ONE WRONG-TURN RECORDED: my first probe posted to :8798 and got HTTP 501 "Unsupported method ('POST')" - 8798 serves
+     turns/audio over a plain HTTP server; /render is :8799. The 501 was read rather than reported as a product failure.
+     Verification: three renders HTTP 200; each WAV re-read and measured; alex receipt sha matches the file; text sha
+     matches the exact sent string; voices alex/jordan/embry distinct.
+
+145. [ ] Does an APPROVED emotion tag change the render at all, or is it inert on the speech path?
+     WHY: the alex e2e call carried `[chuckle]` and came back tone_requested=None, normalized_tone=neutral_warm - the tag
+     changed nothing in the receipt. Either tags are deliberately not applied on this path (fine, but then the docs must
+     say so), or a tag silently does nothing while the skill implies it steers delivery. A silent no-op is the same class
+     as a PASS that proves nothing.
+     MEASURE, same text with and without one VERIFIED singular tag: compare tone_requested/normalized_tone/
+     tone_effective, duration, ac_rms and active_frac. A tag that changes none of them is inert and must be documented or
+     fixed; a tag that changes tone_effective is working and this closes.
+     BOUND: do NOT test plural tags (ElevenLabs-v3-clone-only per the tag contract) and do not treat a changed tone as a
+     naturalness claim - the owner's ear owns that.
+     OWNER: this session.
+
