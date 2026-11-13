@@ -7167,37 +7167,44 @@ t
      A FAIL is a valid outcome; repair findings by reproducing them first.
      OWNER: surf (receipt); this session (intake).
 
-180. [ ] Repair the A33 findings on the pass-33 bytes, each reproduced FIRST, then rebuild ONE A7 packet
-     (pass 34) and submit it. Several are regressions introduced BY the pass-32 repairs, so they are fixed
-     with one identity/descriptor representation rather than more patches.
-     Verdict source: `outputs/reviews/a7-pass33-FAIL-20261113.md` (6 FAIL / 5 PASS; identity certified).
-       - A33-IS-01 (MAJOR) `interrupt_sfx.py:540,563,573,800,859-860`: `_publish_snapshot` returns an INT
-         inode while recovery compares `(so.st_dev, so.st_ino) == installed_ino`, so a later failure calls
-         the attempt's OWN clip foreign and leaves it installed with no entry (reviewer executed: main()->1,
-         "clip not this attempt's inode; left in place", retry then PUBLISH REFUSED). Fix: one identity
-         representation - `(st_dev, st_ino)` - registered before installation and used by recovery.
-       - A33-IS-02 (MAJOR) same helper `:554-580`: it CLOSES the written descriptor and reopens `payload` by
-         NAME (blocking FIFO witness exceeded the 2 s bound; foreign-cleanup witness deleted a replaced
-         `payload` with no warning). Fix: hold the descriptor through publication, close ONCE, and park or
-         report leftovers instead of unlinking a name we no longer own.
-       - A31-FS-02 PARTIAL `fs_ops.py:229-238` from `:209`: ownership is observed with lstat and the name is
-         unlinked LATER, so a substituted file is deleted (executed witness: foreign replacement deleted,
-         zero warnings). Fix: park remaining private-dir contents without any later name-based deletion.
-       - A33-SP-01 (MAJOR) renderer: successful cleanup can close an unrelated REUSED descriptor. Fix: close
-         each descriptor exactly once, owned by the code that opened it.
-       - A33-WG-01 (MAJOR): channel eligibility compares AC RMS while the generator gate compares RAW RMS;
-         align eligibility with the gate's actual predicate (share one rule).
-       - A33-WG-02 (MAJOR): the verifier selects with GENERATOR thresholds that differ from its own
-         acceptance rules; select with the verifier's own predicates, or make them identical.
-       - A33-IS-03 (MAJOR): snapshot acquisition moved OUTSIDE the gate's error handler, so one read failure
-         aborts the whole batch instead of failing one candidate.
-       - A33-IS-04 (MAJOR): the advisory ASR boundary still reads a DIFFERENT mutable input than the
-         published snapshot; judge/publish one immutable snapshot.
-       - A33-PROOF-01 (MAJOR): the snapshot "mutation control" does not mutate the repaired production path.
-       - Minors: A33-FS-01 (cleanup masks materialization errors with an unassigned local), A33-PROOF-02
-         (serialization control can inspect the baseline sidecar), A32-STAGE-01 sibling (manifest commits
-         ignore named fallback staging).
-     Then: rebuild ONE A7 packet with every changed file, verify all bindings and embedded sections against
-     disk, record it per group, freeze, and submit through surf with exact path/size/sha. A FAIL is a valid
-     outcome; never weaken a gate to avoid one.
-     OWNER: this session (repairs/rebuild); surf (submission).
+180. [x] Repair the A33 findings on the pass-33 bytes, each reproduced FIRST, then rebuild ONE A7 packet
+     (pass 34) and submit it.
+     DONE. Every finding was reproduced on the pass-33 bytes BEFORE the fix, then verified after it.
+       - A33-IS-01 (int vs tuple identity): repro returned `207768238` (int) with tuple comparison
+         False; fix returns `(66306, …)` and the comparison is True.
+       - A33-IS-02 (close+reopen by name): repro showed 2 payload opens (1 create + 1 reopen) and a
+         foreign `payload` deleted with 0 warnings; fix shows 1 open, the foreign file preserved at the
+         parked tomb AND a RuntimeWarning.
+       - A33-IS-03 (snapshot read outside the boundary): acquisition is per-candidate; a read failure
+         fails one candidate instead of raising out of the batch.
+       - A33-IS-04 (ASR read the staging pathname): `gate()` now transcribes the captured snapshot
+         (`_asr_snapshot`), bound to that snapshot's digest.
+       - A31-FS-02 PARTIAL (lstat-then-unlink): cleanup performs NO name-based deletion; the private dir
+         is atomically renamed and removed only when EMPTY. Verified: foreign preserved + warned,
+         `os.lstat` calls 0, normal path leaves no litter.
+       - A33-FS-01 (UnboundLocalError masking EIO): verified the original `OSError: [Errno 5] probe
+         materialization fsync failed` propagates and the destination stays untouched.
+       - A33-SP-01 (double close of a reused descriptor): success cleanup parks fallback NAMES only.
+       - A33-WG-01 (AC vs raw RMS): verified on both reviewer witnesses — stereo selects raw rms
+         0.021562 / 0.031195 and the gate accepts.
+       - A33-WG-02 (verifier used generator thresholds): the reviewer's witness now returns
+         ACOUSTIC_ONLY, active_frac 0.2, no failures.
+       - A33-PROOF-01 (control did not mutate production): the control now drives `main()` with a
+         gate-time staging-name swap — baseline publishes the measured snapshot (sha match), and the
+         mutant whose production publish reopens the name is caught publishing `NOT WAV`. A7 64/64.
+       - A33-PROOF-02 + A32-STAGE-01 sibling: the serialization control reads only the sidecar its own
+         render created; `_commit_manifest` parks its named fallback stage.
+       - Harness: `tests/run.sh` rc=0, "tests: all retained harnesses PASS", PUBLISH_BY_NAME clean.
+       - Packet pass 34: `/tmp/cb-A7-pass34.txt` 278,355 B sha256 `945f9f2066da31311a693a77dd67544e1fea147b25b751206999226d357441dd`;
+         11 bindings verified, 0 mismatches, 11 embedded sections match disk, 7/11 files changed.
+       - Recorded per group from that packet (A7: 4 files; GUARDS-WAVGUARD: 7 files); frozen
+         `ALL_FROZEN` (submission-freeze.json sha `d3293c37a241e6b4adcb35f348e489261736ea643ff79e8a8a2acc822bc1da15`).
+       - Submitted via surf: ACK A34 confirmed the exact 278,355 B / `945f9f20…` attachment with the
+         packet's own review prompt, one attempt only. The verdict is tracked in 181.
+
+181. [~] AWAITING surf: the pass-34 verdict. When it arrives, intake it FIRST-CLASS before any repair
+     (same rule as 176): preserve the response under `outputs/reviews/`, verify it quotes packet sha
+     `945f9f2066da…` and gives 11 per-file VERDICT lines, then apply it per group with
+     `verdict-intake.py`. Open the repair item from its findings. Preserve any transport refusal
+     verbatim; no resubmission.
+     OWNER: this session (intake); surf (transport).
