@@ -7326,16 +7326,33 @@ t
          sentence, not an isolated sigh event; extraction/eval stay theirs. Exactly one generation - no
          fan-out, no batch, no retraining, no new clone. No key/config/env was read or copied.
 
-187. [ ] FIX the ops-elevenlabs default-format defect found by the probe.
-       Evidence: `tts` defaults to `LOSSLESS` = `wav_44100`; on this account (`tier=creator`) that request
-       is refused 403 `output_format_not_allowed` ("only available on the Pro tier and above"), so the
-       skill's documented default and its advertised lossless path fail for the actual plan, while
-       `references/api-surface.md:24` says the API default is `mp3_44100_128`.
-       Scope: make the CLI's default follow the account's tier (or fall back to `mp3_44100_128` on
-       `subscription_required` with the refusal recorded in the receipt), and correct SKILL.md so the
-       documented default matches what a creator-tier account can actually request. Acceptance: on this
-       account `run.sh tts ...` with no `--format` either produces audio or fails closed naming the tier
-       and the allowed format, with a receipt; no silent downgrade. Do NOT spend a generation to test
-       beyond one probe unless the researcher asks.
-     OWNER: this session (skill fix); researcher (their experiment).
+187. [x] FIXED the ops-elevenlabs default-format defect found by the probe.
+       - Defect (measured): `tts` defaulted to `wav_44100` unconditionally; on this account
+         (`tier=creator`) the API refused with HTTP 403 `subscription_required` - "Output format
+         'wav_44100' is only available on the Pro tier and above" (`output_format_not_allowed`) -
+         before any audio, while the skill advertised lossless as its default.
+       - Fix (src/ops_elevenlabs/cli.py): an OMITTED `--format` now follows the tier
+         (`LOSSLESS_TIERS = {pro,scale,business,enterprise}` -> `wav_44100`, else `MP3_DEFAULT
+         mp3_44100_128`), and the chosen format + reason are printed (`_resolve_format`). An explicit
+         `--format` is honored verbatim. A 403 now appends a hint naming the tier requirement
+         (`_format_hint`). SKILL.md and scripts/sanity.sh updated: sanity asserts the tier-appropriate
+         container instead of demanding a Pro-only RIFF.
+       - Verified: `_default_format_for_tier` -> creator `mp3_44100_128`, pro `wav_44100`, None
+         `mp3_44100_128`; `tts --help` shows the tier-aware default; `scripts/sanity.sh` -> 6 passed,
+         0 failed, including "sfx writes a real .mp3 container (tier=creator)".
+       - Landing gate: different-family reviewer (zai/glm-5.3, author deepseek) returned PASS with the
+         required greenfield requirement_restatement; receipt validated
+         `{"valid": true, "reviewer_provider": "zai"}`. Landed `ddac2098` on origin/main, which now
+         tracks the previously-missing `src/ops_elevenlabs/{__init__,cli,client,models}.py`; read-back
+         shows local == origin/main for cli.py, SKILL.md and sanity.sh.
+       - Consequence for the researcher: the tool-owned step no longer needs an explicit `--format` on
+         this plan; it will pick mp3 and say so.
+
+188. [ ] SECOND ElevenLabs probe the researcher asked for: ONE cleaner, clearly audible, sustained sigh
+     in the established Embry voice, with well-separated short speech carriers; preserve Creator MP3
+     provenance (no upgrade), and read the usage delta afterwards. One generation only; no batch.
+     Constraints: voice `orfFiGOiB0Kn2nOHPNIP` (embry-nonverbal), model `eleven_v3`, format
+     `mp3_44100_128` (Pro-only wav is unavailable), short carriers, sigh tag between them.
+     Report to the researcher: path, bytes, duration, sha256, usage before/after; extraction/eval stay
+     theirs. OWNER: this session (tool-owned generation); researcher (extraction/eval).
 
