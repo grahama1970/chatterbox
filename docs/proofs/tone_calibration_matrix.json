@@ -6,451 +6,763 @@
   "n": 6,
   "values": {
    "duration_s": [
-    10.72,
-    8.16,
-    8.68,
-    9.8,
-    8.68,
-    9.4
+    8.92,
+    8.48,
+    7.8,
+    9.04,
+    8.36,
+    8.44
    ],
    "rms": [
-    0.05833,
-    0.05045,
-    0.05336,
-    0.06273,
-    0.05226,
-    0.0595
+    0.05113,
+    0.06155,
+    0.05773,
+    0.06124,
+    0.05278,
+    0.0551
+   ],
+   "peak": [
+    0.78396,
+    0.98361,
+    0.69961,
+    0.83776,
+    0.70006,
+    0.81906
+   ],
+   "clipping_fraction": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
    ],
    "f0_median_hz": [
-    233.0,
-    212.4,
-    212.4,
-    223.3,
-    206.9,
-    220.2
+    204.3,
+    208.7,
+    220.2,
+    209.6,
+    210.5,
+    224.3
+   ],
+   "f0_std_hz": [
+    55.7,
+    47.2,
+    41.5,
+    38.9,
+    55.5,
+    49.3
+   ],
+   "pause_count": [
+    2,
+    1,
+    1,
+    2,
+    1,
+    1
+   ],
+   "longest_pause_ms": [
+    290.0,
+    330.0,
+    230.0,
+    330.0,
+    220.0,
+    440.0
+   ],
+   "silence_ratio": [
+    0.0572,
+    0.0389,
+    0.0295,
+    0.073,
+    0.0263,
+    0.0521
    ]
   },
   "spread": {
-   "duration_s": 2.56,
-   "rms": 0.0123,
-   "f0_median_hz": 26.1
+   "duration_s": 1.24,
+   "rms": 0.0104,
+   "peak": 0.284,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 20.0,
+   "f0_std_hz": 16.8,
+   "pause_count": 1,
+   "longest_pause_ms": 220.0,
+   "silence_ratio": 0.0467
   }
  },
  "per_tone_samples": 2,
  "tone_means": {
   "neutral_warm": {
-   "duration_s": 9.24,
-   "rms": 0.0561,
-   "f0_median_hz": 218.0333
+   "duration_s": 8.5067,
+   "rms": 0.0566,
+   "peak": 0.804,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 212.9333,
+   "f0_std_hz": 48.0167,
+   "pause_count": 1.3333,
+   "longest_pause_ms": 306.6667,
+   "silence_ratio": 0.0462
   },
   "calm_precise": {
-   "duration_s": 9.3545,
-   "rms": 0.0367,
-   "f0_median_hz": 216.5
+   "duration_s": 10.0855,
+   "rms": 0.0355,
+   "peak": 0.465,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 203.85,
+   "f0_std_hz": 49.65,
+   "pause_count": 2.5,
+   "longest_pause_ms": 245.0,
+   "silence_ratio": 0.054
   },
   "careful_concerned": {
-   "duration_s": 8.4905,
-   "rms": 0.041,
-   "f0_median_hz": 224.4
+   "duration_s": 9.995,
+   "rms": 0.0471,
+   "peak": 0.4534,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 239.3,
+   "f0_std_hz": 48.0,
+   "pause_count": 2.5,
+   "longest_pause_ms": 380.0,
+   "silence_ratio": 0.0745
   },
   "serious_low_energy": {
-   "duration_s": 11.461,
-   "rms": 0.0339,
-   "f0_median_hz": 203.4
+   "duration_s": 13.3655,
+   "rms": 0.0345,
+   "peak": 0.4175,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 211.55,
+   "f0_std_hz": 41.8,
+   "pause_count": 3.0,
+   "longest_pause_ms": 345.0,
+   "silence_ratio": 0.061
   },
   "memory_confident": {
-   "duration_s": 7.536,
-   "rms": 0.0458,
-   "f0_median_hz": 247.5
+   "duration_s": 7.957,
+   "rms": 0.0446,
+   "peak": 0.5335,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 234.2,
+   "f0_std_hz": 53.15,
+   "pause_count": 0.5,
+   "longest_pause_ms": 95.0,
+   "silence_ratio": 0.0114
   },
   "memory_uncertain": {
-   "duration_s": 9.056,
-   "rms": 0.0466,
-   "f0_median_hz": 252.6
+   "duration_s": 9.3705,
+   "rms": 0.0415,
+   "peak": 0.5352,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 243.1,
+   "f0_std_hz": 56.65,
+   "pause_count": 0.5,
+   "longest_pause_ms": 95.0,
+   "silence_ratio": 0.0103
   },
   "curious_searching": {
-   "duration_s": 7.664,
-   "rms": 0.0464,
-   "f0_median_hz": 267.2
+   "duration_s": 7.4185,
+   "rms": 0.0432,
+   "peak": 0.5017,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 267.2,
+   "f0_std_hz": 61.6,
+   "pause_count": 1.0,
+   "longest_pause_ms": 255.0,
+   "silence_ratio": 0.0342
   },
   "playful_light": {
-   "duration_s": 7.7545,
-   "rms": 0.0454,
-   "f0_median_hz": 254.4
+   "duration_s": 7.712,
+   "rms": 0.0493,
+   "peak": 0.5182,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 248.75,
+   "f0_std_hz": 63.7,
+   "pause_count": 0.5,
+   "longest_pause_ms": 140.0,
+   "silence_ratio": 0.0181
   },
   "relieved": {
-   "duration_s": 8.26,
-   "rms": 0.0604,
-   "f0_median_hz": 236.5
+   "duration_s": 8.16,
+   "rms": 0.068,
+   "peak": 0.7323,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 258.1,
+   "f0_std_hz": 60.45,
+   "pause_count": 2.0,
+   "longest_pause_ms": 255.0,
+   "silence_ratio": 0.0548
   },
   "firm_boundary": {
-   "duration_s": 9.531,
-   "rms": 0.0547,
-   "f0_median_hz": 275.1
+   "duration_s": 8.7785,
+   "rms": 0.0545,
+   "peak": 0.4842,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 284.05,
+   "f0_std_hz": 63.05,
+   "pause_count": 0.5,
+   "longest_pause_ms": 115.0,
+   "silence_ratio": 0.0126
   },
   "identity_clarification": {
-   "duration_s": 9.26,
-   "rms": 0.0775,
-   "f0_median_hz": 259.8
+   "duration_s": 7.98,
+   "rms": 0.0599,
+   "peak": 0.7789,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 258.55,
+   "f0_std_hz": 57.65,
+   "pause_count": 1.5,
+   "longest_pause_ms": 250.0,
+   "silence_ratio": 0.045
   },
   "one_at_a_time_interrupt": {
-   "duration_s": 7.0775,
-   "rms": 0.0538,
-   "f0_median_hz": 286.8
+   "duration_s": 8.0745,
+   "rms": 0.0559,
+   "peak": 0.6927,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 270.6,
+   "f0_std_hz": 71.0,
+   "pause_count": 1.0,
+   "longest_pause_ms": 105.0,
+   "silence_ratio": 0.0226
   },
   "deflect_calm": {
-   "duration_s": 10.1335,
-   "rms": 0.0459,
-   "f0_median_hz": 242.8
+   "duration_s": 8.629,
+   "rms": 0.0393,
+   "peak": 0.5353,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 249.85,
+   "f0_std_hz": 49.35,
+   "pause_count": 1.0,
+   "longest_pause_ms": 400.0,
+   "silence_ratio": 0.0469
   },
   "grief_safe": {
-   "duration_s": 9.5625,
-   "rms": 0.035,
-   "f0_median_hz": 206.9
+   "duration_s": 10.069,
+   "rms": 0.0388,
+   "peak": 0.4691,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 209.3,
+   "f0_std_hz": 49.35,
+   "pause_count": 2.0,
+   "longest_pause_ms": 340.0,
+   "silence_ratio": 0.0605
   },
   "wait_presence": {
-   "duration_s": 10.7145,
-   "rms": 0.0415,
-   "f0_median_hz": 219.4
+   "duration_s": 10.2665,
+   "rms": 0.035,
+   "peak": 0.5215,
+   "clipping_fraction": 0.0,
+   "f0_median_hz": 206.9,
+   "f0_std_hz": 44.45,
+   "pause_count": 2.0,
+   "longest_pause_ms": 355.0,
+   "silence_ratio": 0.0588
   }
  },
  "pairwise_separating_metrics": {
   "neutral_warm": {
    "calm_precise": [
-    "rms"
+    "duration_s",
+    "rms",
+    "peak",
+    "pause_count"
    ],
    "careful_concerned": [
-    "rms"
+    "duration_s",
+    "peak",
+    "f0_median_hz",
+    "pause_count"
    ],
    "serious_low_energy": [
-    "rms"
+    "duration_s",
+    "rms",
+    "peak",
+    "pause_count"
    ],
    "memory_confident": [
-    "f0_median_hz"
-   ],
-   "memory_uncertain": [
-    "f0_median_hz"
-   ],
-   "curious_searching": [
-    "f0_median_hz"
-   ],
-   "playful_light": [
-    "f0_median_hz"
-   ],
-   "relieved": [],
-   "firm_boundary": [
-    "f0_median_hz"
-   ],
-   "identity_clarification": [
     "rms",
     "f0_median_hz"
    ],
-   "one_at_a_time_interrupt": [
+   "memory_uncertain": [
+    "rms",
     "f0_median_hz"
    ],
-   "deflect_calm": [],
+   "curious_searching": [
+    "rms",
+    "peak",
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "peak",
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "firm_boundary": [
+    "peak",
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "f0_median_hz",
+    "f0_std_hz"
+   ],
+   "deflect_calm": [
+    "rms",
+    "f0_median_hz"
+   ],
    "grief_safe": [
-    "rms"
+    "duration_s",
+    "rms",
+    "peak"
    ],
    "wait_presence": [
+    "duration_s",
     "rms"
    ]
   },
   "calm_precise": {
    "neutral_warm": [
-    "rms"
+    "duration_s",
+    "rms",
+    "peak",
+    "pause_count"
    ],
-   "careful_concerned": [],
-   "serious_low_energy": [],
-   "memory_confident": [
+   "careful_concerned": [
+    "rms",
     "f0_median_hz"
+   ],
+   "serious_low_energy": [
+    "duration_s"
+   ],
+   "memory_confident": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
    ],
    "memory_uncertain": [
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count"
    ],
    "curious_searching": [
-    "f0_median_hz"
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
    ],
    "playful_light": [
-    "f0_median_hz"
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "pause_count"
    ],
    "relieved": [
-    "rms"
-   ],
-   "firm_boundary": [
+    "duration_s",
     "rms",
     "f0_median_hz"
    ],
-   "identity_clarification": [
+   "firm_boundary": [
+    "duration_s",
     "rms",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "identity_clarification": [
+    "duration_s",
+    "rms",
+    "peak",
     "f0_median_hz"
    ],
    "one_at_a_time_interrupt": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
    ],
    "deflect_calm": [
-    "f0_median_hz"
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
    ],
    "grief_safe": [],
    "wait_presence": []
   },
   "careful_concerned": {
    "neutral_warm": [
-    "rms"
+    "duration_s",
+    "peak",
+    "f0_median_hz",
+    "pause_count"
    ],
-   "calm_precise": [],
+   "calm_precise": [
+    "rms",
+    "f0_median_hz"
+   ],
    "serious_low_energy": [
-    "duration_s"
-   ],
-   "memory_confident": [],
-   "memory_uncertain": [
-    "f0_median_hz"
-   ],
-   "curious_searching": [
-    "f0_median_hz"
-   ],
-   "playful_light": [
-    "f0_median_hz"
-   ],
-   "relieved": [
-    "rms"
-   ],
-   "firm_boundary": [
+    "duration_s",
     "rms",
     "f0_median_hz"
-   ],
-   "identity_clarification": [
-    "rms",
-    "f0_median_hz"
-   ],
-   "one_at_a_time_interrupt": [
-    "rms",
-    "f0_median_hz"
-   ],
-   "deflect_calm": [],
-   "grief_safe": [],
-   "wait_presence": []
-  },
-  "serious_low_energy": {
-   "neutral_warm": [
-    "rms"
-   ],
-   "calm_precise": [],
-   "careful_concerned": [
-    "duration_s"
    ],
    "memory_confident": [
     "duration_s",
-    "f0_median_hz"
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "memory_uncertain": [
-    "rms",
-    "f0_median_hz"
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "curious_searching": [
     "duration_s",
-    "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count"
    ],
    "playful_light": [
     "duration_s",
-    "f0_median_hz"
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "relieved": [
     "duration_s",
-    "rms",
-    "f0_median_hz"
-   ],
-   "firm_boundary": [
-    "rms",
-    "f0_median_hz"
-   ],
-   "identity_clarification": [
-    "rms",
-    "f0_median_hz"
-   ],
-   "one_at_a_time_interrupt": [
-    "duration_s",
-    "rms",
-    "f0_median_hz"
-   ],
-   "deflect_calm": [
-    "f0_median_hz"
-   ],
-   "grief_safe": [],
-   "wait_presence": []
-  },
-  "memory_confident": {
-   "neutral_warm": [
-    "f0_median_hz"
-   ],
-   "calm_precise": [
-    "f0_median_hz"
-   ],
-   "careful_concerned": [],
-   "serious_low_energy": [
-    "duration_s",
-    "f0_median_hz"
-   ],
-   "memory_uncertain": [],
-   "curious_searching": [],
-   "playful_light": [],
-   "relieved": [
     "rms"
    ],
    "firm_boundary": [
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "identity_clarification": [
-    "rms"
+    "duration_s",
+    "rms",
+    "peak"
    ],
    "one_at_a_time_interrupt": [
-    "f0_median_hz"
+    "duration_s",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "deflect_calm": [
-    "duration_s"
+    "duration_s",
+    "pause_count"
    ],
    "grief_safe": [
     "f0_median_hz"
    ],
    "wait_presence": [
-    "duration_s",
+    "rms",
     "f0_median_hz"
+   ]
+  },
+  "serious_low_energy": {
+   "neutral_warm": [
+    "duration_s",
+    "rms",
+    "peak",
+    "pause_count"
+   ],
+   "calm_precise": [
+    "duration_s"
+   ],
+   "careful_concerned": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "memory_confident": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "memory_uncertain": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "curious_searching": [
+    "duration_s",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
+   ],
+   "playful_light": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
+   ],
+   "relieved": [
+    "duration_s",
+    "rms",
+    "peak",
+    "f0_median_hz",
+    "f0_std_hz"
+   ],
+   "firm_boundary": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "identity_clarification": [
+    "duration_s",
+    "rms",
+    "peak",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "one_at_a_time_interrupt": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms"
+   ],
+   "deflect_calm": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "grief_safe": [
+    "duration_s"
+   ],
+   "wait_presence": [
+    "duration_s"
+   ]
+  },
+  "memory_confident": {
+   "neutral_warm": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "careful_concerned": [
+    "duration_s",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "memory_uncertain": [
+    "duration_s"
+   ],
+   "curious_searching": [
+    "f0_median_hz"
+   ],
+   "playful_light": [],
+   "relieved": [
+    "rms",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "firm_boundary": [
+    "f0_median_hz"
+   ],
+   "identity_clarification": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "one_at_a_time_interrupt": [
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz"
+   ],
+   "deflect_calm": [
+    "longest_pause_ms"
+   ],
+   "grief_safe": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ]
   },
   "memory_uncertain": {
    "neutral_warm": [
-    "f0_median_hz"
-   ],
-   "calm_precise": [
-    "f0_median_hz"
-   ],
-   "careful_concerned": [
-    "f0_median_hz"
-   ],
-   "serious_low_energy": [
     "rms",
     "f0_median_hz"
    ],
-   "memory_confident": [],
-   "curious_searching": [],
-   "playful_light": [],
-   "relieved": [
-    "rms"
+   "calm_precise": [
+    "f0_median_hz",
+    "pause_count"
    ],
-   "firm_boundary": [],
+   "careful_concerned": [
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "memory_confident": [
+    "duration_s"
+   ],
+   "curious_searching": [
+    "duration_s",
+    "f0_median_hz"
+   ],
+   "playful_light": [
+    "duration_s"
+   ],
+   "relieved": [
+    "rms",
+    "pause_count"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz"
+   ],
    "identity_clarification": [
+    "duration_s",
     "rms"
    ],
    "one_at_a_time_interrupt": [
+    "duration_s",
+    "rms",
     "f0_median_hz"
    ],
-   "deflect_calm": [],
+   "deflect_calm": [
+    "longest_pause_ms"
+   ],
    "grief_safe": [
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "wait_presence": [
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ]
   },
   "curious_searching": {
    "neutral_warm": [
+    "rms",
+    "peak",
     "f0_median_hz"
    ],
    "calm_precise": [
-    "f0_median_hz"
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
    ],
    "careful_concerned": [
-    "f0_median_hz"
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
    ],
    "serious_low_energy": [
     "duration_s",
-    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
+   ],
+   "memory_confident": [
     "f0_median_hz"
    ],
-   "memory_confident": [],
-   "memory_uncertain": [],
+   "memory_uncertain": [
+    "duration_s",
+    "f0_median_hz"
+   ],
    "playful_light": [],
    "relieved": [
-    "rms",
-    "f0_median_hz"
+    "rms"
    ],
-   "firm_boundary": [],
+   "firm_boundary": [
+    "duration_s",
+    "rms"
+   ],
    "identity_clarification": [
     "rms"
    ],
-   "one_at_a_time_interrupt": [],
+   "one_at_a_time_interrupt": [
+    "rms"
+   ],
    "deflect_calm": [],
    "grief_safe": [
+    "duration_s",
     "f0_median_hz"
    ],
    "wait_presence": [
     "duration_s",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz"
    ]
   },
   "playful_light": {
    "neutral_warm": [
+    "peak",
     "f0_median_hz"
    ],
    "calm_precise": [
-    "f0_median_hz"
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "pause_count"
    ],
    "careful_concerned": [
-    "f0_median_hz"
+    "duration_s",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "serious_low_energy": [
     "duration_s",
-    "f0_median_hz"
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
    ],
    "memory_confident": [],
-   "memory_uncertain": [],
+   "memory_uncertain": [
+    "duration_s"
+   ],
    "curious_searching": [],
    "relieved": [
-    "rms"
-   ],
-   "firm_boundary": [],
-   "identity_clarification": [
-    "rms"
-   ],
-   "one_at_a_time_interrupt": [
-    "f0_median_hz"
-   ],
-   "deflect_calm": [],
-   "grief_safe": [
-    "f0_median_hz"
-   ],
-   "wait_presence": [
-    "duration_s",
-    "f0_median_hz"
-   ]
-  },
-  "relieved": {
-   "neutral_warm": [],
-   "calm_precise": [
-    "rms"
-   ],
-   "careful_concerned": [
-    "rms"
-   ],
-   "serious_low_energy": [
-    "duration_s",
     "rms",
-    "f0_median_hz"
-   ],
-   "memory_confident": [
-    "rms"
-   ],
-   "memory_uncertain": [
-    "rms"
-   ],
-   "curious_searching": [
-    "rms",
-    "f0_median_hz"
-   ],
-   "playful_light": [
-    "rms"
+    "pause_count"
    ],
    "firm_boundary": [
     "f0_median_hz"
@@ -462,78 +774,182 @@
     "f0_median_hz"
    ],
    "deflect_calm": [
+    "longest_pause_ms"
+   ],
+   "grief_safe": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
+   ]
+  },
+  "relieved": {
+   "neutral_warm": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "careful_concerned": [
+    "duration_s",
+    "rms"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "rms",
+    "peak",
+    "f0_median_hz",
+    "f0_std_hz"
+   ],
+   "memory_confident": [
+    "rms",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "memory_uncertain": [
+    "rms",
+    "pause_count"
+   ],
+   "curious_searching": [
+    "rms"
+   ],
+   "playful_light": [
+    "rms",
+    "pause_count"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "identity_clarification": [],
+   "one_at_a_time_interrupt": [
+    "rms"
+   ],
+   "deflect_calm": [
     "rms"
    ],
    "grief_safe": [
+    "duration_s",
     "rms",
     "f0_median_hz"
    ],
    "wait_presence": [
-    "rms"
+    "duration_s",
+    "rms",
+    "f0_median_hz"
    ]
   },
   "firm_boundary": {
    "neutral_warm": [
+    "peak",
     "f0_median_hz"
    ],
    "calm_precise": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count"
    ],
    "careful_concerned": [
-    "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "serious_low_energy": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "memory_confident": [
     "f0_median_hz"
    ],
-   "memory_uncertain": [],
-   "curious_searching": [],
-   "playful_light": [],
-   "relieved": [
+   "memory_uncertain": [
+    "rms",
     "f0_median_hz"
    ],
-   "identity_clarification": [
+   "curious_searching": [
+    "duration_s",
     "rms"
+   ],
+   "playful_light": [
+    "f0_median_hz"
+   ],
+   "relieved": [
+    "rms",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "identity_clarification": [
+    "peak",
+    "f0_median_hz"
    ],
    "one_at_a_time_interrupt": [],
    "deflect_calm": [
-    "f0_median_hz"
+    "rms",
+    "f0_median_hz",
+    "longest_pause_ms"
    ],
    "grief_safe": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "wait_presence": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms"
    ]
   },
   "identity_clarification": {
    "neutral_warm": [
-    "rms",
     "f0_median_hz"
    ],
    "calm_precise": [
+    "duration_s",
     "rms",
+    "peak",
     "f0_median_hz"
    ],
    "careful_concerned": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "peak"
    ],
    "serious_low_energy": [
+    "duration_s",
+    "rms",
+    "peak",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "memory_confident": [
     "rms",
     "f0_median_hz"
    ],
-   "memory_confident": [
-    "rms"
-   ],
    "memory_uncertain": [
+    "duration_s",
     "rms"
    ],
    "curious_searching": [
@@ -542,69 +958,145 @@
    "playful_light": [
     "rms"
    ],
-   "relieved": [
-    "rms"
-   ],
+   "relieved": [],
    "firm_boundary": [
-    "rms"
-   ],
-   "one_at_a_time_interrupt": [
-    "rms",
+    "peak",
     "f0_median_hz"
    ],
+   "one_at_a_time_interrupt": [],
    "deflect_calm": [
     "rms"
    ],
    "grief_safe": [
+    "duration_s",
     "rms",
+    "peak",
     "f0_median_hz"
    ],
    "wait_presence": [
+    "duration_s",
     "rms",
     "f0_median_hz"
    ]
   },
   "one_at_a_time_interrupt": {
    "neutral_warm": [
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz"
    ],
    "calm_precise": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
    ],
    "careful_concerned": [
-    "rms",
-    "f0_median_hz"
+    "duration_s",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "serious_low_energy": [
     "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms"
    ],
    "memory_confident": [
-    "f0_median_hz"
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz"
    ],
    "memory_uncertain": [
+    "duration_s",
+    "rms",
     "f0_median_hz"
    ],
-   "curious_searching": [],
+   "curious_searching": [
+    "rms"
+   ],
    "playful_light": [
     "f0_median_hz"
    ],
    "relieved": [
-    "f0_median_hz"
+    "rms"
    ],
    "firm_boundary": [],
-   "identity_clarification": [
-    "rms",
-    "f0_median_hz"
-   ],
+   "identity_clarification": [],
    "deflect_calm": [
-    "duration_s",
-    "f0_median_hz"
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "longest_pause_ms"
    ],
    "grief_safe": [
+    "duration_s",
     "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "longest_pause_ms"
+   ],
+   "wait_presence": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "longest_pause_ms"
+   ]
+  },
+  "deflect_calm": {
+   "neutral_warm": [
+    "rms",
+    "f0_median_hz"
+   ],
+   "calm_precise": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "careful_concerned": [
+    "duration_s",
+    "pause_count"
+   ],
+   "serious_low_energy": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count"
+   ],
+   "memory_confident": [
+    "longest_pause_ms"
+   ],
+   "memory_uncertain": [
+    "longest_pause_ms"
+   ],
+   "curious_searching": [],
+   "playful_light": [
+    "longest_pause_ms"
+   ],
+   "relieved": [
+    "rms"
+   ],
+   "firm_boundary": [
+    "rms",
+    "f0_median_hz",
+    "longest_pause_ms"
+   ],
+   "identity_clarification": [
+    "rms"
+   ],
+   "one_at_a_time_interrupt": [
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "longest_pause_ms"
+   ],
+   "grief_safe": [
+    "duration_s",
     "f0_median_hz"
    ],
    "wait_presence": [
@@ -612,121 +1104,145 @@
     "f0_median_hz"
    ]
   },
-  "deflect_calm": {
-   "neutral_warm": [],
-   "calm_precise": [
+  "grief_safe": {
+   "neutral_warm": [
+    "duration_s",
+    "rms",
+    "peak"
+   ],
+   "calm_precise": [],
+   "careful_concerned": [
     "f0_median_hz"
    ],
-   "careful_concerned": [],
    "serious_low_energy": [
-    "f0_median_hz"
-   ],
-   "memory_confident": [
     "duration_s"
    ],
-   "memory_uncertain": [],
-   "curious_searching": [],
-   "playful_light": [],
-   "relieved": [
-    "rms"
+   "memory_confident": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
-   "firm_boundary": [
-    "f0_median_hz"
+   "memory_uncertain": [
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
-   "identity_clarification": [
-    "rms"
-   ],
-   "one_at_a_time_interrupt": [
+   "curious_searching": [
     "duration_s",
     "f0_median_hz"
    ],
-   "grief_safe": [
-    "f0_median_hz"
-   ],
-   "wait_presence": []
-  },
-  "grief_safe": {
-   "neutral_warm": [
-    "rms"
-   ],
-   "calm_precise": [],
-   "careful_concerned": [],
-   "serious_low_energy": [],
-   "memory_confident": [
-    "f0_median_hz"
-   ],
-   "memory_uncertain": [
-    "f0_median_hz"
-   ],
-   "curious_searching": [
-    "f0_median_hz"
-   ],
    "playful_light": [
-    "f0_median_hz"
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "pause_count"
    ],
    "relieved": [
+    "duration_s",
     "rms",
     "f0_median_hz"
    ],
    "firm_boundary": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
    ],
    "identity_clarification": [
+    "duration_s",
     "rms",
+    "peak",
     "f0_median_hz"
    ],
    "one_at_a_time_interrupt": [
+    "duration_s",
     "rms",
-    "f0_median_hz"
+    "f0_median_hz",
+    "f0_std_hz",
+    "longest_pause_ms"
    ],
    "deflect_calm": [
+    "duration_s",
     "f0_median_hz"
    ],
    "wait_presence": []
   },
   "wait_presence": {
    "neutral_warm": [
+    "duration_s",
     "rms"
    ],
    "calm_precise": [],
-   "careful_concerned": [],
-   "serious_low_energy": [],
-   "memory_confident": [
-    "duration_s",
-    "f0_median_hz"
-   ],
-   "memory_uncertain": [
-    "f0_median_hz"
-   ],
-   "curious_searching": [
-    "duration_s",
-    "f0_median_hz"
-   ],
-   "playful_light": [
-    "duration_s",
-    "f0_median_hz"
-   ],
-   "relieved": [
-    "rms"
-   ],
-   "firm_boundary": [
+   "careful_concerned": [
     "rms",
     "f0_median_hz"
    ],
+   "serious_low_energy": [
+    "duration_s"
+   ],
+   "memory_confident": [
+    "duration_s",
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "memory_uncertain": [
+    "f0_median_hz",
+    "pause_count",
+    "longest_pause_ms",
+    "silence_ratio"
+   ],
+   "curious_searching": [
+    "duration_s",
+    "f0_median_hz",
+    "f0_std_hz"
+   ],
+   "playful_light": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count"
+   ],
+   "relieved": [
+    "duration_s",
+    "rms",
+    "f0_median_hz"
+   ],
+   "firm_boundary": [
+    "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "pause_count",
+    "longest_pause_ms"
+   ],
    "identity_clarification": [
+    "duration_s",
     "rms",
     "f0_median_hz"
    ],
    "one_at_a_time_interrupt": [
     "duration_s",
+    "rms",
+    "f0_median_hz",
+    "f0_std_hz",
+    "longest_pause_ms"
+   ],
+   "deflect_calm": [
+    "duration_s",
     "f0_median_hz"
    ],
-   "deflect_calm": [],
    "grief_safe": []
   }
  },
- "distinct_pairs": 77,
+ "distinct_pairs": 96,
  "total_pairs": 105,
  "classification": {
   "neutral_warm": "calibrated_distinct",
@@ -737,11 +1253,11 @@
   "memory_uncertain": "calibrated_distinct",
   "curious_searching": "calibrated_distinct",
   "playful_light": "calibrated_distinct",
-  "relieved": "not_distinct_request_only",
+  "relieved": "calibrated_distinct",
   "firm_boundary": "calibrated_distinct",
   "identity_clarification": "calibrated_distinct",
   "one_at_a_time_interrupt": "calibrated_distinct",
-  "deflect_calm": "not_distinct_request_only",
+  "deflect_calm": "calibrated_distinct",
   "grief_safe": "calibrated_distinct",
   "wait_presence": "calibrated_distinct"
  },

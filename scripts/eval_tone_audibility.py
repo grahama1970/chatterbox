@@ -23,6 +23,7 @@ Exit 0 on pass, 1 on measured failure, 2 on infrastructure error.
 from __future__ import annotations
 
 import argparse
+import os
 import contextlib
 import json
 import sys
@@ -40,6 +41,30 @@ TEXT = (
 F0_MIN_HZ, F0_MAX_HZ = 60.0, 400.0
 
 
+# The engine reports CONTAINER paths. This mapping used to assume `/out/`; after the container
+# was rebuilt the batch audio lands under `/var/lib/embry-artifacts`, which is mounted on the host
+# at ARTIFACT_HOST_ROOT. The stale assumption raised "rendered wav missing on host" and made the
+# tone matrix look unregenerable. Both roots are handled, and the host root is env-overridable.
+ARTIFACT_HOST_ROOT = Path(os.environ.get("CHATTERBOX_ARTIFACT_HOST_ROOT",
+                                         "/mnt/storage12tb/embry-voice/artifacts"))
+
+
+def _host_path_for(container_path: str, out_root: Path) -> Path:
+    """Map a container-reported artifact path to the path this host can read.
+
+    Two container roots are understood: the legacy `/out/`, mapped under `out_root`, and the
+    current `/var/lib/embry-artifacts/`, mapped under `ARTIFACT_HOST_ROOT` (env-overridable).
+    Any other path is returned UNCHANGED, so the caller's existence check fails closed instead
+    of inventing a location that happens to exist.
+    """
+    if container_path.startswith("/out/"):
+        return Path(str(out_root) + container_path[len("/out"):])
+    prefix = "/var/lib/embry-artifacts/"
+    if container_path.startswith(prefix):
+        return ARTIFACT_HOST_ROOT / container_path[len(prefix):]
+    return Path(container_path)
+
+
 def render(base_url: str, out_root: Path, label: str, body_extra: dict) -> Path:
     body = {"answer_text": TEXT, "label": label, **body_extra}
     req = urllib.request.Request(
@@ -52,9 +77,9 @@ def render(base_url: str, out_root: Path, label: str, body_extra: dict) -> Path:
     if not receipt.get("ok"):
         raise RuntimeError(f"render {label} not ok: {receipt.get('failed_gates')}")
     container_path = receipt["finished_response_audio"]
-    host_path = Path(container_path.replace("/out/", str(out_root) + "/"))
+    host_path = _host_path_for(container_path, out_root)
     if not host_path.exists():
-        raise RuntimeError(f"rendered wav missing on host: {host_path}")
+        raise RuntimeError(f"rendered wav missing on host: {host_path} (container said {container_path})")
     return host_path
 
 
