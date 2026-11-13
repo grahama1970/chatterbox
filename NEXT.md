@@ -7529,7 +7529,7 @@ t
      until a pilot tag passes the identity gate.
      OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
 
-194. [ ] REPAIR the A34 findings on the pass-34 bytes (7 PASS / 4 FAIL), each reproduced FIRST, then
+194. [x] REPAIR the A34 findings on the pass-34 bytes (7 PASS / 4 FAIL), each reproduced FIRST, then
      rebuild ONE packet (pass 35). Verdict source: `outputs/reviews/a7-pass34-FAIL-20261113.md`.
      Pattern: four findings say the A33 repairs missed the real code path, so each is fixed AT THE PATH
      THE REVIEWER CITES, not by re-patching the previous fix.
@@ -7561,4 +7561,52 @@ t
      Then: rebuild ONE packet (bindings + embedded sections verified against disk), record per group,
      freeze, submit via surf with exact path/size/sha. A FAIL is a valid outcome; never weaken a gate.
      OWNER: this session (repairs/rebuild); surf (submission).
+
+     RESULT (2026-11-13): all 14 findings repaired AT THE CITED PATHS, each with an executed check.
+     Every fix was verified by driving production code, not a helper:
+       - A34-IS-01 cleanup performs NO name-based delete now (empty parked dir -> rmdir; any leftover
+         preserved + RuntimeWarning). Verified: foreign payload kept byte-exact, warning emitted,
+         published WAV untouched.
+       - A34-IS-02 ASR reads the captured snapshot through an INHERITED descriptor. Verified: ASR
+         received `/proc/self/fd/3` with `pass_fds=(3,)` and read the captured RIFF bytes.
+       - A34-IS-03 ASR construction is inside the per-candidate boundary. Verified: injected
+         `OSError(ENOSPC)` -> `gate` returned `(False, "ASR snapshot unavailable: OSError: [Errno 28]
+         probe: ASR snapshot disk full", ...)` with no exception and no batch abort.
+       - A34-IS-04 fallback-name parking moved into the SAME `finally` as the descriptor close.
+       - A34-SP-01 descriptors tracked in a live fd->inode map; `_close_owned` pops, fstats, and
+         closes only while owned. Verified: staged fd 3 closed, an unrelated open reused 3, cleanup
+         left the unrelated descriptor WRITABLE (the reviewer's EBADF is gone).
+       - A34-SP-02 ONE directory identity per transaction, asserted after EVERY publication and
+         before success. Verified through real `render_turn` (deterministic HTTP response, reviewer's
+         exact dir swap after the WAV publish): REFUSED with `_DirIdentityChanged`; `original_output/`
+         kept turn.wav + receipt + provenance and the replacement dir stayed empty. No false success.
+       - A34-SP-03 success-path preservation diagnostics now printed as publication notes.
+       - A34-SV-01 `SILENT_PEAK = 0.02` now shared by the rejection AND selection (peak measured from
+         the channel samples). Verified on the reviewer's exact witness: L FAIL 0.0195, R
+         ACOUSTIC_ONLY 0.0214, stereo now ACOUSTIC_ONLY 0.0214 (was FAIL).
+       - A34-SV-02 a close() error returns an UNVERIFIED diagnostic naming possible installation,
+         with no second close; A34-SV-03 the helper's RuntimeError becomes the publication diagnostic.
+       - A34-FS-01 warns with the parked path when an empty-looking dir cannot be removed.
+       - A34-RUN-01 `tests/test_a7_pass10_repairs.py` added to the timeout-protected loop.
+       - A34-LIB-01 accepts only rc 0/1; A33-PROOF-02 selects only the sidecar the mutant render
+         created. `tests/test_prove8.py` + `test_wg_pass2_repairs.py` doubles accept `pass_fds`.
+     HARNESS: `bash tests/run.sh` -> rc=0, "tests: all retained harnesses PASS", `PUBLISH_BY_NAME:
+       clean`; test_a7 ok, test_wg_pass2_repairs 41/41, test_render_tag_evidence 20/20, test_prove8
+       34/34, test_packet_a7_reporting 30/30.
+     PACKET pass 35: `/tmp/cb-A7-pass35.txt` 286,200 B sha256 `eebccef748ffa3c4…`; 11 bindings, 0
+       mismatches, 11 embedded sections match disk, 8/11 files changed.
+     RECORDS: A7 and GUARDS-WAVGUARD recorded against pass 35. The freeze first reported DRIFT because
+       `tests/test_prove8.py` changed under the awaiting A7-add1 packet; its new bytes were recorded
+       as `/tmp/cb-A7-add1b-prove8.txt` (35,482 B sha `6f5e4a68cf8e…`, binding verified), the awaiting
+       row repointed, and `cb-A7-add1-prove8.txt` withdrawn as superseded. Re-freeze ->
+       `VERDICT: ALL_FROZEN` (receipt `submission-freeze.json` sha
+       `ce898297bdb9e050…`, pass 35 governed=11 FROZEN=11).
+     SUBMITTED to surf with path/size/sha and the required reply shape. Verdict tracked in 195.
+
+195. [~] The pass-35 verdict. Awaiting surf's extraction; delivery will be verified from the
+     destination (packet sha quoted + 11 per-file VERDICT lines + PACKET VERDICT), then intaked per
+     group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate is weakened.
+     Packet identity: `/tmp/cb-A7-pass35.txt` 286,200 B `eebccef748ffa3c4…`. Frozen `ALL_FROZEN`
+     (receipt `ce898297bdb9e050…`).
+     OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
