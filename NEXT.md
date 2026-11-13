@@ -7260,7 +7260,9 @@ t
 183. [x] RECORD (no code change): the researcher's [hearty laugh] S3 adapter result, verified against its
      own artifacts rather than its prose.
        - Artifacts read back: `/tmp/hearty-laugh-proof/evaluation.json` (90,582 B) and `RESULT.md`
-         (1,638 B). `evaluation.json.summary` = `tagged_pass 9 / tagged_required 9`,
+         (1,638 B). `evaluation.json.summary` = `tagged_pass 9 / tagged_required 9`
+         (CORRECTION 2026-11-13: those fields mean 9 of 12 heldout passed against a THRESHOLD of 9,
+         not a 9/9 sweep)
          `neutral_recall_pass 12`, `verdict PASS`; its own `boundary` field states: "Acoustic association
          proxy only. No perceptual laugh identity claim; one reference voice".
        - Method as reported in RESULT.md and consistent with the artifacts: 62 native S3 IDs saved; NO
@@ -7449,7 +7451,9 @@ t
          `speech_tokenizer_v2_25hz`, 62 tokens, `source_sha256 3f53115e1fdee0bf…`.
        - `receipt.json`: `valid_range [0,6560]`, `reload_exact True`, decoder Chatterbox S3Gen with the
          neutral Embry reference, 24 kHz, 2.48 s, `output_sha256 b2b4a2c402e5627d…`.
-       - `RESULT.md`/`evaluation.json`: acoustic gate PASS 9/9; base spoke the label 12/12, trained 0/12;
+       - `RESULT.md`/`evaluation.json`: acoustic gate = 9 of 12 HELDOUT passes against the required 9
+         (CORRECTION 2026-11-13 from the researcher: this is NOT 9/9; my first record said 9/9 and was
+         wrong). Base spoke the label 12/12, trained 0/12;
          identity NOT established (source ASR "Ha ha ha ha ha!" vs neutral-reference S3 round-trip
          "No!"). So TOKENIZATION WORKS while EVENT IDENTITY is still unproven — token reload is not
          identity, per this project's PO-02 boundary.
@@ -7463,6 +7467,20 @@ t
           through `wav_guard`/`sfx_verify` before any wiring.
      WHAT I SUPPLY: tag roster, verifier predicates, receipt schema, and a fail-closed adapter that
      refuses any token asset lacking identity evidence.
+     ACCEPTANCE SCOPE (corrected by the researcher 2026-11-13): Graham accepted
+       `train/trained_c0_s0_1.wav` (a FULL utterance) after playback; he did NOT accept `decoded.wav`
+       (its ASR is "No!") as source-token identity. The original 62-token laugh asset therefore CANNOT
+       inherit that verdict and remains UNRESOLVED until separately reviewed.
+     PILOT SCOPE: RESEARCH-ONLY, FULL-UTTERANCE, confirmed to the researcher. No production wiring, no
+       tokens shipped in skill fixtures, rights_status UNVERIFIED on every artifact. A saved-token decode
+       is deterministic asset playback, not proof of dynamic text-tag generation - the adapter says so.
+     RETURNED A PRECISE EVENT-SPAN EXTRACTION CONTRACT (grounded in wav_guard constants):
+       boundaries at 20 ms energy minima nearest ASR word boundaries and never mid-word/clause; span
+       >= 0.25 s with an active run >= 0.06 s and active_frac >= 0.15; raw RMS >= 0.008; peak
+       >= 0.02 and < 0.999 (unclipped); AC RMS >= 0.0025; silent gap from the nearest carrier word on
+       each side and no carrier word inside the span; a HUMAN identity verdict (reviewer + utc +
+       verbatim) is mandatory and ASR/token-reload are not identity; receipt binds tag, source
+       utterance sha, span start/end, span sha, rms/peak, asr_window_text, gaps, verdict, rights.
      BLOCKED ON: the researcher's contract/decoder/evidence (external lane). No production edit is made
      until a pilot tag passes the identity gate.
      OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
