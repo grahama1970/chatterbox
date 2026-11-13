@@ -6279,27 +6279,60 @@ t
      Verification: 9/9 harness (was 7/7); run.sh rc=0; live no-tag /render shape confirmed tags_interpreted=False with
      empty applied/detected lists; mutant observed returning None.
 
-152. [~] Repair the wav_guard pass-3 FAIL (WG-06/WG-07 PARTIAL, WG-09 NEW, WG-10 NEW) before any packet is submitted.
+152. [x] Three findings from the wav_guard pass-3 FAIL repaired - WG-09, WG-10, WG-11 - each reproduced BEFORE the fix. WG-06/WG-07 stay open below.
      THE VERDICT: surf relayed PACKET VERDICT FAIL for /tmp/cb-wg-pass3.txt (12332dc9c6749716), WebGPT Pro, receipt
      submitted_to_chatgpt=True. Preserved at outputs/reviews/wg-pass3-FAIL-20261113.md sha256
-     16f7f6bcb0ae9ac2ecdc3c3b2c571f7a3d209b2705b34d96dd9f98ac5082afb8. Verbatim per file:
-       wav_guard.py db2c5619 -> FAIL        sfx_verify.py 112e8d32 -> FAIL
-       test_wg_pass2_repairs.py 0d7c323b -> PASS        tests/run.sh 2c01cc88 -> PASS
-     Findings: WG-08 FIXED. WG-06 PARTIAL (major) wav_guard:228-231 + sfx_verify:257,432-433. WG-07 PARTIAL (major)
-     wav_guard:247,253-261 "the partial-window recount still admits some inputs". WG-09 NEW (major) wav_guard:228-231
-     "picking the max-RMS channel can reject a valid sustained channel". WG-10 NEW (major) sfx_verify:605,653-658 "a named
-     staging result throws an uncaught cleanup exception". WG-11 minor: read-error conversion untested.
-     THESE ARE LIVE DEFECTS ON CURRENT BYTES: wav_guard.py has not changed since that review (still db2c5619), so a
-     superseded packet does not supersede the finding.
+     16f7f6bcb0ae9ac2ecdc3c3b2c571f7a3d209b2705b34d96dd9f98ac5082afb8. Per-file: wav_guard db2c5619 FAIL, sfx_verify
+     112e8d32 FAIL, test_wg_pass2_repairs 0d7c323b PASS, run.sh 2c01cc88 PASS; WG-08 fixed; WG-06/WG-07 PARTIAL;
+     WG-09/WG-10 major new; WG-11 minor.
+     WHY THESE WERE LIVE DESPITE A SUPERSEDED PACKET: wav_guard.py had not moved since that review (still db2c5619), so
+     the findings described CURRENT bytes. A superseded packet does not supersede a finding about bytes that never moved.
      INTAKE HONESTLY REFUSED: verdict-intake --group GUARDS-WAVGUARD --report ... --apply returned "REFUSED: no rows were
-     changed" because sfx_verify.py moved to 405054bb and run.sh to 822a9ff3, so the verdict is recorded as hash-unbound
-     rather than applied to bytes that moved. That refusal is the gate working; it is not overridden.
-     WHAT I ALREADY SEE FOR WG-09: signal_health returns `max(per_channel, key=ac_rms)`. A loud sparse burst can give the
-     higher ac_rms while failing the sustained gate, while the OTHER channel is continuously active and would pass - so
-     "best channel by biggest number" can reject a good clip. Selection must be "any channel that passes", with max-ac_rms
-     only as the reporting fallback.
-     PLAN: (1) reproduce WG-09 with sparse loud bursts on one channel and a quiet sustained tone on the other, and show the
-     current code rejects it; (2) fix selection; (3) re-test WG-06/WG-07 partial cases against the reviewer's described
-     inputs; (4) inspect WG-10 at sfx_verify:605,653-658 and make cleanup exceptions structured; (5) add WG-11's
-     read-error test; (6) a control plus mutant per guard; (7) reissue as pass 29 and delegate.
-     OWNER: this session.
+     changed" - sfx_verify.py had moved to 405054bb, run.sh to 822a9ff3, test_wg_pass2_repairs.py to f863b4e7 - so the
+     verdict was recorded hash-unbound rather than applied to bytes that moved. The gate was right and was not overridden.
+     WG-09 (major) "picking the max-RMS channel can reject a valid sustained channel" - REPRODUCED: ch0 = 10% loud bursts
+     (ac_rms 0.1713, active 14% -> refused "mostly silent"), ch1 = quiet sustained tone (ac_rms 0.0259, active 100% ->
+     passes). The old selection returned ch0's verdict, refusing a clip that had a valid sustained channel. FIX: prefer any
+     channel with no sustained problem; fall back to max-ac_rms only so a failure report still names the most energetic
+     channel. After the fix the clip passes (ac_rms 0.0259, active 1.00) while constant-DC stereo (ac_rms 0.0000) and
+     digital silence are still refused, and a single loud real channel is still accepted.
+     WG-10 (major) "a named staging result throws an uncaught cleanup exception" - REPRODUCED: forced fs_ops.stage_bytes to
+     return a NAME while the destination existed; cleanup parked Path(tmp_name) while the descriptor staging path sets
+     staged_name and leaves tmp_name None, so the finally raised TypeError("argument should be a str or an os.PathLike
+     object ... not 'NoneType'") and masked the real refusal ("--out ... already exists"). FIX: park Path(staged_name)
+     inside a bounded except (OSError, TypeError, ValueError). Two patch attempts failed on indentation (6 spaces assumed,
+     file has 4); the third used the exact repr and the reproduction went from escaping to returning the diagnostic.
+     WG-11 (minor) read-error conversion untested - ADDED: read_snapshot converting os.read's OSError into WavError, with a
+     mutant that re-raises the raw OSError and must be caught.
+     CONTROLS: tests/test_wg_pass2_repairs.py 43d7855b1974, 21/21, a mutant per guard (WG-06, 06b, 06c, 07, 08, 09, 10, 11)
+     so no control can pass by doing nothing. tests/run.sh rc=0 with all harnesses PASS and PUBLISH_BY_NAME: clean;
+     sanity.sh rc=0 with a live render.
+     PACKET /tmp/cb-A7-pass29.txt 216,411 B sha256
+     2439e4b9bd7c58a6c9f3221e7832962f89296a14c4401ef168f442b93a022ff5, 11 bindings, 0 stale, 0 missing, recorded through
+     record-packet.py (which also cleared the plan/manifest/matrix drift left by the earlier test edit). Pass 28 is
+     WITHDRAWN in delegations with the reason recorded.
+     DOC LANDED 9d743321f9b4b257525c82218597327164ec6202; identity baseline re-recorded deliberately (0518b4cc0bf7);
+     board PASS (13 guards).
+     STILL OPEN, STATED RATHER THAN CLAIMED: WG-06 PARTIAL and WG-07 PARTIAL. WG-09's fix touches the selection region
+     WG-06 cites and DC is still refused under control, but neither PARTIAL is closed by argument - each needs its own
+     reproduction with the reviewer's described input. Opened as the next item; I asked surf for the exact WG-07 clip.
+     Verification: WG-09 before/after on one constructed clip; WG-10 before/after on one forced named stage; WG-11 mutant;
+     21/21 harness; run.sh rc=0; sanity rc=0; packet re-hash 11/11 zero drift; board PASS.
+
+153. [ ] Reproduce WG-06 PARTIAL and WG-07 PARTIAL from the wav_guard FAIL - or record precisely why they cannot be.
+     WHAT THE REVIEWER SAID, verbatim: "WG-06 PARTIAL (major), wav_guard.py:228-231 and sfx_verify.py:257,432-433" and
+     "WG-07 PARTIAL (major), wav_guard.py:247,253-261: the partial-window recount still admits some inputs. Line 19 shows
+     it reaching the verifier with a category-valid clip."
+     WHAT IS ALREADY TRUE: WG-09's fix rewrote the selection block WG-06 points at (any channel that PASSES rather than
+     max-ac_rms), constant-DC stereo is still refused under control, and the trailing-partial-window logic WG-07 cites is
+     covered by its own case. Neither fact CLOSES a PARTIAL, because the reviewer observed an input that still slips
+     through and did not name it.
+     PLAN, in order: (1) ask surf for the exact WG-07 clip/bytes that "reached the verifier with a category-valid clip" -
+     a named input converts a guess into a test; (2) absent that, construct the adversarial shapes the line refs imply
+     (a silent tail shorter than one window, a clip whose only activity is in the final partial window, and a stereo clip
+     where one channel is constant DC and the other is a real sustained tone) and measure each against the CURRENT gate;
+     (3) for anything that still passes a gate it should fail, fix and add a mutant control; (4) for anything that cannot
+     be reproduced, record the exact attempt and result rather than declaring the PARTIAL resolved.
+     Do NOT close these by citing the WG-09 fix or by argument; a PARTIAL is closed by a reproduction that no longer
+     reproduces, or it stays open.
+     OWNER: this session; surf supplies the reviewer's input if available.
