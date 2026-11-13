@@ -7893,5 +7893,23 @@ t
      intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
      Packet: `/tmp/cb-A7-pass38.txt` 295,757 B `650947f6feda328e…`, `ALL_FROZEN` (receipt
      `d5fd9ba4f1335c76…`).
+     SUBMISSION REFUSED BY THE DESTINATION (2026-11-13T21:57Z) — THERE IS NO A38 REVIEW TO INTAKE:
+       - Page text verbatim: "This content can't be shown" / "This content was flagged for possible
+         cybersecurity risk. You may be eligible for Daybreak Blue, which reduces refusals for
+         authorized defensive work on supported models. Other safeguards still apply."
+       - Wrapper refusal verbatim: "Error: ChatGPT submit is unproven: activity appeared but no user
+         turn equals the intended prompt; do not treat this round as delivered".
+       - Evidence preserved: `/tmp/surf-cb-A38/response.md.receipt.json` and `/tmp/surf-A38-submit.log`.
+         The USER turn visibly carries the attached `cb-A7-pass38.txt` and requests `650947f6…`, so
+         the packet REACHED the page and the PAGE refused it; this is a destination policy refusal, not
+         a transport failure.
+       - NO RETRY, NO REWRITE, NO RESUBMISSION. Rewording the packet to get past a safety flag would be
+         evading a control, not repairing anything. The packet stays frozen at `650947f6…`.
+       DECISION REQUIRED (owner): the reviewer of record cannot deliver a verdict for this content on
+       the current account. Options: (A) submit the SAME unmodified pass-38 packet to a different
+       authorized reviewer via surf (e.g. Kimi/Gemini web) and accept that reviewer as the voice for
+       this round; (B) the owner enables Daybreak Blue / an equivalent authorized-defensive mode, then
+       resubmit the same packet to ChatGPT; (C) stop the external-review loop at pass 37's verdict and
+       record the remaining work as unreviewed. No option ships a weakened gate.
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
