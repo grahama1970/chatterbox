@@ -53,3 +53,10 @@ tmp/*
 !tmp/.gitkeep
 logs/*
 !logs/.gitkeep
+
+# Narrator reference audio and its provenance are LOCAL ONLY. The sources are audiobooks
+# whose rights are UNVERIFIED and this repository is PUBLIC, so publishing them would
+# distribute third-party audio. WAVs are already covered by **/*.wav; the provenance
+# sidecars are ignored too so an accidental `git add voices/` cannot publish the source
+# chain either. Backed up outside git at /mnt/storage12tb/embry-voice/references-voices.
+voices/
