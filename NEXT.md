@@ -6257,14 +6257,49 @@ t
      applied_tags ["[sigh]"]; no-tag tags_interpreted False with empty applied/detected lists; service start time
      21:49:32 > source mtime 21:45:48; /health 200.
 
-151. [ ] Cover the engine's EXPLICIT no-tag evidence shape in the tag-evidence control - after pass 28 leaves review.
-     WHAT IS MISSING: tests/test_render_tag_evidence.py asserts that a no-tag render with no `tag_handling` in the response
-     yields None. The live engine actually always sends `tag_handling` with `tags_interpreted: false`, `applied_tags: []`
-     and `detected_tags: []` (measured on :8799 at 21:52 after the item-150 restart). The helper forwards both shapes
-     correctly, but only the absent shape is under test, so a future edit that swallowed a false-but-present block would
-     not be caught.
-     WHY IT WAITS: that file is bound in /tmp/cb-A7-pass28.txt, which is in review. Adding a fourth case now would move the
-     binding and strand the packet again (it has already been reissued three times for exactly this). The fix is one case
-     asserting the false-shape is forwarded verbatim, plus a mutant that drops present-but-false evidence.
-     OWNER: this session, when pass 28's verdict lands.
+151. [x] The tag-evidence control now covers the engine's EXPLICIT no-tag shape (present-but-false), not just its absence.
+     WHY THE WAIT WAS LIFTED RATHER THAN IGNORED: the item was gated on "after pass 28 leaves review". Two facts changed the
+     answer within the turn: (a) verdict-watch reports NO_SUBMISSION_FOUND for cb-A7-pass28.txt, so the packet had NOT left
+     review, and (b) a wav_guard pass-3 FAIL arrived whose findings land on wav_guard db2c5619 - the exact bytes pass 28
+     binds - so pass 28 is dead regardless of whether this file moves. Editing it therefore strands nothing, which was the
+     only reason to wait. Both facts are recorded instead of one being used to ignore the other.
+     THE GAP: my earlier control asserted that a no-tag render with NO `tag_handling` in the response yields None. The live
+     engine NEVER omits it - measured on :8799 after the item-150 restart, a no-tag render returned `tags_interpreted:
+     False`, `applied_tags: []`, `detected_tags: []`. So the fixture tested the absent shape while production uses the
+     present-but-false shape, and an edit that collapsed false evidence to None would not have been caught.
+     ADDED, tests/test_render_tag_evidence.py b08a70908619944d87066c3461d33a619cfd7c7fd7cb1135c4def545a694a8b9:
+     - a case asserting the false-but-present block is forwarded VERBATIM (tags_interpreted False, applied_tags []), not
+       collapsed to None;
+     - a MUTATION CONTROL whose mutant sets tag_handling to None whenever tags_interpreted is false; the control must
+       observe None there, so "forwarded, not swallowed" is what the case actually proves.
+     RESULT: 9/9 checks passed; tests/run.sh rc=0 with all retained harnesses PASS and `PUBLISH_BY_NAME: clean`.
+     WHY THIS MATTERS BEYOND THE TEST: with this case, the receipt distinction is enforced both ways - "the engine told us
+     no tags were applied" stays distinguishable from "we lost the evidence", which is the whole point of the fail-closed
+     rule added in item 148.
+     Verification: 9/9 harness (was 7/7); run.sh rc=0; live no-tag /render shape confirmed tags_interpreted=False with
+     empty applied/detected lists; mutant observed returning None.
 
+152. [~] Repair the wav_guard pass-3 FAIL (WG-06/WG-07 PARTIAL, WG-09 NEW, WG-10 NEW) before any packet is submitted.
+     THE VERDICT: surf relayed PACKET VERDICT FAIL for /tmp/cb-wg-pass3.txt (12332dc9c6749716), WebGPT Pro, receipt
+     submitted_to_chatgpt=True. Preserved at outputs/reviews/wg-pass3-FAIL-20261113.md sha256
+     16f7f6bcb0ae9ac2ecdc3c3b2c571f7a3d209b2705b34d96dd9f98ac5082afb8. Verbatim per file:
+       wav_guard.py db2c5619 -> FAIL        sfx_verify.py 112e8d32 -> FAIL
+       test_wg_pass2_repairs.py 0d7c323b -> PASS        tests/run.sh 2c01cc88 -> PASS
+     Findings: WG-08 FIXED. WG-06 PARTIAL (major) wav_guard:228-231 + sfx_verify:257,432-433. WG-07 PARTIAL (major)
+     wav_guard:247,253-261 "the partial-window recount still admits some inputs". WG-09 NEW (major) wav_guard:228-231
+     "picking the max-RMS channel can reject a valid sustained channel". WG-10 NEW (major) sfx_verify:605,653-658 "a named
+     staging result throws an uncaught cleanup exception". WG-11 minor: read-error conversion untested.
+     THESE ARE LIVE DEFECTS ON CURRENT BYTES: wav_guard.py has not changed since that review (still db2c5619), so a
+     superseded packet does not supersede the finding.
+     INTAKE HONESTLY REFUSED: verdict-intake --group GUARDS-WAVGUARD --report ... --apply returned "REFUSED: no rows were
+     changed" because sfx_verify.py moved to 405054bb and run.sh to 822a9ff3, so the verdict is recorded as hash-unbound
+     rather than applied to bytes that moved. That refusal is the gate working; it is not overridden.
+     WHAT I ALREADY SEE FOR WG-09: signal_health returns `max(per_channel, key=ac_rms)`. A loud sparse burst can give the
+     higher ac_rms while failing the sustained gate, while the OTHER channel is continuously active and would pass - so
+     "best channel by biggest number" can reject a good clip. Selection must be "any channel that passes", with max-ac_rms
+     only as the reporting fallback.
+     PLAN: (1) reproduce WG-09 with sparse loud bursts on one channel and a quiet sustained tone on the other, and show the
+     current code rejects it; (2) fix selection; (3) re-test WG-06/WG-07 partial cases against the reviewer's described
+     inputs; (4) inspect WG-10 at sfx_verify:605,653-658 and make cleanup exceptions structured; (5) add WG-11's
+     read-error test; (6) a control plus mutant per guard; (7) reissue as pass 29 and delegate.
+     OWNER: this session.
