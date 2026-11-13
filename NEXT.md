@@ -7153,6 +7153,14 @@ t
      directory says `phase: "submitted"`, `page_state: "waiting_for_acceptance"` - that CONTRADICTS the
      receipt, and the receipt is the proof artifact, so this is recorded as PREPARED, NOT SUBMITTED until
      surf reconciles it. `prepared_prompt_is_transport_proof` is false in both artifacts, as it was for B6.
+     SURF'S REFUSAL, RECEIVED AFTER THE RECEIPT CHECK: B7 was REFUSED by the wrapper - "Error: ChatGPT submit
+     is unproven: activity appeared but no user turn equals the intended prompt; do not treat this round as
+     delivered" (`/tmp/surf-B7-submit.log`; SeedAcquisition refuse/seed_not_configured; ExtractFallback
+     submit_failed x3). `/tmp/surf-cb-B7/webgpt_transport_summary.json` records
+     `final_transport_state: "delivery_unknown"`, `proof_status: "delivery_not_proven"`, sentinel
+     WEBGPT_DONE:20261113T054018Z:c9df3e1f, requested_tab_id 837460232. Surf independently verified the LOCAL
+     input byte-exactly (107,759 B / ea9f2b71…) and used direct attachment only, so the packet is not the
+     defect. No retry was performed; surf is checking the destination read-only.
      The attach path is `/tmp/cb-B4-pass7.txt` and the sentinel is WEBGPT_DONE:20261113T054018Z:c9df3e1f.
      On a real receipt (`submitted_to_chatgpt: true`) verify the report STATES 107,759 bytes and sha256
      `ea9f2b71…` (a report that
