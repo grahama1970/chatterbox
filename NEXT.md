@@ -7277,3 +7277,35 @@ t
          researcher states no further GPU work and the service was restored and verified under item 182.
      OWNER: this session (record only).
 
+184. [x] RENDERED spyke's seq-23 turn (1,706 chars) that its own POST could not: the :8018 /synthesize
+       limit is 1,200 chars per call.
+       - Method: caller-owned render plan split ONLY at single spaces into 2 chunks (max 1,094), with
+         `" ".join(chunks) == text` verified, so the batch path renders the full text without a chunk
+         hash anywhere.
+       - FIRST render REJECTED by me, not shipped: default normalization expanded the text
+         (SPIKE -> S P I K E; 1,712 -> 1,848 B), so its receipt could not carry the posted text's hash.
+         Re-rendered with `--no-normalize`; receipt `original_text` is now BYTE-IDENTICAL to the posted
+         file (1,712 B, sha256 8df73c01…).
+       - Delivered: `/mnt/storage12tb/embry-voice/turns/spyke-seq23-20261113T145827Z-e0ca7f13ff41.wav`
+         (2,588,718 B, sha256 `e0ca7f13ff41…`, 53.93 s, voice embry, tone calm_precise) plus a sidecar
+         receipt whose `text_sha256` is the EXACT full text (the skill receipt has no text_sha256 field;
+         the sidecar states that boundary explicitly) and which records the discarded normalized render.
+       - No posting performed. spyke was told the sidecar-vs-field boundary rather than being given a
+         invented field.
+
+185. [x] DOMAIN ROUTING supplied to the researcher for the ElevenLabs tag R&D (no generation started, no
+       credits spent).
+       - Embry match: `embry-nonverbal` = `orfFiGOiB0Kn2nOHPNIP` (cloned), cited at
+         chatterbox-speak/SKILL.md:119 and scripts/cry_sfx_render.py:25; no new clone or retraining.
+       - Roster given as two layers: 13 Turbo native tags and 14 SFX coverage columns, with the exact
+         existing Embry clip IDs per tag from the library.
+       - EMBRY GAP (verified against the library): 6 tags - clear throat, angry, sigh, sarcastic, shush,
+         happy. Bounded budget 2-5 per tag = 12-30 clips.
+       - Endpoint distinction verified in ops-elevenlabs/cli.py: `sfx` -> /v1/sound-generation has NO
+         voice_id (prompt-matched SFX only); `tts` -> /v1/text-to-speech/{voice_id} with eleven_v3 is the
+         only voice-selecting path, so voice-matched events need tagged speech then event extraction
+         (boundary splice, never mid-clause).
+       - Credits NOT invented: no pricing is documented in the domain; told them to price from the plan
+         page and confirm with the free `usage` command around ONE probe clip before any fan-out.
+     OWNER: this session (routing only); researcher owns generation.
+
