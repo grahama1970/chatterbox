@@ -6611,3 +6611,39 @@ t
      frames (must measure 0.100, matching mono, never the old verifier's 0.20). Each needs a mutant that restores the
      defective behaviour, or the case proves nothing.
      OWNER: surf (verdict on pass 31); this session then edits the harness and reissues a packet.
+
+165. [~] The "graham" voice reference is broken in TWO independent ways, and my first read of it was too narrow.
+     STARTING POINT (the defect I set out to check): /mnt/storage12tb/embry-voice/voices/graham_owner.wav is an EMPTY
+     ROOT-OWNED DIRECTORY, not a WAV. Measured: exists True, is_file False, is_dir True, size 4096, uid:gid 0:0; reading
+     it raises IsADirectoryError [Errno 21]. Its parent /mnt/storage12tb/embry-voice/voices is root:root 0755, so this
+     account cannot unlink inside it - removal needs root.
+     THE SECOND, BIGGER PROBLEM found by checking the container instead of assuming the host path is what the engine
+     sees: `docker inspect` shows NO /voices mount at all. Mounts are
+       embry_kling_clone_candidate.wav -> /data/embry_ref.wav (ro)
+       chatterbox-hf-cache -> /models/huggingface
+       /mnt/storage12tb/embry-voice/artifacts -> /var/lib/embry-artifacts
+       /home/graham/workspace/experiments/chatterbox -> /work (ro)
+     So `/voices/graham_owner.wav` cannot resolve inside the container EVEN IF the host directory were a valid WAV: the
+     path has no backing mount. The neighbouring entries happen to be fine only because they use the mounted /work:
+     voices/alex_longworth.wav (1,248,316 B) and voices/jordan_osmanski.wav (1,248,460 B) both exist in the repo and
+     therefore at /work/voices/... inside the container.
+     REFERENCES: speak_core.py:260, spyke_render.py:94, sfx_demo.py:39 all map "graham" to "/voices/graham_owner.wav".
+     SCOPE, stated carefully: /render's request model only accepts alex|jordan|spyke, and recent receipts record
+     `voice: embry` / `voice: jordan` without any reference field - so the graham entry is not proven to be read by the
+     live render path today. What IS proven is that the entry cannot resolve, in either the container or the host, and
+     that any future path selecting it fails with IsADirectoryError or ENOENT rather than a clear refusal.
+     FIX, in two parts with two different owners:
+       - OWNER (Graham), one flat command, because the parent is root-owned:
+           sudo rmdir /mnt/storage12tb/embry-voice/voices/graham_owner.wav
+         That removes the bogus directory. It does NOT create a voice: a 49.9 s owner recording is referenced by the code
+         comment but is not present anywhere I can verify, and I will not fabricate a reference for a real person's voice
+         (rights rule).
+       - THIS SESSION, BLOCKED on the in-flight packets: point the map at the mounted tree (/work/voices/graham_owner.wav)
+         and add a preflight that refuses when the reference is not a regular file, so the failure is a named refusal
+         instead of IsADirectoryError. Cannot be done now: speak_core.py is bound in B4 pass 5 and spyke_render.py in A7
+         pass 31, both in flight; editing either voids a submitted/prepared packet.
+     WHY THIS WAS ALMOST RECORDED WRONG: my first instinct was "one bad directory, ask for sudo". The mount inspection is
+     what showed the path could never resolve in the container - i.e. removing the directory alone would leave the entry
+     broken. Verifying the consumer's view, not just the host's, is the difference.
+     Verification: stat/read of the host path (is_dir, uid 0:0, IsADirectoryError); docker inspect mount list showing no
+     /voices; presence and sizes of the two /work-mounted narrator references.
