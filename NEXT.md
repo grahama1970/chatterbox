@@ -7202,9 +7202,29 @@ t
        - Submitted via surf: ACK A34 confirmed the exact 278,355 B / `945f9f20…` attachment with the
          packet's own review prompt, one attempt only. The verdict is tracked in 181.
 
-181. [~] AWAITING surf: the pass-34 verdict. When it arrives, intake it FIRST-CLASS before any repair
-     (same rule as 176): preserve the response under `outputs/reviews/`, verify it quotes packet sha
-     `945f9f2066da…` and gives 11 per-file VERDICT lines, then apply it per group with
-     `verdict-intake.py`. Open the repair item from its findings. Preserve any transport refusal
-     verbatim; no resubmission.
-     OWNER: this session (intake); surf (transport).
+181. [~] The pass-34 verdict. Submission attempt 1 is REFUSED at the transport; NO verdict exists.
+     The awaited event arrived and was intaked FIRST-CLASS (it is a refusal, not a review result).
+       - Refusal, verbatim: "Error: ChatGPT prompt composer is not empty before submit; clear the draft
+         or use a fresh reviewer tab".
+       - Receipt read-back (not surf's prose): `status=prepared_prompt`,
+         `submitted_to_chatgpt=False`, proof_status `not_submitted`,
+         final_transport_state `delivery_unknown`, diagnosis `composer_not_empty`,
+         extract fallback `submit_failed` after 3 attempts, controlled tab 837460235.
+       - NO response file, NO received-byte proof, NO 11 VERDICT lines, NO PACKET VERDICT. The packet was
+         NOT reviewed; the A33 verdict remains the last real verdict.
+       - Packet identity is UNCHANGED and re-verified locally this turn:
+         `/tmp/cb-A7-pass34.txt` 278,355 B sha256
+         `945f9f2066da31311a693a77dd67544e1fea147b25b751206999226d357441dd`. The freeze and the per-group
+         records still describe exactly these bytes; no rebuild is needed for a transport retry.
+       - Evidence preserved with hashes: `outputs/reviews/a34-refused-20261113/`
+         (transport summary 2,231 B `8f4b1ceae796cb24…`, receipt 741 B `0547105bb4b87b0a…`,
+         submit log 531 B `ad7fe13e71051868…`, plus `intake.json` binding the packet identity).
+       - Why this is NOT a resubmission: surf's own applied action is "clear the composer/stopped
+         generation state, or use a fresh foreground reviewer/project tab before retrying". The failed
+         attempt left no draft sentinel; the repair is the composer clear, which surf owns.
+     NEXT ACTION (owned by surf): clear the ChatGPT composer / stopped-generation state, confirm the
+     composer is empty, then submit the SAME frozen packet as a NEW attempt with the same prompt. Report
+     the same way: response path, size, sha256, conversation URL, sentinel, or the exact refusal.
+     When a verdict arrives: verify it quotes packet sha `945f9f2066da…` and gives 11 per-file VERDICT
+     lines, then apply it per group with `verdict-intake.py` and open the repair item from its findings.
+     OWNER: surf (transport repair + submission); this session (intake, then repairs).
