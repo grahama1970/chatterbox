@@ -7230,3 +7230,18 @@ t
      quotes `945f9f2066da…` and gives 11 per-file VERDICT lines + PACKET VERDICT, then apply per group
      with `verdict-intake.py` and open the repair item from its findings. No resubmission.
      OWNER: surf (extraction); this session (verify + intake + repairs).
+
+182. [~] 30-min GPU window granted to the researcher's S3 audio-token adapter experiment; the Chatterbox
+     service is STOPPED for it and MUST be restored.
+       - Request: 30-min window, one bounded adapter run + evaluation, coordinate :8018 stop.
+       - Measured before: RTX A5000 24,564 MiB total, 19,033 used, ~5,006 free; service
+         `embry-voice-chatterbox-1` healthy and idle (health probes only) holding ~7.5 GB.
+       - Action: `docker stop embry-voice-chatterbox-1` at 2026-11-13T13:34:10Z; `:8018` verified closed;
+         free VRAM after = 12,587 MiB.
+       - Bound: hard end 14:04:10Z. Researcher told not to restart the service and to report start/finish,
+         peak VRAM and proof paths. A one-shot schedule was set to fire at the hard end.
+       - RESTORE (owned by this session): `docker start embry-voice-chatterbox-1`, then verify
+         `/health` returns `ok:true, live:true` and `:8018` is listening again. Close this item only after
+         that read-back.
+     OWNER: this session (restore + verification); researcher (the bounded run).
+
