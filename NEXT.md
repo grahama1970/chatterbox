@@ -6348,22 +6348,34 @@ t
      for clipped-ch0 + clean-ch1 and accepted at 0.977; 74/74 frozen clips measured, longest-run minimum 4 windows.
      Fixes opened as the next two items, each with its control and mutant.
 
-154. [ ] Fix WG-07: require a minimum sustained RUN, not only a fraction of windows.
-     REPRODUCTION (item 153): a 6-window clip whose only sound is one 20 ms impulse of [202,-202] measures active_frac
-     0.167 and is ACCEPTED; the 12-window variant is accepted too. MIN_ACTIVE_FRAC = 0.15 alone cannot distinguish a
-     sustained sound from an isolated impulse in a short clip.
-     MEASURED THRESHOLD: across all 74 frozen clips the longest active run is at least 4 windows (80 ms); the minimum is 4.
-     So MIN_ACTIVE_RUN_S = 0.06 (3 windows) closes the loophole and rejects zero legitimate library clips.
-     PLAN: add `active_run_s` to signal_health's return (compute the longest consecutive run of active windows, including
-     the partial window); enforce it in sustained_problem after the fraction check; thread `active_run_s` through every
-     consumer that RECONSTRUCTS a health dict rather than passing signal_health's output - `interrupt_sfx.measure` builds
-     {"ac_rms","ac_pp","active_frac"} for `_sustained_problem` at interrupt_sfx.py:324, so if it is not threaded the new
-     check silently refuses every clip (or is silently skipped, which is worse). Controls: the 6-window impulse clip must
-     be REFUSED; a 4-window sustained tone must be ACCEPTED; a mutant that deletes the run check must ACCEPT the impulse
-     (so the case proves the check runs); and the 74-clip frozen regression must still be 74/74 with 0 mechanical
-     failures - that harness is the guard against a threshold that breaks the library.
-     OWNER: this session.
-
+154. [x] WG-07 fixed: the gate now requires a minimum sustained RUN, not only a fraction of windows.
+     REPRODUCTION (item 153, repeated here as the before-state): a 1,920-frame clip whose only sound is ONE isolated
+     20 ms window of [202,-202] then five silent windows measured active_frac 0.167 and was ACCEPTED
+     (`sustained_problem` -> None); the 12-window variant read 0.167 and was accepted too. The fraction gate could not
+     tell a sustained sound from a lone impulse in a short clip - the exact failure its own error message names.
+     FIX: `signal_health` measures the longest CONSECUTIVE active run (`active_run_s`, partial window included) from the
+     same window flags the fraction uses; `sustained_problem` requires MIN_ACTIVE_RUN_S = 0.06 (three 20 ms windows), and
+     an ABSENT metric FAILS CLOSED ("no sustained-run measurement") rather than silently skipping the check.
+     THRESHOLD CHOSEN BY MEASUREMENT: longest active run across all 74 frozen clips is >= 4 windows (80 ms), minimum 4, so
+     a 3-window floor rejects ZERO legitimate clips. After the change the frozen regression reports 0 mechanical failures
+     over 74/74 ids.
+     THREADING, and why it mattered: `interrupt_sfx.measure` rebuilds a health dict for the shared gate, so `active_run_s`
+     was added to measure()'s output and passed into `_sustained_problem`. Without it the new fail-closed branch would have
+     refused EVERY clip in that consumer - a fix that silently breaks its sibling is the class this project keeps finding.
+     AFTER: the 6-window impulse is refused (run 0.020 s < 0.060 s, "no sustained stretch"); a 4-window 80 ms tone is
+     accepted; a 1-window impulse inside 20 windows is refused; `interrupt_sfx.measure` on alex-chuckle.wav now reports
+     active_run_s 0.34 (frac 0.327), so the threaded value is live, not just present.
+     CONTROLS: tests/test_wg_pass2_repairs.py 014bcf05e744, 24/24, including WG-07 refusal, WG-07 acceptance, and a
+     run-rule-removed mutant that accepts the impulse again. The pre-existing tail-window mutant now removes BOTH guards
+     that apply to its clip, because the run rule alone already refuses it - a mutant that leaves an applicable guard in
+     place proves nothing. That was found by the harness going 23/24, not by reasoning.
+     GATES: tests/run.sh rc=0 with all harnesses PASS and PUBLISH_BY_NAME: clean; sanity.sh rc=0 with a live render.
+     PACKET /tmp/cb-A7-pass30.txt 219,223 B sha256
+     25ac7924a70daa3b91d1e477963c3934e8d18fe7e80019bdec61af76fa6120d5, 11 bindings, 0 stale, 0 missing, recorded
+     through record-packet.py; pass 29 WITHDRAWN with its reason. Doc landed 0e87c8f253240199da1df78e361040447e8c1e56;
+     identities re-recorded (cbf3d9561368); board PASS (13 guards).
+     Verification: before/after on the same constructed clip; alex-chuckle active_run_s 0.34; 24/24 harness; 74/74 frozen
+     with 0 mechanical failures; run.sh rc=0; sanity rc=0; packet 11/11 zero drift; board PASS.
 155. [ ] Fix WG-06 partial: clip detection must be per channel, not max over all samples.
      REPRODUCTION (item 153): stereo with ch0 hard-clipped at 32767 and ch1 a clean sustained tone -> `read_audio` returns
      None and refuses the whole clip; at ch0 = 32000 (0.977) the same clip is accepted. `sfx_verify` tests
