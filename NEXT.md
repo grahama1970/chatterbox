@@ -7071,8 +7071,16 @@ t
            `/tmp/surf-add1-submit.log` (SeedAcquisition refuse/seed_not_configured, ExtractFallback
            submit_failed x3). No retry was performed. This is a transport/draft-ownership defect, not a
            packet defect: the frozen bytes were never presented.
-         * B6 NOT ATTEMPTED yet; surf is diagnosing draft ownership read-only first to avoid duplicating an
-           in-flight request or overwriting a draft.
+         * B6 SUBMITTED (after add1's refusal, on the repaired tab): receipt schema
+           `surf.webgpt_submit_receipt.v1`, `status: submitted_to_chatgpt`, submitted_to_chatgpt true,
+           sentinel `<<<WEBGPT_DONE:20261113T052451Z:34b8e30b>>>`, attach_file `/tmp/cb-B4-pass6.txt`
+           (attachment_paths lists exactly that file), at `/tmp/surf-cb-B6/response.md.receipt.json`;
+           heartbeat phase `submitted`, page_state `waiting_for_acceptance`, assistant_message_chars 0,
+           assistant_sentinel_seen false. The submitted prompt REQUIRES the reviewer to report 91,858 bytes
+           and sha256 `530eec11344e…` from the raw attachment and to STOP on mismatch. NOTE the receipt's own
+           honesty field: `prepared_prompt_is_transport_proof: false` — this proves SUBMISSION, not that the
+           reviewer received identical bytes; only the reviewer's stated count+sha can do that.
+           STATUS: submitted, NO response yet (raw output absent). AWAITING the B6 report.
          Neither refusal changes any packet byte; both packets remain FROZEN and recorded.
      ON RECEIPT: verify each packet's stated byte count + sha256, then `verdict-intake.py --packet <packet>`
      for its group (A7 resp. B4). Never hand-edit the manifest.
