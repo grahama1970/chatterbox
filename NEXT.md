@@ -7032,28 +7032,25 @@ t
          "pass 33 only, 270820 bytes, SHA256 66489b5f... direct --attach-file, received-byte identity
          verification before review". No submission receipt yet -> 176.
      OWNER: this session (repairs/rebuild done); surf (submission).
-176. [~] Obtain the pass-33 verdict from surf, then intake it FIRST-CLASS.
-     WRAPPER REFUSED, DESTINATION CONFIRMED. Wrapper: "ChatGPT submit is unproven: activity appeared but no
-     user turn equals the intended prompt" (/tmp/surf-A33-submit.log, SeedAcquisition refuse/
-     seed_not_configured, ExtractFallback submit_failed x3); surf did NOT relabel or resubmit. Independent
-     destination evidence, read-only: the live reviewer explicitly reported "The attachment matches:
-     270,820 bytes, SHA256 66489b5fc1de332518a0e4157afa3356c7698d0051ce15680721a21df6140aef" and is
-     executing commands. Conversation https://chatgpt.com/c/6af69366-05f8-83e9-8f90-65d5ad710243,
-     sentinel WEBGPT_DONE:20261113T052119Z:b7be33b9. surf's own verdict on the conflict: "UNDELIVERED
-     conflicts with independent destination evidence"; the refusal stays in the transport summary.
-     RECEIPT EVIDENCE, CHECKED LATER AND IT CORRECTS THE ABOVE: `/tmp/surf-cb-A33/response.md.receipt.json`
-     (schema `surf.webgpt_submit_receipt.v1`, receipt_at 2026-11-13T05:21:19Z) reads `status:
-     "prepared_prompt"`, `submitted_to_chatgpt: false`, `raw_output` 0 B, no `response.md`. So the packet was
-     PREPARED, not submitted; the surf DOM read remains a claim I did not verify myself. The SAME state holds
-     for add1 (`05:23:28Z`) and B7 (`05:40:18Z`) - three submissions, one shared transport boundary
-     (`requested_tab_id 837460232`, `prepared_prompt_is_transport_proof: false` in every receipt). That shared
-     boundary is surf's to repair and I do not touch the browser.
-     STATUS: NOT SUBMITTED; no verdict exists. AWAITING surf for the report on THESE bytes; on receipt verify
-     it quotes 270,820 / 66489b5f… (a report that does not quote the packet sha is
-     STALE_RESPONSE_SUPERSEDED), then intake per group (A7, GUARDS-WAVGUARD) with
-     `verdict-intake.py --packet /tmp/cb-A7-pass33.txt`, preserve under
-     `outputs/reviews/a7-pass33-<PASS|FAIL>-<date>.md`, landable_now=false for FAILs.
-     OWNER: surf (report); this session (intake).
+176. [x] Obtain the pass-33 verdict from surf, then intake it FIRST-CLASS.
+     DONE. The verdict arrived and was applied to the manifest BEFORE any repair was attempted.
+       - Response `/tmp/surf-cb-A33/response.md` 25,529 B sha256
+         `72bd7eda7f7e56797ed8e2a1b1fc3b712ca42e3787e5307ca10f3e7f7f47fb54`, preserved at
+         `/mnt/storage12tb/skills/chatterbox-speak/outputs/reviews/a7-pass33-FAIL-20261113.md` (sha VERIFIED
+         identical by sha256sum this turn).
+       - Whole-packet identity CERTIFIED: the report states `PACKET SHA256:
+         66489b5fc1de332518a0e4157afa3356c7698d0051ce15680721a21df6140aef` and gives all 11 per-file
+         verdict lines at the packet's hashes. PACKET VERDICT: FAIL - 5 PASS, 6 FAIL.
+       - Applied per group with `verdict-intake.py --apply`:
+         * A7 -> 0 PASS, 4 FAIL (fs_ops 9a0e802d…, spyke_render 8efacfaa…, interrupt_sfx f7f6827e…,
+           test_a7_pass10_repairs 34ba3ac7…), manifest 39,331 B sha256 `404475ea13ca82a6…`.
+         * GUARDS-WAVGUARD -> 5 PASS (tests/run.sh, test_wg_pass2_repairs, test_sfx_library_regression,
+           test_record_packet, test_render_tag_evidence), 2 FAIL (sfx_verify 989d9afc…, wav_guard
+           514effb8…), manifest 41,370 B sha256 `89152c2ce899423f…`.
+       - The transport never certified delivery (receipt `prepared_prompt` / `submitted_to_chatgpt: false`,
+         `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
+         established by the report itself - the same standard used for pass 32. No resubmission occurred.
+     OWNER: this session (intake done); repairs tracked in 180.
 177. [~] AWAITING surf: reissue the two rows whose bytes moved while their old packets still govern them.
      PACKETS DONE AND FROZEN; SUBMISSION NOT YET ATTEMPTED (surf is finishing the pass-33 review first).
      Books closed by evidence:
@@ -7169,3 +7166,38 @@ t
      response under `outputs/reviews/b4-pass7-<PASS|FAIL>-<date>.md`, and set landable_now=false for FAILs.
      A FAIL is a valid outcome; repair findings by reproducing them first.
      OWNER: surf (receipt); this session (intake).
+
+180. [ ] Repair the A33 findings on the pass-33 bytes, each reproduced FIRST, then rebuild ONE A7 packet
+     (pass 34) and submit it. Several are regressions introduced BY the pass-32 repairs, so they are fixed
+     with one identity/descriptor representation rather than more patches.
+     Verdict source: `outputs/reviews/a7-pass33-FAIL-20261113.md` (6 FAIL / 5 PASS; identity certified).
+       - A33-IS-01 (MAJOR) `interrupt_sfx.py:540,563,573,800,859-860`: `_publish_snapshot` returns an INT
+         inode while recovery compares `(so.st_dev, so.st_ino) == installed_ino`, so a later failure calls
+         the attempt's OWN clip foreign and leaves it installed with no entry (reviewer executed: main()->1,
+         "clip not this attempt's inode; left in place", retry then PUBLISH REFUSED). Fix: one identity
+         representation - `(st_dev, st_ino)` - registered before installation and used by recovery.
+       - A33-IS-02 (MAJOR) same helper `:554-580`: it CLOSES the written descriptor and reopens `payload` by
+         NAME (blocking FIFO witness exceeded the 2 s bound; foreign-cleanup witness deleted a replaced
+         `payload` with no warning). Fix: hold the descriptor through publication, close ONCE, and park or
+         report leftovers instead of unlinking a name we no longer own.
+       - A31-FS-02 PARTIAL `fs_ops.py:229-238` from `:209`: ownership is observed with lstat and the name is
+         unlinked LATER, so a substituted file is deleted (executed witness: foreign replacement deleted,
+         zero warnings). Fix: park remaining private-dir contents without any later name-based deletion.
+       - A33-SP-01 (MAJOR) renderer: successful cleanup can close an unrelated REUSED descriptor. Fix: close
+         each descriptor exactly once, owned by the code that opened it.
+       - A33-WG-01 (MAJOR): channel eligibility compares AC RMS while the generator gate compares RAW RMS;
+         align eligibility with the gate's actual predicate (share one rule).
+       - A33-WG-02 (MAJOR): the verifier selects with GENERATOR thresholds that differ from its own
+         acceptance rules; select with the verifier's own predicates, or make them identical.
+       - A33-IS-03 (MAJOR): snapshot acquisition moved OUTSIDE the gate's error handler, so one read failure
+         aborts the whole batch instead of failing one candidate.
+       - A33-IS-04 (MAJOR): the advisory ASR boundary still reads a DIFFERENT mutable input than the
+         published snapshot; judge/publish one immutable snapshot.
+       - A33-PROOF-01 (MAJOR): the snapshot "mutation control" does not mutate the repaired production path.
+       - Minors: A33-FS-01 (cleanup masks materialization errors with an unassigned local), A33-PROOF-02
+         (serialization control can inspect the baseline sidecar), A32-STAGE-01 sibling (manifest commits
+         ignore named fallback staging).
+     Then: rebuild ONE A7 packet with every changed file, verify all bindings and embedded sections against
+     disk, record it per group, freeze, and submit through surf with exact path/size/sha. A FAIL is a valid
+     outcome; never weaken a gate to avoid one.
+     OWNER: this session (repairs/rebuild); surf (submission).
