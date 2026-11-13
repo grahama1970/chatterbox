@@ -6102,15 +6102,43 @@ t
      Verification: three renders HTTP 200; each WAV re-read and measured; alex receipt sha matches the file; text sha
      matches the exact sent string; voices alex/jordan/embry distinct.
 
-145. [ ] Does an APPROVED emotion tag change the render at all, or is it inert on the speech path?
-     WHY: the alex e2e call carried `[chuckle]` and came back tone_requested=None, normalized_tone=neutral_warm - the tag
-     changed nothing in the receipt. Either tags are deliberately not applied on this path (fine, but then the docs must
-     say so), or a tag silently does nothing while the skill implies it steers delivery. A silent no-op is the same class
-     as a PASS that proves nothing.
-     MEASURE, same text with and without one VERIFIED singular tag: compare tone_requested/normalized_tone/
-     tone_effective, duration, ac_rms and active_frac. A tag that changes none of them is inert and must be documented or
-     fixed; a tag that changes tone_effective is working and this closes.
-     BOUND: do NOT test plural tags (ElevenLabs-v3-clone-only per the tag contract) and do not treat a changed tone as a
-     naturalness claim - the owner's ear owns that.
+145. [x] An approved singular tag is NOT inert on the speech path - measured, with the decision rule declared before the run.
+     WHAT WAS OBSERVABLE FIRST (7 renders): every tag case carried `requested_tone=None` and `normalized_tone=neutral_warm`,
+     so on the TONE channel the tag does nothing at all. Durations did differ, but one render per tag cannot separate a tag
+     effect from sampling noise - render is stochastic, so "different sha" proves only that it re-rendered.
+     PRE-DECLARED RULE (written before the A/B run): 6 renders per arm, alternating; call an effect on duration only if the
+     arms are FULLY SEPARATED (min tag > max control) or exact Mann-Whitney p < 0.05; otherwise record "no measurable
+     effect". This is the step that stops a plausible-looking spread from being reported as a finding.
+     RESULT (12 renders, alternating, same text, same speaker alex, same thread with a unique seq each so media names stay
+     immutable):
+       control  n=6 median 2.56 s  min 2.44  max 2.80   [2.44, 2.44, 2.52, 2.60, 2.64, 2.80]
+       [sigh]   n=6 median 2.88 s  min 2.68  max 3.08   [2.68, 2.80, 2.84, 2.92, 3.00, 3.08]
+       fully separated: False (control max 2.80 == a sigh sample); exact two-sided p computed from the U distribution with
+       average ranks for ties = 0.0043 (< 0.05) -> rule fires: MEASURABLE EFFECT on duration, ~+0.32 s median.
+       active_frac also moves down: control median 0.746 (0.705-0.769) vs sigh median 0.668 (0.657-0.739).
+       tone_effective across all 12 runs: ['neutral_warm'] only.
+     SO THE ANSWER IS TWO-SIDED, WHICH IS THE USEFUL PART: the tag changes the AUDIO and does not change the TONE STATE.
+     Anyone reading `tone_effective` to decide whether a tag "worked" would conclude it never works; the duration and
+     activity evidence shows the engine does consume it.
+     NOT SPOKEN LITERALLY: local faster-whisper (base.en, CPU) on the tag renders returned clean speech with no "sigh",
+     "chuckle" or "gasp" word in any transcript, so the tag is rendered as material, not read aloud as text.
+     CONTROL PROBLEM RECORDED: my first A/B attempt reused seq=1 for every case and three cases returned HTTP 409
+     "already exists; a re-cut needs a new seq" - the flat-media-name immutability rule, working as designed. The control
+     render from that attempt was reused as the seq-1 control rather than re-rendered under a name that would collide.
+     SCOPE: duration and activity are mechanical. Whether the inserted material IS a convincing sigh is the owner's ear,
+     and event_identity remains UNVERIFIED.
+     Verification: 12 renders HTTP 200, each WAV re-read and measured with wav_guard; exact U test p=0.0043; ASR clean on
+     tag renders; receipt text_sha256 bound on every call.
+
+146. [ ] The tag adds ~0.32 s of SOMETHING - event or pause? Decide before calling it delivery.
+     WHY: the previous item proved the tag changes the render, but "longer and less active" is equally consistent with an
+     inserted nonverbal event and with inserted SILENCE. Those are opposite outcomes for the product: one is delivery, the
+     other is a hole in the middle of a sentence.
+     MEASURE, pre-declared: for [sigh], [gasp] and [chuckle] against the same control text, locate the inserted region by
+     aligning the control and tag renders on the longest common energy-envelope structure, then classify that region by
+     RMS against the clip's own silence floor. DECISION RULE, declared now: if the inserted region's RMS stays below the
+     silence floor it is a PAUSE (delivery hole); if it rises above it, it is MATERIAL (event); report both per tag, plus
+     the region's duration, because a 0.3 s "event" and a 1.5 s one are different products.
+     BOUND: three tags, one speaker, no naturalness claim - the owner's ear decides whether the material is a good sigh.
      OWNER: this session.
 
