@@ -7636,7 +7636,7 @@ t
        RESULT: 8 PASS / 3 FAIL. FAIL = `scripts/spyke_render.py`, `scripts/interrupt_sfx.py`,
        `scripts/sfx_verify.py`. Repairs tracked in 196.
 
-196. [ ] REPAIR the A35 findings on the pass-35 bytes (8 PASS / 3 FAIL), each reproduced FIRST, then
+196. [x] REPAIR the A35 findings on the pass-35 bytes (8 PASS / 3 FAIL), each reproduced FIRST, then
      rebuild ONE packet (pass 36). Source: `outputs/reviews/a7-pass35-FAIL-20261113.md`.
      HONEST NOTE: `A35-SP-02` is a REGRESSION I introduced with the pass-34 SP-02 fix ("rendering into
      a new output directory has regressed"), and `A34-SP-02` came back PARTIAL. Both are fixed by
@@ -7661,4 +7661,46 @@ t
      record per group, freeze, submit via surf with exact path/size/sha. A FAIL is a valid outcome;
      never weaken a gate.
      OWNER: this session (repairs/rebuild); surf (submission/extraction).
+
+     RESULT (2026-11-13): all 7 findings repaired at the cited paths, each verified by driving
+     production code. Two were consequences of my own pass-34 repairs and are corrected at the
+     mechanism:
+       - A35-SP-02 (REGRESSION I introduced): the pass-34 identity capture ran BEFORE staging created
+         the output parent, so a render into a new nested dir failed with "output directory
+         unreadable". Parent is now created first. Verified: render into `<tmp>/new/nested/out.wav`
+         (neither dir present) SUCCEEDS and leaves WAV + receipt + provenance.
+       - A34-SP-02 (PARTIAL -> fixed): pathname checks cannot see a swap that installs into a
+         REPLACEMENT dir and restores the original. The transaction now retains a DIRECTORY
+         DESCRIPTOR and verifies every artifact through it (`os.stat(name, dir_fd=...)`). Verified
+         with the reviewer's exact scenario (swap at receipt publish, restore original before
+         return): REFUSED via `_DirIdentityChanged` naming the receipt as not visible in the
+         retained directory.
+       - A35-SP-01: the identity-change path re-raised before closing `live` descriptors (reviewer:
+         fd 3 still open). Remaining owned descriptors are closed unconditionally there. Verified:
+         descriptor count before/after a refused render 4 -> 4 (no leak).
+       - A35-IS-01: an inherited descriptor did not stop an IN-PLACE overwrite of the named copy.
+         ASR now reads a MEMORY-BACKED descriptor (`memfd_create`) with no filesystem name. Verified:
+         ASR received `/proc/self/fd/3` with `pass_fds=(3,)`, read the captured RIFF bytes, and ZERO
+         temporary dirs were created.
+       - A35-IS-02: cleanup scope now starts at directory creation with an absent descriptor.
+         Verified: injected ENOSPC at snapshot creation leaves ZERO new unparked dirs.
+       - A35-IS-03: failed `rmdir` is reported. Verified: forced failed removal emits a
+         RuntimeWarning naming the parked path.
+       - A35-SV-01: `NEAR_SILENT_RMS = 0.002` now shared by the rejection AND selection, with raw RMS
+         computed per channel. Verified on the reviewer's 25,282-frame witness: L FAIL (0.0019),
+         R ACOUSTIC_ONLY (0.0036), stereo now ACOUSTIC_ONLY at rms 0.0036 (was FAIL on L).
+     HARNESS: `bash tests/run.sh` -> rc=0, "tests: all retained harnesses PASS",
+       `PUBLISH_BY_NAME: clean`.
+     PACKET pass 36: `/tmp/cb-A7-pass36.txt` 288,999 B sha256 `416e15d131eca39d…`; 11 bindings, 0
+       mismatches, 11 sections match disk, 3/11 files changed (spyke_render, interrupt_sfx,
+       sfx_verify).
+     RECORDS: A7 + GUARDS-WAVGUARD recorded; `submission-freeze.py` -> `VERDICT: ALL_FROZEN`
+       (pass 36 governed=11 FROZEN=11), receipt sha `0d7734d33117a56d…`.
+     SUBMITTED via surf with path/size/sha and the established reply shape. Verdict tracked in 197.
+
+197. [~] The pass-36 verdict. Awaiting surf's submission/extraction; delivery verified from the
+     destination (quoted packet sha 416e15d1…, 11 per-file VERDICT lines, PACKET VERDICT), then
+     intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
+     Packet: `/tmp/cb-A7-pass36.txt` 288,999 B `416e15d131eca39d…`, `ALL_FROZEN` (receipt `0d7734d3…`).
+     OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
