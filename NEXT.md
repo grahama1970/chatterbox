@@ -6509,3 +6509,25 @@ t
      complete set - if a further input exists it gets the same treatment.
      Verification: three constructed inputs at the stated rates, measured through the shipped wav_guard/sfx_verify
      (frac/run/verdict printed above); stereo and mono equivalents agree at .100.
+
+160. [x] The landed doc's "PARTIALs still open" claim was FALSE as of this turn - corrected in place against the reviewer's own counterexamples.
+     WHY THIS COUNTS AS WORK: item 159 proved the two PARTIALs closed against the reviewer's exact inputs, but the
+     evidence doc still told every future reader the opposite - "STILL OPEN, stated rather than claimed: WG-06 PARTIAL and
+     WG-07 PARTIAL are not closed by argument ... each PARTIAL needs its own reproduction with the reviewer's described
+     input, which is opened as a follow-up item." A stale open-claim is not a harmless leftover: it tells a reviewer the
+     repair is unproven and invites exactly the re-litigation this pipeline keeps paying for.
+     CORRECTED, both places that made the claim:
+       - the pass-29 paragraph now records that surf supplied the three counterexamples and all three REFUSE:
+         `[0]*1600 + [202,-202]` at 16 kHz (active_frac 0.167, longest run 0.020 s -> "no sustained stretch");
+         `320 samples of amplitude-8000 1 kHz tone + 2880 zeros + [8000,-8000]` (0.182, run 0.020 s -> same refusal);
+         identical stereo L/R over 3,200 frames (0.100 - the mono figure the reviewer said was correct, NOT the 0.20 the
+         old verifier reported).
+       - the pass-30 paragraph now says WG-06 was fixed later the same day in pass 31 and closed against that identical-
+         stereo counterexample, instead of "remains open as the next item, with its own reproduction already measured".
+     LANDING AND RECORD INTEGRITY: doc landed c2c85d9916e4566a00b8a8b03ba0ca9ed751f4e2, origin blob
+     6b6437e90c7c766731e77ce61467ae8ca82bbb7b805e5896d2a6d35e5b5ad902 identical to local. Because the doc is a tracked
+     manifest artifact, the manifest row was re-pinned (sha256, landed_blob, origin_main, landing_commit) and the matrix
+     `generated_from.manifest_sha256` recomputed - otherwise the board would report LANDED_BLOB_MISMATCH, which is the
+     mechanism that catches exactly this kind of silent doc move.
+     Verification: doc live sha == origin blob; board `sweep: PASS (15 guards)`; the three counterexample measurements are
+     item 159's, re-cited here as the basis for the corrected text.
