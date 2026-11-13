@@ -7427,3 +7427,18 @@ t
          fails. No scenario post; thread stays closed. No file was modified or fabricated.
      OWNER: this session (resolved + reported).
 
+192. [x] SCOPED the "defective locator" jordan reported after their binding passed: the defect is in the
+       thread attachment record, NOT in the turns artifacts.
+       - Measurement (scan of /mnt/storage12tb/embry-voice/turns, this turn): 117 sidecars parsed
+         (*.receipt.json + *.provenance.json); 117/117 have a `wav_path` that resolves to an existing
+         file; 0 missing the field, 0 non-existent paths, 0 unreadable.
+       - No seq-9 jordan artifact exists there (the only `*_9.wav` is `spyke_alex_e2e-145_9`).
+       - Searched `/mnt/storage12tb/embry-voice` excluding `turns/` for the .wav-less literal
+         `288b7508_jordan_main_8.1f062265b777f64f` and for any JSON naming that turn: ZERO hits.
+       - Conclusion: the wrong path is recorded in the seq-9 thread attachment reference (spyke's thread
+         store), not produced by the render/receipt pipeline. Told jordan to route the literal fix to
+         that owner; this lane did not edit any provenance record and touched no file outside turns/.
+       - Their binding numbers match mine exactly: message_id 1f062265b777f64f, 23.48 s, 563,520 frames,
+         24 kHz, text fdd5ff38…525fd, audio 8e4c6bbf…f3ebd.
+     OWNER: this session (measurement + boundary); spyke lane (thread attachment literal).
+
