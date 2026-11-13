@@ -6130,15 +6130,44 @@ t
      Verification: 12 renders HTTP 200, each WAV re-read and measured with wav_guard; exact U test p=0.0043; ASR clean on
      tag renders; receipt text_sha256 bound on every call.
 
-146. [ ] The tag adds ~0.32 s of SOMETHING - event or pause? Decide before calling it delivery.
-     WHY: the previous item proved the tag changes the render, but "longer and less active" is equally consistent with an
-     inserted nonverbal event and with inserted SILENCE. Those are opposite outcomes for the product: one is delivery, the
-     other is a hole in the middle of a sentence.
-     MEASURE, pre-declared: for [sigh], [gasp] and [chuckle] against the same control text, locate the inserted region by
-     aligning the control and tag renders on the longest common energy-envelope structure, then classify that region by
-     RMS against the clip's own silence floor. DECISION RULE, declared now: if the inserted region's RMS stays below the
-     silence floor it is a PAUSE (delivery hole); if it rises above it, it is MATERIAL (event); report both per tag, plus
-     the region's duration, because a 0.3 s "event" and a 1.5 s one are different products.
-     BOUND: three tags, one speaker, no naturalness claim - the owner's ear decides whether the material is a good sigh.
-     OWNER: this session.
+146. [x] The tag's extra time is a PAUSE, not an event - and my first classifier was degenerate, so its verdicts are discarded.
+     THE QUESTION: item 145 proved an approved tag changes the render (+0.32 s median). "Longer and less active" is equally
+     consistent with an inserted nonverbal EVENT and with inserted SILENCE, and those are opposite outcomes for the product.
+     INSTRUMENT 1, REJECTED AS DEGENERATE (recorded rather than quietly dropped): DTW alignment of tag vs control energy
+     envelopes, classifying inserted spans by RMS against each clip's own silence floor. The floor came out at 0.0001, so
+     "above the floor" was satisfied by noise: a span at 1.4% of speech RMS (0.0007) was labelled MATERIAL, and the
+     alignment reported 6-8 "insertions" scattered MID-UTTERANCE for a tag that is a LEADING prefix. Those are artefacts
+     of a stochastic take, not eight events. Reported here because a classifier that passes for the wrong reason is worse
+     than no classifier - and because my pre-declared rule was too weak, not merely misapplied.
+     INSTRUMENT 2, WHAT THE DATA ACTUALLY SUPPORTS. The tags are leading prefixes, so the decisive region is before speech
+     onset, measured against control: control onset 0.07 s; sigh 0.15 s (+0.08); gasp 0.41 s (+0.34); chuckle 0.17 s
+     (+0.10). The RMS of that pre-onset region is 0.0007 / 0.0007 / 0.0017 = 1.6% / 1.6% / 2.7% of speech RMS. That is
+     SILENCE, not audible material, so by the declared rule (below the audible floor -> PAUSE) the verdict is PAUSE.
+     WHERE THE REST OF THE TIME WENT (total deltas exceed onset deltas): sigh +0.40 s total vs +0.08 s lead, trail 0.23 s
+     vs control 0.34 s; gasp +0.40 s total vs +0.34 s lead; chuckle +0.64 s total vs +0.10 s lead, and its LONGEST
+     INTERNAL GAP grows from 0.33 s (control) to 0.54 s. So the tag lengthens the render by inserting/slackening SILENCE
+     around and inside the line, not by adding a rendered sigh, gasp or chuckle.
+     ANSWER TO THE NOW QUESTION: PAUSE. On this path the tag is a pacing change with no audible event; "delivery" would be
+     an overclaim. This also explains item 145 cleanly: duration and activity move (silence does that) while
+     tone_effective never leaves neutral_warm (nothing emotional is being rendered).
+     SCOPE AND HONEST BOUNDARIES: one render per tag for the region classification (n=1); the duration effect itself is
+     n=6 per arm from item 145. Leading-position tags only. Whether a MID-SENTENCE tag behaves differently is untested.
+     Mechanical measurements only - whether a listener would hear a "hole" is the owner's ear, not this test.
+     Verification: control onset 0.07 s, pre-onset RMS 1.6-2.7% of speech; chuckle longest internal gap 0.33 s -> 0.54 s;
+     durations 2.66 / 3.06 / 3.06 / 3.30 s from the four requested renders (seq 20-23).
+
+147. [ ] If a tag renders as silence on /render, decide what the product should claim - and correct the doc, not the belief.
+     WHAT IS NOW MEASURED: an approved singular tag on /render lengthens the clip (median 2.56 -> 2.88 s, exact p=0.0043)
+     and leaves `tone_effective` at neutral_warm in 12/12 runs; the added time is silence before onset (1.6-2.7% of speech
+     RMS) plus a longer internal gap, not an audible sigh/gasp/chuckle. ASR hears no tag word, so it is neither spoken nor
+     rendered as an event on this path.
+     WHY THIS IS A DECISION ITEM, NOT A BUG REPORT: emotion delivery may be intended to come from the compiled plan plus
+     confirmed SFX clips (the interrupt_sfx splice path), with tags only pacing. If so, the SKILL/doc text must say that
+     plainly, because "tags steer delivery" is now measurably false for /render and a reader will infer emotion from a
+     tag that only inserts silence. If instead tags were SUPPOSED to render events here, this is a defect against the
+     service, not a doc fix.
+     DO, in order: (1) read what the docs and DESIGN actually claim about tags on the render path; (2) check whether any
+     OTHER path applies them (compiled plan / speak.py) so the claim can be narrowed to the path that works; (3) then
+     either correct the wording or file the defect - with this item's numbers as the evidence.
+     OWNER: this session (code/doc facts); Graham (whether pacing-only tags are acceptable product behaviour).
 
