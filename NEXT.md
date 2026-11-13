@@ -6553,3 +6553,24 @@ t
      regression. The board sweep is unaffected: all 15 guards are file-based and PASS with the engine down.
      Verification: docker ps -a shows Exited (0); health 000; GPU used 15048 -> 11047 MiB; packet pinned hash MATCH;
      11/11 bindings OK; AWAITING_PACKETS_LIVE; sweep PASS (15 guards).
+
+162. [x] Board-sweep hole closed: a guard that does NOTHING used to be reported as PASS "ok".
+     HOW IT SURFACED: after wiring two new guards I stopped trusting the count and tested the MECHANISM instead of
+     adding another guard. `board-sweep.sh` decided PASS on `rc -eq 0` and then printed `${verdict:-ok}` - so a guard
+     replaced by a bare `exit 0` (or one whose body stopped printing after a silent early return) produced
+     "PASS stub-silent.py ok" and the whole board stayed green with fifteen no-ops. Proven before fixing: a stub that
+     only calls `sys.exit(0)` was reported PASS "ok" by the real sweep.
+     FIX: PASS now requires rc=0 AND a non-empty `VERDICT:` line; a silent success is FAIL with the reason "NO VERDICT
+     LINE (a silent guard is not a pass)". This makes the sweep consistent with its own convention - every guard is
+     written to state a verdict - and it removes the default that let a broken guard look healthy.
+     MUTATION CONTROLS against the sweep itself, in one run:
+       - stub that exits 0 printing nothing  -> FAIL "NO VERDICT LINE (a silent guard is not a pass)"   (was PASS ok)
+       - stub printing "VERDICT: STUB_OK"     -> PASS STUB_OK
+       - stub printing a verdict then exit 1  -> FAIL rc=1 STUB_FAIL
+     REAL BOARD AFTER: 15 of 15 guards report a verdict (counted, not assumed) and `sweep: PASS (15 guards)` - so the
+     tightening did not fail any genuine guard; each one already states what it concluded.
+     WHY IT MATTERS: the last three turns added guards precisely because "a rule that needs remembering is not a gate".
+     A sweep that green-lights a silent guard is that same defect one level up - the meta-gate could be fooled by the
+     exact failure it exists to catch.
+     Verification: pre-fix stub sweep showing PASS "ok" for a silent guard; post-fix stub run with the three cases above;
+     real sweep PASS (15 guards) with 15 PASS lines each carrying a verdict.
