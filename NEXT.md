@@ -7738,7 +7738,7 @@ t
        RESULT: 8 PASS / 3 FAIL - the SAME three files for the fourth round (`spyke_render.py`,
        `interrupt_sfx.py`, `sfx_verify.py`).
 
-198. [ ] REPAIR the A36 findings AND make the structural change the fourth round on the same three
+198. [x] REPAIR the A36 findings AND make the structural change the fourth round on the same three
      files justifies. Source: `outputs/reviews/a7-pass36-FAIL-20261113.md`.
      TREND: pass 33 5P/6F (9 major), pass 34 7P/4F (7 major), pass 35 8P/3F (5 major), pass 36 8P/3F
      with a NEW self-inflicted regression (A36-SP-01: valid overwrite renders now fail the dirfd inode
@@ -7765,4 +7765,48 @@ t
      Then: rebuild ONE packet (pass 37) with every changed file, record per group, freeze, submit via
      surf. Do not ship an overwrite-path change without an executed allow_overwrite render proof.
      OWNER: this session (repairs/rebuild); surf (submission/extraction).
+
+     RESULT (2026-11-13): all 4 findings repaired at the cited paths, each verified by execution, plus
+     the structural change this fourth round on the same three files justified.
+       - A36-SP-01 (REGRESSION I introduced in pass 35): `_publish` installs OVERWRITES through
+         `replace_from_fd`, which materialises a DIFFERENT inode than the staged descriptor; my pass-35
+         dirfd check compared against the STAGED inode, so every valid `allow_overwrite=True` render
+         was misread as a directory swap and refused with backups unrestored. Reproduced first:
+         "retained directory holds inode 208557028, expected 208557024", 4 `.prev-*`/`.owned-*`
+         leftovers. `_publish` now RETURNS the installed inode (staged for no-replace, `on_install`
+         for overwrite) and BOTH callers verify against it. After the fix the same overwrite render
+         returns ok=True.
+       - A35-IS-01: the memfd stopped renames but stayed WRITABLE. It is now created with
+         `MFD_ALLOW_SEALING` and sealed `F_SEAL_WRITE|F_SEAL_GROW|F_SEAL_SHRINK` after the last write.
+         Verified: a write through the sealed descriptor is REFUSED with EPERM (errno 1) — in the
+         generator AND in the verifier.
+       - A36-SV-01: the verifier's `transcribe()` handed Whisper a TemporaryDirectory PATHNAME, so a
+         replacement could be transcribed and then DELETED by cleanup. It now passes `/proc/self/fd/N`
+         from a sealed memfd. Verified: path `/proc/self/fd/3`, post-seal write REFUSED (errno 1),
+         `asr_ok=True`, no temp dir created. Temp-file branch remains only as platform fallback.
+       - A35-IS-02: fallback `chmod` moved inside its cleanup scope. Verified: injected chmod failure
+         leaves ZERO unhandled directories.
+     STRUCTURAL: sidecars and the WAV now share ONE publication-then-verify path keyed on the installed
+       inode, instead of two disagreeing checks. NOT done and stated as not done: the named-staging
+       fallback was not removed, so that cleanup path still exists.
+     MISTAKE CAUGHT BY THE HARNESS: my wholesale `transcribe()` replacement deleted `class
+       ManifestEntry` and `_ID_CHARS`; `test_sfx_library_regression` failed rc=2 with
+       "name '_ID_CHARS' is not defined". Both were restored from `/tmp/sv.pre-sp36.bak`, the missing
+       top-level names were diffed by AST (only `_ID_CHARS` remained), and the suite was re-run green
+       before the packet was built.
+     HARNESS: `bash tests/run.sh` -> rc=0, "tests: all retained harnesses PASS",
+       `PUBLISH_BY_NAME: clean`.
+     PACKET pass 37: `/tmp/cb-A7-pass37.txt` 291,405 B sha256 `88d1a770d626a55b…`; 11 bindings, 0
+       mismatches, 11 sections match disk, 3/11 files changed (spyke_render, interrupt_sfx, sfx_verify).
+     RECORDS: A7 + GUARDS-WAVGUARD recorded; `submission-freeze.py` -> `VERDICT: ALL_FROZEN`,
+       receipt sha `864c4c97b2bfff3b…`.
+     SUBMITTED via surf with path/size/sha and the A37 binding rule (quote `88d1a770…`; earlier
+       passes' verdicts must not be intaked). Verdict tracked in 199.
+
+199. [~] The pass-37 verdict. Awaiting surf's submission/extraction; delivery verified from the
+     destination (quoted packet sha `88d1a770…`, 11 per-file VERDICT lines, PACKET VERDICT), then
+     intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
+     Packet: `/tmp/cb-A7-pass37.txt` 291,405 B `88d1a770d626a55b…`, `ALL_FROZEN` (receipt
+     `864c4c97b2bfff3b…`).
+     OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
