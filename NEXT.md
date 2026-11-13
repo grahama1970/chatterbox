@@ -6184,22 +6184,48 @@ t
      Verification: 24-key /render receipt with no tag fields; engine response with tags_interpreted true; old wording quoted
      from SKILL.md:230-234 before the edit; landed commit 632c94f3 and origin blob == local (95bb0d32).
 
-148. [ ] /render silently drops the engine's tag evidence, and pacing-only tags need an owner answer.
-     WHY IT IS A REAL GAP: the engine reports `tag_handling.tags_interpreted: true` with the tag in `applied_tags`, plus
-     `affect_effect` and `pace_effect` - and `/render` throws all of it away, so a caller reading the /render receipt
-     cannot tell whether a tag was consumed, ignored, or spoken literally. That is exactly the "cannot see the evidence"
-     failure this project keeps removing elsewhere; the fix is to forward those engine fields into the /render receipt
-     rather than to keep documenting their absence.
-     TWO PARTS:
-     1. CODE (needs a reviewer receipt - a .py change): add `tag_handling`, `affect_effect` and `pace_effect` to the
-        /render receipt, copied verbatim from the validated engine response (no recomputation, no defaults that could
-        imply a tag was applied when it was not). Add a control: a tag render must show tags_interpreted=true and list the
-        tag; a no-tag render must show it absent; and a render whose engine response lacks the fields must fail closed
-        rather than emit an empty object.
-     2. OWNER DECISION, Graham: is PACING-ONLY acceptable product behaviour for inline tags? The measurement says a tag
-        currently buys time, not emotion. If that is the intended design, the doc now says so and this closes. If tags
-        were supposed to sound like events on /render, then the service, not the doc, is the defect - and that is a
-        different repair with a different gate.
-     Do NOT implement part 1 by changing the engine or by fabricating fields; the engine already sends them.
-     OWNER: this session (code + control); Graham (acceptability).
+148. [x] /render now carries the engine's tag evidence and fails closed without it. (The pacing-only ACCEPTANCE question is opened separately below for the owner - it is not mine to answer.)
+     THE GAP, read from the code rather than inferred: the engine's `/synthesize` response reports `tag_handling`
+     (tags_interpreted true, applied_tags ["[sigh]"], accepted_tags, unknown_tag_behavior), `affect_effect` (applied
+     false + reason) and `pace_effect`. `RenderReceipt` had fields for NONE of them and `render_turn` discarded them, so a
+     /render caller could not distinguish "tag consumed" from "tag ignored" from "tag spoken as literal text".
+     FIX, scripts/spyke_render.py 53d25500ba5f: a `_tag_evidence(text, svc)` helper copies the three fields VERBATIM from
+     `svc.model_extra` (pydantic 2.12.3, verified with a live-shaped payload) and RAISES when the text contains a bracket
+     tag but the response has no `tag_handling`. The three fields are added to `RenderReceipt` and populated in
+     `render_turn`. The easier repair - emit an empty object - was REJECTED because it would read as "no tags" and hide
+     exactly the loss the check exists to surface. No recomputation, no defaults that could imply a tag was applied.
+     CONTROL, tests/test_render_tag_evidence.py 3a103286cf90, 7/7: tag evidence forwarded verbatim and applied_tags names
+     the tag; a no-tag render records nothing and does not raise; tag text with no tag_handling raises with the field
+     named; the receipt serializes all three; and a MUTATION CONTROL copies the module with the guard disabled
+     (`if tag_handling is None and ...` -> `if False and ...`) and requires it to return None instead of raising - so the
+     refusal is caused by the guard, not by the fixture.
+     GATES: tests/run.sh 822a9ff3760d rc=0 with all retained harnesses PASS and `PUBLISH_BY_NAME: clean`; sanity.sh rc=0
+     with a live render.
+     PACKET /tmp/cb-A7-pass28.txt 207,474 B sha256
+     bc186a7954d2c41a54000e6e1c2a6843a41b6d298cb37ac2cbb5738f0e5c2b14, 11 bindings re-hashed with zero drift, delegated
+     to surf. Pass 27 is WITHDRAWN: `tests/run.sh` moved (fa6f9177 -> 822a9ff3) when the new harness was wired, so
+     submitting it would have asked for a verdict on bytes the tree no longer has.
+     RECORDS: doc landed edd89011ef0fb25a8a8c06fa55aa2ba9ca7a2f96; SKILL.md row re-pinned after its item-147 landing had
+     left a LANDED_BLOB_MISMATCH; identity baseline re-recorded deliberately (6570ce304ec3); board PASS (13 guards).
+     WHY THE FIELD GAP MATTERED ENOUGH TO FIX: item 146 measured a tag's real effect on /render as ~+0.32 s of near-
+     silence (1.6-2.7 % of speech RMS, tone unchanged 12/12) while the engine simultaneously reported
+     tags_interpreted=true. A receipt that hides the engine's own account of what it did with a tag is how a caller ends up
+     believing tags deliver emotion.
+     Verification: py_compile OK; helper exercised on tag/no-tag/fail-closed shapes before the harness was written; 7/7
+     control with a live mutation; run.sh rc=0; sanity rc=0; packet re-hash 11/11 zero drift; board PASS.
+
+149. [~] Awaiting OWNER DECISION (Graham): is PACING-ONLY acceptable behaviour for an inline tag on /render?
+     WHAT IS MEASURED (items 145/146): a leading singular tag lengthens the render by ~0.32 s (median 2.56 -> 2.88 s, 6
+     renders per arm, exact Mann-Whitney p = 0.0043), leaves `tone_effective` at neutral_warm in 12/12 runs, adds material
+     that is near-silence before onset (1.6-2.7 % of speech RMS) plus a longer internal gap, and ASR hears no tag word. The
+     engine concurrently reports tags_interpreted=true with the tag in applied_tags, and affect_effect.applied=false.
+     THE TWO ANSWERS THIS NEEDS, and they lead to different work:
+     (a) PACING IS FINE -> nothing more to build; the doc (item 147) already states it and audible emotion comes from
+         owner-confirmed SFX spliced at sentence boundaries. This item closes.
+     (b) A TAG SHOULD SOUND LIKE AN EVENT ON /render -> that is a SERVICE defect, not a doc problem: the fix belongs in
+         the engine's tag realization, and it needs its own measurement (does the realized event rise above the silence
+         floor?) rather than more receipt plumbing. The receipt work is already done either way.
+     WHY I AM NOT DECIDING IT: acceptability is a product judgement about how Embry should sound, not a fact I can measure.
+     Deciding it myself would be exactly the silent default this project keeps punishing.
+     OWNER: Graham. Evidence ready at items 145, 146, 147 and 148; no further measurement is blocked on him.
 
