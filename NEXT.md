@@ -7525,6 +7525,17 @@ t
        `d9026ebbbaa8314d…` is recorded as the producer's value because schema.json does not document its
        canonicalization (not independently reproduced). Stored as research-only evidence: no decode run,
        no production wiring, no tokens in skill fixtures.
+     STATE AFTER THE PILOT BUNDLE: the research-only deliverable ARRIVED and verified (above). What it
+       does NOT include, by the researcher's own statement and mine: standalone-event identity for the
+       62 source tokens (the neutral-reference decode transcribed as "No!"; Graham's acceptance covers
+       the FULL TRAINED UTTERANCE, not that decode), and any proof of dynamic text-tag generation
+       (saved-token replay is deterministic asset playback). So "[hearty laugh] is acceptable" is true
+       ONLY as a tag inside a spoken utterance in that experiment. It grants no standalone SFX asset
+       and no production wiring; the adapter keeps the source asset `unresolved`.
+       REMAINING GAP, precisely: a word-aligned SPAN of the accepted utterance that passes the returned
+       contract (boundaries, duration, acoustics, separation) AND a human verdict naming that span as
+       the event. Neither exists yet. Until both exist there is nothing to wire, and nothing here is
+       blocked on code.
      BLOCKED ON: the researcher's contract/decoder/evidence (external lane). No production edit is made
      until a pilot tag passes the identity gate.
      OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
