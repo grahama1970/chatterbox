@@ -7202,7 +7202,7 @@ t
        - Submitted via surf: ACK A34 confirmed the exact 278,355 B / `945f9f20…` attachment with the
          packet's own review prompt, one attempt only. The verdict is tracked in 181.
 
-181. [~] The pass-34 verdict. DELIVERY IS ESTABLISHED BY THE DESTINATION; the verdict is still being
+181. [x] The pass-34 verdict. DELIVERY IS ESTABLISHED BY THE DESTINATION; the verdict is still being
      written (no response file yet). Attempt 1 (A34) was refused before any send; attempt 2 (A34b) sent
      and was acknowledged BY THE REVIEWER.
        - A34 (attempt 1): transport refusal "ChatGPT prompt composer is not empty before submit; clear
@@ -7243,6 +7243,20 @@ t
        - Intake remains pending on that extraction; packet and freeze are unchanged (278,355 B,
          `945f9f2066da3131…`).
      OWNER: surf (extraction); this session (verify + intake + repairs).
+
+       - VERDICT RECEIVED AND APPLIED (2026-11-13T20:13Z): extraction succeeded from conversation
+         `/c/6af6a869-9040-83ea-8ad1-3e3b787aaf42` (the historical submit refusal remains a separate
+         receipt; no resubmission, no posting).
+         * Response `/tmp/surf-cb-A34b/response.md` 16,931 B sha256 `8e46ca05b3d72ff2d1…`, preserved at
+           `outputs/reviews/a7-pass34-FAIL-20261113.md` (sha VERIFIED identical this turn).
+         * Identity CERTIFIED by the report: it quotes `PACKET SHA256 945f9f2066da3131…`, gives 11
+           `VERDICT <path> <sha256>` lines at the packet's own hashes, and ends `PACKET VERDICT: FAIL`.
+           The sentinel appears in the raw capture, not in the extracted review text.
+         * Applied per group with `verdict-intake.py --apply`: A7 -> 2 PASS / 2 FAIL (manifest 39,714 B
+           sha `383624aa139ffb10…`); GUARDS-WAVGUARD -> 5 PASS / 2 FAIL (manifest 41,330 B sha
+           `02d0127ac8d5700e…`).
+         * RESULT: 7 PASS / 4 FAIL. FAIL = `scripts/spyke_render.py`, `scripts/interrupt_sfx.py`,
+           `scripts/sfx_verify.py`, `tests/run.sh`. Repairs tracked in 194.
 
 182. [x] 30-min GPU window granted to the researcher's S3 audio-token adapter experiment; the Chatterbox
      service is STOPPED for it and MUST be restored.
@@ -7500,7 +7514,51 @@ t
        - an identity verdict requires reviewer + verbatim text; a missing timestamp is recorded unknown
          and does not by itself block research-only storage, but it can never be upgraded to production;
        - the original 62-token source event stays status=unresolved in every artifact that references it.
+     RESEARCH PILOT BUNDLE RECEIVED AND VERIFIED (2026-11-13): /tmp/hearty-laugh-proof/research-pilot-v1/
+       {utterance.json, schema.json, accepted-full-utterance.wav}. My verification, not their prose:
+       WAV sha256 `be8fd76b69c4a6b7…` == the bundle's `output_sha256`; `token_count` 169 == len(tokens);
+       every token within `valid_range [0,6560]` (min 26, max 6537); `tokens_sha256 314efe3410385e9a…`
+       REPRODUCED under sha256(json.dumps(tokens, separators=(",",":"))), so the token hash is
+       independently checkable; `human_verdict.verbatim` is exactly "its good enough" with `utc: null`
+       (stored UNKNOWN, not invented); `status research_only`; `rights_status UNVERIFIED`;
+       `original_source_event_identity UNRESOLVED`; `redecode_verified false`. Bundle hash claimed
+       `d9026ebbbaa8314d…` is recorded as the producer's value because schema.json does not document its
+       canonicalization (not independently reproduced). Stored as research-only evidence: no decode run,
+       no production wiring, no tokens in skill fixtures.
      BLOCKED ON: the researcher's contract/decoder/evidence (external lane). No production edit is made
      until a pilot tag passes the identity gate.
      OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
+
+194. [ ] REPAIR the A34 findings on the pass-34 bytes (7 PASS / 4 FAIL), each reproduced FIRST, then
+     rebuild ONE packet (pass 35). Verdict source: `outputs/reviews/a7-pass34-FAIL-20261113.md`.
+     Pattern: four findings say the A33 repairs missed the real code path, so each is fixed AT THE PATH
+     THE REVIEWER CITES, not by re-patching the previous fix.
+     MAJORS:
+       - A34-SP-01 `spyke_render.py:689,:694,:725-727` - failure cleanup closes ALREADY RELEASED
+         descriptor numbers.
+       - A34-SP-02 `spyke_render.py:677-698` (invariant `:641-644`) - replacing the output directory
+         separates the WAV from its evidence while reporting success.
+       - A34-IS-01 `interrupt_sfx.py:633-640` - snapshot cleanup STILL deletes a substituted foreign file.
+       - A34-IS-02 `interrupt_sfx.py:303-308`, consumed `:324` - ASR still consumes a replaceable pathname
+         instead of the captured snapshot.
+       - A34-IS-03 `interrupt_sfx.py:419,:847` (boundary `:382-388`) - ASR snapshot creation failures abort
+         the batch.
+       - A34-SV-01 `sfx_verify.py:287-297` with rejection `:487-490` - selection still chooses a failing
+         channel over a valid sibling.
+       - A34-RUN-01 `tests/run.sh:7` - the retained runner OMITS the new repair harness.
+     MINORS:
+       - A34-FS-01 `fs_ops.py:232-240` - newly arriving cleanup leftovers preserved without being reported.
+       - A34-SP-03 `spyke_render.py:742-747` - successful overwrite discards its foreign-backup diagnostic.
+       - A34-IS-04 `interrupt_sfx.py:550-563` - failed manifest replacement leaves its named staging
+         fallback unhandled.
+       - A34-SV-02 `sfx_verify.py:682-686` (contract `:650-655`) - report publication suppresses close I/O
+         errors.
+       - A34-SV-03 `sfx_verify.py:674-681` - detected report substitution escapes the diagnostic interface.
+       - A34-LIB-01 `tests/test_sfx_library_regression.py:44-47` - harness accepts a signal-terminated
+         verifier.
+       - A33-PROOF-02 NOT FIXED `tests/test_render_tag_evidence.py:238-242` - serialization control can
+         inspect the baseline sidecar.
+     Then: rebuild ONE packet (bindings + embedded sections verified against disk), record per group,
+     freeze, submit via surf with exact path/size/sha. A FAIL is a valid outcome; never weaken a gate.
+     OWNER: this session (repairs/rebuild); surf (submission).
 
