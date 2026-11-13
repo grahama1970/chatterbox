@@ -6938,3 +6938,21 @@ t
      gate may be weakened to make the board green.
      NOT YET DONE: no submission claim, no verdict claim. This row stays in-progress until a
      hash-bound response exists.
+
+     PROGRESS at the frozen pass-32 bytes - the reviewer's THREE counterexamples are now MEASURED
+     against current production, each refused for a reason that is stated rather than inferred:
+       - C1 `[0]*1600 + [202,-202]` @16 kHz: active_frac 0.167, longest run 0.000 s; gate REFUSES on
+         duration ("0.1s outside 0.15-2.0s"). The fraction alone would have looked active - that is
+         exactly why the fraction was never sufficient.
+       - C2 `320 samples 1 kHz tone + 2880 zeros + [8000,-8000]`: active_frac 0.182, run 0.020 s;
+         gate REFUSES ("no sustained stretch: longest active run < 0.06 s").
+       - C3 identical stereo, 3,200 frames per channel, tone in the first 320: measure active_frac
+         0.100, run 0.020 s; gate REFUSES (mostly silent). Mono parity holds at 0.100 - the stereo
+         path no longer reports the old 0.20.
+     WHY THE HARNESS CASES ARE NOT YET EDITED IN: `tests/test_wg_pass2_repairs.py` is one of the 11
+     artifacts bound by the FROZEN pass-32 packet that is in flight for review. Editing it now would
+     make the packet stop describing the bytes on disk, so the verdict could not be applied to
+     either version. The measurement above is therefore recorded, not landed.
+     IMMEDIATE NEXT STEP after verdict intake on pass 32: add C1/C2/C3 to that harness with mutants
+     (drop the duration guard for C1; drop the run guard for C2; pass the original channel count for
+     C3) and re-run it - each mutant must make its case PASS again, or the case proves nothing.
