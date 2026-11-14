@@ -9356,3 +9356,25 @@ t
      The watcher remains a REPORT, not a gate: it mutates nothing and `--require-ready` is the only failure
        mode. Its value now is that its silence is explicitly labelled as absence.
 
+263. [~] A39-TXN-01 IS NOW A WRITTEN DECISION, not a probe queue: `outputs/txn-01-decision.md`
+     (4,789 B, sha256 `ab993da141cbb629daf5151aa7c23076`), three options with costs and the evidence that
+     would settle each.
+     WHY A DOCUMENT AND NOT A FIFTH PROBE: my four attempts failed in four different ways (hang; SP-03
+       exact-EOF refusal; flip before the receipt's final check; flip during publication verification, with 6
+       dir_fd opens observed). None reached the reviewer's state, so it is recorded UNTESTED - not fixed, not
+       disproved. Winning a race would not prove the mechanism anyway.
+     THE QUESTION THE FINDING ACTUALLY RAISES: three artifacts verified at three instants cannot exclude a
+       same-UID rewrite between checks. So "one instant" is a claim about the CONTRACT, not the mechanism,
+       and the contract sentence is the thing that may be wrong.
+     OPTIONS, stated with their costs:
+       A. verify the receipt LAST from the exact bytes returned, so the response can never disagree with the
+          file. Small change; still cannot exclude a later wav rewrite.
+       B. seal the three artifacts into one digest and verify the seal at the end. Accurate, more code, and
+          the seal is a fourth artifact with the same class of problem unless it is what the caller receives.
+       C. narrow the claim to what the code enforces: each artifact is verified under a bound directory
+          identity while it is opened, and a later same-UID rewrite is caught on the next read, not
+          retroactively. Cheapest; removes the false claim without stopping the rewrite.
+     MY RECOMMENDATION: A plus C. I did not implement either, because each changes what the skill PROMISES
+       about completion, and picking silently is the guess-then-build pattern this project has already paid
+       for. This needs Graham's call.
+
