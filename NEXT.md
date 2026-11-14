@@ -7101,7 +7101,9 @@ t
          `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
          established by the report itself - the same standard used for pass 32. No resubmission occurred.
      OWNER: this session (intake done); repairs tracked in 180.
-177. [~] ALL THREE HANDLED AND PASS 43 ALSO INTACKED (item 289): A7 is now 9 PASS / 2 FAIL, so the group
+177. [~] PASS 44 IS INTACKED: A7 is now **10 PASS / 1 FAIL** (item 293). spyke_render.py PASSED, so the pass-43
+    F1/F3 repairs are accepted; interrupt_sfx.py FAILED on two NEW findings about my own F2 fix (item 294).
+    HISTORICAL HEADER, retained verbatim: 177. [~] ALL THREE HANDLED AND PASS 43 ALSO INTACKED (item 289): A7 is now 9 PASS / 2 FAIL, so the group
     is unlandable BY DESIGN until those two rows are repaired (item 290). Nothing is awaited from surf.
     HISTORICAL HEADER, retained verbatim: 177. [~] ALL THREE HANDLED: add1 pass 9 (procedural), B4 pass 8 (3 FAIL intaked), add1 pass 10 (PASS, captured
     but its intake is group-gated - item 288). Pass 43 is still running; nothing else is awaited.
@@ -10219,4 +10221,49 @@ t
        needs a verdict, which is why pass 44 binds all eleven rather than only the two repaired ones.
      BOUNDARY: no new verdict has arrived. A7 remains unlandable, pass 43's `PACKET VERDICT: FAIL` stands, and the
        eight PASS verdicts are evidence about eight exact hashes - not a group verdict.
+
+293. [x] PASS 44 VERIFIED AND INTACKED: 10 PASS / 1 FAIL. The pass-43 repairs were ACCEPTED (spyke_render.py PASS)
+     and my own F2 fix was REJECTED (interrupt_sfx.py FAIL) on two findings that are sharper than the original.
+     CHAIN VERIFIED BY ME (`ops-magpie-dc88d292795b`, asked AND served deepseek/deepseek-v4-pro, metered, 1 attempt,
+     160,603 ms):
+       packet   `packets/cb-A7-pass44.txt` 323,496 B sha256 aa7490eedb3d263b9a4acff9a06e3d1b513d239525c8b257add0b33b7661e709
+       question 324,643 B sha256 d22180decf0fc9e6… == receipt.input_sha256                      PASS
+       packet embedded EXACTLY ONCE at offset 1,128                                              PASS
+       answer   1,806 B sha256 c4aa73af3c9cada4… == receipt.answer_sha256                        PASS
+       eleven VERDICT lines + `PACKET VERDICT: FAIL`                                             PASS
+     INTAKE: `verdict-intake.py --group A7 --report … --packet … --apply` -> rc=0,
+       **APPLIED 10 PASS, 1 FAIL**, manifest 41,697 B sha256 `3d8952d7bae0cba4d17fa23000dfd7d4b63e034eb18f4a2996d9f7072fc79ebc`.
+       Read back from the manifest: `spyke_render.py -> PASS (answer_raw.txt)`, `interrupt_sfx.py -> FAIL
+       (answer_raw.txt)`, and the other nine PASS rows (fs_ops, sfx_verify, wav_guard, run.sh, test_a7_pass10_repairs,
+       test_wg_pass2_repairs, test_sfx_library_regression, test_record_packet, test_render_tag_evidence).
+     THE TWO NEW FINDINGS, verbatim from the answer, and both are about MY pass-43 F2 repair:
+       F1 HIGH   - `_StagingDir._retire_minted` decides deletion from a FORGEABLE
+                   `(st_dev, st_ino, st_size, st_mtime_ns)` tuple after rename, so a same-UID writer can force inode
+                   reuse and set size/mtime to match.
+       F2 MEDIUM - `_StagingDir.claim` records whatever inode currently occupies a minted name instead of proving the
+                   attempt created it, so a replacement before claim is adopted and later deleted.
+       What this means plainly: my "full tuple" comparison is not an identity proof, it is a set of fields the writer
+       can also produce. I had already discovered the inode-reuse half of this myself while testing, then treated the
+       extra fields as if they closed it. They do not. F2 is the same class as the round-2 IS-01 rejection (a claim
+       adopting a stranger's file) and says my round-3 minting did not remove that adoption window, only made the name
+       harder to guess.
+     A CONTRACT DEFECT OF MINE, caught by the reviewer's own warning: my packet text asks for
+       `VERDICT <path> <sha256>: PASS|FAIL`, so a compliant reviewer writes the literal token `sha256`. Both my
+       `receipt-binding-check.py` and `verdict-intake.py` rejected that shape at first. Fixed both to accept the
+       optional literal token - same information, and my own contract asked for it, so this is a parser fix rather than
+       a weakened gate. Recorded here because a silent parser change would hide that the first intake attempt failed.
+     PRESERVED: `outputs/reviews/a7-pass44-20261114/` (question, answer, receipt mode 0600).
+     BOUNDARY: 10 PASS is evidence about ten files at ten hashes. `PACKET VERDICT: FAIL` stands, A7 stays unlandable,
+       and the FAIL row is the only thing blocking it.
+
+294. [~] REPAIR THE PASS-44 FINDINGS - they invalidate my own F2 fix, so the design has to change rather than the
+     comparison. Each reproduced FIRST.
+     F1 HIGH: reproduce a same-UID writer forcing inode reuse AND matching size/mtime, then show `_retire_minted`
+       deleting their bytes. Direction to test (not yet adopted): hold an OPEN DESCRIPTOR from creation through
+       retirement - an open fd pins the inode, so reuse cannot occur while it is held - and decide from `fstat(fd)`
+       plus link count instead of a recorded tuple.
+     F2 MEDIUM: reproduce a replacement at the minted name BEFORE `claim()`, then show claim adopting it. Direction:
+       claim must derive identity from a descriptor THIS attempt opened at creation, never from a stat of the name.
+     NOT STARTED. The A7 `interrupt_sfx.py` row stays FAIL (correct) until a new packet passes.
+     OWNER: this session (repair + reproduction); researcher (re-review at new bytes).
 
