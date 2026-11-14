@@ -8358,3 +8358,23 @@ t
        rule as well as by 222.
      Audit unchanged: every review receipt in this lane already records zai/glm-5.3 as the reviewer.
 
+224. [x] ITEM 201 RESOLVED TO PATH A on the operator's instruction ("complete your Pi-session request"),
+     relayed by surf. Reviewer of record = a NON-GPT authorized reviewer lane (Gemini / Claude / Kimi,
+     surf's choice of healthy live lane). ChatGPT/Daybreak excluded twice over: the no-GPT rule (223)
+     and OpenAI's own content refusal of pass 38.
+     EXACT ARTIFACT AUTHORIZED (recomputed this turn, not recalled):
+       `/tmp/cb-A7-pass39.txt`  296,700 bytes  mtime 2026-11-13 21:13:59 -0500
+       sha256 `b78119b2782e708b66fc9e47b319363ed959a9b87300564162a4945a7d15574f`
+       frozen, never submitted before this instruction.
+     EXPLICITLY NOT AUTHORIZED: pass 38 (`650947f6feda328e...`, 295,757 bytes) - destination refused it
+       ("This content can't be shown" / flagged for possible cybersecurity risk); resending refused
+       content to the same destination is evading a control. Also not authorised: passing the packet
+       through any GPT surface, or editing one byte of it to clear a flag.
+     INTAKE CONTRACT GIVEN TO SURF: response text saved to a file with its sha256; response must quote
+       the packet sha and every per-file VERDICT line; destination seat/model named as that seat reports
+       itself. On receipt I intake per group first-class BEFORE any repair, and repairs come only from
+       the findings - no gate weakening.
+     B7 and add1 are NOT this lane's requests; told surf I cannot authorise work I did not file.
+     SURF ACK: pass39 exact original attachment, fresh non-GPT tab, full response + binding + seat,
+       verifying packet bytes and non-GPT availability first; no A38/B7/add1 resend.
+
