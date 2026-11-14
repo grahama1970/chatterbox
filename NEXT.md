@@ -8074,3 +8074,17 @@ t
        collide with the scenario-03 seq-6 render.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+209. [x] RENDER for spyke-chat, scenario 05 (eng-ec6f0adf62db4145, main, seq 6, speaker spyke, tone
+     calm_precise). Text `/tmp/spyke-null-text.txt` = 1773 chars, no trailing newline, sha256
+     `bab365cf89344ef8…` (hashed as posted).
+     RESULT: `/mnt/storage12tb/embry-voice/turns/spyke-seq6-05-20261114T063946Z-0ab89825ef27.wav`,
+       45.56 s, `audio_sha256 0ab89825ef271262…`, `normalized_tone calm_precise`, normalization OFF
+       (`text_file_sha256 == speakable_text_sha256`).
+     CHUNKING: 2 chunks (1190 + 582, under 1200), sentence-boundary splits, byte-exact reconstruction.
+     SIDECAR: `<wav>.0ab89825ef271262.sidecar.json`; `receipt_present: false` (sidecar-only, consistent
+       with every turn served to spyke). Filename carries `-05-` so it cannot collide with the
+       scenario-03/04 seq-6 renders already staged.
+     SCOPE: only this render, per spyke - scenario 03 seqs 6 and 7 were already rendered and staged, so
+       nothing was created for them.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
