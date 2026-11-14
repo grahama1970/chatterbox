@@ -8325,3 +8325,18 @@ t
      If a future call is about to use a GPT model, the correct move is to use GLM; if GLM genuinely
        cannot do the job, state that reason in the record rather than silently defaulting to GPT.
 
+222. [x] FACT CHECK on item 201's option B, prompted by the operator's question. VERIFIED from OpenAI's own
+     pages (2026-11-14): Daybreak is OpenAI's "Trusted Access for Cyber" program, i.e. GPT-family.
+       - Daybreak Blue = an alias for flagship general-purpose models with safeguards for defensive
+         security work; model id `gpt-daybreak-blue-latest`, default snapshot `gpt-5.6-sol`, and the
+         alias is now marked DEPRECATED in OpenAI's docs.
+       - Daybreak Red = separately approved specialist cyber models (GPT-5.6 Cyber, GPT-6 Cyber needs
+         its own approval).
+       So "enable Daybreak Blue and resubmit the packet to ChatGPT" is a GPT request, and the standing
+       directive (item 221: no GPT models unless there is no other choice) removes it as an option.
+     CONSEQUENCE FOR 201: the reviewer-of-record choice narrows to
+       A - submit the unmodified pass-39 packet to a different AUTHORIZED reviewer via surf (non-GPT
+           route; recorded as a different reviewer family), or
+       C - stop at pass 37 and mark the pass-38/39 work unreviewed.
+     No submission happens without the owner picking A or C. The packet stays frozen at `b78119b2...`.
+
