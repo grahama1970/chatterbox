@@ -9001,3 +9001,31 @@ t
      unchanged (`narrator_sfx_batch.py`, `speak.py`, `review_store.py`, `test_t1_batch_proof.py`,
      `test_t1_pass10_repairs.py`). Durable copy in place; nothing blocked on me.
 
+246. [x] PASS 41 BUILT, FROZEN, HANDED TO SURF, AND RE-VERIFIED AFTER HANDOFF.
+       `outputs/packets/cb-A7-pass41.txt`, sha256
+       `63e01ca4da9ca81632d19bd63b6c1a1a679f8c2b09a0801226c823e075ec5f6d`, 306,049 B, durable on the
+       12TB drive (200 copies only in /tmp is how this lane already lost `spyke-oc-text.txt`), builder and
+       header stored beside it.
+       It exists because two repairs landed AFTER pass 40 froze: spyke_render.py `994f4aac49 -> 9a53fbf677`
+       (SP-03 bounded read + exact EOF) and interrupt_sfx.py `b3a3856203 -> 5a3fb5a500` (IS-01 staging
+       preservation); the other nine files are unchanged.
+       The packet states pass 40's SP-01/SP-02/ASR-01 PASSes as settled with the intake path named, the two
+       post-freeze repairs with their reproduction numbers and review history, and TXN-01 as OPEN AND
+       UNTESTED rather than fixed. The ask is narrow: (1) SP-03 bounded + exact EOF, (2) IS-01 preserves a
+       foreign entry, (3) TXN-01 present and with what ordering. A PACKET FAIL is declared acceptable.
+       RE-VERIFIED AFTER the handoff, because a handoff is not a freeze: all 11 header bindings still match
+       the tree (0 drift), the packet still hashes `63e01ca4…`, and no response artifact references it yet.
+
+247. [~] ITEM 133 VERDICT STATE, measured not assumed (no full-/tmp sweep; the earlier one timed out):
+       pass 19 `b1ad7fa081324d5a…`  - 5/5 bound, durable copy in place, **NO VERDICT ARTIFACT**, searched
+         targeted dirs for its sha: no hit. Still awaiting surf.
+       pass 41 `63e01ca4da9ca816…`  - 11/11 bound, 0 drift, **NO VERDICT ARTIFACT** yet.
+       pass 40                      - narrow verdict INTACKED (item 240), artifacts preserved under
+         `outputs/reviews/a7-pass40-narrow-verdict-20261114/` (question, answer_raw, summary, intake.json).
+       pass 19 is the only packet whose verdict has been outstanding across this whole stretch, and surf has
+         not said it is abandoned. I asked surf to either submit it or say so and I will record it withdrawn
+         rather than leave it live forever.
+       Repairs settled by evidence so far: SP-01 PASS, SP-02 PASS, ASR-01 PASS (intaked), SP-03 landed
+         `246817e6`, IS-01 landed `8222f96e`. TXN-01 remains the one open finding, recorded as a DESIGN
+         question (item 244) rather than patched into a shape nobody chose.
+
