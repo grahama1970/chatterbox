@@ -8929,3 +8929,28 @@ t
          and pass 40 is stale for `spyke_render.py` + `interrupt_sfx.py` after my post-freeze repairs, so
          pass 41 will be needed. Nothing blocked on me; waiting on surf for pass 19.
 
+241. [x] REPAIR SET IS NOW TWO-FOR-THREE ON THE OPEN FINDINGS, both landed - and one probe of mine FAILED.
+       LANDED, verified in git rather than memory:
+         `246817e614`  A39-SP-03 bounded verification read (round 2 REJECT -> extra-byte EOF check -> round 3
+                        APPROVE). Pre-fix 100,678,555 bytes read past the 67,108,864 limit; post-fix 44,626.
+         `8222f96e53`  A39-IS-01 staging preservation: synthesis staging no longer recursively deletes a
+                        same-UID writer's file. `_StagingDir` parks and reports a staging directory holding
+                        foreign entries and removes only our own `raw.wav` / `raw.src`. Review round 1
+                        APPROVE carried one residual - `synth()`'s own `raw.src` would have been classified
+                        foreign - which I fixed before landing; probe confirms foreign file preserved and
+                        own-only intermediates removed; suite 16/16 PASS.
+       TXN-01 REPRO: **NOT TESTED.** My probe (rewrite the receipt during the final provenance check, via a
+         mocked `os.read`) hung and was killed at the 900 s command timeout. That is a defect in MY probe,
+         not evidence about the code, and no file was edited by it, so TXN-01 remains exactly as the
+         reviewer left it: OPEN, with the claim that the final loop observes three artifacts at separate
+         times and so does not establish a one-instant guarantee. Next attempt should instrument a
+         module-level function rather than `os.read`; mocking the read path is what hung.
+
+242. [x] PASS-19 PACKET MADE DURABLE - it existed ONLY in `/tmp`, which has already destroyed a source file
+     in this lane (`spyke-oc-text.txt`). Copied to `outputs/packets/cb-A7-pass19.txt`,
+     sha256 `b1ad7fa081324d5ac9c12be8572d63fc611eb9a59cbd220838148fad23da0030`, 101,790 B, byte-identical
+     to the /tmp copy. Its 5 bound files all still match the tree (narrator_sfx_batch.py, speak.py,
+     review_store.py, test_t1_batch_proof.py, test_t1_pass10_repairs.py) - re-verified this turn, 5/5 SAME.
+     NO VERDICT ARTIFACT EXISTS for pass 19: searched `/tmp` and the reviews tree for its sha; the only
+     hit is the packet itself.
+
