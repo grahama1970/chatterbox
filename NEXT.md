@@ -9840,3 +9840,34 @@ t
        generic nonverbal material, indistinguishable per tag" acceptable, or must a tag render ITS OWN event?
        The second answer is now backed by a measurement rather than an impression.
 
+282. [x] ITEM 149, SECOND CHANNEL: the tags DO differ in audio beyond chance (even with length and
+     loudness controlled), while duration cannot tell them apart. My item-281 verdict was channel-limited.
+     WHAT I DID, and why the first audio test was not enough: item 281 concluded `TAGS_ARE_NOT_DISTINGUISHABLE`
+       from DURATION. Averaging a log spectrum over a whole clip also separates tags - but those clips differ in
+       length (2.28-3.88 s) and in how much leading silence the tag inserts, so that separation could be measuring
+       silence, not timbre. Two controls, both written before running them:
+         A ACTIVE-FRAME ONLY - frames above 5% of each clip's own peak, each frame mean-normalised;
+         B EQUAL-LENGTH PREFIX - the first 1.5 s only, same per-frame normalisation.
+       Features: 40-band log magnitude, 25 ms frames / 10 ms hop, cosine distance, label-permutation null.
+     RESULTS (`outputs/tag-discrimination/20261114T204328Z/audio-separation-controlled.json`):
+         raw whole-clip  within 0.0026  between 0.0036  sep +0.0010  p=0.0005
+         A active-frame  within 0.0044  between 0.0048  sep +0.0004  p=0.0040
+         B 1.5 s prefix  within 0.0077  between 0.0124  sep +0.0047  p=0.0010
+       So the effect SURVIVES both controls: my "not distinguishable" claim holds only for duration. The audio
+       difference is real but small, and it is not uniform across pairs - on the prefix control the most alike are
+       `[gasp]|[plain]` 0.0074 and `[laugh]|[sigh]` 0.0075 (inside the within-tag spread of 0.0077), while the most
+       distinct are `[gasp]|[groan]` 0.0188 and `[groan]|[laugh]` 0.0198 - i.e. groan is the tag with a real
+       signature, and sigh vs laugh are effectively the same sound.
+     WHAT THIS MEANS FOR THE DECISION (and it is the useful part): it is NOT true that the engine merely inserts
+       an anonymous gap. It inserts material whose AUDIO carries tag information, but that information is too weak
+       to identify a tag from a single render and collapses for some pairs (sigh/laugh). So both readings that
+       looked contradictory are true: tags change the audio, and tags are not reliably identifiable.
+     BOUNDARY: features are mine (40-band log spectrum), the null is a 1000-2000 shuffle permutation, and no
+       perceptual listening test was done - so this says "measurable in the signal", not "audible to Graham".
+       The ASR channel remains untaken (`faster-whisper` is container-only; the probe fails closed rather than
+       record zeros).
+     ITEM 149 REMAINS OPEN, and the question is now fully specified: is "adds 0.14-0.31 s and a weak, sometimes
+       per-pair-collapsed audio signature (sigh ~ laugh; groan clearly distinct)" acceptable for an inline tag, or
+       must a tag render its own reliably identifiable event? Option (a) closes the item; option (c) is measured
+       above and would then become a training objective (discrimination), not a redesign.
+
