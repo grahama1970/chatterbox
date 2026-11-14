@@ -8574,3 +8574,22 @@ t
      NOT DONE, deliberately: no repair started before this intake; no gate weakened; no reword of the
        packet; the pass-38 refusal remains refused.
 
+     THREE-NUMBER RECONCILIATION (so the owner is not asked to arbitrate bookkeeping): the item title
+       says "59 verified clips"; the frozen eval has 74; the manifest has 83. Resolved from the files:
+         manifest `sfx-library/manifest.json` = 83 rows -> 74 `awaiting_owner_verdict`, 3
+           `culled_content_failed`, 6 `excluded_nonconforming`  (83/83 files exist on disk)
+         freeze `eval-freeze-v1.json` (`876542cfc437...`) = 74 rows, all `awaiting_owner_verdict`
+         `/api/clips` (pending) = 74, matching the freeze exactly
+         the 9 manifest-only ids are the culled/excluded ones (`cry-choked-v1`, `cry-recover-v1`,
+           `grief-composite`, `macro-grief-full`, `noseblow-v1`, `sob`, `sob-v3`, `sob-v4`,
+           `sob-young-woman`) - they are NOT part of the review set and must not be confirmed.
+       => AUTHORITATIVE: 74 to review, of which 70 are listenable and 4 are below the machine gate.
+          The "59" in this item's title is stale and matches nothing on disk; the word "verified" was
+          never true (0 human verdicts exist).
+     WRITE-PATH PROBE (mine, on a COPY - the real manifest was never touched): a throwaway copy at
+       /tmp/probe-manifest.json with the page on a spare port returned 501 `Unsupported method ('POST')`
+       for /api/verdict, which is NOT the review server answering - a stale unrelated listener already
+       holds the ports I tried. So the persistence proof is INCOMPLETE on my side, and I will not claim
+       the endpoint persists until I have shown it writing to a copy on a port I own. The real manifest
+       still reads 0 human_confirmed / 83 rows, i.e. untouched.
+
