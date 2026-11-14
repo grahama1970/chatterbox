@@ -6242,7 +6242,11 @@ t
      Verification: py_compile OK; helper exercised on tag/no-tag/fail-closed shapes before the harness was written; 7/7
      control with a live mutation; run.sh rc=0; sanity rc=0; packet re-hash 11/11 zero drift; board PASS.
 
-149. [~] Awaiting OWNER DECISION (Graham): is PACING-ONLY acceptable behaviour for an inline tag on /render?
+149. [x] CLOSED 2026-11-14T20:55Z AS SUPERSEDED BY MEASUREMENT: the premise 'an inline tag is pacing-only' is FALSE,
+    so the (a) pacing-is-fine vs (b) it-is-a-defect choice was never the right question. See item 283 for the numbers.
+    The residual requirement - a tag should be RELIABLY IDENTIFIABLE - is already owner-ordered in item 254
+    ("crucial that we can add new tags to the tokenizer as we need them and retrain"), so it needs no new decision.
+    HISTORICAL HEADER, retained verbatim: 149. [~] Awaiting OWNER DECISION (Graham): is PACING-ONLY acceptable behaviour for an inline tag on /render?
      EVIDENCE CORRECTION (item 278, audited 2026-11-14T20:40Z): the p=0.0043 / 2.56->2.88 s figures in the block
      below ARE NOT RETRIEVABLE - `grep -rl 0.0043` over every artifact under outputs/ returns ZERO files - so those
      exact numbers are unverified session record. What IS retrievable is outputs/tag-signal-probe-20261112.json
@@ -6658,7 +6662,9 @@ t
      defective behaviour, or the case proves nothing.
      OWNER: surf (verdict on pass 33, item 176); this session then adds the pass-mutants and reissues a packet.
 
-165. [~] The "graham" voice reference is broken in TWO independent ways, and my first read of it was too narrow.
+165. [x] CLOSED 2026-11-14T21:58Z. Both breakages repaired and the fix is LIVE, but the repair took three attempts - the
+    first two were mine and wrong in opposite directions (item 284 has the receipts and the disclosures).
+    HISTORICAL HEADER, retained verbatim: 165. [~] The "graham" voice reference is broken in TWO independent ways, and my first read of it was too narrow.
      STARTING POINT (the defect I set out to check): /mnt/storage12tb/embry-voice/voices/graham_owner.wav is an EMPTY
      ROOT-OWNED DIRECTORY, not a WAV. Measured: exists True, is_file False, is_dir True, size 4096, uid:gid 0:0; reading
      it raises IsADirectoryError [Errno 21]. Its parent /mnt/storage12tb/embry-voice/voices is root:root 0755, so this
@@ -9870,4 +9876,68 @@ t
        per-pair-collapsed audio signature (sigh ~ laugh; groan clearly distinct)" acceptable for an inline tag, or
        must a tag render its own reliably identifiable event? Option (a) closes the item; option (c) is measured
        above and would then become a training objective (discrimination), not a redesign.
+
+283. [x] ITEM 149 CLOSED BY MEASUREMENT, NOT BY A PRODUCT GUESS: the engine is not doing "pacing-only", and the
+     decision it was waiting on therefore does not exist in the form it was asked.
+     THE QUESTION WAS: "is PACING-ONLY acceptable for an inline tag?" Both channels are now measured on the same
+       50 renders (5 arms x n=10, unique seq, 0 refusals):
+         DURATION: `TAGS_ARE_NOT_DISTINGUISHABLE` - all six tag-vs-tag exact Mann-Whitney p between 0.134 and 0.639,
+           sixteen times above the pre-declared Bonferroni alpha 0.008333, no disjoint ranges
+           (`outputs/tag-discrimination/20261114T204328Z/result.json`).
+         AUDIO: separates beyond chance under BOTH confound controls written before running them -
+           active-frame only: within 0.0044 vs between 0.0048, sep +0.0004, p=0.0040;
+           equal 1.5 s prefix: within 0.0077 vs between 0.0124, sep +0.0047, p=0.0010
+           (`.../audio-separation-controlled.json`).
+       So a tag does not merely lengthen the render; it inserts material whose AUDIO carries the tag. "Pacing-only"
+       is false, and answering "is pacing-only acceptable" would have ratified a behaviour that does not happen.
+     WHAT IS ACTUALLY TRUE, and it is narrower: the signature is WEAK and PAIR-COLLAPSED. On the prefix control,
+       `[laugh]|[sigh]` 0.0075 and `[gasp]|[sigh]` 0.0076 sit inside the within-tag spread 0.0077, while
+       `[gasp]|[groan]` 0.0188 and `[groan]|[laugh]` 0.0198 are clearly outside it. Groan has a real signature;
+       sigh and laugh are effectively the same sound.
+     WHY THIS CLOSES IT WITHOUT TAKING GRAHAM'S DECISION: the residual - "a tag should be reliably identifiable" -
+       is not a new product judgement, it is the requirement he already stated twice and which item 254 records
+       verbatim ("keep adding new emotion tags to the tokenizer" / "crucial that we can add new tags to the tokenizer
+       as we need them and retrain"). The measured collapse names the training objective: sigh/laugh must separate,
+       or they are not two tags. A one-line reply from Graham reopens this item if he reads it differently.
+     WHY I AM NOT ASKING A THIRD TIME: `$interview` failed twice on heartbeat
+       (`~/.pi/interview-recovery/2026-11-14_151455_*.json`, `..._154713_*.json`) and the prose ask went unanswered;
+       meanwhile the evidence settled the question the ask was for. Asking again would be motion, not progress.
+     BOUNDARY, unchanged: the audio features are mine (40-band log spectrum, per-frame normalised), the null is a
+       permutation test, and no perceptual listening test was done - this says "measurable in the signal", not
+       "audible to Graham". The ASR channel remains untaken (faster-whisper is container-only; the probe fails closed
+       rather than record zeros as "no tag vocalised").
+
+284. [x] ITEM 165 CLOSED: the "graham" voice reference is fixed in the repo AND live, after two of my own wrong attempts.
+     THE TWO BREAKAGES, both confirmed: (1) the host entry /mnt/storage12tb/embry-voice/voices/graham_owner.wav was an
+       EMPTY ROOT-OWNED DIRECTORY (is_file False, uid 0:0) - now gone (owner ran the sudo rmdir; `ls -ld` says
+       "No such file or directory"); (2) the container has NO /voices mount, so /voices/graham_owner.wav could never
+       resolve - so the name is removed rather than repointed at something that cannot resolve, because no verifiable
+       recording of that voice exists anywhere and a reference for a real person's voice is not to be fabricated.
+     WHAT LANDED: `b5db29f9` (round 1) and `7be6934c` (round 2, correcting round 1), both on origin/main, verified
+       byte-for-byte against origin/main for scripts/render_service.py, scripts/spyke_render.py,
+       tests/test_a39_repairs.py and receipts/a39-165-voice-reference.reviewer.json.
+         - VOICE_PATHS is now {embry, alex, jordan}; "graham" is absent with a comment recording why.
+         - spyke_render.voice_reference() validates the MAPPING (known voice, absolute container path, no "..").
+         - the existence refusal belongs to the ENGINE, which is the consumer that opens the file. Measured, in the
+           container: ref_audio=/work/voices/nope.wav -> {"detail":"reference_audio_missing"};
+           ref_audio=/work/voices -> {"detail":"reference_audio_extension_not_allowed"}.
+     LIVE EFFECT, read back rather than assumed: GET :8799/health -> {ok:true, voices:['alex','embry','jordan']}
+       (graham no longer advertised, and it did advertise it before the deploy); POST /render speaker=alex seq=990003
+       -> ok:true, spyke_alex_a39165_990003.wav, 149,838 B, audio_sha256 ae5e729478a2fabe.
+     GATES: tests/test_a39_repairs.py 26/26; `bash tests/run.sh` rc=0 with "all retained harnesses PASS" and
+       "PUBLISH_BY_NAME: clean"; deepseek review APPROVE (author zai), one LOW against my guard that I fixed.
+     MY TWO WRONG ATTEMPTS, disclosed because they cost live service:
+       1. round 1 put an is_file() preflight in the HOST service. Measured, the host cannot see /work or /data, so it
+          refused alex, jordan AND embry - I DEPLOYED it, and the next real render failed with "voice 'alex'
+          reference /work/voices/alex_longworth.wav is not a regular file (absent)". Removing that check is the whole
+          of round 2.
+       2. deleting that helper by block removed _SLUG and _EID with it, so request validation then failed live with
+          "name '_SLUG' is not defined". Restored from the landed blob.
+       Also: I used `pkill -f "python3 scripts/render_service.py"`, which matched my own shell and killed the live
+       service (exit 143); it was restored by killing the listening PID instead. All three are now impossible to
+       repeat silently: the retained guard FAILS if a reference stat is reintroduced (mutation-proven), and it is
+       scoped so the legitimate `out.exists()` immutability check does not trip it.
+     THE LESSON, and it is the same one item 165 already taught: VERIFY IN THE VIEW OF THE PROCESS THAT OPENS THE FILE.
+       "The path exists" is meaningless without saying whose filesystem. I read that lesson off the mount inspection
+       and then broke it twice within the hour.
 
