@@ -5865,7 +5865,12 @@ c
 t
 )
 .
-133. [~] Awaiting surf verdicts. Three packets are live and bound; nothing here is blocked on me.
+133. [~] Awaiting surf verdicts. VERIFIED 2026-11-14T16:45Z: only ONE of the three is still live and
+     bound (pass19 5/5). pass31 is 1/11 and B4-pass5 is 2/5, because REPAIRS I LANDED THIS SESSION moved
+     bound files (spyke_render.py, interrupt_sfx.py, sfx_verify.py, test_sfx_library_regression.py,
+     tests/run.sh). By this item's own rule - 'a repair moved a bound file, so the packet no longer
+     described the tree - withdraw, reissue, re-send the hash' - pass31 and B4-pass5 are WITHDRAWN, not
+     awaiting. Nothing is blocked on me; what remains is a REISSUE, not a wait.
      LIVE (re-hashed against the tree, zero drift, as recorded in delegations-20261112.json):
          /tmp/cb-A7-pass31.txt  f7b355a909363e8e  11 files  (CURRENT: fs_ops, spyke_render, interrupt_sfx,
                                                               wav_guard, sfx_verify, both A7/WG harnesses,
@@ -8795,4 +8800,35 @@ t
        unchanged, so their FAIL verdicts still apply to the current bytes and must be repaired BEFORE a
        reissue; spyke_render.py's FAIL is the one I have now repaired and re-reviewed.
      So the item above ("three packets live and bound") holds for pass19 only. Nothing is blocked on me.
+
+235. [x] A39-ASR-01 REPAIRED, PROVEN, AND LANDED (`64ee2affa58608ea`). Both sealed ASR read-back paths
+     consumed an attacker-controlled LENGTH before rejecting it.
+       REPRODUCED on the real code path, in both files: a same-UID ftruncate to a sparse 8 MiB landing
+         immediately BEFORE the real `F_ADD_SEALS` call. Measured with an instrumented `os.read`:
+         **8,388,608 bytes read from the sealed descriptor for a 122,884-byte snapshot** (1.0x the
+         substitution), and the digest check rejected it only AFTER materialising all of it. The seal
+         itself succeeded - sealing bounds mutation, not length.
+       FIX, both implementations: after sealing, require `os.fstat(fd).st_size == len(data)`; then read at
+         most `len(data)` bytes (chunked, never to EOF) and require exact EOF as well as the digest.
+         In interrupt_sfx.py this also meant giving `_read_all` an explicit `limit`.
+       POST-FIX EVIDENCE: interrupt_sfx raises "ASR input changed SIZE between write and seal (sealed
+         8388608, measured 122884)" with **0 bytes read**; sfx_verify returns ok=False with the same reason
+         and **0 bytes read**; whole suite `tests: all retained harnesses PASS` (16/16).
+       REVIEW: deepseek/deepseek-v4-pro (non-GPT, different family) - no findings, APPROVE, plus an
+         independent `requirement_restatement` for the greenfield gate. Receipt
+         `receipts/a39-asr01-bounded-sealed-read.reviewer.json`; review preserved at
+         `outputs/reviews/a39-asr01-bounded-sealed-read-deepseek-20261114.md`.
+       HONESTY NOTE: two of my patch attempts failed first (an anchor that did not match, then an
+         IndentationError in sfx_verify.py from line-index surgery). The IndentationError was caught by
+         `py_compile` and the file restored from `/tmp/sfx_verify.pre-asr01.py` before any test or landing;
+         neither broken state was ever described as working.
+       NOT OOM-INDUCED: the reviewer never induced an OOM and neither did I; the exhaustion consequence was
+         static inference from the demonstrated absence of a bound, and the size check removes it.
+
+236. [~] PASS-39 FINDING STATUS after this session's repairs: SP-01 (descriptor leak) FIXED, SP-02 (unbound
+     directory identity) FIXED, ASR-01 (unbounded sealed read) FIXED - all landed with receipts.
+     STILL OPEN against current bytes: SP-03 (unbounded reads), IS-01 (outer TemporaryDirectory deletes
+     foreign entries), TXN-01 (success reported after an artifact changes during completion). SP-03 and
+     ASR-01 overlap in spirit but SP-03 was a separate finding and must be checked against the code, not
+     assumed fixed by ASR-01.
 
