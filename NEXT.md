@@ -7101,7 +7101,9 @@ t
          `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
          established by the report itself - the same standard used for pass 32. No resubmission occurred.
      OWNER: this session (intake done); repairs tracked in 180.
-177. [~] TWO OF THREE RECEIPTS RETURNED, VERIFIED AND HANDLED (item 286); add1 re-asked as pass 10 and
+177. [~] ALL THREE HANDLED: add1 pass 9 (procedural), B4 pass 8 (3 FAIL intaked), add1 pass 10 (PASS, captured
+    but its intake is group-gated - item 288). Pass 43 is still running; nothing else is awaited.
+    HISTORICAL HEADER, retained verbatim: 177. [~] TWO OF THREE RECEIPTS RETURNED, VERIFIED AND HANDLED (item 286); add1 re-asked as pass 10 and
     pass 43 routed to researcher. B4's three substantive FAILs are queued as item 287.
     HISTORICAL HEADER, retained verbatim: 177. [~] REISSUE DONE AND FROZEN (item 285); now awaiting surf's SUBMISSION receipts for three packets.
     The two rows whose bytes had moved are rebuilt at current bytes, and a third was forced by the freeze gate.
@@ -10057,4 +10059,33 @@ t
      NOT STARTED: no reproduction has been attempted yet, so no repair claim exists. Freeze gate currently reports
        `cb-B4-pass8` as FROZEN, which stays true until these bytes change - and they will.
      OWNER: this session (repairs); surf (submission of the reissued packet).
+
+288. [x] THE THIRD RECEIPT: add1 pass 10 came back PASS, its chain is verified, and its intake was REFUSED by the
+     group gate - which is the correct behaviour, not a defect to work around.
+     RECEIPT, verified by me rather than relayed (`ops-magpie-e462ad7cd97b`):
+       packet   `packets/cb-A7-add1-prove10.txt` 37,811 B sha256 4e868b1e80fed75c8194b81d5ed49533b4f8f972f8c365bee16e1ff41b462584
+       question `question.txt` 38,189 B sha256 dddce185addc7b1d… == receipt.input_sha256        PASS
+       packet embedded EXACTLY ONCE at offset 351                                              PASS
+       answer   185 B sha256 32eb6c61d9b1f555… == receipt.answer_sha256                         PASS
+       asked deepseek/deepseek-v4-pro :high, served the same model without the suffix, metered, 1 attempt
+       content, verbatim: `NO FINDINGS` / `VERDICT tests/test_prove8.py abfc587e…: PASS static review found
+       no defects in the bound harness.` / `PACKET VERDICT: PASS`
+       my checker: `BINDS: True   INTAKABLE: True` (all five links).
+     WHY IT IS NOT IN THE MANIFEST YET - the intake was REFUSED, and the reason matters:
+       `verdict-intake.py --group A7 --apply` -> rc=3, "REFUSED: landing-check rejected the prospective manifest;
+       no rows were changed", and the check's own output names the group's other rows:
+         ORIGIN MOVED  skills/chatterbox-speak/scripts/sfx_verify.py
+         ORIGIN MOVED  skills/chatterbox-speak/tests/run.sh
+         ALREADY ON MAIN / REVIEW PENDING for the rest of the A7 set
+       So the group gate will not record one PASS while its siblings are unreviewed or moved - which is exactly the
+       discipline this project wants (a verdict must not land a group that contains unknown rows). The manifest row
+       for `tests/test_prove8.py` still reads `NOT REVIEWED (current artifact)`; I did not hand-edit it.
+     WHAT UNBLOCKS IT: pass 43's verdicts. That packet binds the other eleven A7 rows at current bytes and is running
+       now under researcher's metered lane (`/tmp/cb-A7-pass43-review/`, answer 0 B at time of writing). When it
+       returns I verify the same five links and intake the whole group in one pass, so the PASS and its siblings
+       agree. If pass 43 comes back FAIL on some rows, the group stays unlandable by design and those FAILs become
+       repairs (item 287 is already the open repair lane for B4's findings).
+     PRESERVED: `outputs/reviews/add1-prove10-20261114/` (question, answer, receipt mode 0600).
+     BOUNDARY: a reviewer PASS on a static read of `tests/test_prove8.py` is evidence about those bytes, nothing more.
+       It is not a claim that the A7 group is landable, and it is not a claim about any other row.
 
