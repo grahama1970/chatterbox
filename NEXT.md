@@ -8196,3 +8196,15 @@ t
      artifact was renamed, the link restored as a hardlink, and the false positive did not become a
      content edit. Both ends held.
 
+214. [x] REFUSED a real render - the pacing gate fired on live audio, not on a fixture.
+     spyke asked for scenario 07 (eng-ca02aa33c78e4a19, main, seq 8, tone calm_precise,
+     `/tmp/spyke-oc-text.txt`, 1739 chars / 235 words, sha `3d3c4b09f2f18766...`).
+     FOUR splits tried through `chunked_render.py` (500/450/400/350 chars): all refused on chunk 1 at
+       1.19 / 1.10 / 1.16 / 1.16 words per second - below the standing 1.3 floor. The rate is stable
+       across four independent renders, so this is the text's delivery, not run-to-run noise.
+     NOTHING WAS PUBLISHED (correct fail-closed behaviour: refusal happens before assembly).
+     The standing rule is the operator's, so the slow floor is NOT mine to relax; reported to spyke
+     with the numbers and three options (different tone/pace setting, owner revisits the floor, or ship
+     a measured slow-but-natural artifact with the deviation disclosed). No artifact exists until that
+     is answered - shipping it at 1.1 w/s would have silently violated the rule we just agreed.
+
