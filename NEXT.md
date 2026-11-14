@@ -7101,7 +7101,9 @@ t
          `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
          established by the report itself - the same standard used for pass 32. No resubmission occurred.
      OWNER: this session (intake done); repairs tracked in 180.
-177. [~] AWAITING surf: reissue the two rows whose bytes moved while their old packets still govern them.
+177. [~] REISSUE DONE AND FROZEN (item 285); now awaiting surf's SUBMISSION receipts for three packets.
+    The two rows whose bytes had moved are rebuilt at current bytes, and a third was forced by the freeze gate.
+    HISTORICAL HEADER, retained verbatim: 177. [~] AWAITING surf: reissue the two rows whose bytes moved while their old packets still govern them.
      PACKETS DONE AND FROZEN; SUBMISSION NOT YET ATTEMPTED (surf is finishing the pass-33 review first).
      Books closed by evidence:
        - `/tmp/cb-A7-add1-prove8.txt` 35,885 B sha256
@@ -9940,4 +9942,46 @@ t
      THE LESSON, and it is the same one item 165 already taught: VERIFY IN THE VIEW OF THE PROCESS THAT OPENS THE FILE.
        "The path exists" is meaningless without saying whose filesystem. I read that lesson off the mount inspection
        and then broke it twice within the hour.
+
+285. [x] ITEM 177 REISSUE COMPLETE: both drifted rows rebuilt at CURRENT bytes, plus a third packet the freeze gate
+     forced, and the board now says ALL_FROZEN - measured, not asserted.
+     WHAT WAS DRIFTED, measured binding by binding before rebuilding anything:
+       - `tests/test_prove8.py`  34d0457645bf… -> abfc587ec53a…  (so add1-prove8 no longer described its row)
+       - `scripts/speak_core.py` 3ac73ce6b20e… -> 4254e8381ede…  (so B pass 7 no longer described its row)
+       - in `cb-A7-pass39.txt` SIX of eleven rows had moved: spyke_render.py 1464a649913f…->2da7b1f13318…,
+         interrupt_sfx.py 734139864820…->ea937f7c312c…, sfx_verify.py 4b35fc7a4917…->ea3c61982dcd…,
+         test_wg_pass2_repairs.py f08150684447…->4737c4a54dc8…, test_sfx_library_regression.py
+         316803b2071b…->5922693b244b…, run.sh e1b505886cd0…->769088f11b88…; the other five still matched.
+     THE THREE FROZEN PACKETS (durable on the 12TB drive, not /tmp):
+       cb-A7-add1-prove9.txt  36,732 B  sha256 4cb8f25f7052f8183ae023ee12d9e8e0e8731302a2a5c407f743b279df0e9b39
+         1 binding - supersedes cb-A7-add1-prove8.txt (e8ded9a6…)
+       cb-B4-pass8.txt       108,761 B  sha256 00d424ec5ce334f9b15dfc4cb9d17ca693d6dfef91629096949f91e889ea88a4
+         3 bindings - supersedes cb-B4-pass7.txt (ea9f2b71…); arc_chart and test_core_contract unchanged
+       cb-A7-pass42.txt      314,304 B  sha256 40e4823f7e018f5d4ecd644fa0912763790fcbd7bec60fed3bb36c368a9c0bb2
+         11 bindings - supersedes cb-A7-pass39.txt
+     THE THREE THINGS I HAD TO FIX IN MY OWN REBUILD, because the gate refused them:
+       1. the A7 row's preamble had NO verdict contract at all, so a reviewer could not have produced an intakable
+          answer; the contract (`VERDICT <path> <sha256>: PASS|FAIL`, then `PACKET VERDICT`, plus identity-first
+          reporting and STOP-on-mismatch) is now stated explicitly in all three packets.
+       2. my first drift parse matched zero bindings - the packets state `  <path>  sha256 <64hex>`, not the shape I
+          assumed; parsing the real format is what produced the six-row drift table above.
+       3. the freeze gate refused the whole board (`VERDICT: DRIFT`) because pass 39 still governed those six moved
+          rows. Freezing my two packets alone would have left a board that authorises nothing. Reissuing the A7 row
+          at current bytes is what turned it green.
+     GATES, quoted from the tools:
+       `record-packet.py` -> "bindings verified: 1 claimed, 0 stale, 0 missing" (A7 add1);
+                            "3 claimed, 0 stale, 0 missing" (B4); "11 claimed, 0 stale, 0 missing" (A7 pass42).
+       Each packet was rebuilt from disk and its embedded `=== path ===` sections re-hashed equal to disk (1/1, 3/3,
+       11/11) before recording.
+       `submission-freeze.py` -> `VERDICT: ALL_FROZEN`, receipt `submission-freeze.json` sha256
+       9bf8222d59596b16953eded3830b1e26e6aacd2b74abf63e4aa4798fd1bd8de0, with per-packet governed counts
+       1/1, 3/3, 11/11.
+     HANDED TO SURF with exact path, size and sha for each, and the explicit requirement that the reviewer state the
+       byte count and sha it ACTUALLY received - a receipt that only says "submitted" does not bind bytes, which is
+       exactly how B pass 7 misled this project (`prepared_prompt_is_transport_proof: false`).
+     STILL NOT SUBMITTED, and not by me: item 177 stays open until surf returns receipts. Pass 41 is NOT to be
+       resent (already intaked FAIL via ops-magpie-aabaeea80245); pass 19 remains blocked on Graham's content
+       decision (item 277), not on transport.
+     BOUNDARY: everything above is local file/registry evidence. No reviewer has seen these three packets yet, so
+       "frozen" means the bytes are consistent and submittable - it does not mean anything has been reviewed.
 
