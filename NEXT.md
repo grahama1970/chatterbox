@@ -8596,3 +8596,13 @@ t
            reviewed_at `2026-11-14T15:42:00.170182`
        So a verdict written through the page PERSISTS to the manifest; the success response is not the
        only evidence. The REAL manifest still reads 0 human_confirmed / 83 rows = untouched.
+
+     LISTENING KIT SHIPPED (this turn): `outputs/ear-montages/LISTEN.md` - one sequential playback
+       command for all 11 montages (mpv with ffplay fallback), the per-montage clip order with durations,
+       and the four below-gate clips tabulated with their measurements. 70 listenable clips in 157.5 s of
+       playback, so the verdict is one listening pass, not 74 decisions.
+     WHY THIS ITEM IS STILL OPEN: a verdict is a human ear judgement. I have not written one, and the
+       write path is proven (`POST /api/verdict` persists to the file, verified on a copy). The moment the
+       owner says the word, verdicts apply through the page and I re-read the manifest to prove they
+       persisted. Until then this is blocked on the owner, by design, not on work I can do.
+
