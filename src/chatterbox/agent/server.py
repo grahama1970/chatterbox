@@ -54,6 +54,7 @@ from chatterbox.agent.presets import (
     DELIVERY_STAGE_ALIASES,
     TAG_CONSUMING_BACKENDS,
     detect_event_tags,
+    expand_tag_aliases,
     STAGE_PRESET_AFFECT_STATUS,
     STAGE_PRESETS,
     TONE_TO_DELIVERY_STAGE,
@@ -1252,17 +1253,50 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
     started_total = time.perf_counter()
     events: list[dict[str, Any]] = []
     latency_event(events, "request_received", started_total)
+    # Expressive tag aliases -> the nearest NATIVE tag the Turbo model actually
+    # consumes. Recorded in the receipt tag_handling: never a silent rewrite.
+    model_text, alias_expansions = expand_tag_aliases(request.text)
+    model_request = request.model_copy(update={"text": model_text}) if alias_expansions else request
     ref_audio = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)
     try:
         params = generation_params(request)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    voice_delivery = voice_delivery_for_request(request)
+    voice_delivery = voice_delivery_for_request(model_request)
     stochasticity = stochasticity_for_request(request)
     knobs = emotion_knobs_from_delivery(voice_delivery)
     try:
         backend, backend_selection = select_voice_backend_for_request(request.backend, knobs)
         apply_tag_handling_backend(voice_delivery, backend.caps.backend_id)
+        if alias_expansions:
+            # FAIL-CLOSED: a rewrite without a receipt entry is a silent text change.
+            # If tag_handling is absent for any reason, create it rather than skip
+            # the recording (review finding a, 2026-11-14).
+            th = voice_delivery.get("tag_handling")
+            if not isinstance(th, dict):
+                th = {}
+                voice_delivery["tag_handling"] = th
+            th["alias_expansions"] = alias_expansions
+            th["alias_expansion_source"] = "presets.TAG_ALIASES"
+            # Receipt honesty (finding c): "interpreted" requires BOTH a
+            # tag-consuming backend AND natives that exist in the loaded
+            # tokenizer's vocabulary. An alias target outside the runtime
+            # vocabulary is spoken literally, whatever the backend claims.
+            native_vocab = model_tag_vocabulary()
+            unrecognized = [e["native"] for e in alias_expansions if e["native"] not in native_vocab]
+            consumes = backend.caps.backend_id in TAG_CONSUMING_BACKENDS
+            th["tags_interpreted"] = consumes and not unrecognized
+            th["tags_interpreted_reason"] = (
+                f"alias_expanded_to_native_tags__backend_{backend.caps.backend_id}_"
+                + ("consumes_them_natively" if consumes else "speaks_them_literally")
+            )
+            if unrecognized:
+                th["tags_interpreted_reason"] += "__alias_targets_not_in_model_vocabulary_" + ",".join(unrecognized)
+            # "applied" means consumed by the model, not merely substituted
+            # (finding: never backfill applied_tags on a non-consuming backend).
+            if not th.get("applied_tags") and th["tags_interpreted"]:
+                th["applied_tags"] = [e["native"] for e in alias_expansions]
+            th["alias_substituted_tags"] = [e["native"] for e in alias_expansions]
     except UnknownBackendError as exc:
         raise HTTPException(status_code=422, detail={"reason": "unknown_backend", "detail": str(exc)}) from exc
     except UnsupportedCapabilityError as exc:
@@ -1277,12 +1311,12 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
         with render_lock:
             if backend.caps.backend_id == "chatterbox_base_affect":
                 wav, render_sr, conditioning = backend.synthesize(
-                    text=request.text, ref_audio=ref_audio, knobs=knobs
+                    text=model_text, ref_audio=ref_audio, knobs=knobs
                 )
                 latency_event(events, "voice_conditioning_ready", started_total, engine="chatterbox_base", render_lock="held")
             else:
                 wav, render_sr, conditioning = backend.synthesize(
-                    text=request.text, ref_audio=ref_audio, params=params
+                    text=model_text, ref_audio=ref_audio, params=params
                 )
                 latency_event(
                     events,

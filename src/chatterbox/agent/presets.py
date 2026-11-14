@@ -308,6 +308,103 @@ def detect_event_tags(text: str | None, vocabulary: tuple[str, ...] | None = Non
     return [tag for _, tag in sorted(found)]
 
 
+
+#: Expressive tag names the owner asked for, each mapped to the nearest NATIVE tag
+#: the Turbo model actually consumes. Why aliases and not new token ids: the Turbo
+#: text embedding is [50276, 1024] (text_emb / text_head / tfmr.wte) and ids
+#: 50257-50275 are exactly the 19 installed tags, so there are no free rows. A new
+#: id would require a resized, UNTRAINED embedding row - which is not a tag, it is
+#: noise. Aliases expand the usable surface honestly, and every substitution is
+#: recorded in the render receipt's tag_handling (never a silent rewrite).
+#:
+#: Mapping rule: to the native event whose acoustics are closest, not to a wish.
+TAG_ALIASES: dict[str, str] = {
+    # laughter family -> [laugh] / [chuckle]
+    "[hearty laugh]": "[laugh]",
+    "[belly laugh]": "[laugh]",
+    "[guffaw]": "[laugh]",
+    "[giggle]": "[chuckle]",
+    "[chortle]": "[chuckle]",
+    "[snort]": "[chuckle]",
+    "[titter]": "[chuckle]",
+    # crying family -> [crying] / [sniff]
+    "[sob]": "[crying]",
+    "[weep]": "[crying]",
+    "[whimper]": "[crying]",
+    "[bawl]": "[crying]",
+    "[snivel]": "[sniff]",
+    "[snuffle]": "[sniff]",
+    # breath family -> [sigh] / [gasp]
+    "[deep sigh]": "[sigh]",
+    "[exhale]": "[sigh]",
+    "[yawn]": "[sigh]",
+    "[pant]": "[gasp]",
+    "[gulp]": "[gasp]",
+    "[shriek]": "[gasp]",
+    "[gasp softly]": "[gasp]",
+    # throat family -> [clear throat] / [cough] / [shush]
+    "[ahem]": "[clear throat]",
+    "[harrumph]": "[clear throat]",
+    "[tsk]": "[clear throat]",
+    "[dry cough]": "[cough]",
+    "[hack]": "[cough]",
+    "[sneeze]": "[cough]",
+    "[psst]": "[shush]",
+    # vocal events -> [groan]
+    "[moan]": "[groan]",
+    "[groan weary]": "[groan]",
+    # emotion delivery -> the installed emotion tags
+    "[joyful]": "[happy]",
+    "[delighted]": "[happy]",
+    "[cheerful]": "[happy]",
+    "[amused]": "[happy]",
+    "[furious]": "[angry]",
+    "[irritated]": "[angry]",
+    "[indignant]": "[angry]",
+    "[terrified]": "[fear]",
+    "[anxious]": "[fear]",
+    "[afraid]": "[fear]",
+    "[wry]": "[sarcastic]",
+    "[astonished]": "[surprised]",
+    "[shocked]": "[surprised]",
+    "[hushed]": "[whispering]",
+    "[whisper]": "[whispering]",
+    "[dramatic pause]": "[dramatic]",
+}
+
+#: Every alias name, longest first so a longer alias can never be shadowed.
+ALIAS_TAG_VOCABULARY: tuple[str, ...] = tuple(sorted(TAG_ALIASES, key=len, reverse=True))
+
+_BRACKET_TAG = re.compile(r"\[[A-Za-z][A-Za-z ]*\]")  # case handled by lowering the match below
+
+
+def expand_tag_aliases(text: str | None) -> tuple[str | None, list[dict[str, str]]]:
+    """Replace known expressive aliases with the native tag the model consumes.
+
+    Returns (rewritten_text, applied). `applied` entries are {"alias","native"} in
+    first-application order, and are recorded in the render receipt so a consumer
+    can see exactly which native event was produced. An unknown bracket token is
+    left untouched: it keeps the existing fail-visible behaviour (spoken literally
+    on a tag-consuming backend) rather than being silently dropped.
+    """
+    if not text:
+        return text, []
+    applied: list[dict[str, str]] = []
+
+    def _replace(match: re.Match[str]) -> str:
+        alias = match.group(0).lower()
+        native = TAG_ALIASES.get(alias)
+        if native is None:
+            return match.group(0)
+        entry = {"alias": alias, "native": native}
+        if entry not in applied:
+            applied.append(entry)
+        return native
+
+    return _BRACKET_TAG.sub(_replace, text), applied
+
+
+
 VOICE_DELIVERY_EFFECT: dict[str, Any] = {
     "schema": "chatterbox.voice_delivery_effect.v1",
     "engine": "chatterbox_turbo",
