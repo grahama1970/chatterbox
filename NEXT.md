@@ -10267,3 +10267,47 @@ t
      NOT STARTED. The A7 `interrupt_sfx.py` row stays FAIL (correct) until a new packet passes.
      OWNER: this session (repair + reproduction); researcher (re-review at new bytes).
 
+        RESULT OF THE REPAIR ATTEMPT (2026-11-14, same session): THREE designs built, each reviewed at final
+          bytes, each REJECTED with a working counterexample. None was landed; the tree was restored to the landed
+          bytes and both harnesses re-verified green at those bytes (a39 26/26, a7 69/69).
+          (1) DESCRIPTOR-PINNED INODE - `mint()` creates both `.wav` and `.src` with O_EXCL, holds the descriptors,
+              and deletes only a pinned inode whose recorded size/mtime still match. REJECTED, 5 findings, both
+              structural ones reproduced by the reviewer: F1 HIGH an in-place rewrite that restores size+mtime
+              still matched and was deleted (the "content proof" was as forgeable as the tuple it replaced);
+              F2 MEDIUM pre-creating the `.src` sibling with O_EXCL breaks ffmpeg's creation contract.
+              PRESERVED `outputs/reviews/a44-descriptor-pin-REJECT-20261114/` (prompt, answer, 2 diffs).
+          (2) PARK-ONLY - delete NOTHING in-process: any non-empty staging dir is parked with one atomic rename and
+              reported, only an empty dir is rmdir'd, and `_retire_minted` + the fd pinning + every staged `unlink`
+              are deleted. REJECTED, 4 findings: F1 HIGH unbounded disk leak (virtually every run is non-empty, so
+              every run parks its intermediates); F2 MEDIUM the retargeted cases are vacuous (nothing deletes, so
+              "bytes survive" cannot fail); F3 MEDIUM stale docstrings still describing design (1); F4 LOW the
+              name-based `own/` exclusion reintroduces filename trust.
+              PRESERVED `outputs/reviews/a44-park-only-REJECT-20261114/` (prompt, answer, 3 diffs).
+        WHAT THE FIVE REJECTIONS SAY TOGETHER: every in-process ownership proof I can construct is forgeable by a
+          same-UID writer (name; tuple; pinned inode + size/mtime), and removing the proof is rejected for unbounded
+          growth. So the open question is not "which field do I compare" but "who is allowed to write into this
+          directory at all" - a design decision, not a comparison. That is item 295.
+        REPRODUCTIONS STANDING on the landed bytes: F1 forged tuple (unlink, recreate reusing the inode, same size,
+          `os.utime` to the recorded mtime) -> writer's bytes deleted; F2 replacement before `claim()` -> adopted
+          and deleted. Both are the reviewer's findings and both remain true of the code as landed.
+
+295. [~] OWNER DECISION NEEDED: what is the ownership model for the staging directory? The A7 `interrupt_sfx.py` FAIL
+       row cannot move until this is chosen, and four designs have now died on it. Evidence: item 294, and the two
+       preserved rejection bundles under `outputs/reviews/a44-*-REJECT-20261114/`.
+       OPTION A - PRIVATE STAGING DIR (recommended): create the staging directory with `mkdtemp` (0700) and treat
+         "concurrent writers do not write into another attempt's private dir" as the contract. Then deleting our own
+         entries is not an ownership proof at all; every writer who follows the contract has their own dir, and a
+         writer who violates it is outside the model. Cheapest, bounded, and it removes the growth problem. Cost: it is
+         an explicit statement that same-UID writers inside another attempt's private dir are out of scope - which is
+         what the reviewer has been exploiting.
+       OPTION B - PARK-ONLY + AGE REAPER: keep the park-only design (nothing deleted in-process) and add a reaper that
+         deletes parked directories older than N hours. Data is never destroyed inside the render path, growth is
+         bounded by the reaper, and the reaper's deletion is time-scoped rather than ownership-scoped.
+         Cost: one more moving part (the reaper) and its own tests; a reviewer can still argue the reaper deletes
+         foreign data after N hours.
+       OPTION C - DROP THE STAGING DIRECTORY: synthesize into a temp file in the system temp dir (`tempfile.NamedTemporaryFile`,
+         delete=False, unlink in a finally) and never use a shared named staging tree. Simplest ownership story of all:
+         the file is a fresh temp name, nobody else names it, and unlinking our own temp path is standard practice.
+         Cost: loses the "interrupt caught mid-synthesis keeps the raw for inspection" behaviour, which is why the
+         staging dir exists.
+       OWNER: Graham. No further design attempt until A, B or C is chosen.
