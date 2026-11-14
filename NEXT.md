@@ -9029,3 +9029,21 @@ t
          `246817e6`, IS-01 landed `8222f96e`. TXN-01 remains the one open finding, recorded as a DESIGN
          question (item 244) rather than patched into a shape nobody chose.
 
+248. [~] WHY NO OTHER ITEM ADVANCES WHILE PASS 41 IS IN REVIEW - triaged, not assumed.
+       I checked every open item for work that does not collide with the in-flight packet:
+       164 retain surf's three WG3 counterexamples in `tests/test_wg_pass2_repairs.py`:
+         STILL BLOCKED, and its stated blocker has CHANGED. It was blocked by pass 31 being in review;
+         pass 31 is now WITHDRAWN (item 133), but `test_wg_pass2_repairs.py` is one of the 11 files bound in
+         pass 41 (`f08150684447...`), which is in review right now. Editing it moves a bound hash and voids
+         that verdict - exactly the churn that killed passes 28/29/30. Unblocks when pass 41 returns.
+       165 the "graham" voice reference: OWNER action, one flat command (the parent is root-owned):
+         `sudo rmdir /mnt/storage12tb/embry-voice/voices/graham_owner.wav`
+         I will not fabricate a reference WAV for a real person's voice, and the referenced 49.9 s owner
+         recording does not exist anywhere I can verify.
+       149 PACING-ONLY for an inline tag: OWNER DECISION, measured and waiting (0.32 s median delta, exact
+         p = 0.0043).
+       193 native S3 token path: RESEARCHER collaboration, not mine alone.
+       177 / 179: SURF (a submission and a submission receipt).
+       So the honest state of this item is WAITING, with each candidate advance blocked by a NAMED reason
+         rather than by vagueness. Nothing here is blocked on work I can do: the two verdicts are the gate.
+
