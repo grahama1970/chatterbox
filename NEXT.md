@@ -8378,3 +8378,29 @@ t
      SURF ACK: pass39 exact original attachment, fresh non-GPT tab, full response + binding + seat,
        verifying packet bytes and non-GPT availability first; no A38/B7/add1 resend.
 
+225. [x] EGRESS BLOCK on the pass-39 packet - ISOLATED to a FALSE POSITIVE on Python code. No upload.
+     surf ran `secret-guard scan --sink egress` before submitting and got
+       {"decision":"block","reasons":["cred-name"],"counts":{"secret":1}} - packet untouched, nothing sent.
+     MY REPRODUCTION (bisection over all 6,143 lines, then single-line confirmation): exactly ONE
+       blocking line, /tmp/cb-A7-pass39.txt line 1771 (1-based), 77 chars:
+         ... Path(f"/proc/self/fd/{fd}"), pass_fds=(fd,)) ...
+       Identifiers on it: return, asr_words, Path, proc, self, pass_fds. It is a `subprocess` call
+       passing file descriptors from this lane's own ASR proof code. No key, no token, no string value.
+     GUARD PROBES (names only):
+       'pass_fds=(aa,))'     -> BLOCK cred-name, secret 1
+       'pass_fds'            -> ALLOW
+       'password'            -> ALLOW
+       'ELEVENLABS_API_KEY'  -> ALLOW
+       So the rule needs the assignment SHAPE `name=(...)` plus a cred-ish token; a grep for credential
+       names finds nothing because there is no name-with-value anywhere.
+     WHY IT IS A FALSE POSITIVE, not a packet defect: the same construct is in pass 37 and pass 38, and
+       pass 37 was ALREADY REVIEWED by a destination without any credential concern - the packet's content
+       in this respect did not change; a cred-name rule is what now stands in front of it.
+     DELIBERATELY NOT DONE: no reflow of the line, no split token, no parameter rename, no packet edit -
+       that is the literal-split pattern that would equally hide a real key, and the packet is frozen at
+       `b78119b2...` regardless. Any content change becomes a NEW packet with a new hash, disclosed.
+     AWAITING (not mine to decide): secret-guard owner adjudication of these exact bytes at this sha
+       (their advertised human-adjudication flow), requested by surf. If declined, the packet has no
+       authorized submission and the pass-38/39 work is marked unreviewed. I do not bypass and I do not
+       ask anyone to bypass.
+
