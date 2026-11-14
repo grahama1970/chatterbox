@@ -8693,3 +8693,44 @@ t
          (2) when packet 40 is built it must bind the CURRENT run.sh `10644c6d...`, which also closes the
          stale-PASS; (3) pass19 stays as-is; (4) pass31 and B4-pass5 are recorded stale, not resent.
 
+230. [x] A39-SP-01 REPAIRED, PROVEN, AND LANDED (`ff830827401feda5`). The pass-39 reviewer said the final
+     content-verification loop leaks the retained directory descriptor when it refuses an artifact.
+     I did NOT take that on trust and I did not patch it blind:
+       REPRODUCED, third attempt (the first two attempts were invalid and are recorded as such): patching
+         `_assert_content_in_dir` was impossible because it is a NESTED function (my probe raised
+         AttributeError and never refused, so its "no leak" was worthless). The working repro races the
+         reviewer's own scenario - a same-UID rewrite of the published receipt landing in the window
+         between publication and final verification. Result on the unfixed tree: `_DirIdentityChanged:
+         published content does not match`, and **1 directory descriptor still open (fd 3) after
+         render_turn() raised**.
+       FIX: the loop (receipt, provenance, WAV re-verification) now runs INSIDE the transaction `try`,
+         immediately before `except BaseException`, which already calls `_close_dirfd()` and then either
+         cleans up or re-raises for `_DirIdentityChanged`. `_close_dirfd()` is idempotent, so the success
+         path is unaffected.
+       VERIFIED after the fix: 3 refusing runs, **0 leaked descriptors** every time; control runs clean.
+       TWO BOTCHED ATTEMPTS OF MINE, disclosed because they could have shipped a broken file: my first
+         structural edit flattened the nested `for` body's indentation (IndentationError), the second
+         inserted the block at the old depth (SyntaxError). Both were caught by `py_compile` and restored
+         from `/tmp/spyke_render.pre-sp01.py` before anything landed; the final edit was a pure +4-space
+         shift of an intact block.
+       HARNESS DEBT I CAUSED AND CLEARED: my verdict cull (item 11) made
+         `tests/test_sfx_library_regression.py` RED - it asserted the freeze and the verifier see the same
+         74 clips, while 4 culled clips were no longer verifier input. Fixed the CAUSE honestly instead of
+         relaxing the check: the invariant is now two assertions - the verifier sees exactly the frozen
+         set minus manifest-retired clips, AND the set that disappeared is EXACTLY the retired-frozen set.
+         An unexplained dropout still fails; the mutation control still proves the harness can fail.
+         Whole suite: `tests: all retained harnesses PASS` (16/16).
+       REVIEW: deepseek/deepseek-v4-pro (non-GPT, different family from the zai author) - "no findings",
+         VERDICT: APPROVE, plus an independent `requirement_restatement` for the greenfield gate.
+         Receipt: `skills/chatterbox-speak/receipts/a39-sp01-dirfd-leak.reviewer.json`; the review is
+         preserved at `outputs/reviews/a39-sp01-dirfd-leak-deepseek-20261114.md`.
+230b. TRACKING DISCOVERY, found because gh-land refused the landing twice and I checked instead of arguing:
+     ALL 11 files the A7 packets bind were UNTRACKED in git - not in the index, not in any commit, not on
+     origin/main (`git ls-files --error-unmatch` fails for every one). The reviewed work existed only as
+     local files, which is also why `tests/run.sh` appeared "untracked". Three of those paths are now
+     landed (spyke_render.py, test_sfx_library_regression.py, the receipt) under greenfield=true with the
+     reviewer's restatement. The remaining 8 - fs_ops.py, interrupt_sfx.py, test_a7_pass10_repairs.py,
+     wav_guard.py, sfx_verify.py, test_wg_pass2_repairs.py, test_record_packet.py,
+     test_render_tag_evidence.py, tests/run.sh - are STILL untracked, and two of them (interrupt_sfx,
+     sfx_verify) carry pass-39 FAIL verdicts, so they must be repaired before they land.
+
