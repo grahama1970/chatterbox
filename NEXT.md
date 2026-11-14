@@ -9656,3 +9656,27 @@ t
      STILL LIVE: item 164 is now UNBLOCKED (its file is free) but not done; item 263 (TXN-01 design choice)
        and the pass-19 content decision above both need Graham. B4 pass 7 still has no captured answer.
 
+276. [x] B4 PASS 7 RETIRED: it was never submitted, and it can never bind again at those bytes.
+     MEASURED THIS TURN, not inferred from the absence of a file:
+       transport receipt `/tmp/surf-cb-B7/response.md.receipt.json`:
+         `status: "prepared_prompt"`, `submitted_to_chatgpt: **false**`, `chatgpt_failed: null`,
+         and the receipt says of itself `prepared_prompt_is_transport_proof: false`.
+       `response.md.raw.md` is **0 bytes**; there is no answer and never was one.
+       bindings: 3 bound, 2 match, **1 DRIFT** - `scripts/speak_core.py` bound `3ac73ce6b20ede65…`,
+         now `4254e8381ededc5f…`.
+     WHY IT DRIFTED, and it is my own deliberate change: item 165 removed the phantom `graham` voice
+       mapping from `speak_core.py` (landed `04c2a2d4`) after measuring that `voices/graham_owner.wav`
+       was an empty root-owned DIRECTORY and that no `/voices` mount exists in the container at all.
+       A packet frozen before that change cannot be reviewed against the tree afterwards - which is the
+       same rule that made passes 28/29/30 void.
+     THE TWO REMAINING "graham" OCCURRENCES ARE NOT A MAPPING, verified by reading them: `speak_core.py:257-258`
+       are COMMENTS that record the deliberate absence ("graham is deliberately ABSENT ... no WAV exists at
+       any mapped path"). So the removal is complete, and I am not claiming more than that.
+     SO THE STATE IS: B4 pass 7 = UNSUBMITTED AND UNBINDABLE. Not "awaiting surf" - waiting cannot change it.
+       If a B4 verdict is still wanted, the only path is a REISSUE at current bytes, which is new work with a
+       new sha, not a fix to this packet. Recorded as retired; the packet stays durable at
+       `outputs/packets/cb-B4-pass7.txt` (107,759 B, sha `ea9f2b71…`) so the history is not lost.
+     PACKET LEDGER, all three, this turn: pass 41 intaked FAIL (`63e01ca4…`); pass 19 REFUSED at egress,
+       `cred-name` on `_COMPLEX_TOKEN`, 0-byte answer (`b1ad7fa0…`, item 275); B4 pass 7 retired unsubmitted
+       (`ea9f2b71…`, this item). **None of the three is awaiting a verdict any more.**
+
