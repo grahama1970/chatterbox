@@ -7911,5 +7911,42 @@ t
        this round; (B) the owner enables Daybreak Blue / an equivalent authorized-defensive mode, then
        resubmit the same packet to ChatGPT; (C) stop the external-review loop at pass 37's verdict and
        record the remaining work as unreviewed. No option ships a weakened gate.
+
+     DUAL-FAMILY ADVISORY REVIEW RUN INSTEAD (Graham's direction, 2026-11-13): the subagent lane is
+       unavailable in this host ("Background children require a supported standalone Pi host"), so two
+       headless `pi -p --model ... --no-session` reviews were run, each bound to the five file hashes:
+         * zai/glm-5.3 (INDEPENDENT family vs the deepseek author lane): 5/5 VERDICT PASS;
+           `outputs/reviews/a38-api-glm-20261113.md`.
+         * deepseek/deepseek-v4-pro (AUTHOR family -> NON-INDEPENDENT, labelled): 5/5 VERDICT PASS;
+           `outputs/reviews/a38-api-deepseek-20261113.md`.
+       PROVENANCE: this is an API reviewer, NOT the WebGPT browser reviewer of record; it does not
+       convert pass 38 into a reviewed PASS. It does show the five repairs hold under both families.
+       New defects reported (both families independently; tracked in 202).
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
+
+202. [ ] REPAIR the residual defects the dual-family review found on the pass-38 bytes. Each
+     reproduced FIRST. Sources: `outputs/reviews/a38-api-glm-20261113.md` (independent),
+     `outputs/reviews/a38-api-deepseek-20261113.md` (author family, non-independent).
+     HIGHEST SEVERITY FIRST (reported by BOTH families):
+       - SEAL FAILURE IS NOT FAIL-CLOSED: `interrupt_sfx.py:313-318` downgrades a failed `F_ADD_SEALS`
+         to a RuntimeWarning and continues; `sfx_verify.py:393-395` swallows it (`except OSError: pass`).
+         With no seal the memfd stays writable, so the very window the read-back is meant to neutralise
+         is conditionally open again. Fix: a seal failure must REFUSE the candidate/transcript.
+       - `_assert_content_in_dir` (`spyke_render.py:746`) opens the published name with `O_RDONLY`
+         only - no `O_NOFOLLOW`, no `O_NONBLOCK` - so a same-UID writer can plant a FIFO or symlink at
+         that name and block or redirect the verification read. Both families flagged it.
+       - RESIDUAL REWRITE WINDOW (`spyke_render.py:819`): content is verified at ONE instant; a writer
+         that rewrites the sidecar after that check and before return still yields a "verified" render.
+         Needs a decision: accept-and-document, or hold the artifact by descriptor until return.
+       - STAGED PAYLOAD NEVER CONSUMED (`interrupt_sfx.py:714,720-750`, DeepSeek): `_publish_snapshot`
+         publishes by LINK, so the staged payload survives publication and its cleanup only parks it;
+         that is deliberate preservation, but it is an accumulating leftover, not a consumed stage.
+       - NAMED-TEMP FALLBACK (`sfx_verify.py:425-429`): the non-memfd branch still hands a PATHNAME to
+         `model.transcribe` and lets TemporaryDirectory unlink it (platform-conditional only).
+       - DEAD DUPLICATED CHECK (`interrupt_sfx.py:488,492`): two identical `peak_raw >= MAX_PEAK`
+         branches, the second unreachable.
+     Then: suite, rebuild ONE packet (pass 39) if the production bytes change, record per group, freeze.
+     NOTE: no external browser verdict exists for pass 38; this item fixes what was FOUND, it does not
+     manufacture a PASS. The reviewer-of-record decision (A/B/C) is still Graham's.
+     OWNER: this session.
 
