@@ -8606,3 +8606,22 @@ t
        owner says the word, verdicts apply through the page and I re-read the manifest to prove they
        persisted. Until then this is blocked on the owner, by design, not on work I can do.
 
+     ASR CROSS-CHECK (this turn) - an independent machine signal on whether a clip contains its claimed
+       event, so the owner listens with a shortlist rather than blind. Reading every clip's stored
+       `asr_transcript` beside its category:
+       CONSISTENT (transcript is the event itself): all 10 chuckle ("hahaha", "Heh heh heh"), all 9 laugh
+         ("Ha ha ha ha"), all 11 gasp ("Ahh!", "HUH!", "Ugh!"), all 10 groan ("Mmm.", "Ohhh!", "AHHHH!"),
+         all 6 surprised ("Ahh!", "Hah!"), sighing ("Ahhh. Mmm.").
+       EMPTY ASR (nonverbal, expected for crying): cry-arc, cry-arc-raw, cry-embry, cry-embry-v1,
+         grief-with-sob - consistent with sobbing.
+       CONTRADICTED - transcript is unrelated SPEECH, so the clip is probably the wrong take; these are
+         the ones to check first and most are cheap to dispose of without a full listen:
+           `embry-sniff-single`  "I'm going to go back to the next one."  <- a full sentence, not a sniff
+           `alex-chuckle`        "Right."
+           `alex-clear-throat`   "Okay."     `jordan-clear-throat`  "All right."
+           `sigh-shaky`          "Yeah."
+           `cough` category      mostly non-words or laughter: "the", "a", "Mhm.", "HEEHEEHEEH", "Uh huh."
+                                 - six clips whose ASR does not evidence a cough at all.
+       This is EVIDENCE, not a verdict: I have not marked anything rejected or confirmed. It narrows the
+         ask from 70 blind listens to "listen to the ~8 contradicted clips, spot-check the rest".
+
