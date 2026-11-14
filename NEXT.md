@@ -9680,3 +9680,33 @@ t
        `cred-name` on `_COMPLEX_TOKEN`, 0-byte answer (`b1ad7fa0…`, item 275); B4 pass 7 retired unsubmitted
        (`ea9f2b71…`, this item). **None of the three is awaiting a verdict any more.**
 
+277. [~] PASS 19 IS THE ONE LIVE PACKET AND IT IS BLOCKED ON A CONTENT DECISION, NOT ON SURF - asked, not assumed.
+     MEASURED THIS TURN: `cb-A7-pass19.txt` 101,790 B sha `b1ad7fa0…`, **5/5 bound, 0 drift**; the attempt dir
+       `/tmp/cb-A7-pass19-review` has `answer_raw.txt` **0 bytes** and `summary.json` `ok:false` with
+       `secret-guard egress refused ... reasons:["cred-name"]`. So no verdict exists, and no amount of waiting
+       produces one.
+       The other two are settled and were re-measured here: pass 41 **intaked FAIL**
+         (`SP-03 PASS / IS-01 FAIL / TXN-01 FAIL`), B4 pass 7 `submitted_to_chatgpt: false` and never answered.
+     THE EXACT FINDING, located by line index rather than guessed: within the packet,
+       `packet line 904` and `packet line 921`, both inside section `[scripts/speak.py]`:
+         `_COMPLEX_TOKEN = __import__("re").compile(`   (`scripts/speak.py:350`)
+         `hits = len(_COMPLEX_TOKEN.findall(text.lower()))`  (`scripts/speak.py:367`)
+       It is a compiled regex that counts phrase hits in lowercased text - no literal, no key. The heuristic is
+       matching the substring `token` in an identifier NAME. (My first report of this said "line 904 of
+       speak.py"; that was the packet's line number. Corrected here.)
+     WHY I DID NOT JUST RENAME IT: the standing rule - a content-side change made to clear a refusal is surfaced
+       to Graham FIRST, because the same edit that clears a public identifier would equally hide a real secret
+       from the shape scan. I am the wrong judge of my own false positive.
+       `$interview` was the vehicle and it **lost its heartbeat**; the questions are preserved at
+       `~/.pi/interview-recovery/2026-11-14_151455_chatterbox_main_5138d3ef.json`, so the decision is not lost,
+       but it was not answered.
+     NOTHING WAS CHANGED: `scripts/speak.py` is still exactly its bound bytes
+       (working sha `376982581e14062c` == the sha pass 19 binds); the packet is untouched at `b1ad7fa0…`.
+     THE DECISION, three options, with my recommendation:
+       (a) RENAME `_COMPLEX_TOKEN` -> `_PHRASE_PATTERN` (truthful: it is a phrase regex), then REISSUE pass 19
+           at the new bytes. Keeps full review scope; also stops this name tripping every future packet.
+       (b) EXCLUDE `scripts/speak.py` from pass 19 and submit the remaining four files. No code change, but the
+           reviewer no longer sees that file.
+       (c) LEAVE pass 19 unsubmitted and drop it as a packet.
+       Recommended: (a). All three need Graham; none is mine to take.
+
