@@ -8764,7 +8764,7 @@ t
        from fstat(dirfd) and compare the pathname against it), which closes the ambiguity BY CONSTRUCTION
        and does not depend on catching the race.
 
-232. [~] verdict-watch.py DISAGREES WITH REALITY on the pass-39 submission.
+232. [x] verdict-watch.py DISAGREES WITH REALITY on the pass-39 submission.
      `verdict-watch.py --require-ready` reports `NO_SUBMISSION_FOUND cb-A7-pass39.txt` and
      `ready_to_process: none`, yet pass 39 WAS submitted and its FAIL verdict was intaked hours ago
      (item 228, sha `ad39b2f6...`). So its registry does not know about submissions that actually
@@ -9325,4 +9325,34 @@ t
      STILL CONTAINING THE DEAD MAPPING: `spyke_render.py` (bound in the in-flight packet, so editing it voids
        the verdict) - it is the last file with a `graham` -> nonexistent-WAV entry.
      OPEN FINDING: TXN-01, recorded as a DESIGN question (item 244), not patched into a shape nobody chose.
+
+262. [x] ITEM 232 CLOSED: the verdict watcher no longer reports the opposite of the truth - and MY OWN RUN
+     exposed two more defects in it, plus one in my fix.
+     MEASURED BEFORE (same five packets): every row `awaited=0`, five `NO_SUBMISSION_FOUND`, no statement
+       about whether any answer had arrived, no awareness of intake records, and pass 40/41 invisible because
+       the outstanding list came only from a static manifest.
+     MEASURED AFTER (`python3 verdict-watch.py`): `awaited=1/5/11/1/3` (was 0 for all), plus
+       `answers_arrived: 0/5`, `packets_not_in_manifest: ['cb-A7-pass38.txt','cb-A7-pass40.txt',
+       'cb-A7-pass41.txt']`, `packets_without_intake_record` listed, and an explicit line:
+       "no packet has an answer artifact and none is intaked - this is an ABSENCE, not evidence that nothing
+       was submitted". The receipt now carries `answers_arrived: 0` and
+       `absence_not_evidence_of_non_submission: True` (verified by reading the JSON back, not the print).
+     DEFECTS FIXED, in the order they were found:
+       - `awaited` compared a dict to a string, so the count was 0 for EVERY packet, always.
+       - 0-byte answers were indistinguishable from absent ones; `response.md` missing OR size 0 is now
+         `SUBMITTED_NO_ANSWER`, with the response artifact sizes recorded (this is exactly B4 pass 7: raw.md
+         0 B, no response.md - item 256).
+       - no notion of intaked, which is why a settled packet read as `NO_SUBMISSION_FOUND` (the item's own
+         complaint). Now `ALREADY_INTACKED` short-circuits transport matching when
+         `outputs/reviews/*/intake.json` names the packet path or sha.
+       - `answers_arrived` was computed for the PRINT but never written to the receipt - my own fix leaving
+         the machine-readable half silent. Now stored, and the print reads the stored value so they cannot
+         disagree.
+     RESIDUAL, stated in the receipt itself rather than hidden: pass 39 was settled through
+       `verdict-intake.py --apply`, which leaves NO intake record, so it still reports `NO_SUBMISSION_FOUND`.
+       The receipt carries an `intake_note` saying exactly that, and `packets_without_intake_record` names the
+       affected packets. Fixing that properly means verdict-intake.py writing an intake record per application
+       - a change to that tool, not to the watcher, so it is not claimed here.
+     The watcher remains a REPORT, not a gate: it mutates nothing and `--require-ready` is the only failure
+       mode. Its value now is that its silence is explicitly labelled as absence.
 
