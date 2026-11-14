@@ -9432,3 +9432,15 @@ t
        Remaining: real-data training in a serialized window + the blind A/B. Still OPEN, but no longer unknown
        in principle.
 
+266. [x] JOINT RE-RUN OF EVERY LANDED HARNESS, this turn, after all of today's landings - because reporting on
+     code I have not re-run is how a green number becomes a lie.
+       `tests/run.sh`            -> "tests: all retained harnesses PASS" (16/16) and PUBLISH_BY_NAME clean
+       `tests/test_a39_repairs.py` -> **17/17 checks** (SP-01/SP-02/SP-03/ASR-01/IS-01, each with a control)
+       `tests/test_new_tag_prep.py` -> **23/23 checks** (id allocation + every fail-closed refusal)
+       `tests/test_tag_aliases.py`  -> **27/27 checks passed** (incl. the F2 gate on literal-tag backends)
+     So the five A39 repairs, the new-tag allocator and the tag-alias gate all still hold together after
+       `69c21654`, `cce7d2a6`, `a563b5b4`, `3ae55621`, `04c2a2d4`. Nothing regressed.
+     VERDICT STATE, measured again at the same moment: pass 19 `b1ad7fa0…` 5/5 bound 0 drift and pass 41
+       `63e01ca4…` 11/11 bound 0 drift, both with **NO verdict artifact**, and no new transport directory since
+       the handoff. Item 133 therefore stays OPEN and is not checked off: nothing arrived to intake.
+
