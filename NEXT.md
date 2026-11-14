@@ -8278,3 +8278,17 @@ t
        == sha256(/tmp/spyke-stale-text.txt), compared before the render and again from the sidecar.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+219. [x] RENDER for spyke-chat, scenario 09 under the amended band [1.0, 3.6]
+     (eng-4bb87a85199a4a07, main, seq 7, speaker spyke, tone calm_precise).
+     SOURCE `/tmp/spyke-sa-text.txt` = 2080 chars / 286 words, no trailing newline,
+       sha256 `7100c14fd3725bf1...`.
+     ARTIFACT `/mnt/storage12tb/embry-voice/turns/spyke-09-seq7-rr-20261114T083526Z-a102338fc238.wav`
+       154.8 s, `audio_sha256 a102338fc238e455...`, aggregate 1.85 w/s, band [1.0, 3.6].
+       Chunks 5 (331, 409, 486, 451, 403 chars), per-chunk 1.22 / 2.39 / 1.60 / 2.77 / 1.61.
+     spyke's condition was "if a chunk lands below 1.0 tell me rather than assembling": nothing needed
+       telling - the lowest chunk measured 1.22 w/s, so every piece cleared the floor on its own
+       measurement at the first limit tried (500 chars) and no exemption was involved.
+     Sidecar `<wav>.a102338fc238e455.sidecar.json`; text hashes equal sha256 of the source, compared
+       before the render and again from the sidecar.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
