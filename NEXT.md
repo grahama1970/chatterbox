@@ -8954,3 +8954,23 @@ t
      NO VERDICT ARTIFACT EXISTS for pass 19: searched `/tmp` and the reviews tree for its sha; the only
      hit is the packet itself.
 
+243. [~] A39-TXN-01: SECOND PROBE, STILL **NOT REPRODUCED** - and the failure mode is informative.
+     Probe 2 avoided the read-path mocking that hung probe 1. It used a watcher thread that rewrites the
+       persisted receipt's `ok` from true to false the moment the provenance sidecar appears, i.e. after
+       the final loop has already checked the receipt.
+     RESULT: rewrites observed 0, and the render REFUSED with
+       `published content ended 815 bytes before the expected length (truncated during publication)`.
+     That message comes from the SP-03 fix landed minutes earlier: my watcher rewrote the receipt with a
+       truncate-then-write (`write_text`), the final verification read it mid-write, and the new
+       exact-EOF check refused the render instead of reporting success. So this probe did not reach the
+       reviewer's state; it was caught by the repair it was testing around. Good news for SP-03, NOT
+       evidence about TXN-01.
+     STATUS: TXN-01 remains OPEN and unproven in either direction. Two probe attempts have failed to reach
+       the state the reviewer reached (first hung on mocked `os.read`; second lost the race to a truncating
+       rewrite). Per the rules, that is NOT TESTED - it is not "fixed", and it is not "disproved". The next
+       attempt needs a rewrite that preserves length (write the same number of bytes, flipping a character)
+       so the size/EOF checks pass and only the DIGEST differs, and it needs to land after the receipt's
+       check specifically.
+     NOT edited: spyke_render.py was not touched by either probe; both landing commits (`246817e6`,
+       `8222f96e`) are clean in the working tree.
+
