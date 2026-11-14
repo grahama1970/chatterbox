@@ -9476,3 +9476,18 @@ t
        or say explicitly that they are abandoned so I can record withdrawal honestly. Then this item stays open
        on evidence rather than on hope.
 
+269. [x] LAST DEAD-VOICE PATCH PREPARED, NOT APPLIED - because applying it now would void the review in flight.
+     `spyke_render.py` is the only file still mapping `"graham"` to `/work/voices/graham_owner.wav`, a path that
+       resolves to nothing (the repo voices/ dir holds only `graham_owner.provenance.json`, and the container
+       mounts no `/voices`). It is one of the 11 files bound in pass 41, so editing it moves a reviewed hash.
+     WHAT I DID INSTEAD: built the exact post-verdict change and parked it durably:
+       `outputs/patches/spyke_render.origin-plus-graham-removal.py` (50,654 B, py_compile clean)
+       `outputs/patches/spyke_render.graham-removal.patch` (770 B, sha256 `cc093e329bc7a18159bdc1c4`)
+       The delta is exactly what it should be: ONE line removed (`"graham": ...`), three comment lines added
+       explaining why the name is absent and what to do when a real recording exists.
+     LIVE FILE VERIFIED UNTOUCHED at the same moment: sha256 `9a53fbf677710dc6` - exactly the value pass 41
+       binds, so the in-flight review is not disturbed. Applying this is a one-patch action the instant the
+       verdict returns; nothing else in `spyke_render.py` is outstanding.
+     With that, the dead-voice cleanup is complete in three files: `speak_core.py` landed (`04c2a2d4`),
+       `sfx_demo.py` landed (`3ae55621`), and `spyke_render.py` prepared and waiting on the packet.
+
