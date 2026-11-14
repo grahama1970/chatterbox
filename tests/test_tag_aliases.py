@@ -21,6 +21,7 @@ from chatterbox.agent.presets import (  # noqa: E402
     CHATTERBOX_EVENT_TAGS,
     TAG_ALIASES,
     expand_tag_aliases,
+    plan_tag_expansion,
 )
 
 CHECKS = 0
@@ -88,6 +89,23 @@ def main() -> int:
     out4, applied4 = expand_tag_aliases("[sob] and again [sob]")
     check("repeated alias applied once", len(applied4) == 1, repr(applied4))
     check("repeated alias rewritten twice", out4 == "[crying] and again [crying]", repr(out4))
+
+    # ---- F2: expansion is GATED on a backend that consumes event tags (review 2026-11-14)
+    # A backend that speaks bracket tokens literally must receive the text UNCHANGED: rewriting
+    # `[hearty laugh]` to `[laugh]` there mutates words the model was going to say out loud.
+    gated_text, gated_applied = plan_tag_expansion("[hearty laugh] then prose.", "chatterbox_base_affect")
+    check("F2 a literal-tag backend receives the text UNCHANGED",
+          gated_text == "[hearty laugh] then prose.", repr(gated_text))
+    check("F2 no expansion is recorded for a literal-tag backend", gated_applied == [], repr(gated_applied))
+
+    turbo_text, turbo_applied = plan_tag_expansion("[hearty laugh] then prose.", "chatterbox_turbo")
+    check("F2 a tag-consuming backend still gets the native tag", turbo_text == "[laugh] then prose.", repr(turbo_text))
+    check("F2 the consuming backend records the expansion",
+          turbo_applied == [{"alias": "[hearty laugh]", "native": "[laugh]"}], repr(turbo_applied))
+
+    unknown_text, unknown_applied = plan_tag_expansion("[hearty laugh]", "no_such_backend")
+    check("F2 an UNKNOWN backend is treated as non-consuming (fail-visible, no rewrite)",
+          unknown_text == "[hearty laugh]" and unknown_applied == [], repr(unknown_text))
 
     # no alias is a substring-shadow of another (longest-first safety)
     shadowed = [a for a in TAG_ALIASES

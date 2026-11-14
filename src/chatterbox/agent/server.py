@@ -55,6 +55,7 @@ from chatterbox.agent.presets import (
     TAG_CONSUMING_BACKENDS,
     detect_event_tags,
     expand_tag_aliases,
+    plan_tag_expansion,
     STAGE_PRESET_AFFECT_STATUS,
     STAGE_PRESETS,
     TONE_TO_DELIVERY_STAGE,
@@ -1253,20 +1254,33 @@ def synthesize_to_file(request: SynthesisRequest, out_path: Path) -> dict[str, A
     started_total = time.perf_counter()
     events: list[dict[str, Any]] = []
     latency_event(events, "request_received", started_total)
-    # Expressive tag aliases -> the nearest NATIVE tag the Turbo model actually
-    # consumes. Recorded in the receipt tag_handling: never a silent rewrite.
-    model_text, alias_expansions = expand_tag_aliases(request.text)
-    model_request = request.model_copy(update={"text": model_text}) if alias_expansions else request
+    # Expressive tag aliases -> the nearest NATIVE tag the Turbo model actually consumes.
+    # Recorded in the receipt tag_handling: never a silent rewrite.
+    #
+    # ORDER MATTERS (review finding F2, 2026-11-14): expansion must happen only AFTER the
+    # backend is selected, and only when that backend consumes event tags. Expanding first
+    # rewrote literal bracket tokens on a backend that speaks them as words, mutating text
+    # the model was always going to say out loud. voice_delivery is therefore computed from
+    # the request as written, and rederived only when an expansion actually happens, so the
+    # recorded detected_tags stay the native tags the model consumes.
+    model_request = request
+    model_text = request.text
+    alias_expansions: list[dict[str, str]] = []
     ref_audio = resolve_reference_audio(request.ref_audio) if request.ref_audio else resolve_reference_audio(DEFAULT_REF_AUDIO)
     try:
         params = generation_params(request)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    voice_delivery = voice_delivery_for_request(model_request)
+    voice_delivery = voice_delivery_for_request(request)
     stochasticity = stochasticity_for_request(request)
     knobs = emotion_knobs_from_delivery(voice_delivery)
     try:
         backend, backend_selection = select_voice_backend_for_request(request.backend, knobs)
+        if backend.caps.backend_id in TAG_CONSUMING_BACKENDS:
+            model_text, alias_expansions = plan_tag_expansion(request.text, backend.caps.backend_id)
+            if alias_expansions:
+                model_request = request.model_copy(update={"text": model_text})
+                voice_delivery = voice_delivery_for_request(model_request)
         apply_tag_handling_backend(voice_delivery, backend.caps.backend_id)
         if alias_expansions:
             # FAIL-CLOSED: a rewrite without a receipt entry is a silent text change.

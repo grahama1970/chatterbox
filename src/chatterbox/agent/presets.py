@@ -405,6 +405,28 @@ def expand_tag_aliases(text: str | None) -> tuple[str | None, list[dict[str, str
 
 
 
+
+def plan_tag_expansion(
+    text: str | None,
+    backend_id: str | None,
+    *,
+    consuming: frozenset[str] = TAG_CONSUMING_BACKENDS,
+) -> tuple[str | None, list[dict[str, str]]]:
+    """Decide whether tag aliases may be expanded for the backend that will synthesize.
+
+    F2 (review 2026-11-14): aliasing must be gated on the backend actually consuming event
+    tags. On a backend that speaks bracket tokens as literal words, rewriting `[hearty
+    laugh]` into `[laugh]` mutates text the model was always going to say out loud - the
+    render gets quieter, not more expressive, and the receipt records an expansion that
+    never reached the model as a tag.
+
+    Returns (text_to_synthesize, applied). Text is returned unchanged for a
+    non-tag-consuming backend (or an unknown one), with no recorded expansion.
+    """
+    if backend_id not in consuming:
+        return text, []
+    return expand_tag_aliases(text)
+
 VOICE_DELIVERY_EFFECT: dict[str, Any] = {
     "schema": "chatterbox.voice_delivery_effect.v1",
     "engine": "chatterbox_turbo",
