@@ -8741,7 +8741,10 @@ t
      test_render_tag_evidence.py, tests/run.sh - are STILL untracked, and two of them (interrupt_sfx,
      sfx_verify) carry pass-39 FAIL verdicts, so they must be repaired before they land.
 
-231. [~] A39-SP-02 ATTEMPTED, **NOT REPRODUCED** - recorded as NOT TESTED, not as fixed.
+231. [x] A39-SP-02: my probe did NOT reproduce it (recorded NOT TESTED, headlined below), and the finding was
+     later fixed BY CONSTRUCTION anyway - identity now derives from `os.fstat(dirfd)` with the pathname required
+     to match (item 233, landed `5572ceee`), and a swap probe now refuses. Covered by the retained harness
+     `69c21654`. Original record: ATTEMPTED, NOT REPRODUCED.
      Claim: the retained dirfd is never bound to the captured directory identity, so pathname checks and
        descriptor checks can validate DIFFERENT directories; reviewer's executed scenario returned
        success with `ok: true` while the requested WAV did not exist at the pathname.
@@ -8790,7 +8793,8 @@ t
          the paths were greenfield (spyke_render.py was untracked), then because `invariants_checked` was
          missing `no_silent_substitution`. Both were my receipt being wrong, not the gate being difficult.
 
-234. [~] PACKET BINDING AFTER MY REPAIRS - three of the eleven pass-39 bound files have CHANGED, so pass 39
+234. [x] PACKET BINDING AFTER MY REPAIRS - RESOLVED by issuing pass 41 (item 246): `cb-A7-pass41.txt`,
+     sha `63e01ca4da9ca816…`, 306,049 B, 11/11 bound and re-verified at 0 drift this turn. Original record: three of the eleven pass-39 bound files have CHANGED, so pass 39
      can no longer be reissued by reusing its own section hashes. Current bytes (what a reissue must bind):
        SAME    fs_ops.py d5dc641049be | interrupt_sfx.py 734139864820 | test_a7_pass10_repairs.py 5bbf3aa8f66e
        SAME    wav_guard.py 4aaf17fc3749 | sfx_verify.py 4b35fc7a4917 | test_wg_pass2_repairs.py f08150684447
@@ -8827,7 +8831,9 @@ t
        NOT OOM-INDUCED: the reviewer never induced an OOM and neither did I; the exhaustion consequence was
          static inference from the demonstrated absence of a bound, and the size check removes it.
 
-236. [~] PASS-39 FINDING STATUS after this session's repairs: SP-01 (descriptor leak) FIXED, SP-02 (unbound
+236. [x] PASS-39 FINDING STATUS - ALL FIVE SETTLED now: SP-01/SP-02/ASR-01 PASS in the intaked pass-40 narrow
+     verdict (item 240); SP-03 landed `246817e6`; IS-01 landed `8222f96e`. TXN-01 is the only open one and is
+     carried as a DESIGN question in item 244. Original record: SP-01 (descriptor leak) FIXED, SP-02 (unbound
      directory identity) FIXED, ASR-01 (unbounded sealed read) FIXED - all landed with receipts.
      STILL OPEN against current bytes: SP-03 (unbounded reads), IS-01 (outer TemporaryDirectory deletes
      foreign entries), TXN-01 (success reported after an artifact changes during completion). SP-03 and
@@ -8879,7 +8885,9 @@ t
          not - I measured the unbounded read on the pass-40 bytes. Surf has accepted and recorded the
          correction. A relayed "fixed" is not a receipt.
 
-239. [~] PASS-40 CONSULTATION VERDICT: **REPORTED, NOT INTACKED** - the artifact does not support the
+239. [x] PASS-40 CONSULTATION VERDICT - SUPERSEDED by item 240: a properly bound narrow verdict arrived
+     (packet embedded byte-identical at offset 1,314, segment sha == packet sha, receipt-bound answer) and was
+     intaked. This unbound artifact changed no gate and never will. Original record: **REPORTED, NOT INTACKED** - the artifact does not support the
      summary, so it changes no gate.
        Verified by me in `/tmp/cb-A7-review-full`, hashes computed here:
          `question.txt` 302,099 B sha `01d5454b5f3d5529…` - GOOD: the frozen packet IS present intact at
