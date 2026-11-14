@@ -8832,3 +8832,28 @@ t
      ASR-01 overlap in spirit but SP-03 was a separate finding and must be checked against the code, not
      assumed fixed by ASR-01.
 
+237. [x] REISSUE BUILT, VERIFIED, FROZEN AND HANDED TO SURF - the reissue this item said remained.
+       PACKET: `outputs/packets/cb-A7-pass40.txt`, 301,012 B,
+         sha256 `98e686c288fd31ee5c8cb94372eaf933c0b99856aa89a483d3b09de1e5bd12b9`.
+         DURABLE on the 12TB drive, not /tmp (which has already eaten a source file in this lane); the copy
+         at /tmp/cb-A7-pass40.txt has identical bytes. Builder and header stored beside it
+         (`build_pass40.py`, `pass40-header.txt`) so the packet is reproducible, not magic.
+       VERIFIED BEFORE HANDOFF, mechanically: all 11 header bindings match disk AND all 11 `=== path ===`
+         section bodies hash to their declared sha256 - 0 mismatches. 5 of 11 files changed vs pass 39
+         (spyke_render, interrupt_sfx, sfx_verify, test_sfx_library_regression, tests/run.sh), every one
+         from a repair landed this session with its own receipt.
+       THE PACKET STATES ITS OWN LIMITS: SP-01 / SP-02 / ASR-01 are labelled REPAIRED with their
+         reproduction numbers; SP-03 / IS-01 / TXN-01 are labelled STILL OPEN - NOT FIXED, so a reviewer
+         cannot read the repairs as covering them; pass 38's refusal is recorded as a refusal, never
+         reworded, never resent.
+       HANDED TO SURF (intercom) with the full intake contract: return the response file + sha256, it must
+         quote packet sha `98e686c2...` and every per-file VERDICT line plus `PACKET VERDICT:`, the seat
+         identity as reported, the sentinel, and the attachment confirmed as the exact 301,012 bytes.
+         Explicitly restated: a destination refusal is a REFUSAL, not a verdict - no resend, no rewording,
+         no splitting text past a classifier.
+       ITEM STATE: still [~]. It is now WAITING ON SURF for two things - a pass-40 verdict, and the pass-19
+         verdict that was already outstanding. Nothing is blocked on me: the withdrawal of pass 31 /
+         B4-pass5 is recorded, and the reissue is out. `verdict-watch.py` remains untrustworthy (it reports
+         NO_SUBMISSION_FOUND for pass 39, whose verdict I intaked), so intake stays artifact-driven:
+         `outputs/reviews/` plus the `/tmp/surf-cb-*` response directories.
+
