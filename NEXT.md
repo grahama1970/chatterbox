@@ -9186,3 +9186,30 @@ t
        cache.
      THE PROBE COPY (1.9 GB) WAS DELETED from the container `/tmp` after the numbers were recorded.
 
+255. [x] ITEM 165 PART 1 CLOSED BY THE OWNER: Graham ran the flat command and I verified the EFFECT, not the
+     report. `/mnt/storage12tb/embry-voice/voices/graham_owner.wav` -> "No such file or directory", and the
+     parent `/mnt/storage12tb/embry-voice/voices/` is now empty (`total 0`). The bogus root-owned EMPTY
+     DIRECTORY that masqueraded as a WAV is gone.
+     PART 2 REMAINS OPEN AND IS THE BIGGER HALF: `docker inspect embry-voice-chatterbox-1` still shows only
+       /data/embry_ref.wav, /models/huggingface, /var/lib/embry-artifacts, /work - there is NO `/voices`
+       mount. So the three code references (speak_core.py:260, spyke_render.py:94, sfx_demo.py:39) that map
+       "graham" to `/voices/graham_owner.wav` still resolve to nothing inside the container; the failure is
+       now ENOENT instead of IsADirectoryError, which is clearer but not working. Fixing it needs either a
+       mount or a path change in those three call sites - and a real reference recording, which I will not
+       fabricate for a real person's voice.
+     Net: the confusing defect is gone; the "graham" voice still cannot be used.
+
+256. [~] PACKET B4 PASS 7 (item 179): NO VERDICT WAS EVER CAPTURED, and I now hold the evidence.
+     The packet existed ONLY in `/tmp`: copied to `outputs/packets/cb-B4-pass7.txt`, sha256
+       `ea9f2b71bc8194abd28ba4daa0c846c3`, 107,759 B, identical before/after the copy. Its binding still
+       matches the tree exactly: **3 bound, 0 drift**.
+     The submission artifacts in `/tmp/surf-cb-B7` show the round did NOT produce an answer:
+       - `response.md` DOES NOT EXIST;
+       - `response.md.raw.md` is **0 bytes**;
+       - what exists is `submitted.md`, `receipt.json`, `meta.json`, `webgpt_inflight.json`, heartbeat.
+     So "submitted" is as far as it got. No verdict exists for B4 pass 7, there is nothing to intake, and
+       `verdict-watch.py` (item 232) is again useless here because it cannot tell "no answer" from "no
+       submission". The only B verdict on record is `b4-pass6-FAIL-20261113.md`.
+     ACTION: B4 pass 7 needs an actual answer capture. I am not re-submitting an identical packet into a
+       round whose transport already lost one answer; that is surf's transport to repair and re-run.
+
