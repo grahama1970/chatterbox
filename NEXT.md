@@ -8547,3 +8547,30 @@ t
        without it: 74 entries all `awaiting_owner_verdict`, 0 confirmed, 4 that no verdict can rescue
        (below the project's own gate), 70 listenable in 157.5 s of montage. A machine PASS is not an ear.
 
+228. [x] PASS-39 VERDICT INTADED FIRST-CLASS (before any repair), per the standing process.
+     SOURCE verified before use, not trusted: `/tmp/surf-cb-A39-webgpt-cleared/response.md`,
+       20,379 B, sha256 `ad39b2f664f6017f28ee88e066a03c201727fb74574332bf22309953c7d1d20e` == the value
+       surf reported; it quotes the packet sha `b78119b2...` twice and carries all 11
+       `VERDICT <file> <sha256>: PASS|FAIL` lines plus `PACKET VERDICT: FAIL`.
+       Sentinel `<<<WEBGPT_DONE:20261114T151737Z:d13cc1a3>>>` is NOT in response.md itself but IS in
+       response.md.raw.md, .meta.json, .receipt.json, .submitted.md, webgpt_heartbeat.json,
+       webgpt_transport_summary.json and webgpt_inflight.json - so delivery is evidenced by the transport
+       artifacts even though the cleaned response drops the marker.
+     PRESERVED as `outputs/reviews/a7-pass39-FAIL-20261114.md` (same sha, byte copy).
+     APPLIED with `verdict-intake.py` (dry run first, then --apply), two groups because one report spans
+       two plan groups - a partial application would attach verdicts to bytes a reviewer never saw:
+       A7              : PASS fs_ops.py, PASS test_a7_pass10_repairs.py,
+                         FAIL interrupt_sfx.py (734139864820...), FAIL spyke_render.py (1464a649913f...)
+       GUARDS-WAVGUARD : PASS wav_guard.py, run.sh, test_wg_pass2_repairs.py,
+                         test_sfx_library_regression.py, test_record_packet.py,
+                         test_render_tag_evidence.py ; FAIL sfx_verify.py (4b35fc7a4917...)
+       Manifest read-back confirms `review_state=FAILED` + `review_verdict=FAIL (a7-pass39-FAIL-20261114.md)`
+       on exactly the three failing files and `PASSED` on the eight passing ones; manifest
+       `c82935b1...` -> `4339ac87...`.
+     EXPECTED CONSEQUENCE, not a defect: both groups are now UNLANDABLE (a FAIL is a first-class row
+       state). Repair items are the reviewer's findings: SP01 descriptor leak, SP02 retained dirfd not
+       bound to captured identity, SP03 unbounded reads, IS01 outer TemporaryDirectory foreign deletion,
+       ASR01 unbounded sealed readback, TXN01 late-rewrite success inconsistency.
+     NOT DONE, deliberately: no repair started before this intake; no gate weakened; no reword of the
+       packet; the pass-38 refusal remains refused.
+
