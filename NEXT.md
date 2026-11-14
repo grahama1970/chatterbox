@@ -9162,3 +9162,27 @@ t
        tags, next free id 50276, so adding a tag means resizing the embedding and training the new row.
        Aliases are a shippable substitute, not the requested capability.
 
+254. [~] RETRAIN REQUIREMENT (owner: "crucial that we can add new tags to the tokenizer as we need them and
+     retrain") - FIRST FEASIBILITY RUNG MEASURED, MECHANICAL HALF PROVEN, TRAINING NOT DONE.
+     Run as an isolated probe INSIDE the container, writing only to the container's `/tmp`; the live HF cache
+       was never touched. Measured, not recalled:
+       checkpoint `t3_turbo_v1.safetensors`: `text_emb.weight`, `text_head.weight`, `tfmr.wte.weight` all
+         `[50276, 1024]`; `added_tokens.json` holds 19 tags at ids **50257..50275**, so the next free id is
+         **50276** (this confirms the earlier figure by measurement rather than memory).
+       Added ONE id: copied row 50275 (`[laugh]`) as the initializer for id 50276, concatenated → saved →
+         **reloaded at `[50277, 1024]`** on all three tensors, and the new row was `torch.equal` to its source
+         row after the round-trip. A copy of `added_tokens.json` with `"[wistful sigh]" -> 50276` was written
+         alongside it (20 entries).
+       Live cache verified UNTOUCHED afterwards: the real `added_tokens.json` still has 19 entries.
+     WHAT THIS PROVES: adding a token id and preserving the checkpoint is mechanically routine - resize,
+       initialize from the nearest native tag, round-trip clean. It does NOT prove the new tag makes a new
+         SOUND. An untrained row is initialized to duplicate an existing tag, so a render would sound like
+         `[laugh]` while claiming to be `[wistful sigh]` - which is exactly the failure the owner is asking me
+         to avoid, and why he said "retrain" and not "add a row".
+     NEXT RUNG (not started): train the new row (LoRA on the text embedding, or full-row fine-tune) on audio
+       examples of the intended sound, then a BLIND A/B: new tag vs its initializer vs plain text, judged by
+       ear, not by "the model loaded". `scripts/lora_pipeline.py` still has no `resize_token_embeddings` /
+       `add_tokens` support - that is the actual gap, and it must train in an isolated copy, never the live
+       cache.
+     THE PROBE COPY (1.9 GB) WAS DELETED from the container `/tmp` after the numbers were recorded.
+
