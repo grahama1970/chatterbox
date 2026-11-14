@@ -7909,7 +7909,9 @@ t
      SUBMITTED via surf with path/size/sha and the A38 binding rule (quote `650947f6…`; earlier
        passes' verdicts must not be intaked). Verdict tracked in 201.
 
-201. [~] The pass-38 verdict. Awaiting surf's submission/extraction; delivery verified from the
+201. [x] The pass-38 verdict. RESOLVED-BY-REFUSAL (see 251) - the browser reviewer refused the packet on
+     content policy and the two A38 API reviews bind nothing (0 packet-sha hits, 0 VERDICT lines), so no
+     pass-38 verdict exists to intake. Originally: awaiting surf's submission/extraction; delivery verified from the
      destination (quoted packet sha `650947f6…`, 11 per-file VERDICT lines, PACKET VERDICT), then
      intaked per group with `verdict-intake.py --apply`. A FAIL is a valid outcome; no gate weakened.
      Packet: `/tmp/cb-A7-pass38.txt` 295,757 B `650947f6feda328e…`, `ALL_FROZEN` (receipt
