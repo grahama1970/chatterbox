@@ -9093,3 +9093,21 @@ t
          `69c21654`. TXN-01 stays OPEN as a design question (item 244); item 164 stays blocked because its
          harness file is bound in pass 41 (item 248).
 
+251. [x] ITEM 201 RESOLVED AS FAR AS EVIDENCE ALLOWS: pass 38 has NO intakable review, and I measured why
+     instead of assuming it.
+       TWO A38 API reviews exist on disk - `outputs/reviews/a38-api-deepseek-20261113.md` (5,358 B, sha
+       `25ed12b5ff…`) and `a38-api-glm-20261113.md` (4,725 B, sha `6510bcca25…`) - and NEITHER BINDS:
+         occurrences of the packet sha `650947f6…`: 0 in both
+         `VERDICT <path> <sha256>: PASS|FAIL` lines: 0 in both
+         `PACKET VERDICT`: absent in both
+       So they are commentary about the packet, not a verdict on it. `verdict-intake.py` would correctly
+       refuse them, and per the standing rule a finding-level or unbound answer is REPORTED, never INTACKED.
+       That is consistent with what item 201 already recorded: the browser reviewer REFUSED pass 38 outright
+       ("This content was flagged for possible cybersecurity risk"), so no pass-38 verdict was ever produced
+       and there is nothing to intake. A refusal is not a verdict and I did not reword the packet to clear it.
+       ALSO: the pass-38 packet existed only in `/tmp` (295,757 B). Copied to
+       `outputs/packets/cb-A7-pass38.txt` and verified: sha `650947f6feda328e…`, 295,757 B unchanged in
+       transit. That is the third packet this session I have had to rescue from `/tmp`, which already ate a
+       source file here.
+       Item 201 therefore closes as RESOLVED-BY-REFUSAL, not as pending work.
+
