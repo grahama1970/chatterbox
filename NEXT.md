@@ -9758,3 +9758,31 @@ t
      I DID NOT RE-RUN THE A/B: n=10/arm already exists and replicates; spending a busy A5000 to restate it would not
        change the decision. If Graham wants the p value re-established, that is a declared run, not a quiet one.
 
+279. [x] ITEM-149 EVIDENCE COMPLETED: the retained probe CANNOT answer the interesting half, and the missing
+     measurement is now specified so it can run the moment Graham answers.
+     MEASURED GAP (this turn): `outputs/tag-signal-probe-20261112.json` stores per cell only
+       `{n, plain_mean_s, tag_mean_s, cohens_d, d_first_half, d_second_half, ci_overlap, replicates}`.
+       There are no per-render durations and no per-tag ASR counts. Consequences I will not paper over:
+       - tag-vs-tag separation (is `[gasp]` distinguishable from `[sigh]`?) is NOT computable from the file. The
+         means differ (laugh 2.726, groan 2.518, sigh 2.496, gasp 2.476 s) but with no within-tag spread there is no
+         way to say whether that 0.02-0.25 s difference survives noise - and a 20 ms gap between sigh and gasp is
+         exactly the kind of "effect" this project has already learned to distrust.
+       - the ASR evidence is a NOTE, not data ("vocalisations transcribed for groan and gasp, never sigh/laugh"), so
+         "which tags actually vocalise" cannot be counted, only remembered.
+     SO THE HONEST STATUS OF ITEM 149: option (a) is decidable NOW from what exists (pacing vs not). Option (c)
+       - "tags must at least differ from each other" - requires one declared run, specified here so it is not
+       re-invented later:
+         arms: `[sigh]`, `[gasp]`, `[groan]`, `[laugh]`, plus plain control; n=10 per arm, alternating, same speaker,
+           same sentence, unique seq per render (flat-media immutability means a re-cut needs a new seq);
+         record per render: duration, active_frac, the realized span's RMS vs that clip's own silence floor, and the
+           full ASR transcript (not a note);
+         decision rule, declared BEFORE the run: tag-vs-tag counts as distinct only if the 6 pairwise comparisons
+           show disjoint ranges or exact Mann-Whitney p < 0.05 after a Bonferroni correction for 6 tests
+           (alpha = 0.0083); otherwise record "tags are not distinguishable" and the product answer is (b).
+       This is a measurement of CURRENT behaviour, not a product decision, which is why writing it down here does
+       not pre-empt Graham.
+     SERVICE STATE verified for that run: `http://127.0.0.1:8799/health` -> `{"ok": true, "service":
+       "chatterbox-render", "queue_depth": 0}`. The measurement can start without any further preparation.
+     ITEM 149 STAYS OPEN: acceptability is Graham's product judgement. I am not answering it for him, and I am not
+       starting the run before he picks a branch, because (a) and (c) need different spend.
+
