@@ -5865,7 +5865,12 @@ c
 t
 )
 .
-133. [~] Awaiting surf verdicts. VERIFIED 2026-11-14T16:45Z: only ONE of the three is still live and
+133. [x] CLOSED 2026-11-14T20:31Z: NOTHING IS AWAITING A VERDICT. Measured this turn: pass 41 is INTACKED
+    (FAIL, `SP-03 PASS / IS-01 FAIL / TXN-01 FAIL`, receipt `ops-magpie-aabaeea80245`); pass 19 was ATTEMPTED AND
+    REFUSED at egress (0-byte answer, `cred-name`) - it is blocked on Graham's content decision in item 277, NOT on
+    surf; B4 pass 7 was never submitted (`submitted_to_chatgpt: false`) and is retired in item 276. The body below
+    is retained as history - it described a state that has since been resolved.
+    HISTORICAL BODY. VERIFIED 2026-11-14T16:45Z: only ONE of the three is still live and
      bound (pass19 5/5). pass31 is 1/11 and B4-pass5 is 2/5, because REPAIRS I LANDED THIS SESSION moved
      bound files (spyke_render.py, interrupt_sfx.py, sfx_verify.py, test_sfx_library_regression.py,
      tests/run.sh). By this item's own rule - 'a repair moved a bound file, so the packet no longer
@@ -6238,6 +6243,15 @@ t
      control with a live mutation; run.sh rc=0; sanity rc=0; packet re-hash 11/11 zero drift; board PASS.
 
 149. [~] Awaiting OWNER DECISION (Graham): is PACING-ONLY acceptable behaviour for an inline tag on /render?
+     EVIDENCE CORRECTION (item 278, audited 2026-11-14T20:40Z): the p=0.0043 / 2.56->2.88 s figures in the block
+     below ARE NOT RETRIEVABLE - `grep -rl 0.0043` over every artifact under outputs/ returns ZERO files - so those
+     exact numbers are unverified session record. What IS retrievable is outputs/tag-signal-probe-20261112.json
+     (n=10 per arm, 8 cells, 7/8 decisive): plain 2.064/2.136 s vs tag 2.372-2.788 s, Cohen's d 1.09-5.78, replicating
+     across halves. Its ASR note also records that inserted vocalisations WERE transcribed for groan ('Ugh','Uh') and
+     gasp ('Ah','Oh'), never for sigh/laugh - so 'pacing-only' is not the whole truth: the engine emits generic
+     nonverbal material, tags separate weakly from EACH OTHER (max d=1.67), and for two of them it is a recognisable
+     but generic vocalisation. That third fact - tags are not distinguishable from one another - is the one a product
+     owner weighs. ORIGINAL BRIEF (figures not retrievable, kept for history):
      WHAT IS MEASURED (items 145/146): a leading singular tag lengthens the render by ~0.32 s (median 2.56 -> 2.88 s, 6
      renders per arm, exact Mann-Whitney p = 0.0043), leaves `tone_effective` at neutral_warm in 12/12 runs, adds material
      that is near-silence before onset (1.6-2.7 % of speech RMS) plus a longer internal gap, and ASR hears no tag word. The
@@ -6618,7 +6632,16 @@ t
      Verification: the HTTP code, elapsed 0 s, exact JSON body, and an empty turn search for the probe thread, all taken
      while docker reports the container Exited (0) and :8018 answers HTTP 000.
 
-164. [~] AWAITING the pass-33 verdict: retain the reviewer's three counterexamples as harness cases.
+164. [x] DONE 2026-11-14T20:30Z: the three relayed counterexamples are RETAINED and LANDED (`22fc6283`).
+    Measured: `tests/test_wg_pass2_repairs.py` 44/44 checks rc=0; C1 and C2 refused by the run rule and
+    ADDITIONALLY flip to ACCEPTED when that rule is mutated away, so they are decisive; C3 measures exactly the
+    mono fraction (0.100, rms 0.054589) and is labelled a BOUNDARY, explicitly NOT mutant-backed, because no
+    single mutation moves it - the earlier claim that it caught the old verifier's 0.20 was FALSE and is removed.
+    Review: three rounds, final APPROVE with NO FINDINGS; the two LOWs raised on the way (a header contradicting
+    its own checks; the WG-08 mutant control catching `wg.WavError` instead of the mutant module's own class) were
+    both fixed and re-reviewed. Receipt `receipts/wg164-counterexamples.reviewer.json`. Full gate after landing:
+    18 harnesses PASS, `tests: all retained harnesses PASS`. origin/main == working bytes, verified.
+    HISTORICAL BODY:
      WHAT IS PENDING: item 159 measured surf's three exact WG3 counterexamples against the current gates and all three
      refuse, but only as one-off measurements. Retaining them as cases in `tests/test_wg_pass2_repairs.py` (with mutants)
      is what stops a future edit from silently re-opening the impulse loophole - the same standard every other finding in
@@ -9709,4 +9732,29 @@ t
            reviewer no longer sees that file.
        (c) LEAVE pass 19 unsubmitted and drop it as a packet.
        Recommended: (a). All three need Graham; none is mine to take.
+
+278. [x] EVIDENCE AUDIT FOR THE ITEM-149 DECISION: the brief cited a p value that does not exist on disk, and the
+     measurement that DOES survive says something the brief never mentioned.
+     SEARCHED, NOT ASSUMED: `grep -rl "0.0043"` across every receipt and artifact under `outputs/` returns **zero
+       files**. "median 2.56 -> 2.88 s, exact Mann-Whitney p = 0.0043" survives only in the session record and in
+       NEXT.md itself, so a decision resting on that p value rests on a number I cannot reproduce. (First search was
+       also a false positive: it matched a LoRA training log by coincidence and I nearly reported it as the artifact.)
+     RETRIEVABLE, read directly this turn: `outputs/tag-signal-probe-20261112.json`
+       (`chatterbox.tag_signal_probe.v1`, 2026-11-12), **n=10 per arm, 8 cells, 7/8 decisive**:
+         [sigh]|s0  2.064 -> 2.620 s d=4.44    [sigh]|s1  2.136 -> 2.372 s d=1.09
+         [laugh]|s0 2.064 -> 2.788 s d=5.78    [laugh]|s1 2.136 -> 2.664 s d=2.44
+         [gasp]|s0  2.064 -> 2.488 s d=3.38    [gasp]|s1  2.136 -> 2.464 s d=1.51
+         [groan]|s0 2.064 -> 2.612 s d=4.37    [groan]|s1 2.136 -> 2.424 s d=1.33
+       all replicate across halves. Stronger than what it replaces (n=10 vs n=6).
+     AND IT CHANGES THE QUESTION. The probe's own reading: tags lengthen the render but "barely separate from EACH
+       OTHER (max d=1.67/1.34)" - the model treats a tag as 'insert some nonverbal audio here', not 'produce THIS
+       event'. Its ASR note: never the tag WORD, but inserted vocalisations WERE transcribed for groan ('Ugh','Uh')
+       and gasp ('Ah','Oh'), and never for sigh/laugh. So "pacing-only" is not what happens: for at least two tags the
+       engine emits a recognisable but GENERIC vocalisation, for two others near-silence, and no two tags are
+       reliably distinguishable.
+     CONSEQUENCE FOR ITEM 149: the choice is no longer only (a) pacing is fine vs (b) a tag must sound like an event.
+       The evidence adds a third fact a product owner would care about: `[gasp]` and `[groan]` currently buy nearly
+       the same audio. Item 149 stays OPEN for Graham with this corrected brief; nothing is decided here.
+     I DID NOT RE-RUN THE A/B: n=10/arm already exists and replicates; spending a busy A5000 to restate it would not
+       change the decision. If Graham wants the p value re-established, that is a declared run, not a quiet one.
 
