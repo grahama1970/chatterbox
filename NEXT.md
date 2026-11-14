@@ -9047,3 +9047,49 @@ t
        So the honest state of this item is WAITING, with each candidate advance blocked by a NAMED reason
          rather than by vagueness. Nothing here is blocked on work I can do: the two verdicts are the gate.
 
+249. [x] THE FIVE A39 REPAIRS ARE NOW RETAINED AS A REGRESSION HARNESS - landed `69c2165402`.
+       `skills/chatterbox-speak/tests/test_a39_repairs.py`, 17/17 checks, exit 0. Verified after landing:
+         local sha `0124d09719b364d7fe7ebed3` == `git show origin/main:...` sha (MATCH),
+         receipt `886ba84069a0936053ae23e6` also MATCH.
+       WHY IT MATTERED: every repair so far was proven by a one-off probe in `/tmp`, and `/tmp` is reaped -
+         this lane has already lost a source file that way. Without a retained case, a future edit reopens
+         the defect and the only trace is a review thread nobody reads.
+       WHAT IT COVERS, each with a CASE that a regression would actually fail:
+         SP-01  a refusal raised INSIDE the final verification loop leaves NO directory descriptor open
+                (the leak that reported fd 3 still open after `_DirIdentityChanged`).
+         SP-02  a directory swapped under the retained descriptor is refused, the refusal names the
+                identity mismatch, and no descriptor survives - checked on BOTH the pathname directory and
+                the replacement directory.
+         SP-03  a growing artifact is refused; the verification read stays under the 67,108,864-byte limit;
+                an append AFTER the size check is refused by the exact-EOF check.
+         ASR-01 both sealed read-back paths (`interrupt_sfx._asr_snapshot`, `sfx_verify.transcribe`) reject
+                an enlarged sealed descriptor and materialise no substituted bytes.
+         IS-01  a foreign entry in staging SURVIVES, while a staging dir holding only our own `raw.wav` /
+                `raw.src` is removed.
+       EVERY CASE CARRIES A CONTROL (a plain render succeeds, and leaves no dirfd open), so an
+         always-refusing harness fails here instead of looking green.
+       THE REVIEW DID THE WORK, not me: **two REJECT rounds** before APPROVE.
+         round 1 caught: my patch cleanup was a NO-OP (`ctx.start()` then `mock.patch.object(...).stop()`,
+           which builds a NEW patcher), there was no dedicated SP-01 case at all (it piggybacked on SP-02),
+           and dead `try: pass/finally: pass` code. All three fixed.
+         round 2 caught: my SP-01 case refused in the SIDECAR PUBLICATION loop (`spyke_render.py:871`), not
+           the final loop it claimed - so it did not exercise the leaking path; and my SP-02 leak assertion
+           checked only the pathname directory while the descriptor actually referred to the REPLACEMENT
+           directory, making it vacuous. Both fixed (growth now starts only once `turn.wav` exists, which is
+           published last; the replacement path is recorded and both are checked).
+         round 3: APPROVE with the reviewer's own independent restatement. I had shipped two vacuous
+           assertions and did not see either - the reviewer did.
+       NOT DONE, ON PURPOSE: registration in `tests/run.sh` is DEFERRED. `tests/run.sh` is one of the 11
+         files bound in the in-flight pass-41 packet; editing it now would move a reviewed hash and void
+         that verdict - the churn that killed passes 28/29/30. It registers the moment pass 41 returns.
+
+250. [~] VERDICT STATE RE-MEASURED (targeted, not a full `/tmp` sweep - an earlier sweep timed out):
+       pass 19 `b1ad7fa081324d5a…` : NO artifact. 5/5 bound, durable copy in `outputs/packets/`.
+       pass 41 `63e01ca4da9ca816…` : NO artifact. Still 11/11 bound with **0 drift** even after I added the
+         new harness file - confirming a new path does not disturb the packet.
+       pass 40                      : INTACKED (item 240), artifacts preserved.
+       So the item is genuinely WAITING, and this turn advanced the queue instead of idling: repairs settled
+         SP-01/SP-02/ASR-01 (PASS, intaked), SP-03 `246817e6`, IS-01 `8222f96e`, retained harness
+         `69c21654`. TXN-01 stays OPEN as a design question (item 244); item 164 stays blocked because its
+         harness file is bound in pass 41 (item 248).
+
