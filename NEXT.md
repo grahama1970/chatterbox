@@ -8170,3 +8170,18 @@ t
        defect was found. Every sidecar was re-hashed from the WAV after its final rename, so name,
        bytes and sidecar agree.
 
+213. [x] REPAIRED the dead media pointer my rename created (scenario-01 seq 13). spyke's already-posted
+     seq-13 atom referenced the pre-rename media name; after the rename that URL 404'd.
+     FIX: a HARDLINK restored the old name on the media store (`ln -f <new> <old>`), so the posted
+     reference resolves again without spyke spending a turn on a correction: both names are inode
+     174001014, 2 links, `sha256 1b546ddf...` identical, and the old name reads back as RIFF/WAVE.
+     The new name (`spyke-cardvoice-seq8-rr-...`) stays canonical; the link is compatibility only and
+     is NOT recorded in this file by name (its token shape is what tripped the secret guard - a
+     filename false positive, not a secret; nothing was leaked and nothing in git changed for it).
+     PROTOCOL accepted from spyke for future renames: (1) say so BEFORE the rename when possible, and
+     always with old+new in the same message when not; (2) keep the message_id / sidecar stem stable
+     through renames so old->new is mechanically matchable (done here: `...1b546ddf00ad` unchanged);
+     (3) record guard refusals as what they are - a shape rule firing on a public filename - never as
+     a secret incident, and never clear one by rewording content.
+     spyke independently re-verified all ten corrected artifacts after the rename.
+
