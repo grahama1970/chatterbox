@@ -9570,3 +9570,27 @@ t
        bound 0 drift, both **NO verdict artifact**; surf's log is fresh (14:52) but its newest artifact is
        12:27, so the submission order sent at 14:52 is delivered and not yet actioned.
 
+273. [~] BOTH REVIEW LANES NOW CARRY AN ORDER, AND THE TRAINING WINDOW IS QUANTIFIED (item 259 no longer says
+     "needs GPU", it says how much).
+     LANE STATE, measured this turn:
+       surf `01a07bbf` - CONNECTED and IDLE (verified via intercom list, 32% ctx). Work order sent twice:
+         14:52 (general) and 14:53 (targeted at the session id, with the packet path, sha, the three narrow
+         questions, and the exact return shape). Its host log is fresh every check (`14:53:57`) but its newest
+         ARTIFACT is `surf-snap-…png` at **12:27:23** - nothing produced for these packets.
+       researcher - ops-magpie consultation requested at 14:53 with the same binding contract, because that
+         lane's 2026-11-14 run is what produced the only fully bindable packet verdict so far
+         (ops-magpie-c1ec372c44df: input_sha256 == question sha, answer_sha256 == answer_raw sha).
+       packs, both still exact: pass 41 `63e01ca4…` 11/11 bound 0 drift; pass 19 `b1ad7fa0…` 5/5 bound 0 drift.
+       NO verdict artifact exists for either (searched the transport dirs for both shas).
+     TRAINING WINDOW, now quantified instead of vague: total weights **3.77 GiB**
+       (t3_turbo_v1 1.78, s3gen 0.98, s3gen_meanflow 0.99, ve 0.01, conds ~0), against **343 MiB free** on the
+       A5000 at the same instant - and that free figure moves (23,667 -> 23,860 MiB used within minutes), so the
+       window is not merely small, it is unstable. Training the new row in an isolated copy needs the live
+       service stopped; peer lanes render through it.
+     MY OWN MEASUREMENT ERROR, disclosed because I quoted a wrong number twice: I first read these sizes with
+       `stat` inside `docker exec` and reported **0.00 GiB** for every file and a 0.00 GiB total. The HF snapshot
+       entries are SYMLINKS into the blob store, so plain `stat` measured the links. Re-measured with `stat -L`:
+       3.77 GiB total. The 0.00 GiB figure was wrong and is superseded by this line.
+     NOTHING IS CHECKED OFF ON THE STRENGTH OF A REQUEST: item 133 needs a response artifact, and neither lane
+       has produced one.
+
