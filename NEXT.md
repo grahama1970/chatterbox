@@ -9113,7 +9113,7 @@ t
        source file here.
        Item 201 therefore closes as RESOLVED-BY-REFUSAL, not as pending work.
 
-252. [~] TAG-ALIAS F2 (the MEDIUM finding) IMPLEMENTED WITH TEST EVIDENCE, **NOT REVIEWED, NOT LANDED**.
+252. [x] TAG-ALIAS F2 (the MEDIUM finding) FIXED, REVIEWED, AND LANDED `cce7d2a6be`.
      THE DEFECT: expansion ran BEFORE backend selection, so on `chatterbox_base_affect` - which speaks bracket
        tokens as LITERAL WORDS - the text was rewritten. That mutates words the model was always going to say
        out loud: a quieter render, plus a receipt entry describing an expansion that never became a tag.
@@ -9138,4 +9138,27 @@ t
        measured state stands: `text_emb.weight` is [50276,1024], ids 50257-50275 are the 19 installed tags, so
        the next free id is 50276 and adding one requires resizing the embeddings and training that row. Aliases
        are the shippable increment; the resize+train path is separate work.
+
+253. [x] F2 LANDED AND VERIFIED - and MY OWN FIX SHIPPED A HIGH BUG THAT THE REVIEWER CAUGHT.
+     LANDING `cce7d2a6be06e4598f952359ad190c7d24bc8d3f`; verified after landing, not from memory:
+       presets.py `b11e21ecacd64899` MATCH, server.py `466c3f36719667b8` MATCH, test_tag_aliases.py
+       `f67ca0df92310bf7` MATCH against `git show origin/main:`.
+     WHAT IT DOES NOW: `plan_tag_expansion(text, backend_id)` returns the text UNCHANGED with no recorded
+       expansion for a non-consuming or unknown backend, so `chatterbox_base_affect` no longer has its
+       literal bracket words rewritten; expansion happens only after the backend is selected; and
+       `voice_delivery` is derived from the request AS WRITTEN, rederived only when aliases actually expand,
+       so `detected_tags` stay the native tags that reached the model.
+     THE REVIEW DID REAL WORK - round 1 REJECTED with a HIGH defect I had introduced: I moved the expansion
+       inside `if backend.caps.backend_id in TAG_CONSUMING_BACKENDS:` and the render block still passed
+       `text=model_text` unconditionally, so the NON-tag-consuming path was a NameError waiting to happen -
+       i.e. my "fix" broke the exact path it was written to protect. Fixed by binding `model_text =
+       request.text` before the branch, proven by AST inspection of `synthesize_to_file` (unconditional
+       assignment present, gated assignment present, `text=model_text` used twice) and by 27/27 checks.
+       Round 2 APPROVED with one LOW residual: `ALIAS_TAG_VOCABULARY` ordering is informational only,
+       because `expand_tag_aliases` matches with the bracket regex. Recorded as residual, not silently
+       deleted.
+     STILL UNMET BY THIS INCREMENT, and it is the owner's actual ask: NEW TOKENIZER IDS AND RETRAINING.
+       Measured state unchanged: `text_emb.weight` is [50276,1024], ids 50257-50275 are the 19 installed
+       tags, next free id 50276, so adding a tag means resizing the embedding and training the new row.
+       Aliases are a shippable substitute, not the requested capability.
 
