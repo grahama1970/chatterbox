@@ -217,7 +217,7 @@ surf returned packet B FAIL (all four files). Majors:
        FOLLOW-UPS (open, low): server-level violation tests (reviewer MEDIUM); model_text_sha256 in receipt;
        hyphen-tolerant alias regex; dist-packages-vs-mount deploy hygiene.
 
-11. [~] Ear verdict on the 59 verified clips at http://127.0.0.1:8797/ — blocked awaiting Graham. Say "confirm all", "confirm [ids]", "reject [ids]", or "regenerate [category] with [change]". Nothing else in the SFX track can advance until the manifest carries real verdicts.
+11. [x] EAR VERDICT DELIVERED AND APPLIED (owner: "these are all good! this process seems to be working", 2026-11-14). 70 clips set `human_confirmed` through `POST /api/verdict`, each carrying `reviewed_at_utc`, proven by reading `sfx-library/manifest.json` itself rather than the HTTP responses (0 write failures). The 4 that no ear could rescue were `culled_content_failed` with a recorded reason (below the wav_guard gate) - the project's existing machine disposition, NOT a human verdict - and the owner can still ask for regeneration of any. Manifest now: 70 human_confirmed, 7 culled_content_failed (4 new), 6 excluded_nonconforming, 0 pending; `/api/clips` returns 0; pre-cull backup `sfx-library/manifest.pre-cull-*.json`. The '59 verified clips' in the old title was stale: the review set was 74 (70 listenable + 4 below gate).
      REVIEW SURFACE REPAIRED AND VERIFIED LIVE (2026-11-13):
      - The `:8797` server was a STALE PROCESS from **Nov 10** (PID 2238598) that predated the current
        `scripts/listen_review.py` (`e178ee7621f0…`), so it 404'd `/api/clips` — the endpoint the
