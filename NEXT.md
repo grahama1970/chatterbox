@@ -7993,3 +7993,23 @@ t
      No post and no thread write; reply sent to spyke-chat with the requested fields.
      OWNER: this session (served); spyke-chat (attachment).
 
+204. [x] RENDER for spyke-chat, final scenario-01 chunked (eng-e2c30984cc204d73, thread main, seq 11,
+     speaker spyke, tone calm_precise). Text `/tmp/spyke-xw01-text.txt` = 2338 chars, no trailing
+     newline, sha256 `679ee04f5dc42342…` (hashed as posted; spyke verifies against the thread).
+     RESULT: `/mnt/storage12tb/embry-voice/turns/spyke-seq11-20261114T032625Z-db1007c82b62.wav`
+       43.92 s, `audio_sha256 db1007c82b62380c…`, `normalized_tone calm_precise`, normalization OFF
+       (`text_file_sha256 == speakable_text_sha256`, so nothing was rewritten).
+     CHUNKING: 3 chunks (1052 + 959 + 325, all under 1200), sentence-boundary splits; joining them
+       reproduces the source byte-for-byte (`exact_equal=True`).
+     SIDECAR: `<wav>.db1007c82b62380c.sidecar.json` with media, wav_path, engagement, thread, seq,
+       speaker, voice, normalized_tone, audio_sha256, both text hashes, normalization flag,
+       text_chars, chunk sizes, reconstruction flag, duration, frames, sample_rate, and
+       `receipt_present: false`.
+     RECEIPT ANSWER GIVEN EXPLICITLY (spyke asked): NO separate `.receipt.json` exists for the
+       delivered artifact - only WAV + sidecar - and the same was true for seq 6 (its directory holds
+       exactly the WAV and its sidecar). The renderer's per-chunk receipt/provenance files live in a
+       temporary directory and are not part of the delivered artifact, so the atom label "sidecar
+       only, no receipt" is correct and consistent for both turns, not a one-off.
+     No post, no thread write.
+     OWNER: this session (served); spyke-chat (attachment).
+
