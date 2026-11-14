@@ -8185,3 +8185,14 @@ t
      a secret incident, and never clear one by rewording content.
      spyke independently re-verified all ten corrected artifacts after the rename.
 
+     INDEPENDENT LIVE PROOF (spyke, the authenticated route, not curl): GET
+     /api/media/<the pre-rename name> with the human session cookie returned 200,
+     content-type audio/x-wav, 5,412,524 bytes served, and the SERVED bytes hash to
+     `1b546ddf00ad32e0...`. Disk check on their side: same inode 174001014, link count 2.
+     So the already-posted scenario-01 seq-13 atom resolves with the originally verified bytes -
+     no repost, no pointer correction, no 404. Their cap-4 slot is freed and the staged pointer
+     correction is dropped rather than queued; the only remaining pacing correction is scenario-05.
+     CLOSURE: a public filename whose token shape matched an sk- key rule; nothing leaked; the
+     artifact was renamed, the link restored as a hardlink, and the false positive did not become a
+     content edit. Both ends held.
+
