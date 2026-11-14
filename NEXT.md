@@ -8900,3 +8900,32 @@ t
        ITEM STATE stays [~]: waiting on surf for (a) the bound pass-40 verdict artifact and (b) the pass-19
          verdict that was already outstanding. Nothing is blocked on me beyond building pass 41 later.
 
+240. [x] PASS-40 NARROW VERDICT **INTACKED** (this is the second attempt; the first was refused - see 239).
+       BINDING VERIFIED BY ME, not relayed. In `/tmp/cb-A7-review-full2`, re-copied to
+         `outputs/reviews/a7-pass40-narrow-verdict-20261114/`:
+         `question.txt` 302,345 B sha `45e9c6a301c2c13b…`; the frozen packet is embedded BYTE-IDENTICAL at
+           offset **1,314**, and the sha256 of that 301,012-byte segment is `98e686c288fd31ee…` - exactly
+           the packet's own hash. So the reviewer really did receive the whole packet, not excerpts.
+         `answer_raw.txt` 623 B sha `79fb2ab50a6ec4b1…` (exact capture; `answer.txt` was raw + newline,
+           sha `9e34167e…`).
+         Transport receipt `ops-magpie-c1ec372c44df`: `input_sha256 == question.txt` sha,
+           `answer_sha256 == answer_raw.txt` sha, served `deepseek/deepseek-v4-pro`, single attempt, metered.
+       RESULT, literally from the file: `SP-01: PASS`, `SP-02: PASS`, `ASR-01: PASS` (both paths), and
+         `PACKET-SHA256: 98e686c2…` quoted in the answer; `SP-03 / IS-01 / TXN-01: present/unfixed`.
+       INTAKE RECORD: `outputs/reviews/a7-pass40-narrow-verdict-20261114/intake.json` - packet sha, question
+         sha, embedded offset, segment sha, answer sha, transport, served model, and the four labels.
+       WHY `verdict-intake.py` WAS NOT RUN: this is a FINDING-level verdict with no
+         `VERDICT <path> <sha256>` lines, so the tool would (correctly) refuse it. It gates three findings,
+         not the file set. Recording that decision rather than forcing it through a tool designed for a
+         different shape.
+       MY OWN CORRECTION OF MY OWN WORDS (239): I wrote that the previous artifact "does NOT say" the
+         PASSes. Having read the file myself, it did contain three `PASS` lines numbered `1) 2) 3)` - the
+         substance was there, the LITERAL LABELS and the packet sha were not. The blocking reason was
+         machine-bindability, not absence of content. That overstatement is corrected here.
+       STATUS OF THE FINDINGS AFTER THIS VERDICT: SP-01 PASS, SP-02 PASS, ASR-01 PASS, and SP-03 fixed and
+         landed after the freeze (`246817e614`). IS-01 is fixed with an APPROVE review (one residual finding
+         being read now); TXN-01 remains OPEN and unrepaired.
+       ITEM 133 STATE: pass-40 verdict received and intaked; the **pass-19 verdict is still outstanding**,
+         and pass 40 is stale for `spyke_render.py` + `interrupt_sfx.py` after my post-freeze repairs, so
+         pass 41 will be needed. Nothing blocked on me; waiting on surf for pass 19.
+
