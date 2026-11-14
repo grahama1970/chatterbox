@@ -8536,3 +8536,14 @@ t
        numbers. Peak/RMS on every montage are healthy (peak 0.11-0.85, rms 0.011-0.080), so none of the
        eleven is silent or broken as a file.
 
+     DURABLE (this turn): the montages were in /tmp, and /tmp already ate a source file earlier in this
+       session (spyke-oc-text.txt), so they are now copied to
+         `/mnt/storage12tb/skills/chatterbox-speak/outputs/ear-montages/`
+           {chuckle, clear-throat, cough, crying, delaying, gasp, groan, laugh, sighing, sniff,
+            surprised}.wav + `index.json` (clip ids and durations per montage)
+       11 files, 157.5 s total, verified present with sizes (0.19-3.45 MB each); no verdict is attached to
+       any of them and no manifest entry was touched.
+     READY STATE: the ONLY remaining step is a human ear verdict. Nothing in this track can advance
+       without it: 74 entries all `awaiting_owner_verdict`, 0 confirmed, 4 that no verdict can rescue
+       (below the project's own gate), 70 listenable in 157.5 s of montage. A machine PASS is not an ear.
+
