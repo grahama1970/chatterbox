@@ -8501,3 +8501,11 @@ t
        "confirm [ids]" / "reject [ids]"    -> per clip
        "regenerate [category] with [change]"
 
+     COUNT RESOLVED (this turn, so the ask is not ambiguous): the frozen eval
+       `/mnt/storage12tb/skills/chatterbox-speak/outputs/sfx-library/eval-freeze-v1.json`
+       (sha256 `876542cfc4377f55...`, the same freeze the surface serves) contains **74** entries, and
+       statuses are `awaiting_owner_verdict` x74 with **0** human_confirmed. So the "59 verified clips" in
+       this item's title is STALE, not a second set: the authoritative number is 74 total, 70 listenable,
+       4 broken (cry-embry-v1, cry-arc-v3, delay-tearful, noseblow). The words "verified clips" were
+       never true either - nothing in the freeze carries a human verdict yet.
+
