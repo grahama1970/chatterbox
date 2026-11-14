@@ -9491,3 +9491,36 @@ t
      With that, the dead-voice cleanup is complete in three files: `speak_core.py` landed (`04c2a2d4`),
        `sfx_demo.py` landed (`3ae55621`), and `spyke_render.py` prepared and waiting on the packet.
 
+270. [~] THE ASK TO SURF TIMED OUT, AND I OBTAINED A BOUND REVIEW ON A TRANSPORT THAT DOES NOT DEPEND ON IT -
+     recorded as REPORTED, not as the external gate.
+     THE ASK (item 268): sent 19:33Z, `intercom ask`. Result: **no reply within 10 minutes**; delivery state
+       `injected`. Not a cancellation, not a refusal - simply unanswered. Surf's host is alive (log 14:46:55) but
+       its newest ARTIFACT is still 12:27:23, i.e. it has produced nothing for these packets in ~2h20m of my
+       observing, ~7h since its last artifact.
+     WHAT I DID INSTEAD: ran the review on a non-browser transport (a deepseek consultation) with the packet
+       embedded intact. Artifacts preserved at
+       `outputs/reviews/a7-pass41-local-deepseek-20261114/{prompt.txt,answer_raw.txt,err.txt}`.
+       BINDING, computed by me rather than claimed:
+         packet sha `63e01ca4da9ca816…`; the embedded segment inside prompt.txt is BYTE-IDENTICAL and its own
+           sha equals the packet sha (identical=True);
+         prompt sha `e4b72e44862d66b0…`; answer sha `85f10c7cdcb80369…` (2,737 B);
+         literal labels present: **SP-03: PASS, IS-01: PASS, TXN-01: FAIL**;
+         `PACKET-SHA256: 63e01ca4…` restated and equal to the packet's own hash; `PACKET VERDICT: FAIL`.
+         Mechanical check prints `BINDS: True`.
+       THE BINDING GAP WAS MINE, and it is worth naming: my first prompt asked the reviewer to quote a hash "the
+         packet header states" - which a file cannot contain about itself. The envelope must state the packet
+         sha, as pass 40's did. Two earlier attempts also failed on my own `E2BIG` (a 307 KB prompt as an argv
+         element); it works fed on stdin.
+     WHAT THIS DOES AND DOES NOT CHANGE: **nothing gates on it.** It is a finding-level answer on a locally-run
+       model with caller-computed hashes and no provider-metered receipt, so `verdict-intake.py` would correctly
+       refuse it and I am not calling it the independent external verdict. But it is evidence, it agrees with my
+       own reading, and it ANSWERS the TXN-01 question with an ordering I can check:
+         after the final `_assert_content_in_dir(out_path, …)` returns clean, a same-UID writer replaces
+         `out_path`'s content; `_close_dirfd()` re-reads nothing; `_assert_dir_unchanged()` compares only the
+         PARENT DIRECTORY's identity; `retire_owned` touches only `.prev-*` backups; then `return receipt`
+         with `ok=True` and `audio_sha256` of the snapshot, which now diverges from the on-disk WAV.
+       That is a concrete, falsifiable claim about MY code, and it is the same shape as the reviewer's original
+       finding - so TXN-01 stays OPEN and is now better specified. It does not get "fixed" by a document.
+     The external verdict for pass 41 and pass 19 is still outstanding on surf (or on Graham choosing a
+       different reviewer lane).
+
