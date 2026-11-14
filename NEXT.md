@@ -9246,3 +9246,37 @@ t
        then blind A/B it against its initializer. That needs GPU time in an isolated copy and is the next
        rung, not a claim I can make here.
 
+258. [x] ITEM 165 CODE SIDE LANDED `04c2a2d4b6` - and caught a landmine in my own review process.
+     WHAT LANDED: `speak_core.py` no longer maps a voice name to the nonexistent `graham_owner.wav`.
+       Selecting "graham" now raises `UnknownVoiceError: unknown voice 'graham'; known: ['alex','embry','jordan']`
+       instead of handing the service a path to nothing and failing deep inside ffmpeg. Verified after landing:
+       `origin/main` speak_core.py sha `858919b6189159b2` == the merged bytes I reviewed, and the `"graham":`
+       entry count on `origin/main` is now **0**. `alex`, `jordan`, `embry` resolve unchanged.
+     THE LANDMINE, disclosed: `speak_core.py` and `sfx_demo.py` are UNTRACKED in this checkout while
+       `origin/main` holds older copies, so my first `git diff` was **0 lines** and the reviewer returned
+       APPROVE on an EMPTY diff. A review of nothing is not evidence. I discarded that approval, rebuilt the
+       real delta (`git show origin/main:` vs the merged file), and got a genuine review of the 3-line change.
+     WHY THE MERGE, NOT MY LOCAL FILE: local speak_core.py is 1,015 lines vs origin/main's 594 - landing it
+       wholesale would have carried **465 lines of another lane's unlanded work** into main on my commit.
+       So I landed origin/main + only the removal, and RESTORED the newer local copy immediately: local sha
+       before `4254e8381ededc5f` == after (MATCH), 1,015 lines. Nothing of anyone else's was reverted or
+       shipped. Packet safety re-checked: pass 41 still 11/11 bound, 0 drift.
+     STILL BROKEN, NOT MINE TO LAND: `sfx_demo.py` keeps the same dead "graham" entry locally but does not
+       exist on `origin/main` at all (155 new lines), so landing it needs a review of that whole file; and
+       `spyke_render.py` still carries it but is one of the 11 files bound in the in-flight packet, so editing
+       it would void the verdict. Both recorded rather than silently worked around.
+
+259. [~] TRAINING RUNG (the owner's "crucial" ask): the FIRST question is answered NO, with measurement.
+     Question: can the LoRA/token training run in an ISOLATED container while the live speech service keeps
+       serving (spyke renders through it)?
+     Measured:  `embry-voice-chatterbox-1` Up 4 hours (healthy); GPU is an RTX A5000 with **23,667 MiB of
+       24,564 MiB already in use (8% util)** - the live service holds essentially the whole card. A second
+       container DOES start and reports `torch 2.6.0+cu124 cuda True NVIDIA RTX A5000`, so the plumbing
+       works, but ~900 MiB free leaves no room for training without competing with the service.
+       Also measured: that image has **no `peft`** (`ModuleNotFoundError`), so the training container needs
+       `pip install peft librosa` per the pipeline's own documented invocation.
+     CONCLUSION: training here is a SERIALIZED window, not a parallel job - it needs the service stopped (or a
+       second GPU), which is a live-effect decision about a service peer lanes use, so I am not stopping it
+       unilaterally. This is the concrete blocker on the retrain requirement, stated with numbers instead of
+       "needs GPU".
+
