@@ -9594,3 +9594,39 @@ t
      NOTHING IS CHECKED OFF ON THE STRENGTH OF A REQUEST: item 133 needs a response artifact, and neither lane
        has produced one.
 
+274. [x] PASS-41 VERDICT INTACKED FIRST-CLASS - FAIL on two findings, and one of them is a defect I shipped.
+     THE VERDICT (researcher/ops-magpie, receipt `ops-magpie-aabaeea80245`):
+       `SP-03: PASS` · `IS-01: FAIL` · `TXN-01: FAIL` · `PACKET-SHA256: 63e01ca4…` · `PACKET VERDICT: FAIL`.
+     BINDING, recomputed by me from the artifacts rather than read off the relay:
+       packet `63e01ca4da9ca816…` (306,049 B); question `fca0bb93fd0a013b…` (307,469 B) with the packet
+         embedded BYTE-IDENTICAL, exactly 1 occurrence, embedded segment sha == the packet sha;
+       answer_raw `25759d35e58260d0…` (981 B), `answer.txt` = raw + one newline (9b273a24…);
+       receipt `ops-magpie.consult_receipt.v1`: `ok:true`, asked == served `deepseek/deepseek-v4-pro`,
+         `metered:true`, 1 attempt, status 200, 61,401 ms;
+         `input_sha256` == question sha TRUE; `answer_sha256` == answer_raw sha TRUE.
+       reviewer family deepseek vs author `zai` => genuinely independent of the author.
+     PRESERVED at `outputs/reviews/a7-pass41-researcher-20261114/` (question, answer_raw, answer, summary,
+       receipt mode 0600, and `intake.json`).
+     `verdict-intake.py` REFUSED it - `REFUSED: report contains no \`VERDICT <file>: PASS|FAIL\` lines` -
+       which is correct: this is a finding-level verdict, not a per-file one. Recorded in `intake.json` with
+       `kind: "finding-level"`, same handling as pass 40. Neither verdict is forced through a tool that
+       should refuse it.
+     IS-01 IS A REAL DEFECT AND THE REVIEWER IS RIGHT; my earlier IS-01 repair was INCOMPLETE:
+       `scripts/interrupt_sfx.py:478`  `own_names = frozenset({"raw.wav", "raw.src"})`
+       `:488`  `foreign = sorted(q.name for q in self.path.iterdir() if q.name not in self.own_names)`
+       `:500-502`  for each entry whose NAME is in own_names and is a file -> `q.unlink()`
+       So ownership is decided by FILENAME. A same-UID writer that places or replaces a file at exactly
+       `raw.wav` / `raw.src` is classified as ours and deleted. My item-233/IS-01 work only ever tested a
+       FOREIGN NAME (`foreign-evidence.bin`), which is why the harness passed 17/17 while the exact-own-name
+       case was never exercised. That is the same blind spot twice: I tested the case I had fixed, not the
+       case the finding described.
+     WHY THIS VALIDATES THE PROCESS: my own unreceipted local review said `IS-01: PASS`. The receipted
+       independent review says FAIL, and its reason is visible in four lines of my code. An unreceipted
+       agreement is not evidence - this is exactly why item 270 was recorded as REPORTED and gated nothing.
+     QUEUE EFFECTS: pass 41 is SETTLED (FAIL, intaked) - so `tests/test_wg_pass2_repairs.py` is no longer in
+       flight and **item 164 is UNBLOCKED**. Pass 19 `b1ad7fa0…` is now the ONLY A7 packet still live (5/5
+       bound, 0 drift, no artifact). B4 pass 7 still has no captured answer (`response.md.raw.md` is 0 bytes).
+     NEXT REPAIR (not started, deliberately): make `_StagingDir` decide ownership by IDENTITY (st_dev,
+       st_ino) recorded when each own intermediate is created, unlink only on a match, and PARK when identity
+       is unknown or differs. That is fix-by-construction, not a narrower name list.
+
