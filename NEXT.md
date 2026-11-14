@@ -9213,3 +9213,36 @@ t
      ACTION: B4 pass 7 needs an actual answer capture. I am not re-submitting an identical packet into a
        round whose transport already lost one answer; that is surf's transport to repair and re-run.
 
+257. [x] NEW-TAG PREPARATION LANDED `a563b5b4e8` - the mechanical half of the retrain requirement, and the
+     review earned it.
+     LANDED FILES, verified against origin/main after the fact (not from memory):
+       `scripts/new_tag_prep.py` MATCH, `tests/test_new_tag_prep.py` MATCH,
+       `receipts/new-tag-prep.reviewer.json` MATCH.
+     WHAT IT DOES: allocates exactly ONE new bracketed token id on a COPY of the Turbo checkpoint,
+       initialized from the row of a NAMED installed tag, extends `added_tokens.json` beside it, and then
+       RELOADS what it wrote and proves the round-trip (all text tensors grown by one row, new row
+       `torch.equal` to its source row, non-text tensors present with unchanged shapes). It refuses:
+       a duplicate tag, an unknown source tag, an unbracketed name, duplicate ids, non-contiguous ids,
+       negative ids, any id at/over the tensor row count, unused rows (it will not guess which row), a
+       wrong-rank or mixed-rank text tensor, a corrupt checkpoint, malformed JSON, and any output path that
+       would overwrite the source checkpoint or its token map. Refusals are JSON, never tracebacks.
+     `trained` is false BY DESIGN: an untrained duplicate row renders as its source tag, so claiming success
+       here would be exactly the failure the owner warned about.
+     THE REVIEW WAS THE VALUE - three REJECT rounds, seven real defects, and I introduced two of them:
+       round 1: output could overwrite the source token map; unguarded `json.loads` escaped as a traceback;
+         `new_id` unchecked against tensor rows; the span check accepted duplicates+gaps; non-text tensors
+         never reload-verified. All fixed.
+       round 2: `safetensors` errors escaped as tracebacks; NEGATIVE ids were accepted and a negative
+         `source_id` produced an EMPTY slice via Python negative indexing. Both fixed.
+       round 3: APPROVE with one LOW - text-tensor rank unvalidated, so a 0-D/1-D tensor raised IndexError.
+       round 4: APPROVE, FINDINGS: 0, on the final bytes.
+     Also disclosed: while fixing the rank LOW I broke the file with an IndentationError (my insertion landed
+       inside a `try`), repaired it immediately, and then found my own "row counts disagree" branch was
+       UNREACHABLE dead code (the per-tensor boundary rule already refuses that case) so I deleted it rather
+       than keep an untestable branch. 23/23 checks.
+     PACKET SAFETY CONFIRMED: adding these new paths did not disturb the in-flight packet - pass 41 still
+       binds 11/11 with 0 drift.
+     STILL NOT DONE (the second half the owner asked for): TRAIN the new row on audio of the intended sound,
+       then blind A/B it against its initializer. That needs GPU time in an isolated copy and is the next
+       rung, not a claim I can make here.
+
