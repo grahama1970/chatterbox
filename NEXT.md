@@ -9458,3 +9458,21 @@ t
      VERDICT STATE at the same instant: pass 19 `b1ad7fa0…` 5/5 bound 0 drift, pass 41 `63e01ca4…` 11/11 bound
        0 drift, both **NO verdict artifact**. Item 133 stays open; nothing arrived to intake.
 
+268. [~] "WAITING ON SURF" IS NOW MEASURABLY A STALLED LANE, NOT A PENDING SUBMISSION - and that is a different
+     fact from the one the previous records state.
+     MEASURED THIS TURN (2026-11-14T19:32Z):
+       surf host is ALIVE: `/tmp/surf-host.log` mtime 14:32:55 local, last entry `CLI client disconnected` at
+         19:32:55Z, host process pid 2705370 up 15,775 s.
+       but the newest surf ARTIFACT is `surf-snap-1794677243171.png` at **12:27:23** and
+         `surf-gemini-submit-*` at 12:25-12:26 - roughly **7 hours** before this check.
+       for my packets specifically: **zero** transport artifacts. pass 19 `b1ad7fa0…` 5/5 bound 0 drift and
+         pass 41 `63e01ca4…` 11/11 bound 0 drift, both still bound cleanly, both with no response anywhere.
+     SO THE HONEST READING: this is not "a verdict is in flight". The surf lane has not acted on either packet
+       for seven hours. The packets are fine (0 drift); the lane is not producing.
+     WHAT I AM NOT DOING ABOUT IT: re-submitting identical packets myself (all browser interaction belongs to
+       surf), rewording them, or marking them withdrawn to make the queue look clean. A withdrawn packet that
+       was never reviewed is not a result.
+     WHAT I AM DOING: one direct ask to surf, batching the two decisions it owns - submit pass 41 and pass 19,
+       or say explicitly that they are abandoned so I can record withdrawal honestly. Then this item stays open
+       on evidence rather than on hope.
+
