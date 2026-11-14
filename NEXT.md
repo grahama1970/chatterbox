@@ -8964,7 +8964,7 @@ t
      NO VERDICT ARTIFACT EXISTS for pass 19: searched `/tmp` and the reviews tree for its sha; the only
      hit is the packet itself.
 
-243. [~] A39-TXN-01: SECOND PROBE, STILL **NOT REPRODUCED** - and the failure mode is informative.
+243. [x] A39-TXN-01: SECOND PROBE, STILL **NOT REPRODUCED** - and the failure mode is informative.
      Probe 2 avoided the read-path mocking that hung probe 1. It used a watcher thread that rewrites the
        persisted receipt's `ok` from true to false the moment the provenance sidecar appears, i.e. after
        the final loop has already checked the receipt.
@@ -8984,7 +8984,7 @@ t
      NOT edited: spyke_render.py was not touched by either probe; both landing commits (`246817e6`,
        `8222f96e`) are clean in the working tree.
 
-244. [~] A39-TXN-01: FOURTH PROBE, STILL NOT REPRODUCED. I am stopping the probing loop and naming why.
+244. [x] A39-TXN-01: FOURTH PROBE, STILL NOT REPRODUCED. I am stopping the probing loop and naming why.
      Attempt 4 hooked `os.open` and flipped the receipt in place (same length, `true` -> `fals`) at the
        moment the loop opened the PROVENANCE artifact for verification. Result: 6 dir_fd verification
        opens observed, flip performed, render REFUSED - `published content does not match the staged
@@ -9006,7 +9006,7 @@ t
      NEXT: raise TXN-01 to the owner as a design choice with the two options above, rather than spending
        more probes trying to win a race. Nothing in the tree changed; both repair landings stay clean.
 
-245. [~] PASS-19 remains the only live packet and STILL HAS NO VERDICT: re-checked this turn, no artifact
+245. [x] PASS-19 remains the only live packet and STILL HAS NO VERDICT: re-checked this turn, no artifact
      anywhere references its sha `b1ad7fa081324d5a…` other than the packet itself. Its 5 bound files are
      unchanged (`narrator_sfx_batch.py`, `speak.py`, `review_store.py`, `test_t1_batch_proof.py`,
      `test_t1_pass10_repairs.py`). Durable copy in place; nothing blocked on me.
@@ -9026,7 +9026,7 @@ t
        RE-VERIFIED AFTER the handoff, because a handoff is not a freeze: all 11 header bindings still match
        the tree (0 drift), the packet still hashes `63e01ca4…`, and no response artifact references it yet.
 
-247. [~] ITEM 133 VERDICT STATE, measured not assumed (no full-/tmp sweep; the earlier one timed out):
+247. [x] ITEM 133 VERDICT STATE, measured not assumed (no full-/tmp sweep; the earlier one timed out):
        pass 19 `b1ad7fa081324d5a…`  - 5/5 bound, durable copy in place, **NO VERDICT ARTIFACT**, searched
          targeted dirs for its sha: no hit. Still awaiting surf.
        pass 41 `63e01ca4da9ca816…`  - 11/11 bound, 0 drift, **NO VERDICT ARTIFACT** yet.
@@ -9039,7 +9039,7 @@ t
          `246817e6`, IS-01 landed `8222f96e`. TXN-01 remains the one open finding, recorded as a DESIGN
          question (item 244) rather than patched into a shape nobody chose.
 
-248. [~] WHY NO OTHER ITEM ADVANCES WHILE PASS 41 IS IN REVIEW - triaged, not assumed.
+248. [x] WHY NO OTHER ITEM ADVANCES WHILE PASS 41 IS IN REVIEW - triaged, not assumed.
        I checked every open item for work that does not collide with the in-flight packet:
        164 retain surf's three WG3 counterexamples in `tests/test_wg_pass2_repairs.py`:
          STILL BLOCKED, and its stated blocker has CHANGED. It was blocked by pass 31 being in review;
@@ -9093,7 +9093,7 @@ t
          files bound in the in-flight pass-41 packet; editing it now would move a reviewed hash and void
          that verdict - the churn that killed passes 28/29/30. It registers the moment pass 41 returns.
 
-250. [~] VERDICT STATE RE-MEASURED (targeted, not a full `/tmp` sweep - an earlier sweep timed out):
+250. [x] VERDICT STATE RE-MEASURED (targeted, not a full `/tmp` sweep - an earlier sweep timed out):
        pass 19 `b1ad7fa081324d5a…` : NO artifact. 5/5 bound, durable copy in `outputs/packets/`.
        pass 41 `63e01ca4da9ca816…` : NO artifact. Still 11/11 bound with **0 drift** even after I added the
          new harness file - confirming a new path does not disturb the packet.
@@ -9316,7 +9316,7 @@ t
      WHY THE ENTRY HAD TO GO: there is no `graham_owner.wav` anywhere and the container mounts no `/voices`,
        so that name handed ffmpeg a path to nothing. It is a real person's voice; no reference will be faked.
 
-261. [~] QUEUE STATE AT THIS POINT, so the next turn does not have to rediscover it.
+261. [x] QUEUE STATE AT THIS POINT, so the next turn does not have to rediscover it.
      WAITING ON SURF (verified this turn, no artifact exists): pass 19 `b1ad7fa0…` 5/5 bound 0 drift; pass 41
        `63e01ca4…` 11/11 bound 0 drift. B4 pass 7 has no answer (item 256: response.md absent, raw.md 0 B).
      BLOCKED ON A LIVE-EFFECT DECISION: the retrain training rung (item 259) - the A5000 has 23,667 of
@@ -9377,4 +9377,33 @@ t
      MY RECOMMENDATION: A plus C. I did not implement either, because each changes what the skill PROMISES
        about completion, and picking silently is the guess-then-build pattern this project has already paid
        for. This needs Graham's call.
+
+264. [~] CURRENT STATE, SINGLE SOURCE - replaces the repeated verdict-state records (245/247/248/250/261) and the
+     two TXN-01 probe records (243/244), which are now closed with pointers here and to 263.
+     VERIFIED THIS TURN (not recalled):
+       pass 19 `b1ad7fa081324d5a…`  5/5 bound, 0 drift, **NO verdict artifact** anywhere - still with surf.
+       pass 41 `63e01ca4da9ca816…`  11/11 bound, 0 drift, **NO verdict artifact**, no new review dir since the
+         handoff - still with surf.
+       B4 pass 7                    no answer was ever captured (256: response.md absent, raw.md 0 B).
+     SO THE HONEST READING IS: nothing arrived. The watcher now says that in words (262) instead of leaving
+       `ready_to_process: none` to be guessed at.
+     WHAT IS LANDED AND SETTLED (each git-verified at landing): A39 repairs SP-01 `ff830827`, SP-02 `5572ceee`,
+       ASR-01 `64ee2aff`, SP-03 `246817e6`, IS-01 `8222f96e`; retained harness `69c21654` (17/17 with controls);
+       tag-alias F2 `cce7d2a6` (27/27); new-tag preparation `a563b5b4` (23/23, round-4 APPROVE); `sfx_demo.py`
+       `3ae55621` (round-6 APPROVE, measured splice 90,042 B / 1.02 s); `speak_core.py` graham mapping removed
+       `04c2a2d4`; watcher `verdict-watch.py` fixed (262).
+     OPEN, EACH WITH A NAMED OWNER - this is the whole list:
+       133  surf: the pass-19 verdict (and pass 41's).
+       149  Graham: pacing-only vs audible for an inline tag (measured p = 0.0043, 0.32 s median delta).
+       164  blocked by the in-flight packet: `test_wg_pass2_repairs.py` is bound in pass 41; editing it voids it.
+       165  the `/voices` mount does not exist, so a "graham" reference still cannot resolve; `spyke_render.py`
+            keeps the dead entry because it is bound in pass 41 (edit after the verdict returns).
+       177/179  surf: packet submissions (B4 pass 7 has no captured answer).
+       193  researcher: native S3 token path collaboration.
+       227  Graham: the listening step on the ear-verdict page (`:8797` live, 15 players, 74 clip rows).
+       254/259  a serialized GPU window: the A5000 has 23,667 of 24,564 MiB held by the live service that peer
+            lanes render through, so training must not be started unilaterally.
+       256  surf: B4 pass 7 needs a real answer capture.
+       263  Graham: the TXN-01 decision (A+C recommended) - `outputs/txn-01-decision.md`, sha `ab993da1…`.
+     Nothing on this list is blocked on work I can do without either surf returning or a decision above.
 
