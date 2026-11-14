@@ -7924,7 +7924,7 @@ t
        New defects reported (both families independently; tracked in 202).
      OWNER: surf (submission/extraction); this session (verify + intake + repairs).
 
-202. [ ] REPAIR the residual defects the dual-family review found on the pass-38 bytes. Each
+202. [x] REPAIR the residual defects the dual-family review found on the pass-38 bytes. Each
      reproduced FIRST. Sources: `outputs/reviews/a38-api-glm-20261113.md` (independent),
      `outputs/reviews/a38-api-deepseek-20261113.md` (author family, non-independent).
      HIGHEST SEVERITY FIRST (reported by BOTH families):
@@ -7949,4 +7949,31 @@ t
      NOTE: no external browser verdict exists for pass 38; this item fixes what was FOUND, it does not
      manufacture a PASS. The reviewer-of-record decision (A/B/C) is still Graham's.
      OWNER: this session.
+
+     RESULT (2026-11-13): all six residuals repaired, each reproduced FIRST and then re-attacked.
+       - SEAL FAILURE (both families' top finding): reproduced - with `F_ADD_SEALS` forced to fail the
+         generator CONTINUED and called ASR (`ok=True`) and the verifier returned `ok=True`. Both now
+         REFUSE: generator raises "ASR memfd could not be sealed (...); refusing to use a writable ASR
+         input"; verifier returns `AsrResult(ok=False)` with that reason.
+       - BLOCK/REDIRECT AT THE VERIFICATION NAME: reproduced by planting a FIFO at the receipt name
+         during publication; the old `O_RDONLY` open would block. Now opened with
+         `O_NONBLOCK|O_NOFOLLOW` and required to be `S_ISREG`; the same probe is REFUSED immediately
+         ("retained directory holds inode ..."), with no hang.
+       - ONE-INSTANT CONTENT CHECK: every artifact is now RE-VERIFIED as the final step while the
+         directory descriptor is still held, so a rewrite after the per-artifact check is caught.
+       - NAMED ASR INPUT ELIMINATED: the non-memfd branches now FAIL CLOSED instead of handing a
+         pathname (verifier) or falling back to a named copy (generator). Verified with
+         `os.memfd_create = None` on both paths: `ok=False, "immutable ASR input unavailable ..."`.
+       - PRESERVED PAYLOAD: documented in code as a deliberate decision (link publication consumes
+         nothing; name-based unlink is the repeatedly-rejected defect class), with the cost stated.
+       - DEAD CHECK: the unreachable second `peak_raw >= MAX_PEAK` branch removed (one occurrence
+         remains, the reachable one).
+     HARNESS: `bash tests/run.sh` -> rc=0, "tests: all retained harnesses PASS",
+       `PUBLISH_BY_NAME: clean`.
+     PACKET pass 39: `/tmp/cb-A7-pass39.txt` 296,700 B sha256 `b78119b2782e708b…`; 11 bindings, 0
+       mismatches, 11 sections match disk, 3/11 files changed (spyke_render, interrupt_sfx, sfx_verify).
+     RECORDS: A7 + GUARDS-WAVGUARD recorded; `submission-freeze.py` -> `VERDICT: ALL_FROZEN`, receipt
+       sha `9b7c97934f931dec…`.
+     NOT SUBMITTED: the browser reviewer of record still refused this content class at pass 38, so the
+       A/B/C decision in 201 is unchanged. This item repaired what was FOUND; it does not claim a PASS.
 
