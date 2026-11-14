@@ -8309,3 +8309,19 @@ t
        list drift.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+221. [x] STANDING MODEL POLICY for this lane (operator directive 2026-11-14): do NOT use GPT models unless
+     there is no other choice. GLM is available and is the default. Concretely:
+       - author/implementer seat: this session's router model (GLM chain).
+       - cross-provider reviewer seat: `zai/glm-5.3` - already what every receipt in this lane records.
+       - a provider-inequality requirement (reviewer family must differ from author) is satisfied by
+         deepseek + zai; it never requires an OpenAI/GPT model.
+     AUDIT of what was actually run before this directive (from the receipts, not memory):
+       `chunked-render-211-r2.reviewer.json` -> reviewer_provider zai, reviewer_model zai/glm-5.3,
+         author_provider deepseek
+       `chunked-render-216-amendment.reviewer.json` -> reviewer_provider zai, reviewer_model
+         zai/glm-5.3, author_provider deepseek
+       the earlier dual-family API review in this lane used zai/glm-5.3 + deepseek/deepseek-v4-pro -
+         both non-GPT. No GPT model has been used for any render, review, receipt or record here.
+     If a future call is about to use a GPT model, the correct move is to use GLM; if GLM genuinely
+       cannot do the job, state that reason in the record rather than silently defaulting to GPT.
+
