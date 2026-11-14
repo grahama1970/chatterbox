@@ -8974,3 +8974,30 @@ t
      NOT edited: spyke_render.py was not touched by either probe; both landing commits (`246817e6`,
        `8222f96e`) are clean in the working tree.
 
+244. [~] A39-TXN-01: FOURTH PROBE, STILL NOT REPRODUCED. I am stopping the probing loop and naming why.
+     Attempt 4 hooked `os.open` and flipped the receipt in place (same length, `true` -> `fals`) at the
+       moment the loop opened the PROVENANCE artifact for verification. Result: 6 dir_fd verification
+       opens observed, flip performed, render REFUSED - `published content does not match the staged
+       bytes`. So the flip still landed before a receipt check, i.e. during PUBLICATION verification
+       (which also opens artifacts with dir_fd), not after the receipt's FINAL check. My hook cannot
+       distinguish the two phases without instrumenting the phase itself.
+     FOUR ATTEMPTS, four different ways of not reaching the reviewer's state:
+       1. mocked `os.read` to grow/rewrite -> HUNG (killed at 900 s).
+       2. truncating rewrite when provenance appears -> refused mid-write by the new SP-03 EOF check.
+       3. in-place flip on provenance existence -> flipped before the receipt's final check.
+       4. in-place flip at a dir_fd open of provenance -> same, publication phase.
+     HONEST STATUS: TXN-01 is OPEN and UNTESTED. It is not "fixed" and it is not "disproved". What the
+       reviewer demonstrated is a guarantee question, not obviously a bug in one line: the final loop
+       observes three artifacts at three instants, so no ordering of checks establishes "one instant"
+       unless the receipt's own bytes are made authoritative (e.g. verify the receipt AT THE END, from the
+       same bytes that are returned, and treat any later change as out of contract) or the three are sealed
+       together. That is a DESIGN DECISION, and per the rules a design gap found mid-build gets asked, not
+       patched by me into a shape the owner never chose.
+     NEXT: raise TXN-01 to the owner as a design choice with the two options above, rather than spending
+       more probes trying to win a race. Nothing in the tree changed; both repair landings stay clean.
+
+245. [~] PASS-19 remains the only live packet and STILL HAS NO VERDICT: re-checked this turn, no artifact
+     anywhere references its sha `b1ad7fa081324d5a…` other than the packet itself. Its 5 bound files are
+     unchanged (`narrator_sfx_batch.py`, `speak.py`, `review_store.py`, `test_t1_batch_proof.py`,
+     `test_t1_pass10_repairs.py`). Durable copy in place; nothing blocked on me.
+
