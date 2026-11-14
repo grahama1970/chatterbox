@@ -9113,3 +9113,29 @@ t
        source file here.
        Item 201 therefore closes as RESOLVED-BY-REFUSAL, not as pending work.
 
+252. [~] TAG-ALIAS F2 (the MEDIUM finding) IMPLEMENTED WITH TEST EVIDENCE, **NOT REVIEWED, NOT LANDED**.
+     THE DEFECT: expansion ran BEFORE backend selection, so on `chatterbox_base_affect` - which speaks bracket
+       tokens as LITERAL WORDS - the text was rewritten. That mutates words the model was always going to say
+       out loud: a quieter render, plus a receipt entry describing an expansion that never became a tag.
+     THE CHANGE (3 files, all in the chatterbox repo, none bound in any review packet):
+       `presets.py`  new `plan_tag_expansion(text, backend_id, *, consuming=TAG_CONSUMING_BACKENDS)` returning
+                     the text UNCHANGED with no recorded expansion for a non-consuming or unknown backend.
+       `server.py`   expansion moved AFTER `select_voice_backend_for_request`, gated on the selected backend;
+                     `voice_delivery` now comes from the request AS WRITTEN and is rederived only when an
+                     expansion actually happened, so `detected_tags` stay the native tags reaching the model.
+       `tests/test_tag_aliases.py`  +5 checks: literal backend unchanged and records nothing; turbo backend
+                     still expands and records; unknown backend treated as non-consuming (fail-visible).
+     EVIDENCE: `python3 tests/test_tag_aliases.py` -> **27/27 checks passed** (was 22). py_compile clean on all
+       three files. That test is a SCRIPT, not pytest - `pytest --collect-only` reports "no tests collected",
+       which is why an earlier run looked like a pass when nothing had run. I checked that instead of trusting it.
+     REVIEW FAILED TO HAPPEN, and I am not laundering it: I sent the diff to deepseek for review and got back a
+       PROJECT STATUS REPORT (item 133 commentary, packet shas, surf liveness) with **0 `VERDICT:` lines**.
+       That is the model answering as an agent rather than as a reviewer, so F2 has NO review and I will not
+       land it as reviewed. Relaunching the review needs a prompt shape that cannot drift into status reporting
+       (verdict-only, no repo context), and the delivered files stay unlanded until it does.
+     STANDING OWNER REQUIREMENT STILL UNMET by this increment: Graham asked for NEW TOKENIZER IDS AND RETRAINING
+       ("crucial that we can add new tags to the tokenizer as we need them and retrain"), not only aliases. The
+       measured state stands: `text_emb.weight` is [50276,1024], ids 50257-50275 are the 19 installed tags, so
+       the next free id is 50276 and adding one requires resizing the embeddings and training that row. Aliases
+       are the shippable increment; the resize+train path is separate work.
+
