@@ -7101,7 +7101,9 @@ t
          `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
          established by the report itself - the same standard used for pass 32. No resubmission occurred.
      OWNER: this session (intake done); repairs tracked in 180.
-177. [~] REISSUE DONE AND FROZEN (item 285); now awaiting surf's SUBMISSION receipts for three packets.
+177. [~] TWO OF THREE RECEIPTS RETURNED, VERIFIED AND HANDLED (item 286); add1 re-asked as pass 10 and
+    pass 43 routed to researcher. B4's three substantive FAILs are queued as item 287.
+    HISTORICAL HEADER, retained verbatim: 177. [~] REISSUE DONE AND FROZEN (item 285); now awaiting surf's SUBMISSION receipts for three packets.
     The two rows whose bytes had moved are rebuilt at current bytes, and a third was forced by the freeze gate.
     HISTORICAL HEADER, retained verbatim: 177. [~] AWAITING surf: reissue the two rows whose bytes moved while their old packets still govern them.
      PACKETS DONE AND FROZEN; SUBMISSION NOT YET ATTEMPTED (surf is finishing the pass-33 review first).
@@ -9984,4 +9986,75 @@ t
        decision (item 277), not on transport.
      BOUNDARY: everything above is local file/registry evidence. No reviewer has seen these three packets yet, so
        "frozen" means the bytes are consistent and submittable - it does not mean anything has been reviewed.
+
+286. [x] THE FIRST TWO SUBMISSION RECEIPTS ARE IN, AND I VERIFIED BOTH CHAINS MYSELF RATHER THAN TRUSTING THE RELAY.
+     A binding checker now makes that mechanical instead of a claim (`outputs/receipt-binding-check.py`), because the
+     failure mode this project keeps hitting is a locally well-formed receipt that binds nothing.
+     RECEIPT 1 - add1 pass 9, `ops-magpie-64fe1f077ff7` (asked AND served deepseek/deepseek-v4-pro, metered, 1
+       attempt, 37,498 ms):
+         question `/tmp/cb-A7-add1-prove9/question.txt` 37,122 B sha 2d53cd37… == receipt.input_sha256 PASS
+         packet embedded EXACTLY ONCE at offset 363                                        PASS
+         answer 305 B sha d667e36b28c2…  == receipt.answer_sha256                            PASS
+       VERDICT CONTENT: one line, and it is about the PACKET, not the code -
+       `VERDICT tests/test_prove8.py abfc587e…: FAIL packet header has no byte count or sha256, so binding cannot be
+       verified`, then `PACKET VERDICT: FAIL`. Recorded as `intake.json` with `intaked_first_class: false`
+       (sha 105c9fc0a6b9242c0cf83447…). NOT intaked as a verdict: a file cannot state its own hash and a model cannot
+       hash its input, so this instruction could only ever produce FAIL, and intaking it would have written a FAIL
+       against `tests/test_prove8.py` that no reviewer found.
+     RECEIPT 2 - B4 pass 8, `ops-magpie-6ea01eacd16b` (same seat, metered):
+         question `/tmp/cb-B4-pass8/question.txt` 109,151 B sha 4ebcace8… == receipt.input_sha256 PASS
+         packet embedded EXACTLY ONCE at offset 363                                        PASS
+         answer 1,094 B sha 633d440011d7… == receipt.answer_sha256                          PASS
+       INTAKED FIRST-CLASS (`verdict-intake.py --group B4 --apply`): **0 PASS / 3 FAIL**, manifest 38,890 B sha256
+       `d870677f0747ff19c4e8f6a05e0d34848b86a4f8661b891f65f718bfcfb5d7f2`. The three findings are substantive:
+         F1 HIGH   - `speak_core` gate misses chunk-level extra `answer_text`: a chunk whose `text` is empty but whose
+                     `answer_text` carries a named pause or unsupported tag passes the gate and is POSTed.
+         F2 MEDIUM - `speak_core._batch_transcript` still trusts top-level `text`/`answer_text` for chunk plans, so a
+                     directly-constructed plan can POST a transcript that differs from the rendered chunks.
+         F3 MEDIUM - `arc_chart._safe_publish` compares inode identity after replace but not content bytes, so an
+                     in-place modification of the staged temp file is accepted.
+       Both answers also opened with an identity complaint ("no-packet-identity-header-supplied"). That is the same
+       defect as receipt 1, and it is mine: the packet cannot carry its own hash and the envelope did not state it.
+     THE CHECKER, WITH CONTROLS THAT COULD HAVE FAILED (all three behaved as required):
+       - pass 41's known-good chain: `BINDS: True  INTAKABLE: False` - it binds at offset 1401 but answers with
+         `SP-03: PASS` finding labels and zero per-file VERDICT lines, which is exactly why verdict-intake refused it
+         and an intake.json was recorded. A single boolean would have hidden that.
+       - one byte flipped in the question header: binding FAILS on the receipt-hash link.
+       - one byte flipped INSIDE the embedded segment: `packet embedded ... [0 occurrence(s)]`, binding FAILS.
+     THE FOUR THINGS I HAD TO FIX IN MY OWN WORK HERE (each caught by a gate, not by luck):
+       1. the packet told the reviewer to report the sha256 it received and STOP on mismatch. Researcher's pass-42 run
+          stopped exactly there (receipt `ops-magpie-caa6535b393b`, answer 163 B: "RECEIVED-BYTES: cannot confirm
+          (expected 314304) ... STOP."). An LLM cannot hash its input; that instruction was unsatisfiable by
+          construction. Pass 42 is WITHDRAWN, not re-used.
+       2. my first drift parse matched zero bindings because I assumed a binding shape the packets do not use
+          (`  <path>  sha256 <64hex>`); that was fixed before any conclusion was drawn (item 285).
+       3. my regression guard first banned `.exists(` outright and therefore failed on the legitimate `out.exists()`
+          immutability check; scoping it to reference-related lines fixed that without weakening it.
+       4. my own checker conflated "binds" with "intakable" - separating them is what produced the correct pass-41
+          control result above.
+     REISSUED AND FROZEN IN RESPONSE (durable, 12TB):
+       `cb-A7-add1-prove10.txt` 37,811 B sha256 4e868b1e80fed75c8194b81d5ed49533b4f8f972f8c365bee16e1ff41b462584
+         (same single binding tests/test_prove8.py abfc587e…; contract now says identity is proven out of band)
+       `cb-A7-pass43.txt` 315,236 B sha256 d5ebf5bc0a21977c750cb2e25637036f4fe89514f32a010f272c466104476934
+         (same 11 rows and bytes as pass 42, satisfiable contract)
+       `submission-freeze.py` -> **VERDICT: ALL_FROZEN**, receipt sha256
+         `23ea286410f666afe29f59a6aeff304a4eb6b393612dc608f1a11b4cc2aba657`, governed 1/1 and 11/11.
+     HANDED OVER: add1 pass 10 to surf for one re-ask; pass 43 to researcher (surf's path returns an empty HTTP 200 at
+       that size while researcher's carried 307,469 B in 61,401 ms).
+     PRESERVED: `outputs/reviews/add1-prove9-20261114/` and `outputs/reviews/b4-pass8-20261114/` (question, answer,
+       receipt mode 0600, intake.json where applicable).
+     BOUNDARY: the add1 row has NO valid code verdict; it has a verified binding and a procedural refusal. B4 has real
+       FAILs to repair (item 287). Nothing here is a PASS.
+
+287. [~] REPAIR THE THREE B4 PASS 8 FINDINGS on the intaked bytes (4254e8381ede speak_core, cfce6214222f arc_chart,
+     de77f4ae27da test_core_contract), each REPRODUCED FIRST, then reissue B pass 9 at the new bytes.
+     F1 HIGH - reproduced witness needed: construct a chunk where `text` is empty and `answer_text` carries a named
+       pause or an unsupported tag, and show it reaching the POST today.
+     F2 MEDIUM - same for a chunk plan built directly rather than via `build_plan`: the transcript POSTed must equal
+       the transcript derived from the chunks, or the payload boundary must refuse.
+     F3 MEDIUM - replace the in-place staged temp file between staging and publication, keeping inode identity, and
+       show `_safe_publish` accepting it today; then require content-byte verification.
+     NOT STARTED: no reproduction has been attempted yet, so no repair claim exists. Freeze gate currently reports
+       `cb-B4-pass8` as FROZEN, which stays true until these bytes change - and they will.
+     OWNER: this session (repairs); surf (submission of the reissued packet).
 
