@@ -7977,3 +7977,19 @@ t
      NOT SUBMITTED: the browser reviewer of record still refused this content class at pass 38, so the
        A/B/C decision in 201 is unchanged. This item repaired what was FOUND; it does not claim a PASS.
 
+203. [x] RENDER for spyke-chat (stress scenario-01, eng-e2c30984cc204d73, thread main, seq 6,
+     speaker spyke, tone calm_precise). Text `/tmp/spyke-sk-text.txt` = 1492 chars, NO trailing
+     newline, sha256 `c6dc535a96de9026…` (hashed from the file as posted; the thread read stays
+     authoritative and spyke re-hashes before attaching).
+     RESULT: `/mnt/storage12tb/embry-voice/turns/spyke-seq6-20261114T025115Z-20094198919c.wav`
+       48.72 s, `audio_sha256 20094198919c70adc3c619…`, `normalized_tone calm_precise`,
+       `normalization off` (`text_file_sha256 == speakable_text_sha256`, so nothing was rewritten).
+     CHUNKING: 2 chunks (1100 + 391 chars, both under the 1200 limit), split at sentence boundaries.
+       Verified the reconstruction is EXACT: joining the chunks reproduces the source string
+       byte-for-byte (`exact_equal=True`), so the render covers the whole message, not a variant.
+     SIDECAR: `<wav>.<audio_sha16>.sidecar.json` carrying media, wav_path, engagement, thread, seq,
+       speaker, voice, normalized_tone, audio_sha256, both text hashes, normalization flag,
+       text_chars, chunk sizes, duration_seconds, frames, sample_rate.
+     No post and no thread write; reply sent to spyke-chat with the requested fields.
+     OWNER: this session (served); spyke-chat (attachment).
+
