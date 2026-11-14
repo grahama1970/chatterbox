@@ -8488,3 +8488,16 @@ t
      I cannot produce this verdict: a machine PASS is not an ear verdict, and the earlier record already
        states that 52+ clips still need a human decision. Nothing is marked confirmed on the owner's behalf.
 
+     PLAYBACK PROVED FOR EVERY LISTENABLE CLIP (this turn, so no listening time is lost to dead links):
+       the page serves audio at `/audio/<id>.wav` (read from listen_review.py, NOT guessed). All 70
+       listenable clips returned 200, `audio/wav`, and a RIFF body through that route; 70/70.
+       My first probe guessed `/media/…` and `/api/media/…` and got 404 for all 70 - that was MY wrong
+       URL, not a broken surface; re-checked against the page's own route before reporting anything.
+       `POST /api/verdict` with an empty body returns 400, proving the write route is live; I did NOT
+       write a verdict, because a verdict is the owner's ear, not my inference.
+     THE DECISION IS ONE LINE and the surface is ready at http://127.0.0.1:8797/ (keys 1/2/3 also work):
+       "confirm all"                       -> the 70 listenable clips
+       "reject cry-embry-v1, cry-arc-v3, delay-tearful, noseblow"  -> the 4 that cannot pass by ear
+       "confirm [ids]" / "reject [ids]"    -> per clip
+       "regenerate [category] with [change]"
+
