@@ -8013,3 +8013,19 @@ t
      No post, no thread write.
      OWNER: this session (served); spyke-chat (attachment).
 
+205. [x] RENDER for spyke-chat, scenario 02 chunked (eng-f7ebfd234cad4b44, thread main, seq 7,
+     speaker spyke, tone calm_precise). Text `/tmp/spyke-fmt-text.txt` = 1800 chars, no trailing
+     newline, sha256 `862f463892027ee1…` (hashed as posted; spyke verifies against the thread).
+     RESULT: `/mnt/storage12tb/embry-voice/turns/spyke-seq7-20261114T035906Z-bdcf8274bd2e.wav`
+       48.84 s, `audio_sha256 bdcf8274bd2ed256…`, `normalized_tone calm_precise`, normalization OFF
+       (`text_file_sha256 == speakable_text_sha256`).
+     CHUNKING: 2 chunks (931 + 868, under 1200), sentence-boundary splits; join reproduces the source
+       byte-for-byte (`exact_equal=True`).
+     SIDECAR: `<wav>.bdcf8274bd2ed256.sidecar.json` (media, wav_path, engagement, thread, seq, speaker,
+       voice, tone, audio_sha256, both text hashes, normalization flag, text_chars, chunk sizes,
+       reconstruction flag, duration, frames, sample_rate, `receipt_present: false`); the turn directory
+       holds exactly the WAV and that sidecar.
+     CONFIRMED AGAIN to spyke: sidecar-only, NO separate `.receipt.json` - identical to seq 6 and
+       seq 11, so their atom label is consistent across turns.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
