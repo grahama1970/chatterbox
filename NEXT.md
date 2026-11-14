@@ -8088,3 +8088,45 @@ t
        nothing was created for them.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+210. [x] PACING DEFECT FOUND IN MY OWN RENDERS (disclosed to spyke-chat, not hidden).
+     TRIGGER: rendering scenario 06 produced 2164 chars in 25.6 s. Within that one artifact chunk 1
+       rendered 152 words in 7.08 s (21.5 w/s) while chunk 2 rendered 146 words in 18.52 s (7.9 w/s) -
+       equal-length content, 2.6x apart. That is mis-paced audio, not pace variation, so the artifact
+       was refused (`spyke-seq7-06-...71987c3ca204.wav`, VOID) and re-rendered.
+     CONTROLLED PROBE (same 1773-char source, single-pass, increasing size):
+         299 chars /  38 words ->  28.92 s =  1.31 w/s
+         494 chars /  68 words ->  33.16 s =  2.05 w/s
+         699 chars / 104 words ->  29.68 s =  3.50 w/s   drifting
+         895 chars / 131 words ->  21.80 s =  6.01 w/s   compressed
+        1195 chars / 163 words ->   5.28 s = 30.87 w/s  collapsed
+       => the engine time-compresses long requests; threshold ~600-700 chars, NOT 1200.
+     BLAST RADIUS: every artifact I produced from text longer than ~600 chars is suspect. Text binding
+       was never wrong (speakable hash == file hash in every turn); the SPEECH RATE was wrong. Affected
+       and now superseded: xw01 seq 11, scenario-02 seq 7 + seq 12, scenario-03 seq 6 + seq 7,
+       scenario-04 seq 6, scenario-05 seq 6, plus the 1200-char seq 6/7/11/12 turns from earlier.
+     CORRECTED RENDERS (500-600 char limit, per-chunk pace gate, all 2.11-2.83 w/s):
+       xw01 seq 11  `spyke-xw01-seq11-rr-20261114T070821Z-61e37743d8c2.wav` 151.64 s `61e37743d8c2…` 2.25 w/s
+       sc02 seq 7   `spyke-02-seq7-rr-20261114T071329Z-7be7d166c8d6.wav`   121.88 s `7be7d166c8d6…` 2.11 w/s
+       sc02 seq 12  `spyke-02-seq12-rr-20261114T070954Z-c426d8a9ab67.wav` 159.88 s `c426d8a9ab67…` 2.56 w/s
+       sc03 seq 6   `spyke-03A-seq6-rr-20261114T071038Z-4fb2c8e72153.wav` 129.32 s `4fb2c8e72153…` 2.29 w/s
+       sc03 seq 7   `spyke-03B-seq7-rr-20261114T071122Z-fe5f8deb2f9b.wav` 130.76 s `fe5f8deb2f9b…` 2.83 w/s
+       sc04 seq 6   `spyke-04-seq6-rr-20261114T071203Z-9f265b358e35.wav` 119.76 s `9f265b358e35…` 2.19 w/s
+       sc05 seq 6   `spyke-05-seq6-rr-20261114T071240Z-eb93e220212f.wav` 113.80 s `eb93e220212f…` 2.11 w/s
+       all in /mnt/storage12tb/embry-voice/turns, each with `<wav>.<sha16>.sidecar.json` recording
+       chunk_limit_chars, chunk sizes, per-chunk w/s, and `receipt_present: false`.
+     RULE GIVEN TO SPYKE (verbatim, so it can be quoted in-thread): "Chunk at <=500 characters (600 hard
+       ceiling); reject the render if aggregate words/second falls outside 1.3-3.6, or if any single
+       chunk falls outside that band - re-split smaller and re-render rather than ship."
+     ONE REJECTED ATTEMPT ALONG THE WAY: scenario-02 seq 7 at a 600-char limit came back with a 3.73 w/s
+       piece; the assemble was refused (no artifact produced) and it was re-done at 500 chars.
+     WHAT I MISSED: the durations were the tell (2338 chars in 43.92 s = 2.25x too fast) and I shipped
+       them with clean hashes and correct sidecars. Hash-faithful is not pace-faithful.
+
+211. [ ] OPEN - CODE GUARD for the pacing defect (came out of 210). The 1200-char limit lives in my ad-hoc
+     render loop, so the next lane repeating it will reintroduce the defect. Needed: a small module in
+     this skill that (a) chunks at <=500 chars, (b) measures words/second per chunk and aggregate, (c)
+     REFUSES to assemble or publish outside 1.3-3.6 w/s, and (d) writes the rates into the sidecar. It is
+     a code change to agent-skills, so landing it needs a reviewer receipt from a different provider
+     family than the author (deepseek), plus an agentic-evals fixture that fails when a compressed render
+     is accepted. Not started while the owner's NOW item is paused.
+
