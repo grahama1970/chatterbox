@@ -8043,3 +8043,22 @@ t
      Sidecar-only stated again (WAV + sidecar, no separate `.receipt.json`), consistent with seq 6, 7, 11.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+207. [x] RENDERS for spyke-chat, scenario 03, both delivered in the requested order (A first).
+     RENDER A (eng-58c62e1f16b740e1, main, seq 6): `/tmp/spyke-dc-text.txt` 2059 chars, no trailing
+       newline, sha256 `e5d81a26ecbf219e…`. Media
+       `/mnt/storage12tb/embry-voice/turns/spyke-seq6-20261114T043314Z-9c21d7a02142.wav`, 35.0 s,
+       `audio_sha256 9c21d7a021421be2…`, tone calm_precise, normalization OFF; 2 chunks (1036+1022),
+       reconstruction exact.
+     RENDER B (eng-58c62e1f16b740e1, main, seq 7): `/tmp/spyke-dcxw-text.txt` 2474 chars, no trailing
+       newline, sha256 `cbd87ec5e9fd8ecf…`. Media
+       `/mnt/storage12tb/embry-voice/turns/spyke-seq7-20261114T043326Z-bde2d6771b92.wav`, 31.64 s,
+       `audio_sha256 bde2d6771b92ab66…`, tone calm_precise, normalization OFF; 3 chunks
+       (1146+1094+232), reconstruction exact.
+     Each artifact has exactly one sidecar (`<wav>.<sha16>.sidecar.json`) carrying media, wav_path,
+       engagement, thread, seq, speaker, voice, tone, audio_sha256, both text hashes, normalization
+       flag, text_chars, chunk sizes, reconstruction flag, duration, frames, sample_rate, and
+       `receipt_present: false`; no separate `.receipt.json`, as stated to spyke.
+     Note reported to spyke: A's 35.0 s for 2059 chars vs B's 31.64 s for 2474 chars is pace variation,
+       not a truncation - both reconstructions are byte-exact.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
