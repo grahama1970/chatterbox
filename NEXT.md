@@ -8734,3 +8734,32 @@ t
      test_render_tag_evidence.py, tests/run.sh - are STILL untracked, and two of them (interrupt_sfx,
      sfx_verify) carry pass-39 FAIL verdicts, so they must be repaired before they land.
 
+231. [~] A39-SP-02 ATTEMPTED, **NOT REPRODUCED** - recorded as NOT TESTED, not as fixed.
+     Claim: the retained dirfd is never bound to the captured directory identity, so pathname checks and
+       descriptor checks can validate DIFFERENT directories; reviewer's executed scenario returned
+       success with `ok: true` while the requested WAV did not exist at the pathname.
+     MY INJECTION (mock.object(sr.os,'open')): asked A to stand aside, exposed replacement B at the
+       pathname, opened the descriptor there (so the fd DID refer to B), moved B away and restored A.
+       RESULT: `_DirIdentityChanged: ...receipt.json: not visible in the retained directory ...;
+       publication went to a replacement directory` - REFUSED, and `render_turn` never returned success.
+       So this timing does not reproduce the reviewer's outcome: the existing A34-SP-02 retained-descriptor
+       check caught the split in my scenario. That does NOT mean SP-02 is absent; it means MY PROBE did not
+       reach the state the reviewer reached (they re-exposed B during EACH publication operation and each
+       pathname digest read, restoring A in between). Per the rules: a setup failure is NOT TESTED, not
+       infeasible, and a refusal in my probe is not evidence the missing binding was fixed.
+     NOT CHANGED: spyke_render.py is untouched by this attempt (no edit made, nothing landed), so SP-02
+       remains an open FAIL finding against the landed bytes.
+     NEXT ATTEMPT needs the reviewer's exact cadence - swap around every publication operation and every
+       pathname digest read, not once at the descriptor open - or the structural fix (derive the identity
+       from fstat(dirfd) and compare the pathname against it), which closes the ambiguity BY CONSTRUCTION
+       and does not depend on catching the race.
+
+232. [~] verdict-watch.py DISAGREES WITH REALITY on the pass-39 submission.
+     `verdict-watch.py --require-ready` reports `NO_SUBMISSION_FOUND cb-A7-pass39.txt` and
+     `ready_to_process: none`, yet pass 39 WAS submitted and its FAIL verdict was intaked hours ago
+     (item 228, sha `ad39b2f6...`). So its registry does not know about submissions that actually
+     happened, which makes "ready_to_process: none" unsafe to read as "nothing has arrived".
+     What I used instead, and will keep using: the actual artifacts - `outputs/reviews/` newest entries
+     plus the surf response directories under `/tmp/surf-cb-*`. Both agree there is no verdict for
+     pass31, pass19 or B4-pass5.
+
