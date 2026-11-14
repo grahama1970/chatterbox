@@ -8222,3 +8222,47 @@ t
      decides, not us. No rule change made, no artifact shipped below the floor, no tone misreported.
      Gate behaviour confirmed again on live audio: refusal precedes assembly.
 
+216. [x] RULE CHANGE (not a silent bend): the pace floor amends 1.3 -> 1.0; band is now 1.0-3.6.
+     AUTHORITY: operator ruling, relayed by spyke-chat at 2026-11-14T07:42Z (option A of the three I
+     put to them). I did not verify it with the operator directly; it is recorded as a relayed ruling.
+     EVIDENCE (produced by the gate itself, item 215): scenario 07 measured 1.10-1.22 w/s across every
+     tone and every split - calm_precise 1.19/1.10/1.16/1.16 at 500/450/400/350 chars, neutral_warm
+     1.14, memory_confident 1.22, curious_searching 1.12, playful_light 1.14 - while the service's own
+     tempo calibration spans only 0.93-1.12. A 20% tempo spread moved the rate from 1.10 to 1.22, so
+     the limiter is the passage and the voice, not a rendering defect. The defect this gate exists to
+     catch is time-COMPRESSION (5-31 w/s observed); slow-deliberate delivery is legitimate.
+     CODE: `PACE_MIN = 1.0` in `scripts/chunked_render.py`, with the amendment written into the module
+     header above the constant, citing this evidence - the reasoning lives with the number so a future
+     reader cannot mistake it for a threshold that was quietly weakened.
+     TESTS: the harness now derives every band assertion from PACE_MIN/PACE_MAX instead of hardcoded
+     1.3, so a future edit to the constant updates the tests with it and cannot silently drift.
+     `bash tests/run.sh` -> all retained harnesses PASS; test_chunked_render_pace.py 44/44.
+     HONEST NOTE ON WHAT THIS COSTS: the floor is now closer to observed natural speech, so the slow
+     side of the gate has less headroom. The fast side - the part that actually caught the 3x
+     compression - is untouched at 3.6 and remains enforced on every piece however short.
+     LANDED: agent-skills `2194014e` (amended module + harness + receipt `chunked-render-216-amendment.reviewer.json`).
+     REVIEW (zai/glm-5.3, different family from the deepseek author): APPROVE with two residuals, both acted on.
+       (a) every band assertion derived from the module's own constants, so a future band move would pass
+           silently - fixed with CANARY checks that pin the band by literal value (1.0-3.6) and pin seven
+           evidence-shaped rates: 1.10 accept, 1.00 accept, 0.99 refuse, 3.50 accept, 3.61 refuse, 4.50
+           refuse, 31.0 refuse. A band edit now breaks a test by construction. Harness 52/52.
+       (b) the amended floor (1.0) still sits ABOVE the service's own calibration floor (0.93), leaving
+           ~0.07 w/s of margin; recorded as an open operator question, not silently smoothed.
+     OUTSTANDING (was): the scenario 07 render was BLOCKED because `/tmp/spyke-oc-text.txt` was removed
+     by tmp cleanup after the refusal. I have its hash (`3d3c4b09...`), 1739 chars and 235 words, but
+     not its bytes, and I will not reconstruct text to match a hash. Asked spyke to re-post it; the
+     render runs immediately on receipt under the amended band.
+
+217. [x] SCENARIO 07 RENDERED under the amended band (was refused at 215/216).
+     SOURCE recovered authoritatively by spyke from the thread at seq 8, not reconstructed: re-posted at
+     `/tmp/spyke-oc-text-seq8.txt`; after stripping the trailing newline the text is 1739 chars / 235
+     words and sha256 = `3d3c4b09f2f18766f54851a846f9f49c161dad958fed2b828fdd201d5720c3c9` - verified
+     equal BEFORE the render, and the sidecar records the same digest for both text hashes.
+     ARTIFACT: `/mnt/storage12tb/embry-voice/turns/spyke-07-seq8-rr-20261114T074758Z-ec6edcc40462.wav`
+       134.12 s, `audio_sha256 ec6edcc404624dcd...`, tone calm_precise, band [1.0, 3.6] with the
+       amendment note in the sidecar. Chunks 5 (301, 395, 498, 439, 106 chars), per-chunk rates
+       1.17 / 2.52 / 1.55 / 2.85 / 0.29, aggregate 1.75 w/s.
+     Chunk 5 is a 106-char tail at 0.29 w/s - below the 20-word measurement threshold, so the aggregate
+       carries the slow side there; the number is recorded rather than smoothed.
+     spyke's atom should record tone calm_precise and the amended band; nothing posted by me.
+
