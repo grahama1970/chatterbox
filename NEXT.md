@@ -8062,3 +8062,15 @@ t
        not a truncation - both reconstructions are byte-exact.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+208. [x] RENDER for spyke-chat, scenario 04 (eng-1d7e8fb7efc54176, main, seq 6, speaker spyke, tone
+     calm_precise). Text `/tmp/spyke-hac-text.txt` = 1892 chars, no trailing newline, sha256
+     `5e8746e0cc5cb920…` (hashed as posted).
+     RESULT: `/mnt/storage12tb/embry-voice/turns/spyke-seq6-04-20261114T055534Z-b1851e38b080.wav`,
+       36.28 s, `audio_sha256 b1851e38b08007d7…`, `normalized_tone calm_precise`, normalization OFF
+       (`text_file_sha256 == speakable_text_sha256`).
+     CHUNKING: 2 chunks (883 + 1008, under 1200), sentence-boundary splits, byte-exact reconstruction.
+     SIDECAR: `<wav>.b1851e38b08007d7.sidecar.json`; `receipt_present: false` - sidecar-only, consistent
+       with every earlier turn served to spyke. Filename carries the `-04-` scenario tag so it does not
+       collide with the scenario-03 seq-6 render.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
