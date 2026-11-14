@@ -8857,3 +8857,46 @@ t
          NO_SUBMISSION_FOUND for pass 39, whose verdict I intaked), so intake stays artifact-driven:
          `outputs/reviews/` plus the `/tmp/surf-cb-*` response directories.
 
+238. [x] A39-SP-03 REPAIRED, REPAIRED AGAIN, AND LANDED (`246817e6148299d8`) - and my first fix was WRONG.
+       REPRODUCED: the verification read loop ran to EOF, so a same-UID writer that KEEPS APPENDING could
+         keep it reading. Measured with an instrumented loop: **100,678,555 bytes read while verifying,
+         33 MB past the renderer's own 67,108,864 artifact limit**, before the digest check finally rejected.
+       FIX ROUND 1 (mine): pass the staged LENGTH in, require `fstat.st_size == want_size`, read at most
+         that many bytes.
+       ROUND 2 REVIEW: **REJECT**. Reading exactly `want_size` bytes does not prove EOF - a writer that
+         appends AFTER the fstat leaves the first `want_size` bytes identical, so the prefix digest still
+         matches and the growth is invisible. My fix closed the runaway read but not the exact-EOF half.
+       FIX ROUND 3: after the bounded loop, one extra-byte read must return nothing. Proven with a probe
+         that appends 4,096 bytes immediately after the first read: `published file is LONGER than the
+         staged 815 bytes after verification (grown during publication)`.
+       POST-FIX: growing-file probe reads 44,626 bytes and refuses on size; growth-after-size-check probe
+         refuses on the extra byte; `tests/run.sh` -> all retained harnesses PASS (16/16). deepseek round 3
+         APPROVE. Receipt `receipts/a39-sp03-bounded-verification-read.reviewer.json`; review preserved at
+         `outputs/reviews/a39-sp03-bounded-verification-read-deepseek-20261114.md`.
+       CORRECTION OF A RELAYED CLAIM, with evidence: surf reported pass 40 as "SP03 noted fixed". It was
+         not - I measured the unbounded read on the pass-40 bytes. Surf has accepted and recorded the
+         correction. A relayed "fixed" is not a receipt.
+
+239. [~] PASS-40 CONSULTATION VERDICT: **REPORTED, NOT INTACKED** - the artifact does not support the
+     summary, so it changes no gate.
+       Verified by me in `/tmp/cb-A7-review-full`, hashes computed here:
+         `question.txt` 302,099 B sha `01d5454b5f3d5529…` - GOOD: the frozen packet IS present intact at
+           byte offset 1,068..302,080 (301,012 B), so the full packet really was sent under a 1,068-byte
+           cover, and this matches the ops-magpie `input_sha256`.
+         `answer.txt` 564 B (558 chars) sha `19bc66901f19a7c1…` - FAILS intake: it does NOT contain the
+           packet sha `98e686c2`, and contains NO SP-01 / SP-02 / ASR-01 lines at all. The only finding
+           lines are `SP-03 / IS-01 / TXN-01: present/unfixed — no deep audit.` There are also no
+           `VERDICT <path> <sha256>` lines. The receipt's `answer_sha256` (`73687b7c…`) matches neither
+           file - surf flagged that discrepancy itself.
+       So surf's summary ("SP-01 PASS, SP-02 PASS, ASR-01 PASS") is NOT what the artifact I hold says. I
+         will not record three PASSes a file does not contain: that is the same failure mode as a relayed
+         PASS for bytes nobody verified. Asked surf for the raw capture matching `answer_sha256`; if it
+         does not exist the consultation is INCONCLUSIVE for the three repairs.
+       NOTE: "SP-03 present/unfixed" was CORRECT for the packet bytes (994f4aac49) - I fixed it after the
+         freeze, so the reviewer was not wrong about the bytes it saw.
+       SIDE EFFECT TO TRACK: spyke_render.py changed again (SP-03), so pass 40 is now stale for that file.
+         A pass 41 will be needed to bind current bytes once the remaining open findings are settled; that
+         is my item, not surf's.
+       ITEM STATE stays [~]: waiting on surf for (a) the bound pass-40 verdict artifact and (b) the pass-19
+         verdict that was already outstanding. Nothing is blocked on me beyond building pass 41 later.
+
