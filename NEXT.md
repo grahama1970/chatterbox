@@ -8669,3 +8669,27 @@ t
      NOT LANDED YET: `listen_review.py` is modified and running locally; round 1 was a REJECT, so it
        needs a second review round over the FIXED diff before it lands. The page is usable now.
 
+     PACKET-INTEGRITY CHECK, run this turn instead of trusting the claim above (2026-11-14): extraction
+       by `^=== <path> ===` + its `sha256 <hash>` line, compared against the working tree. My first two
+       attempts were WRONG and I am recording that: attempt 1 resolved the paths at the repo ROOT (they
+       live under skills/chatterbox-speak/) and reported 16/16 "absent"; attempt 2 compared the section
+       INCLUDING its `sha256` line as if it were code and reported 16/16 "changed". Neither was drift -
+       both were my parser. A drift claim needs the third check, done properly:
+         cb-A7-pass31.txt : 11 bound -> 1 match (tests/test_record_packet.py), 10 DRIFTED   => STALE
+         cb-A7-pass19.txt :  5 bound -> 5 match,                                  0 drifted    => CURRENT
+         cb-B4-pass5.txt  :  5 bound -> 2 match,                                  3 DRIFTED   => STALE
+         cb-A7-pass39.txt : 11 bound -> 10 match,                                 1 DRIFTED   => see below
+       So the sentence "Three packets are live and bound" is TRUE FOR ONE (pass19). pass31 was already
+         superseded by passes 32-39; B4-pass5 by later B4 work.
+       THE IMPORTANT ONE: pass39's drift is `tests/run.sh`, reviewed hash `e1b505886cd04867...`, current
+         `10644c6dd73707e6...`. Root cause is MY OWN landing: the reviewed copy predates item 211, so it
+         lacks `test_chunked_render_pace.py` in the harness loop; the current file has it (and the reviewed
+         copy carried two trailing blank lines). mtime confirms the ORDER: pass39 built 2026-11-13 21:13,
+         run.sh changed 2026-11-14 02:15. The reviewer's `VERDICT tests/run.sh e1b50588...: PASS` therefore
+         binds bytes that are no longer in the tree - a PASS that cannot be landed, not a passing file.
+       NO NEW VERDICT HAS ARRIVED for pass31/pass19/B4-pass5: `outputs/reviews/` newest entries are the
+         pass39 WebGPT FAIL (intaked, item 228) and the two API advisory reviews; nothing binds those three.
+       NEXT LEGAL MOVES, in order: (1) pass39's FAIL findings are the real queue (repair, then reissue);
+         (2) when packet 40 is built it must bind the CURRENT run.sh `10644c6d...`, which also closes the
+         stale-PASS; (3) pass19 stays as-is; (4) pass31 and B4-pass5 are recorded stale, not resent.
+
