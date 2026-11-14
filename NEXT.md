@@ -9630,3 +9630,29 @@ t
        st_ino) recorded when each own intermediate is created, unlink only on a match, and PARK when identity
        is unknown or differs. That is fix-by-construction, not a narrower name list.
 
+275. [~] PASS 19 IS NOT AWAITING SURF ANY MORE - its attempt was REFUSED AT EGRESS, and I stopped there.
+     WHAT HAPPENED: researcher ran it and the transport refused to send:
+       `summary.json`: `ok:false`, `"secret-guard egress refused: {\"decision\":\"block\",
+         \"reasons\":[\"cred-name\"], \"counts\":{\"secret\":1}}"`; `answer_raw.txt` **0 bytes**,
+       `answer.txt` 0 bytes, zero `VERDICT` lines. The binding that DID work: `question.txt` 103,458 B,
+       packet embedded exactly once, embedded segment sha == packet sha `b1ad7fa0…`.
+     WHAT TRIPPED IT, named without printing any value: one credential-shaped ASSIGNMENT in the packet,
+       in `scripts/speak.py:904` - the identifier `_COMPLEX_TOKEN =` (a compiled regex for phrase matching,
+       i.e. a false positive of the `cred-name` heuristic).
+     WHY I DID NOT "FIX" IT: the standing rule is explicit - a guard refusal means change the path, not the
+       command, and any content-side change intended to clear a refusal (renaming an identifier, splitting a
+       string) must be surfaced to Graham FIRST via `$interview`, because the same edit that clears a public
+       identifier would equally hide a real key from the shape scan. `scripts/speak.py` is also another lane's
+       file, not mine to rename for a classifier. So pass 19 is recorded as REFUSED-NOT-REVIEWED and the
+       decision is Graham's: rename the local identifier, exclude that file from the packet, or leave the
+       packet unsubmitted.
+     NOTE THE ASYMMETRY THAT MAKES THIS THE RIGHT CALL: pass 41 (no such identifier) went through and produced
+       a real verdict. The guard is discriminating on content, not blocking the lane.
+     REGISTRATION FREED BY PASS 41 SETTLING (item 164's blocker): `tests/run.sh` now includes
+       `test_a39_repairs.py` and `test_new_tag_prep.py`. Full gate: **18 harnesses PASS, rc=0**
+       (`tests: all retained harnesses PASS`; PUBLISH_BY_NAME clean).
+     LANDED EARLIER THIS STRETCH: `2c2f78e4` - A39-IS-01 round 3 (identity over minted names, closes the
+       pass-41 FAIL and the round-2 review F1 HIGH), deepseek APPROVE with no findings, harness 21/21.
+     STILL LIVE: item 164 is now UNBLOCKED (its file is free) but not done; item 263 (TXN-01 design choice)
+       and the pass-19 content decision above both need Graham. B4 pass 7 still has no captured answer.
+
