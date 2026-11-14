@@ -8586,10 +8586,13 @@ t
        => AUTHORITATIVE: 74 to review, of which 70 are listenable and 4 are below the machine gate.
           The "59" in this item's title is stale and matches nothing on disk; the word "verified" was
           never true (0 human verdicts exist).
-     WRITE-PATH PROBE (mine, on a COPY - the real manifest was never touched): a throwaway copy at
-       /tmp/probe-manifest.json with the page on a spare port returned 501 `Unsupported method ('POST')`
-       for /api/verdict, which is NOT the review server answering - a stale unrelated listener already
-       holds the ports I tried. So the persistence proof is INCOMPLETE on my side, and I will not claim
-       the endpoint persists until I have shown it writing to a copy on a port I own. The real manifest
-       still reads 0 human_confirmed / 83 rows, i.e. untouched.
-
+     WRITE-PATH PROVEN, on a COPY, on a port I owned (the real manifest was never touched). First attempt
+       was a false alarm worth recording: I patched MANIFEST to /tmp/probe-manifest.json and bound 8796,
+       but got `501 Unsupported method ('POST')` for /api/verdict - that was NOT the review server, a stale
+       unrelated listener already held the port. Re-ran after checking `ss -ltn` for a free port and
+       confirming with `ss -ltnp` that MY pid owned the socket:
+         POST {"id":"noseblow","verdict":"rejected"} -> 200 {"ok":true,...}
+         read-back from the FILE (not the HTTP response): noseblow status `rejected`,
+           reviewed_at `2026-11-14T15:42:00.170182`
+       So a verdict written through the page PERSISTS to the manifest; the success response is not the
+       only evidence. The REAL manifest still reads 0 human_confirmed / 83 rows = untouched.
