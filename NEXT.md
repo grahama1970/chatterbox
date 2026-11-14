@@ -10187,3 +10187,36 @@ t
        two repaired rows plus anything the reviewer chooses to re-check. `PACKET VERDICT: FAIL` from pass 43 stands
        until a new verdict says otherwise - no PASS has been claimed here.
 
+292. [x] THE PASS-44 RE-RECORD RESET ALL ELEVEN A7 ROWS TO "NOT REVIEWED", AND THAT IS BOOKKEEPING RATHER THAN LOST
+     EVIDENCE - but only because eight rows are byte-identical to bytes that were actually reviewed and passed.
+     WHAT HAPPENED, measured: `record-packet.py --packet cb-A7-pass44.txt --group A7 --files <11>` moved every row's
+       governing packet to pass 44, so the manifest now reads `NOT REVIEWED (current artifact)` for all eleven,
+       including the nine pass 43 had PASSed. Nothing was deleted: pass 43's answer and receipt are preserved at
+       `outputs/reviews/a7-pass43-20261114/`, and the manifest is a pointer to the CURRENT review round by design.
+     WHAT IS STILL TRUE, measured path by path against pass 43's own VERDICT lines:
+         identical to pass 43's reviewed bytes: 8 of 11, and all eight were PASS -
+           fs_ops.py d5dc641049be, wav_guard.py 4aaf17fc3749, sfx_verify.py ea3c61982dcd,
+           test_wg_pass2_repairs.py 4737c4a54dc8, test_sfx_library_regression.py 5922693b244b,
+           test_record_packet.py eb5a9c37ce33, test_render_tag_evidence.py 2867b6bb2acf, run.sh 769088f11b88
+         moved: spyke_render.py (FAIL -> repaired, now 127146bf7450), interrupt_sfx.py (FAIL -> repaired, now
+           e2e1541222a9), test_a7_pass10_repairs.py (PASS -> extended with the A43 cases, now 133e3230401a)
+     I TRIED TO RESTORE THE EIGHT AND THE TOOL CORRECTLY REFUSED: a dry-run re-intake of pass 43 returns
+       "REFUSED: no rows were changed" and names the three moved rows -
+         `interrupt_sfx.py: report does not contain its CURRENT sha256 e2e1541222a9… (stale/hash-unbound FAIL verdict)`
+         `spyke_render.py: report does not contain its CURRENT sha256 127146bf7450… (stale/hash-unbound FAIL verdict)`
+         `test_a7_pass10_repairs.py: report does not contain its CURRENT sha256 133e3230401a… (stale/hash-unbound PASS verdict)`
+       That is the group gate doing its job: it will not write a partial group whose other rows are hash-unbound.
+       So the eight PASSes return to the manifest in one step, with the other three, when pass 44's verdict is
+       intaked. Until then their status is honestly "not reviewed at the current round".
+     CURRENT BOARD: `cb-A7-pass44.txt FROZEN governed=11`; overall `VERDICT: DRIFT` solely because `cb-B4-pass8.txt`
+       is void (speak_core.py 4254e8381ede… -> 90af00c51ad6…, test_core_contract.py de77f4ae27da… -> 185da8357c9b…
+       from the B8-SC-01 gate fix). B4 pass 9 must wait for item 287's remaining F2/F3 repairs, or it will freeze
+       bytes that the next repair moves again.
+     HANDED OFF: pass 44 (323,496 B, sha256 aa7490eedb3d263b9a4acff9a06e3d1b513d239525c8b257add0b33b7661e709) is with
+       researcher's metered lane, with the cover stating the size and sha and telling the reviewer not to hash.
+     THE LESSON WORTH KEEPING: re-recording a packet is not a neutral bookkeeping step - it resets the review state of
+       every row it binds. That is correct for a fresh round, but it means a reissue must carry every row that still
+       needs a verdict, which is why pass 44 binds all eleven rather than only the two repaired ones.
+     BOUNDARY: no new verdict has arrived. A7 remains unlandable, pass 43's `PACKET VERDICT: FAIL` stands, and the
+       eight PASS verdicts are evidence about eight exact hashes - not a group verdict.
+
