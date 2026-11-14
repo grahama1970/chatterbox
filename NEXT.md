@@ -9547,3 +9547,26 @@ t
      WHAT I DID NOT DO: claim the local review as the external verdict. It has no provider receipt, so it
        remains REPORTED (item 270) and gates nothing.
 
+272. [x] THIRD RETRAIN RUNG MEASURED: a new tag id is genuinely ADDRESSABLE - not just an allocated row.
+     Owner's requirement has three mechanical parts; all three are now measured:
+       1 ALLOCATE the id    -> `new_tag_prep.py` (landed `a563b5b4`): one new row, round-trip verified.
+       2 CAN IT BE TRAINED  -> `newtag-train-mechanism.py` (item 265): loss 2.33316 -> 0.01130, rows changed
+                               exactly `[50276]`, other 50,276 rows delta 0.0e+00.
+       3 IS IT ADDRESSABLE  -> THIS probe: `outputs/probes/newtag-tokenizer-addressable.py`
+                               (sha256 `96b479f58cb742102b306b53`) with the model's own tokenizer files under
+                               `outputs/probes/tokfiles/`.
+     MEASURED, against the real tokenizer files copied from the container snapshot (GPT2Tokenizer,
+       model_max_length 1024, vocab 50,257): installed tags are ids **50257..50275**; native `[laugh]` is
+       **50275**; with the extended map, `[wistful sigh]` -> id **50276**, `encode` -> `[50276]`, and
+       `decode(50276)` -> `'[wistful sigh]'`. **VERDICT: ADDRESSABLE.**
+     WHY THIS RUNG MATTERED: an allocated row nobody can address is a row that will never be used; and a token
+       that encodes as several BPE pieces (rather than one id) would make "the new tag" a phrase, not a token.
+       Both are now excluded on the real files rather than argued.
+     HONEST BOUNDARY, unchanged: this proves MECHANISM, not quality. Training on real audio in a serialized GPU
+       window and a blind A/B against the initializer (`[laugh]`) is still the step that decides whether a new
+       tag is worth having. Item 259's blocker stands: the A5000 holds 23,667 of 24,564 MiB for the live
+       service peer lanes render through.
+     VERDICT STATE at the same moment: pass 41 `63e01ca4…` 11/11 bound 0 drift and pass 19 `b1ad7fa0…` 5/5
+       bound 0 drift, both **NO verdict artifact**; surf's log is fresh (14:52) but its newest artifact is
+       12:27, so the submission order sent at 14:52 is delivered and not yet actioned.
+
