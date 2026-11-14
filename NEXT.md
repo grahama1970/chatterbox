@@ -9524,3 +9524,26 @@ t
      The external verdict for pass 41 and pass 19 is still outstanding on surf (or on Graham choosing a
        different reviewer lane).
 
+271. [x] TXN-01 CLAIM CONFIRMED AGAINST MY OWN BYTES - the local review's ordering is real, and I checked it by
+     reading the code rather than accepting the answer.
+     THE CODE, with line numbers from the current `spyke_render.py` (the bytes pass 41 binds):
+       `904-906`  the final re-verification loop: `for _artifact in (receipt_path, provenance_path, out_path):`
+                  `_assert_content_in_dir(...)` — this is the LAST instant any artifact CONTENT is checked.
+       `906`      `_close_dirfd()` — closes the retained descriptor and re-reads nothing.
+       `948`      `_assert_dir_unchanged()` is the only guard that runs between that loop and the return.
+       `813-819`  and `_assert_dir_unchanged()` compares `_dir_ident(out_path.parent)` — the PARENT
+                  DIRECTORY's identity only. It does not open, stat or hash `out_path` itself.
+       `949-957`  `retire_owned` over `.prev-*` backups (parks foreign occupants, touches no published name).
+       `958`      `return receipt`.
+     SO: after the last content check, the only thing re-checked is the directory, and the function returns
+       `ok=True` carrying the snapshot's `audio_sha256`. A same-UID writer that replaces the published WAV in
+       that window yields a receipt that is internally consistent and describes audio no longer on disk. That is
+       exactly A39-TXN-01, and it is not a hypothetical - it is four lines of my own control flow.
+     WHAT THIS CHANGES: nothing yet, and deliberately so. Confirming the mechanism does not choose the fix;
+       the three options in `outputs/txn-01-decision.md` differ in what the skill PROMISES (verify the receipt
+       last from the returned bytes / seal all three / narrow the claim to what is enforced). Item 263 still
+       needs Graham's call. What it does change is that the finding can no longer be dismissed as my probes
+       failing to reproduce it - the gap is visible in the source.
+     WHAT I DID NOT DO: claim the local review as the external verdict. It has no provider receipt, so it
+       remains REPORTED (item 270) and gates nothing.
+
