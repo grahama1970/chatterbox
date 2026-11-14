@@ -8509,3 +8509,22 @@ t
        4 broken (cry-embry-v1, cry-arc-v3, delay-tearful, noseblow). The words "verified clips" were
        never true either - nothing in the freeze carries a human verdict yet.
 
+     LISTENING COST CUT (this turn): 70 individual clips is a bad ask; built 11 per-CATEGORY montages so
+       one listen per category carries the same information. Files `/tmp/ear-montages/<category>.wav`
+       (44.1 kHz mono, 0.45 s gaps, clip ids + durations in `index.json`):
+         chuckle 17.18s (10) | clear-throat 4.58s (2) | cough 8.26s (6) | crying 39.13s (7) |
+         delaying 2.21s (1) | gasp 16.99s (11) | groan 27.54s (10) | laugh 23.29s (9) |
+         sighing 3.06s (2) | sniff 7.14s (6) | surprised 8.10s (6)
+       TOTAL 157.5 s of listening instead of 70 separate files. These are derivations for review only:
+       they carry no verdict and change no manifest entry.
+     THE UNLISTENABLE FOUR, now checked against the project's OWN gate rather than my ad-hoc threshold
+       (`wav_guard`: GATE_MIN_RMS 0.008, GATE_MIN_ACTIVE_FRAC 0.25, MIN_ACTIVE_RUN_S 0.06):
+         cry-embry-v1   rms 0.0093 active 0.137 run 0.20s -> BELOW GATE
+         cry-arc-v3     rms 0.0159 active 0.147 run 0.26s -> BELOW GATE
+         delay-tearful  rms 0.0183 active 0.116 run 0.22s -> BELOW GATE
+         noseblow       rms 0.0048 active 0.067 run 0.00s -> BELOW GATE (also below GATE_MIN_RMS)
+       They cannot pass the machine gate, so no ear verdict can rescue them; the correct disposition is
+       reject-or-regenerate, and that disposition is still the owner's to state.
+     STILL BLOCKED ON THE OWNER, and nothing here is mine to decide: a human ear verdict per clip/category.
+       A machine PASS never substitutes for it, and I have written no verdict into the manifest.
+
