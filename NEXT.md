@@ -7101,7 +7101,9 @@ t
          `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
          established by the report itself - the same standard used for pass 32. No resubmission occurred.
      OWNER: this session (intake done); repairs tracked in 180.
-177. [~] ALL THREE HANDLED: add1 pass 9 (procedural), B4 pass 8 (3 FAIL intaked), add1 pass 10 (PASS, captured
+177. [~] ALL THREE HANDLED AND PASS 43 ALSO INTACKED (item 289): A7 is now 9 PASS / 2 FAIL, so the group
+    is unlandable BY DESIGN until those two rows are repaired (item 290). Nothing is awaited from surf.
+    HISTORICAL HEADER, retained verbatim: 177. [~] ALL THREE HANDLED: add1 pass 9 (procedural), B4 pass 8 (3 FAIL intaked), add1 pass 10 (PASS, captured
     but its intake is group-gated - item 288). Pass 43 is still running; nothing else is awaited.
     HISTORICAL HEADER, retained verbatim: 177. [~] TWO OF THREE RECEIPTS RETURNED, VERIFIED AND HANDLED (item 286); add1 re-asked as pass 10 and
     pass 43 routed to researcher. B4's three substantive FAILs are queued as item 287.
@@ -10048,7 +10050,8 @@ t
      BOUNDARY: the add1 row has NO valid code verdict; it has a verified binding and a procedural refusal. B4 has real
        FAILs to repair (item 287). Nothing here is a PASS.
 
-287. [~] REPAIR THE THREE B4 PASS 8 FINDINGS on the intaked bytes (4254e8381ede speak_core, cfce6214222f arc_chart,
+287. [~] REPAIR THE THREE B4 PASS 8 FINDINGS on the intaked bytes - F1 IS FIXED AND LANDED (`172df304`); F2 and F3
+     remain, so this item stays open. (4254e8381ede speak_core, cfce6214222f arc_chart,
      de77f4ae27da test_core_contract), each REPRODUCED FIRST, then reissue B pass 9 at the new bytes.
      F1 HIGH - reproduced witness needed: construct a chunk where `text` is empty and `answer_text` carries a named
        pause or an unsupported tag, and show it reaching the POST today.
@@ -10088,4 +10091,54 @@ t
      PRESERVED: `outputs/reviews/add1-prove10-20261114/` (question, answer, receipt mode 0600).
      BOUNDARY: a reviewer PASS on a static read of `tests/test_prove8.py` is evidence about those bytes, nothing more.
        It is not a claim that the A7 group is landable, and it is not a claim about any other row.
+
+289. [x] PASS 43 RETURNED AND IS INTACKED FIRST-CLASS - the A7 group is now 9 PASS / 2 FAIL, and the two FAILs are
+     real code findings rather than another packet defect.
+     CHAIN VERIFIED BY ME (`ops-magpie-f698cb985512`, asked AND served deepseek/deepseek-v4-pro, metered, 1 attempt,
+     319,678 ms):
+       packet   `packets/cb-A7-pass43.txt` 315,236 B sha256 d5ebf5bc0a21977c750cb2e25637036f4fe89514f32a010f272c466104476934
+       question 316,073 B sha256 0f2a6c3df073ec0b… == receipt.input_sha256                    PASS
+       packet embedded EXACTLY ONCE at offset 818                                             PASS
+       answer   1,794 B sha256 69aa9327a587a2fc… == receipt.answer_sha256                      PASS
+       eleven per-file VERDICT lines + `PACKET VERDICT: FAIL`                                 PASS
+       my checker: `BINDS: True   INTAKABLE: True`.
+     INTAKE: `verdict-intake.py --group A7 --report … --packet … --apply` -> rc=0,
+       **APPLIED 9 PASS, 2 FAIL**, manifest 41,698 B sha256
+       `97ec6db85bc3e3f6524a72d02985d5ec31e65873c4ec3b24a222ed7dbf510678`. Read back from the manifest itself:
+         PASS: fs_ops.py d5dc641049be, sfx_verify.py ea3c61982dcd, wav_guard.py 4aaf17fc3749, run.sh 769088f11b88,
+               test_a7_pass10_repairs.py 5bbf3aa8f66e, test_wg_pass2_repairs.py 4737c4a54dc8,
+               test_sfx_library_regression.py 5922693b244b, test_record_packet.py eb5a9c37ce33,
+               test_render_tag_evidence.py 2867b6bb2acf
+         FAIL: spyke_render.py 2da7b1f13318, interrupt_sfx.py ea937f7c312c
+     THE TWO FAILs AND THE THIRD FINDING, quoted from the answer (verbatim in
+     `outputs/reviews/a7-pass43-20261114/answer_raw.txt`):
+       F1 HIGH   - `spyke_render._restore_backup()` returns True after an installed-inode mismatch, so the bound SP-27
+                   test cannot pass and rollback misreports a foreign restore as success.
+       F2 MEDIUM - `interrupt_sfx._StagingDir.__exit__` deletes by name after a stat-based `_is_ours` check, leaving a
+                   TOCTOU where a same-UID writer can replace the file before `q.unlink()` and cause foreign data to
+                   be deleted.
+       F3 LOW    - `spyke_render._read_snapshot()` runs its rootless descriptor identity check only when the
+                   `/proc/self/fd` readlink RAISES, so the check is skipped on the normal readlink-success path.
+     NOTE ON F2, honestly: this is the identity-versus-name problem again, and my round-3 IS-01 repair replaced
+       filename-based ownership with minted names inside a private `own/` directory precisely to avoid it. Whether a
+       residual TOCTOU remains inside that design is now a live question, not a settled one - item 290 reproduces it
+       before anything is changed.
+     EFFECT ON THE ADD1 PASS (item 288): retried after this intake and still REFUSED rc=3. That is correct: the A7
+       group now contains two FAIL rows, so `test_prove8.py`'s PASS cannot enter the manifest while its group is
+       unlandable. It applies in one step once item 290's repairs are reviewed.
+     PRESERVED: `outputs/reviews/a7-pass43-20261114/` (question, answer, receipt mode 0600).
+     BOUNDARY: 9 PASS is evidence about nine files at nine hashes, not a group verdict; `PACKET VERDICT: FAIL` stands.
+
+290. [~] REPAIR THE PASS-43 FINDINGS on the intaked bytes, each REPRODUCED FIRST, then reissue the A7 row again.
+     F1 HIGH (spyke_render._restore_backup): reproduce an installed-inode mismatch where the function still returns
+       True, and show the SP-27 test cannot pass at these bytes. Fix so a mismatched restore reports failure.
+     F2 MEDIUM (interrupt_sfx._StagingDir.__exit__): reproduce the stat-then-unlink window with a same-UID writer
+       replacing the file between the `_is_ours` check and `q.unlink()`. This directly tests my round-3 IS-01 design
+       (minted names inside a private `own/`), so the reproduction decides whether that design holds or needs a
+       descriptor-bound unlink.
+     F3 LOW (spyke_render._read_snapshot): show the identity check being skipped on the readlink-SUCCESS path, then make
+       it unconditional.
+     NOT STARTED: no reproduction attempted yet. The A7 rows stay FAIL in the manifest (correct) until each is fixed,
+       re-reviewed at the new bytes, and intaked.
+     OWNER: this session (repairs); surf/researcher (the reissued packet).
 
