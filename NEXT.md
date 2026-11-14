@@ -10052,7 +10052,7 @@ t
      BOUNDARY: the add1 row has NO valid code verdict; it has a verified binding and a procedural refusal. B4 has real
        FAILs to repair (item 287). Nothing here is a PASS.
 
-287. [~] REPAIR THE THREE B4 PASS 8 FINDINGS on the intaked bytes - F1 AND F2 ARE FIXED AND LANDED (`172df304`, `5ece2502`); F3
+287. [x] REPAIR THE THREE B4 PASS 8 FINDINGS on the intaked bytes - F1, F2 AND F3 ARE FIXED AND LANDED (`172df304`, `5ece2502`, `d4aa127c`); nothing of
      remain, so this item stays open. (4254e8381ede speak_core, cfce6214222f arc_chart,
      de77f4ae27da test_core_contract), each REPRODUCED FIRST, then reissue B pass 9 at the new bytes.
      F1 HIGH - reproduced witness needed: construct a chunk where `text` is empty and `answer_text` carries a named
@@ -10077,6 +10077,20 @@ t
         STATE AFTER F1+F2: `speak_core.py` moved again, so `cb-B4-pass8` is void on drift (as when this item opened).
           F3 `_safe_publish` content-byte check is NOT STARTED, and B pass 9 must be built at the new bytes, recorded,
           frozen and handed over. That is the whole remaining scope of this item.
+        F3 LANDED `d4aa127c`. Reproduced FIRST: with `os.replace` hooked to overwrite the staged temp file IN PLACE,
+          `_safe_publish(out, "<svg>INTENDED</svg>", overwrite=True)` published `'ATTACKER BYTES!!   '` and returned
+          success - the last check compared only `(st_dev, st_ino)`. Fix: sha256 of the intended data is verified
+          through the SAME open descriptor that is published, once before `os.replace` and once after; the staging fd
+          is now O_RDWR so the bytes can be read back. Review `deepseek/deepseek-v4-pro`: APPROVE with F1/F2 (both
+          LOW) which were IMPLEMENTED before landing - the previous destination is renamed to a backup and RESTORED on
+          any refusal, so a refused publication is non-destructive (before, `os.replace` had already destroyed it),
+          and the inode-mismatch branch now parks the substituted file instead of leaving it at the destination.
+          Retained: 3 B4-F3 checks in `tests/test_prove4.py` (20/20). MUTATION-PROVEN: with both content checks
+          disabled the mutant publishes 'ATTACKERXXXXXXXXXXX' and fails all three (17/20). Suite rc=0,
+          `PUBLISH_BY_NAME: clean`, all retained harnesses PASS. Receipt `receipts/b4-f3-publish.reviewer.json`
+          (greenfield, since `tests/test_prove4.py` is new on origin/main).
+        REMAINING: B pass 9 must be rebuilt at the new bytes (`speak_core.py`, `test_core_contract.py`, `arc_chart.py`,
+          `test_prove4.py` all moved today), recorded, frozen and handed over; `cb-B4-pass8` is void on drift.
 288. [x] THE THIRD RECEIPT: add1 pass 10 came back PASS, its chain is verified, and its intake was REFUSED by the
      group gate - which is the correct behaviour, not a defect to work around.
      RECEIPT, verified by me rather than relayed (`ops-magpie-e462ad7cd97b`):
