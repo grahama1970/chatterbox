@@ -8638,3 +8638,34 @@ t
        regeneration of a category. What I must NOT do is write these 12 or 58 as verdicts myself: the
        manifest's `human_confirmed` field is a human judgement and a machine PASS is not an ear.
 
+229. [x] MONTAGE REVIEW PAGE BUILT, LIVE AND VERIFIED (owner: "are you going to put these onto an
+     html-css page so I can play them").
+       `scripts/listen_review.py` now serves `/montages`: one HTML/CSS page, dark theme, one <audio>
+         player per emotion category (clips joined in order with 0.45 s gaps), per-clip confirm/reject
+         buttons, "confirm all in <cat>" / "reject all in <cat>" bulk buttons, a live
+         "decided/total - pending" counter, and a separate "Below machine gate" card with individual
+         players for the 4 clips no verdict can rescue.
+       New routes: `/montages`, `/audio-montage/<cat>.wav`, `/api/montages`. Verdicts still apply per
+         CLIP through the existing `POST /api/verdict` (the manifest row is a clip, not a category).
+       LIVE EVIDENCE: `/montages` 200 (29,417 B), 15 audio players (11 montages + 4 below-gate),
+         74 clip rows, and the page's clip id set EQUALS the pending set (74 = 74, none missing).
+         `/audio-montage/{chuckle,gasp,groan,laugh,crying,sniff,surprised,cough}.wav` all 200;
+         unknown/traversal names (`../manifest.json`, `index`, `smooth`) all 404.
+     REVIEW ROUND 1 (deepseek/deepseek-v4-pro, non-GPT, different family from the zai author):
+       VERDICT: REJECT with 5 findings - all reproduced and FIXED, not argued:
+       F1 `seconds` vs `duration` -> leftover rows rendered a bare "s"; now falls back across both keys
+          (verified: zero `class="dur">s<` in the served page).
+       F2 bulk buttons scoped by an h2 text prefix over a document-wide query -> could cross-select
+          a card whose name prefixes another; now `b.closest('section')` scoped (verified in page JS).
+       F3 `send()` ignored `r.ok` -> a rejected write vanished silently; now collects failures and
+          alerts (verified string present in the served page).
+       F4 `/audio-montage/<name>` served ANY .wav in the directory and interpolated the name into HTML
+          unencoded; now restricted to categories listed in index.json and URL-encoded
+          (verified: traversal and arbitrary names 404, known categories 200).
+       F5 MEDIUM, real data loss: `save_manifest()` is a read-modify-write under ThreadingHTTPServer,
+          so concurrent POSTs (bulk confirm racing a click, or both pages open) could clobber and LOSE
+          a verdict in the very file that is the review record. Now serialised with `MANIFEST_LOCK`
+          around the whole load-mutate-save cycle (verified: 2 references, one is the `with` block).
+     NOT LANDED YET: `listen_review.py` is modified and running locally; round 1 was a REJECT, so it
+       needs a second review round over the FIXED diff before it lands. The page is usable now.
+
