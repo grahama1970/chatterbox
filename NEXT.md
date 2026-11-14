@@ -8763,3 +8763,36 @@ t
      plus the surf response directories under `/tmp/surf-cb-*`. Both agree there is no verdict for
      pass31, pass19 or B4-pass5.
 
+233. [x] A39-SP-02 REPAIRED AND LANDED (`5572ceeedc7a9749`). The reviewer said the retained directory
+     descriptor is never bound to the captured identity, so pathname checks and descriptor checks could
+     validate DIFFERENT directories (they returned ok:true with the requested WAV absent at the pathname).
+       MY FIRST PROBE FAILED TO REPRODUCE IT and I recorded that honestly (item 231) rather than calling it
+         fixed: a single swap at the descriptor open was caught by the existing A34 retained-descriptor
+         check. Their scenario re-exposed the replacement for EVERY publication operation and each pathname
+         digest read; I did not win that race and did not pretend to.
+       FIX BY CONSTRUCTION instead of by race: the pathname-first capture is GONE. `dir_ident` now comes
+         from `os.fstat(dirfd)` - the directory this transaction will actually publish into - and the
+         pathname must identify that same directory or the render refuses and closes the descriptor.
+       EVIDENCE: same swap probe now refused with
+         `_DirIdentityChanged: .../out: pathname identifies (66306, 183121377) but the retained descriptor
+         identifies ...`; A39-SP-01 leak probe still 0 leaked descriptors across 3 runs; whole suite
+         `tests: all retained harnesses PASS` (16/16). deepseek/deepseek-v4-pro: no findings, APPROVE.
+         Receipt `receipts/a39-sp02-dirfd-binding.reviewer.json`; review at
+         `outputs/reviews/a39-sp02-dirfd-binding-deepseek-20261114.md`.
+       GATE FRICTION WORTH KNOWING: gh-land refused the receipt twice before accepting it - first because
+         the paths were greenfield (spyke_render.py was untracked), then because `invariants_checked` was
+         missing `no_silent_substitution`. Both were my receipt being wrong, not the gate being difficult.
+
+234. [~] PACKET BINDING AFTER MY REPAIRS - three of the eleven pass-39 bound files have CHANGED, so pass 39
+     can no longer be reissued by reusing its own section hashes. Current bytes (what a reissue must bind):
+       SAME    fs_ops.py d5dc641049be | interrupt_sfx.py 734139864820 | test_a7_pass10_repairs.py 5bbf3aa8f66e
+       SAME    wav_guard.py 4aaf17fc3749 | sfx_verify.py 4b35fc7a4917 | test_wg_pass2_repairs.py f08150684447
+       SAME    test_record_packet.py eb5a9c37ce33 | test_render_tag_evidence.py 2867b6bb2acf
+       CHANGED spyke_render.py        1464a649913f -> 994f4aac498b   (SP-01 + SP-02 repairs)
+       CHANGED test_sfx_library_regression.py 316803b2071b -> 5922693b244b (coverage invariant made precise)
+       CHANGED tests/run.sh           e1b505886cd0 -> 10644c6dd737   (pace harness added after pass 39)
+     STILL FAILING AND UNREPAIRED: interrupt_sfx.py (FAIL), sfx_verify.py (FAIL) - both bound hashes are
+       unchanged, so their FAIL verdicts still apply to the current bytes and must be repaired BEFORE a
+       reissue; spyke_render.py's FAIL is the one I have now repaired and re-reviewed.
+     So the item above ("three packets live and bound") holds for pass19 only. Nothing is blocked on me.
+
