@@ -9280,3 +9280,41 @@ t
        unilaterally. This is the concrete blocker on the retrain requirement, stated with numbers instead of
        "needs GPU".
 
+260. [x] ITEM 165/258 REMAINDER CLOSED: `sfx_demo.py` LANDED `3ae556211c`, and SIX review rounds found TEN
+     defects - including one I introduced that broke the feature outright.
+     VERIFIED AFTER LANDING (not from memory): `sfx_demo.py` MATCH and `receipts/sfx-demo.reviewer.json`
+       MATCH against `git show origin/main:`, and the landed file contains **0** `"graham":` entries.
+     WHAT IT DOES: renders one carrier line in a chosen voice through the local service, then appends that
+       voice's event SFX AFTER THE WHOLE LINE (ffmpeg concatenates the speech segment and a delayed SFX, so
+       no internal boundary is computed), writing `demo_<voice>_<cat>_<variant>.wav` plus `index.json`.
+     WHAT THE REVIEW CAUGHT (rounds, in order):
+       R1 APPROVE + 4 findings: ffmpeg wrote straight to the final path so a failed splice left a truncated
+         file that looked finished; docstring claimed a "sentence boundary" the code never computes;
+         `VOICE_REFS[voice]` unguarded (only `LINES` was checked); 0-byte clips passed `is_file()`.
+       R2 REJECT + 2: my new `RuntimeError` escaped the caller's `except CalledProcessError`, so one bad clip
+         aborted the whole run; my `.partial` name was deterministic, so concurrent runs collided.
+       R3 REJECT + 1: `subprocess.TimeoutExpired` is not a `CalledProcessError` either - same abort path.
+       R4 APPROVE + 1: my docstring then claimed "the carrier lines are single sentences". I MEASURED it:
+         all three entries split into TWO sentences ("Well. That is one way to put it"), so the claim was false.
+       R5 REJECT + 3, and one was MINE BREAKING IT: my per-call suffix dropped the `.wav` extension, and
+         ffmpeg refuses an output whose extension it cannot map. I reproduced it directly rather than taking
+         the review's word: `...abcd1234` -> "Unable to choose an output format", `...abcd1234.wav` -> 88,278 B
+         written. Also: `prefer` was used as a membership set instead of a priority order, and `--variant`
+         that matched nothing silently rendered a DIFFERENT variant.
+       R6 APPROVE, FINDINGS: 0, on the final bytes.
+     EMPIRICAL PROOF OF THE FINAL CODE, not just a green review: running the real `sfx_demo.splice()` on
+       generated fixtures produced 90,042 B at 1.02 s (speech 0.40 + gap + sfx 0.30) with **no leftover
+       .partial files**.
+     WHY THE ENTRY HAD TO GO: there is no `graham_owner.wav` anywhere and the container mounts no `/voices`,
+       so that name handed ffmpeg a path to nothing. It is a real person's voice; no reference will be faked.
+
+261. [~] QUEUE STATE AT THIS POINT, so the next turn does not have to rediscover it.
+     WAITING ON SURF (verified this turn, no artifact exists): pass 19 `b1ad7fa0…` 5/5 bound 0 drift; pass 41
+       `63e01ca4…` 11/11 bound 0 drift. B4 pass 7 has no answer (item 256: response.md absent, raw.md 0 B).
+     BLOCKED ON A LIVE-EFFECT DECISION: the retrain training rung (item 259) - the A5000 has 23,667 of
+       24,564 MiB held by the live service, so training is a serialized window that needs the service stopped,
+       and peer lanes render through it. Not mine to stop unilaterally.
+     STILL CONTAINING THE DEAD MAPPING: `spyke_render.py` (bound in the in-flight packet, so editing it voids
+       the verdict) - it is the last file with a `graham` -> nonexistent-WAV entry.
+     OPEN FINDING: TXN-01, recorded as a DESIGN question (item 244), not patched into a shape nobody chose.
+
