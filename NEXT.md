@@ -9786,3 +9786,30 @@ t
      ITEM 149 STAYS OPEN: acceptability is Graham's product judgement. I am not answering it for him, and I am not
        starting the run before he picks a branch, because (a) and (c) need different spend.
 
+280. [x] ITEM-149 INSTRUMENT BUILT AND PROVEN IN DRY RUN, WITH THREE OF MY OWN DEFECTS CAUGHT AND FIXED.
+     WHAT IT IS: `outputs/probes/tag-discrimination-probe.py` (durable on the 12TB drive; sha `a1548452a883695b`)
+       implements the run specified in item 279 - five arms (plain, [sigh], [gasp], [groan], [laugh]), n per arm,
+       unique seq per render (flat-media names are immutable, so a reused seq is refused 409 and recorded, never
+       retried under the same name), per-render duration + an INDEPENDENT wav_guard re-measurement, optional
+       per-render ASR, and the decision rule fixed before any run: DISTINCT only if the 6 pairwise comparisons show
+       disjoint ranges or exact Mann-Whitney p < 0.05/6 = 0.008333.
+     DRY RUN (no GPU, no renders): 50 planned renders, seq 988964..989013, service `{"ok": true, "queue_depth": 0}`.
+       Decision rule validated against known exact cases: U for [1,2,3] vs [4,5,6] -> p=0.100000 (expected 0.100000);
+       [1,2,3,4] vs [5,6,7,8] -> 0.028571 (expected 0.028571); identical samples -> 1.000000.
+       Measurement path validated on a real turn WAV `288b7508_alex_main_28.wav`: 1,148,238 B -> 23.9216 s,
+       active_frac 0.704, ac_rms 0.060296, ac_pp 1.139465, dc -4.5e-05.
+     THREE DEFECTS IN MY OWN INSTRUMENT, found by actually running it rather than reading it:
+       1. skill path derived from `__file__` resolved to `/mnt/.../skills/skills/chatterbox-speak`, so `import
+          wav_guard` failed. The probe lives on the 12TB drive, not inside the skill; it now resolves explicitly
+          via `$CHATTERBOX_SKILL` and refuses to start if `wav_guard.py` is not there.
+       2. `--asr` would have silently produced empty transcripts on the host, because faster-whisper is installed
+          only in `embry-voice-chatterbox-1`. An empty string would have been counted as "this tag did not
+          vocalise" - a false negative dressed as data. It now fails closed with a named error.
+       3. it printed `peak=0.0` for a real 23.9 s WAV: `signal_health` returns
+          `{ac_pp, ac_rms, active_frac, active_run_s, dc}` and my `.get("peak", 0.0)` INVENTED the zero. It now
+          copies only the fields that exist and records `health_keys` so an absent field cannot masquerade as a
+          measured one.
+     STILL NOT DECIDED, AND NOT MINE: whether pacing-only is acceptable (item 149). Option (a) needs no run at
+       all; option (c) now needs exactly one command. The instrument deliberately measures current behaviour only
+       and writes nothing to the HF cache, the SFX library or the manifest.
+
