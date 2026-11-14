@@ -8340,3 +8340,21 @@ t
        C - stop at pass 37 and mark the pass-38/39 work unreviewed.
      No submission happens without the owner picking A or C. The packet stays frozen at `b78119b2...`.
 
+223. [x] WHY the no-GPT rule exists - operator statement 2026-11-14: GPT models carry too many
+     restrictions for real cybersecurity work, so this work runs on GLM and DeepSeek instead.
+     This is not a preference; it is a capability constraint, and it changes how I handle refusals:
+       - A GPT refusal during cyber work is EXPECTED and is not evidence that the work is illegitimate,
+         mis-scoped, or that the artifact needs rewording. On GPT lanes I already treat a refusal as a
+         hard stop (never reword content to clear a safety flag). The addition here: a refusal is also
+         not a reason to escalate to another GPT route - the correct move is the GLM/DeepSeek seat.
+       - Reviewer seats for adversarial/security content: zai/glm-5.3 and deepseek (by family). The
+         cross-provider inequality requirement is satisfied by those two families alone, so no security
+         review here ever needs an OpenAI model.
+       - "GPT unless there is no other choice" therefore means effectively never for cyber work: GLM and
+         DeepSeek are the choice. If I ever believe a GPT model is genuinely required, that is a
+         statement needing the operator's decision, recorded before the call, not a silent default.
+     APPLIED TO 201: the reviewer-of-record for the pass-38/39 packet must be a non-GPT authorized
+       reviewer (option A) or the work marked unreviewed (option C). OpenAI Daybreak is excluded by this
+       rule as well as by 222.
+     Audit unchanged: every review receipt in this lane already records zai/glm-5.3 as the reviewer.
+
