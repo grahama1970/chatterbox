@@ -9444,3 +9444,17 @@ t
        `63e01ca4…` 11/11 bound 0 drift, both with **NO verdict artifact**, and no new transport directory since
        the handoff. Item 133 therefore stays OPEN and is not checked off: nothing arrived to intake.
 
+267. [x] ITEM 227's SURFACE RE-VERIFIED LIVE this turn - the human listening step is not blocked by a dead
+     server. Measured with curl against `http://127.0.0.1:8797`:
+       `/`             -> **302** (redirects to /montages, as designed; 0 B body)
+       `/montages`     -> **200**, 27,408 B (the dark-theme review page with the 11 category players)
+       `/api/montages` -> **200**, 4,279 B (the montage index the page reads)
+       `/api/clips`    -> **200**, 2 B - an EMPTY array, which is CORRECT rather than broken: item 11 closed
+                          with 70 `human_confirmed`, 7 `culled_content_failed`, 6 `excluded_nonconforming`
+                          and **0 pending**, so there are no undecided clips left to list.
+       `/audio-montage/chuckle.wav` -> **200**, 1,515,320 B (a real montage streams, not a 404 or an empty file)
+     So what Graham needs for the listening step works end to end at this instant: page, index, and audio.
+       The only remaining piece of item 227 is his ear verdict, which is his to give and not mine to infer.
+     VERDICT STATE at the same instant: pass 19 `b1ad7fa0…` 5/5 bound 0 drift, pass 41 `63e01ca4…` 11/11 bound
+       0 drift, both **NO verdict artifact**. Item 133 stays open; nothing arrived to intake.
+
