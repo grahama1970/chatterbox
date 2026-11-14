@@ -8528,3 +8528,11 @@ t
      STILL BLOCKED ON THE OWNER, and nothing here is mine to decide: a human ear verdict per clip/category.
        A machine PASS never substitutes for it, and I have written no verdict into the manifest.
 
+     MONTAGE METRIC CAVEAT (my own numbers, corrected so they are not misread): the per-montage
+       active-fraction figures I printed (0.19-0.50) are depressed BY CONSTRUCTION by the 0.45 s silence
+       gaps I inserted between clips. `delaying` reads active 0.19 on a 2.21 s montage of ONE clip, which
+       is the gap, not silence in the clip - the clip itself passed the per-clip check. So: the montages
+       are a LISTENING AID; the per-clip measurements in /tmp/ear-precheck.json are the authoritative
+       numbers. Peak/RMS on every montage are healthy (peak 0.11-0.85, rms 0.011-0.080), so none of the
+       eleven is silent or broken as a file.
+
