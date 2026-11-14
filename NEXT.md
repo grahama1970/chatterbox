@@ -9407,3 +9407,28 @@ t
        263  Graham: the TXN-01 decision (A+C recommended) - `outputs/txn-01-decision.md`, sha `ab993da1…`.
      Nothing on this list is blocked on work I can do without either surf returning or a decision above.
 
+265. [x] RETRAIN MECHANISM PROVEN IN ISOLATION - the "can it be trained at all" question is now measured, not
+     assumed. Durable, outside `/tmp`:
+       `outputs/probes/newtag-train-mechanism.py` sha256 `9a39b9700d9b3736f5ec83ef5f9b93fe`
+       plus its captured output `newtag-train-mechanism.out.txt`.
+     THE QUESTION: the new row (id 50276) starts as a duplicate of a native tag, so it renders as that tag.
+       Can it be TRAINED toward a different target while the other 50,276 rows stay exactly frozen?
+     THE MECHANISM: table as a `torch.nn.Parameter`, and after `backward()` every gradient row except 50276 is
+       zeroed before `opt.step()`. That is the honest way to train one row of an embedding table, and it makes
+       the invariant checkable instead of assumed.
+     MEASURED (this run): loss 2.33316 -> 0.01130 (converged, <1% of first); **rows whose values changed:
+       [50276]** and nothing else; the new row moved 11.77 from its source row; **max change across the other
+       50,276 rows: 0.0e+00** - exactly zero, not "small"; remaining distance to target 0.81.
+     MY FIRST ATTEMPT AT THIS PROBE WAS WRONG and I am recording it: I set `emb[NEW_ID].requires_grad_(True)`
+       on a view of a leaf tensor, which raises "element 0 of tensors does not require grad and does not have a
+       grad_fn" - a view of a leaf cannot receive gradient. The corrected Parameter+mask form is what produced
+       the numbers above.
+     WHAT THIS DOES **NOT** PROVE, stated so it cannot be mistaken for the finished capability: it is
+       SYNTHETIC. It proves the training mechanism isolates the new row; it does not prove that training on real
+       audio makes a distinguishable, better-sounding tag, and it is not audio quality evidence. That needs the
+       real checkpoint copy plus a serialized GPU window (item 259: the live service holds 23,667 of 24,564 MiB
+       on the A5000) and then a blind A/B against the initializer.
+     ITEM 254 STATUS: mechanical half landed (`a563b5b4`, allocate id) and mechanism half now measured here.
+       Remaining: real-data training in a serialized window + the blind A/B. Still OPEN, but no longer unknown
+       in principle.
+
