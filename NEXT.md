@@ -8266,3 +8266,15 @@ t
        carries the slow side there; the number is recorded rather than smoothed.
      spyke's atom should record tone calm_precise and the amended band; nothing posted by me.
 
+218. [x] RENDER for spyke-chat, scenario 08 under the amended band [1.0, 3.6]
+     (eng-feae6e7c5b09461f, main, seq 8, speaker spyke, tone calm_precise).
+     SOURCE `/tmp/spyke-stale-text.txt` = 1983 chars / 273 words, no trailing newline,
+       sha256 `f4b51644f7559a65...`.
+     ARTIFACT `/mnt/storage12tb/embry-voice/turns/spyke-08-seq8-rr-20261114T082743Z-5e167f10d1f5.wav`
+       136.64 s, `audio_sha256 5e167f10d1f5daa1...`, aggregate 2.00 w/s, band [1.0, 3.6].
+       Chunks 5 (482, 189, 486, 426, 400 chars), per-chunk 1.98 / 2.52 / 1.68 / 2.92 / 1.50 -
+       every chunk inside the band on its own measurement, so no short-tail exemption was needed.
+     Sidecar `<wav>.5e167f10d1f5daa1.sidecar.json`; `text_file_sha256` == `speakable_text_sha256`
+       == sha256(/tmp/spyke-stale-text.txt), compared before the render and again from the sidecar.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
