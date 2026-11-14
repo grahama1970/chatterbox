@@ -10129,7 +10129,9 @@ t
      PRESERVED: `outputs/reviews/a7-pass43-20261114/` (question, answer, receipt mode 0600).
      BOUNDARY: 9 PASS is evidence about nine files at nine hashes, not a group verdict; `PACKET VERDICT: FAIL` stands.
 
-290. [~] REPAIR THE PASS-43 FINDINGS on the intaked bytes, each REPRODUCED FIRST, then reissue the A7 row again.
+290. [~] F1/F2/F3 REPAIRED AND LANDED (`813a9469`); A7 pass 44 is built, recorded and FROZEN (item 291). What
+    remains is the re-review of pass 44, and B4 stays void until item 287's F2/F3 repairs land.
+    HISTORICAL HEADER, retained verbatim: 290. [~] REPAIR THE PASS-43 FINDINGS on the intaked bytes, each REPRODUCED FIRST, then reissue the A7 row again.
      F1 HIGH (spyke_render._restore_backup): reproduce an installed-inode mismatch where the function still returns
        True, and show the SP-27 test cannot pass at these bytes. Fix so a mismatched restore reports failure.
      F2 MEDIUM (interrupt_sfx._StagingDir.__exit__): reproduce the stat-then-unlink window with a same-UID writer
@@ -10141,4 +10143,47 @@ t
      NOT STARTED: no reproduction attempted yet. The A7 rows stay FAIL in the manifest (correct) until each is fixed,
        re-reviewed at the new bytes, and intaked.
      OWNER: this session (repairs); surf/researcher (the reissued packet).
+
+291. [x] THE PASS-43 FINDINGS ARE REPAIRED AND LANDED, AND A7 PASS 44 IS FROZEN FOR RE-REVIEW - while B4 correctly
+     stays void, which the freeze gate now says out loud.
+     WHAT LANDED (`813a9469`, verified byte-for-byte against origin/main):
+       scripts/spyke_render.py     127146bf7450ab5f   F1 + F3
+       scripts/interrupt_sfx.py    e2e1541222a910c0   F2
+       tests/test_a7_pass10_repairs.py 133e3230401a25a4
+       receipts/a43-f1f2f3.reviewer.json b2c9e88825d2fe9e (deepseek APPROVE, no findings)
+     EACH FINDING WAS REPRODUCED ON THE INTAKED BYTES BEFORE ANY CHANGE, and each fix has a case that is
+       MUTATION-PROVEN DECISIVE (69/69 checks; suite rc=0, "all retained harnesses PASS", "PUBLISH_BY_NAME: clean"):
+       F1 - `_restore_backup` returned True from the foreign-BACKUP branch while appending a failure. Reproduced:
+            ok=True with `foreign occupant parked at ..., not removed`. Fixed to return False. The mutant that
+            restores `return True` FAILS the case.
+       F2 - `_StagingDir.__exit__` stat-checked then unlinked BY NAME. Reproduced by firing a same-UID swap at the
+            `is_file()` call: "foreign file after __exit__: exists=False" - the writer's bytes were destroyed. Fixed
+            by renaming first (atomic) and then comparing the FULL recorded identity `(dev, ino, size, mtime_ns)`;
+            ours is removed, a foreign occupant is parked and reported. The mutant restoring the old loop FAILS the
+            case (`survivors=[]`).
+       F3 - `_read_snapshot` ran its descriptor/name check only in the readlink-FAILURE branch. Reproduced by making
+            `/proc/self/fd` resolve to a different file: the original bytes came back with no error. Fixed to run on
+            both paths; the mutant that removes it FAILS the case.
+     THREE OF MY OWN ERRORS, caught by my own tests rather than by the reviewer:
+       1. my first F2 fix compared only `(dev, ino)`, and the filesystem REUSED the freed inode, so the writer's file
+          was still deleted - the fix recreated the bug. The full-tuple compare is what actually fixes it.
+       2. two earlier F2 reproductions were invalid: one used the wrong constructor, one restored its swap hook
+          before `__exit__` ran, so it "proved" nothing until I installed the hook across the exit call.
+       3. the pass-43 wording "returns True after an installed-inode mismatch" did NOT reproduce as stated - that
+          branch already returns False and the bound SP-27 test passes 64/64. I recorded the corrected claim instead
+          of "fixing" a bug that was not there.
+     A7 PASS 44 (frozen, durable):
+       `packets/cb-A7-pass44.txt` 323,496 B sha256 aa7490eedb3d263b9a4acff9a06e3d1b513d239525c8b257add0b33b7661e709
+       11 bindings, all == disk, 11 embedded sections == disk; `record-packet.py` -> "11 claimed, 0 stale, 0 missing";
+       freeze gate: `cb-A7-pass44.txt FROZEN governed=11`.
+     THE BOARD NOW REPORTS DRIFT, AND THAT IS CORRECT: `cb-B4-pass8.txt` is DRIFTED because my B8-SC-01 gate fix moved
+       `speak_core.py` 4254e8381ede… -> 90af00c51ad6… and `test_core_contract.py` de77f4ae27da… -> 185da8357c9b….
+       B4 pass 9 must therefore be built AFTER item 287's remaining F2/F3 repairs, not before - re-issuing it now
+       would freeze bytes that the next repair moves again. Freeze receipt `submission-freeze.json` sha256
+       `d41273f08caccf6ab49164e7c67f7060fedb74f74d05a3f22f0ff6faa78291f0`.
+     HANDOFF: pass 44 goes to researcher's metered lane (surf's path returns an empty HTTP 200 at this size), with the
+       sender stating 323,496 B and the sha above, and the reviewer asked not to hash.
+     BOUNDARY: the nine PASS verdicts from pass 43 still stand for nine unchanged rows; pass 44 exists to re-review the
+       two repaired rows plus anything the reviewer chooses to re-check. `PACKET VERDICT: FAIL` from pass 43 stands
+       until a new verdict says otherwise - no PASS has been claimed here.
 
