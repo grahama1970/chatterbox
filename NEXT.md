@@ -8122,11 +8122,51 @@ t
      WHAT I MISSED: the durations were the tell (2338 chars in 43.92 s = 2.25x too fast) and I shipped
        them with clean hashes and correct sidecars. Hash-faithful is not pace-faithful.
 
-211. [ ] OPEN - CODE GUARD for the pacing defect (came out of 210). The 1200-char limit lives in my ad-hoc
+211. [x] CODE GUARD (was open at 210) for the pacing defect (came out of 210). The 1200-char limit lives in my ad-hoc
      render loop, so the next lane repeating it will reintroduce the defect. Needed: a small module in
      this skill that (a) chunks at <=500 chars, (b) measures words/second per chunk and aggregate, (c)
      REFUSES to assemble or publish outside 1.3-3.6 w/s, and (d) writes the rates into the sidecar. It is
      a code change to agent-skills, so landing it needs a reviewer receipt from a different provider
      family than the author (deepseek), plus an agentic-evals fixture that fails when a compressed render
      is accepted. Not started while the owner's NOW item is paused.
+
+     DONE (agent-skills): `skills/chatterbox-speak/scripts/chunked_render.py` chunks at <=500 chars
+     (600 hard ceiling), measures words/second for every rendered piece and for the speech-only
+     aggregate, and REFUSES before publishing anything outside 1.3-3.6. The fast side (compression,
+     the actual defect) is enforced on every piece however short; the slow side needs a piece long
+     enough to measure, because 5-word tails read 0.23-0.31 w/s of pause padding on natural audio.
+     The sidecar is written BEFORE the artifact is published, so a published artifact always has one,
+     and the published bytes are compared against the staged digest.
+     HARNESS: `tests/test_chunked_render_pace.py` - 44/44 checks, registered in `tests/run.sh`
+     (`tests: all retained harnesses PASS`, PUBLISH_BY_NAME clean). Covers compressed piece, 30.87 w/s
+     collapse, short compressed piece, slow measurable piece, padded natural tail, chunk-boundary
+     overrun, tail merge, CLI exit-2 refusals, and the 3.61/3.5 fast boundary.
+     LIVE SEAM: `python3 scripts/chunked_render.py --text-file ... --out ...` against the running
+     service returned 1 chunk, 7.76 s, 3.09 w/s, `verified_published_sha256 == audio_sha256`
+     (`981c4ed3...`). That live run is what caught a real defect: loading the renderer by file path
+     left the module out of sys.modules, so pydantic raised "ServiceResponse is not fully defined".
+     Fixed by registering the module before exec.
+     REVIEW: cross-provider (author family deepseek, reviewer zai/glm-5.3), two rounds. Round 1
+     REJECTED with R1-R7 (limit+1 window, padded aggregate false refusal, tautological hash check,
+     publish-before-sidecar, narrow CLI catches, unproven renderer seam, dead code) - all reproduced and
+     repaired. Round 2 APPROVE with residuals F1-F5 (stale --live-smoke claim, band vs the 3.50
+     "drifting" row, AssertionError escaping main, sidecar rewritten after publish, missing per-piece
+     slow test) - all five fixed. Receipt `receipts/chunked-render-211-r2.reviewer.json` (validated).
+     Band left at 1.3-3.6 deliberately: that is the operator's standing rule, and the 3.50 drift is
+     request-LENGTH driven, which chunking removes.
+
+212. [x] THREE EXTRA RENDERS for spyke-chat under the standing pacing rule (all verified from disk,
+     sidecar text hash == sha256 of the named source file in each case).
+     sc01 seq 8 card, `/tmp/spyke-sk-text.txt` (1492 chars, sha `c6dc535a...`),
+       `spyke-cardvoice-seq8-rr-20261114T072254Z-1b546ddf00ad.wav` 112.76 s `1b546ddf00ad32e0...`
+       1.90 w/s, 4 chunks at a 450-char limit (500 refused: a tail read 1.11-1.25 w/s).
+     demo seq 29, `/tmp/seq29-text.txt` (739 chars), `jordan-main-29-rr-20261114T071742Z-9c1fa9840813.wav`
+       58.28 s `9c1fa984081302df...` 1.87 w/s. Delivered file measured 3.69 w/s - above the ceiling, so
+       spyke's "borderline" call was right.
+     demo seq 53, `/tmp/seq53-text.txt` (1118 chars), `jordan-main-53-rr-20261114T071931Z-9767f3b04527.wav`
+       87.96 s `9767f3b04527b8f4...` 1.59 w/s (delivered file was 9.78 w/s). 350-char limit; 400 refused.
+     COMPLETE CORRECTED SET reported to spyke: 10 artifacts (the 7 from 210 + these 3). scenario-06
+       seq 9 (the 06b render, 2.05 w/s) is deliberately NOT in the set - it was rendered after the
+       defect was found. Every sidecar was re-hashed from the WAV after its final rename, so name,
+       bytes and sidecar agree.
 
