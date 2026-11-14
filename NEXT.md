@@ -8625,3 +8625,16 @@ t
        This is EVIDENCE, not a verdict: I have not marked anything rejected or confirmed. It narrows the
          ask from 70 blind listens to "listen to the ~8 contradicted clips, spot-check the rest".
 
+     RECOMMENDED DISPOSITION (ADVISORY - not a verdict, nothing written to the manifest). Derived only
+       from evidence already recorded: the wav_guard gate, and ASR transcripts that contradict the event.
+         REJECT (12): the 4 below machine gate - cry-embry-v1, cry-arc-v3, delay-tearful, noseblow - plus
+           8 whose ASR does not evidence the claimed event: embry-sniff-single ("I'm going to go back to
+           the next one."), alex-chuckle ("Right."), alex-clear-throat ("Okay."), jordan-clear-throat
+           ("All right."), sigh-shaky ("Yeah."), and the weak cough trio alex-cough-dry ("the"),
+           embry-cough-dry ("I"), jordan-cough-dry ("Uh huh.").
+         CONFIRM (58): the remainder, whose ASR or nonverbal profile matches the category
+           (chuckle/laugh/gasp/groan/surprised/sniff/sighing/cough-clear/crying-nonverbal).
+       The owner can accept this as "confirm all others, reject the 12", override any item, or ask for
+       regeneration of a category. What I must NOT do is write these 12 or 58 as verdicts myself: the
+       manifest's `human_confirmed` field is a human judgement and a machine PASS is not an ear.
+
