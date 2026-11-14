@@ -8208,3 +8208,17 @@ t
      a measured slow-but-natural artifact with the deviation disclosed). No artifact exists until that
      is answered - shipping it at 1.1 w/s would have silently violated the rule we just agreed.
 
+215. [x] SCENARIO 07 tone sweep under option A - NO TONE LANDS IN THE BAND. Stopped as instructed.
+     Same text (`/tmp/spyke-oc-text.txt`, 1739 chars / 235 words, sha `3d3c4b09f2f18766...`), 500-char
+     limit, every tone refused on chunk 1 by the standing 1.3 floor:
+       calm_precise       1.19 / 1.10 / 1.16 / 1.16 w/s  (four splits: 500/450/400/350)
+       neutral_warm       1.14 w/s
+       memory_confident   1.22 w/s
+       curious_searching  1.12 w/s
+       playful_light      1.14 w/s
+     The rate barely moves with the tone's tempo calibration (0.93 -> 1.12), so this is the passage
+     reading slowly for this voice, not a wrong-tone choice. NOTHING PUBLISHED in any attempt.
+     spyke's instruction was explicit: if every tone lands below 1.3, say so and stop - the operator
+     decides, not us. No rule change made, no artifact shipped below the floor, no tone misreported.
+     Gate behaviour confirmed again on live audio: refusal precedes assembly.
+
