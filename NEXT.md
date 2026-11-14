@@ -9813,3 +9813,30 @@ t
        all; option (c) now needs exactly one command. The instrument deliberately measures current behaviour only
        and writes nothing to the HF cache, the SFX library or the manifest.
 
+281. [x] THE TAG-DISCRIMINATION FACT FOR ITEM 149 IS NOW MEASURED: the engine does NOT distinguish tags from
+     each other on duration. 50 renders, declared rule fixed before the run, 0 refusals.
+     RUN: `outputs/tag-discrimination/20261114T204328Z/result.json` (23,149 B,
+       `chatterbox.tag_discrimination_probe.v1`), 5 arms x n=10, unique seq per render, all 50 HTTP 200, no 409s.
+       plain   2.566 s  [2.402, 2.802]
+       [sigh]  2.706 s  [2.362, 3.002]
+       [gasp]  2.774 s  [2.602, 3.002]
+       [groan] 2.874 s  [2.282, 3.322]
+       [laugh] 2.874 s  [2.442, 3.882]
+     DECLARED RULE (fixed before the run in item 279): distinct iff disjoint ranges OR exact Mann-Whitney
+       p < 0.05/6 = 0.008333. Result: **VERDICT `TAGS_ARE_NOT_DISTINGUISHABLE`** - all six pairwise p values are
+       0.134, 0.207, 0.338, 0.421, 0.614, 0.639, the smallest 16x above alpha, and no pair has disjoint ranges.
+       The arms overlap so heavily ([laugh] spans 2.442-3.882 s while [sigh] spans 2.362-3.002) that a single
+       render cannot tell which tag produced it.
+     BOUNDARY, stated because it limits the claim: this measures DURATION and active_frac only. The ASR counts are
+       `null` in the result (`faster-whisper` is container-only, and the probe fails closed rather than record an
+       empty transcript as "no tag vocalised"). So the honest statement is "tags are not distinguishable BY
+       DURATION", not "the audio is identical" - perceptual identity was not tested in this run.
+     WHAT THIS DOES TO THE OLD CLAIM: the retained probe's +0.32 s for `[sigh]` (n=10, tag-vs-plain) does not
+       reproduce here as a tag-vs-tag separator - sigh is only +0.14 s over plain and sits inside the spread of
+       every other tag. Both can be true at once: a tag adds material, and the KIND of material is not
+       distinguishable across tags. That is exactly the "insert some nonverbal audio here" behaviour the retained
+       probe's own reading predicted, now confirmed with a pre-declared test instead of a note.
+     ITEM 149 STILL OPEN - but the question is now concrete rather than abstract: is "adds 0.14-0.31 s of
+       generic nonverbal material, indistinguishable per tag" acceptable, or must a tag render ITS OWN event?
+       The second answer is now backed by a measurement rather than an impression.
+
