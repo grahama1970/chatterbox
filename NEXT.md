@@ -8292,3 +8292,20 @@ t
        before the render and again from the sidecar.
      No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
 
+220. [x] RENDER for spyke-chat, scenario 10 - the last of the set - band [1.0, 3.6]
+     (eng-fccccaeb8dd340ea, main, seq 7, speaker spyke, tone calm_precise).
+     SOURCE `/tmp/spyke-toctou-text.txt` = 1912 chars / 268 words, no trailing newline,
+       sha256 `4e16ea8bf73d69a9...`.
+     ARTIFACT `/mnt/storage12tb/embry-voice/turns/spyke-10-seq7-rr-20261114T084337Z-5f29c5daa78d.wav`
+       139.44 s, `audio_sha256 5f29c5daa78db47f...`, aggregate 1.92 w/s, band [1.0, 3.6].
+       Chunks 5 (326, 350, 486, 474, 276 chars), per-chunk 1.34 / 2.77 / 1.71 / 3.13 / 1.16.
+     spyke's condition (report instead of assembling if any chunk < 1.0): nothing to report - the
+       lowest chunk was 1.16 w/s, so every piece cleared the floor at the first limit tried (500).
+     Sidecar `<wav>.5f29c5daa78db47f.sidecar.json`; text hashes equal sha256 of the source, verified
+       before the render and again from the sidecar after publishing.
+     SET CLOSED: scenarios 01 (card + seq 11), 02 (seq 7, 12), 03 (seq 6, 7), 04, 05, 06, 07, 08, 09,
+       10 all delivered under the same contract (<=500 chunk, text hash confirmed, no post), and none
+       shipped below the amended floor. Told spyke to name any missing scenario rather than let the
+       list drift.
+     No post, no thread write. OWNER: this session (served); spyke-chat (attachment).
+
