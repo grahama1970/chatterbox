@@ -1,3 +1,39 @@
+297. [~] CONVERT THE ELEVENLABS SFX INTO REAL CHATTERBOX TOKENS (owner's actual direction, clarified 2026-11-15:
+        "you are converting eleven labs sfx into actual chatterbox tokens which requires training and adding to the
+        chatterbox tokenizer"). NOT reverse-tokenizing audio into codec ids - that is the middle of the pipeline and it
+        is parked. The deliverable is a TEXT-tokenizer token per event plus a TRAINED row, so the model produces the
+        event from the tag.
+        DONE THIS ROUND - `[cry]` (a category with NO native support, so it proves the route):
+          - dataset: the 7 ear-confirmed crying clips from the SFX library -> `outputs/token-train/cry/`
+          - run: `lora_pipeline.py train --new-tag "[cry]"` -> 'New tokens: [('[cry]', 50276)] (vocab 50276 -> 50277)',
+            loss **3.8875 -> 0.1724** in 191 s, tokenizer extended and saved, adapter carries the new row.
+          - blind renders exist (`outputs/token-train/cry-render/cry-{A,B,C}.wav`, mapping sealed elsewhere, texts
+            `[cry]` / `[sigh]` / `I am fine.`). NO ear verdict yet, so NO claim that [cry] now works.
+        CONSTRAINT FOUND THAT GOVERNS THE REST: every training run starts from the base vocabulary, so two separate runs
+          both claim id 50276 and cannot coexist. Converting 11 categories requires ONE run with repeatable `--new-tag`
+          (the flag already supports it), and an ear verdict per tag, not per run.
+        REMAINING: 10 categories / 63 confirmed clips to convert in that single batch run, then the ear verdict, then a
+          render path that loads the right adapter+tokenizer per voice.
+        PARKED, NOT THE REQUIREMENT: `scripts/sfx_to_token_assets.py` (audio -> codec tokens inventory) is written but
+          unfinished - its round-trip decode hits a CUDA device-side assert even with the renderer's S3GEN_SIL padding. It
+          is not landed and it does not block the tokenizer work.
+
+298. [x] GUIDANCE EVERY AGENT READS, GROUNDED IN RESEARCH (landed `13db80c2`, reviewed REJECT->REJECT->APPROVE).
+        `references/emotion-tags-and-pauses.md`: 72 table rows across events, laughter, distress, surprise, warmth and
+          discourse, each with rendering route AND status - **13 LIVE, 1 TRAINED-R&D, 31 BACKLOG** - plus six fixture
+          pause tiers mapped onto the FIVE the evidence supports (latch/phrase/clause/deliberate/marked) and the
+          procedure: memory supplies appraisal inputs (relevance, implication, coping, norm), the tag is the OUTPUT, and
+          most turns take NO tag at all.
+        `SKILL.md` now points every agent at it and repeats the caps and the appraisal steps.
+        Both reviews rejected real defects: the tables first advertised tags the same document called unbuilt ([sigh-relief],
+          [exhale], [uh], [oh]) - guidance that would have sent agents to tags the renderer refuses - and then the
+          celebration example still directed [wow] (BACKLOG) while the pause example used non-canonical tier names. Fixed
+          by making the status marker the single truth and mechanically verifying zero BACKLOG tags and zero non-canonical
+          tiers in Parts B-G.
+        RESEARCH: `outputs/research/personality-speech-20261115.md` (10,746 B, sha `bed23575f79f33d6`), from the
+          researcher's dogpile lane, every claim labelled VERIFIED/UNVERIFIED. Three findings changed our design: events
+          vs continuous delivery states, fillers/backchannels as the biggest vocabulary hole, and the measured naturalness
+          cost of event tags - which matches our own blind A/B where [laugh] beat trained token 50276.
 # NEXT — chatterbox lane
 
 ## LIVE SURFACES (verified 2026-11-10)
