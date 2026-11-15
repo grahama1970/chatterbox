@@ -7616,6 +7616,29 @@ t
      until a pilot tag passes the identity gate.
      OWNER: this session (adapter + gate); researcher (tokens/decoder/evidence); Graham (identity listen).
 
+        ADAPTER SUPPLIED AND LANDED (`a895186f`) - the first half of what item 193 says this session owes.
+          `scripts/token_asset_gate.py` implements `chatterbox.token_asset.v1` as typed Pydantic models and refuses,
+          by name: an asset with no human identity verdict; a verdict whose `verbatim` OR `reviewer` is a substitute
+          claim (token reload / round trip / asr says / asr / tokenizer / decoder / model); a verdict not bound to the
+          judged span (`identity.span_sha256` must equal `span.sha256`); a span under 0.25 s, unordered, non-finite,
+          clipped (peak >= 0.999), too quiet (peak < 0.02), under the RMS floors, or without an active run/fraction;
+          tokens outside the NAMED codec's real range (`CODEC_RANGES`, unknown codec refused); a `tokens_sha256` that
+          does not match the shipped token list; and any `production_candidate` with an unresolved source identity or
+          rights that are not CLEARED. `assert_usable_for_sfx()` refuses `research_only` bundles by name, because
+          saved-token replay is not dynamic tag generation.
+          Review: the FIRST adversarial review REJECTED with five findings (F1 HIGH RESTRICTED rights accepted for
+          production; F2 MEDIUM infinity passed lower-bound-only checks; F3 MEDIUM the reviewer field could itself be
+          a substitute claim; F4 LOW the verdict was not bound to the judged span; F5 LOW `valid_range` was purely
+          self-declared). All five were fixed and the re-review returned APPROVE with each marked closed. Harness:
+          23/23, and MUTATION-PROVEN - with the rights, span-binding and codec-range checks disabled the gate accepts
+          a RESTRICTED production asset, an unbound verdict and a widened range (19/23, four cases FAIL).
+          NOT REGISTERED IN tests/run.sh YET: `run.sh` is bound at `769088f1` inside the PASSed A7 packet (pass 46),
+          so adding the harness there would void that verdict. Registration waits for the next packet round, and the
+          receipt says so rather than implying the gate already runs in the suite.
+        STILL BLOCKED ON THE RESEARCHER for the pilot: a word-aligned SPAN of the accepted full utterance that passes
+          the contract, its span sha256, the measured acoustics, and a human verdict NAMING that span; plus the codec
+          id range if it is not `speech_tokenizer_v2_25hz`, and `rights_status` per asset. Sent to `researcher` with
+          the exact refusal list so a bundle cannot be shaped to dodge the gate.
 194. [x] REPAIR the A34 findings on the pass-34 bytes (7 PASS / 4 FAIL), each reproduced FIRST, then
      rebuild ONE packet (pass 35). Verdict source: `outputs/reviews/a7-pass34-FAIL-20261113.md`.
      Pattern: four findings say the A33 repairs missed the real code path, so each is fixed AT THE PATH
