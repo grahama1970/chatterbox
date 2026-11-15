@@ -9522,7 +9522,7 @@ t
        `spyke_render.py` still carries it but is one of the 11 files bound in the in-flight packet, so editing
        it would void the verdict. Both recorded rather than silently worked around.
 
-259. [~] TRAINING RUNG (the owner's "crucial" ask): the FIRST question is answered NO, with measurement.
+259. [x] TRAINING RUNG (the owner's "crucial" ask): the FIRST question is answered NO, with measurement.
      Question: can the LoRA/token training run in an ISOLATED container while the live speech service keeps
        serving (spyke renders through it)?
      Measured:  `embry-voice-chatterbox-1` Up 4 hours (healthy); GPU is an RTX A5000 with **23,667 MiB of
@@ -9623,6 +9623,26 @@ t
           listened to, so no claim is made that the fix changes the outcome.
           STILL BLOCKED FROM THE SUITE: `tests/run.sh` is bound at `769088f1` in the PASSed A7 packet, so this file
             cannot be registered there yet. It runs standalone until the next packet round.
+        CLOSED: the capability exists, is documented, and is gated (2026-11-15). The requirement had two halves.
+          (a) "add new tags to the tokenizer as we need them" - DELIVERED AND PROVEN. New text-tokenizer ids from the
+              base vocabulary (50276 -> 50307 for 31 tags), trained input/output rows, warm-started from each tag's own
+              sub-token rows, frozen rows snapshotted/restored/asserted bit-identical, adapter carries the rows AND the
+              extended tokenizer, loader validates the saved tokenizer and fails closed. Retained CPU contract
+              tests/test_new_token_contract.py 14/14, each guard mutation-proved one at a time.
+          (b) "and retrain" - PROVEN AS A MECHANISM, and now HONESTLY BOUNDED. A new runbook,
+              references/extending-the-tokenizer.md, states the executable command (container + mounts, one line because
+              backslash continuations inside -lc are taken literally), the invariants the code enforces with the case
+              that proves each, the measured dead ends (2000 steps 0.238 vs 500 steps 0.280; vocab-lr 1e-3 0.193;
+              45x augmentation diverged 4.42 -> 5.22; contextual spliced pairs 4.02 -> 2.29 but capped), and the verdict
+              chain contract -> codec gate -> detector -> ear. Reviewed by deepseek/deepseek-v4-pro: REJECT (5 findings,
+              two HIGH: not executable, contradicted sibling guidance), REJECT (2 more: still not runnable, arithmetic),
+              then APPROVE. Landed 0416aad8.
+          THE GATE THAT DECIDES FUTURE ATTEMPTS, now first-class: encode->decode a candidate clip through S3Gen with NO
+            language model and score event presence. Measured 2026-11-15: 0.181 -> 0.061 mean, 0/18 at p>=0.5. Our codec
+            does not carry non-speech events, so a trained event tag's target is lossy before training starts (item 297).
+            Consequence, written into the docs: trained tags are for sounds the codec CAN represent; for sigh/laugh/gasp
+            the shipping route is splice + lookup key, which is ear-confirmed.
+          NOT CLAIMED: that a trained event token produces the event. It does not, and the reason is measured and stated.
 260. [x] ITEM 165/258 REMAINDER CLOSED: `sfx_demo.py` LANDED `3ae556211c`, and SIX review rounds found TEN
      defects - including one I introduced that broke the feature outright.
      VERIFIED AFTER LANDING (not from memory): `sfx_demo.py` MATCH and `receipts/sfx-demo.reviewer.json`
