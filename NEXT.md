@@ -18,6 +18,28 @@
           unfinished - its round-trip decode hits a CUDA device-side assert even with the renderer's S3GEN_SIL padding. It
           is not landed and it does not block the tokenizer work.
 
+        WHOLE-LIBRARY BATCH CONVERTED AND MEASURED (2026-11-15), landed `2fd39740` for the code support:
+          - scheme chosen deliberately: one trained token per (event, variant), e.g. [chuckle dry] [gasp sharp]
+            [cry sob] [groan frustrated] - the VARIANTS are the different emotions, so 70 clips -> **31 tags**, all added
+            in ONE run (`--new-tag` repeated) because separate runs each claim id 50276 from the base vocab.
+          - vocab 50276 -> 50307; 70 pairs; adapter carries every new row; tokenizer saved; 31 renders produced.
+          - MEASURED against each tag's own source clips (RMS-envelope correlation, 48 points):
+              **500 steps**: loss 4.9448 -> 3.8705, mean corr **0.280**, median 0.230, **6/31 >= 0.5**
+              **2000 steps**: loss 4.9448 -> 0.9278, mean corr **0.238**, median 0.201, **8/31 >= 0.5**
+            Best at 500 steps: [surprised strong] 0.729, [sigh shaky] 0.684, [groan soft] 0.653, [gasp surprised] 0.620,
+            [gasp sharp] 0.611, [sniff single] 0.503. Worst: [delay collect] -0.116, [cry quiet] -0.052.
+          - CONCLUSION: **more steps is not the lever.** Loss fell 4.94 -> 0.93 at 2000 steps while envelope reproduction
+            got slightly WORSE, i.e. the adapter is fitting token sequences without reproducing the event's acoustics.
+            A 31-tag single LoRA over 70 clips underfits the per-event mapping; the tokenizer mechanism works, the recipe
+            does not.
+          - MY ERROR, disclosed: the batch driver wrote to fixed paths, so the 2000-step run overwrote the 500-step
+            adapter and renders. Their numbers survive above; the files do not.
+          NEXT LEVERS (in order, each with its decisive measurement):
+            L1 train the new rows ONLY (freeze LoRA) at a much higher LR - measure envelope corr for the same 31 tags.
+            L2 one adapter per tag (full capacity per event) and accept load-per-voice; measure the same way.
+            L3 stop driving non-speech events through TEXT tokens: S3Gen-level conditioning may be the right layer for
+               acoustics, with the text token only selecting it. Measure before building.
+            L4 ear test on the 8 tags already >= 0.5, so a crude metric is checked against perception before more runs.
 298. [x] GUIDANCE EVERY AGENT READS, GROUNDED IN RESEARCH (landed `13db80c2`, reviewed REJECT->REJECT->APPROVE).
         `references/emotion-tags-and-pauses.md`: 72 table rows across events, laughter, distress, surprise, warmth and
           discourse, each with rendering route AND status - **13 LIVE, 1 TRAINED-R&D, 31 BACKLOG** - plus six fixture
