@@ -9396,6 +9396,35 @@ t
        unilaterally. This is the concrete blocker on the retrain requirement, stated with numbers instead of
        "needs GPU".
 
+        RETRAIN REQUIREMENT MECHANICALLY DELIVERED (2026-11-15), LANDED `0ec1acdd`. The owner's words - "it's crucial
+          that we can add new tags to the tokenizer as we need them and retrain" - are now a working path, not an alias:
+          - `[hearty laugh]` became **real token id 50276** (vocab 50276 -> 50277). T3 reads text through `text_emb` and
+            emits `text_head` and passes `inputs_embeds` into the backbone, so exactly TWO tensors are vocabulary-sized
+            (measured from `src/chatterbox/models/t3/t3.py`, not assumed).
+          - New rows warm-started from the mean of the tag's pre-existing sub-token rows **and those sub-tokens are
+            recorded in the artifact** (`[58, 11499, 88, 6487, 60]`), so the initializer is auditable.
+          - Trained on 8 slices of the VERIFIED span (`c1375b5c…`): loss **5.8734 -> 0.1227** in 176 s, 500 steps,
+            rank 32 attention-only plus the new row.
+          - Frozen vocabulary rows are PROTECTED AND PROVEN: `frozen_rows_unchanged={text_emb: True, text_head: True}`
+            via a post-train `torch.equal` against a pre-train snapshot, after a per-step restore.
+          - The adapter CARRIES the new rows and the extended tokenizer; the loader validates the SAVED tokenizer maps
+            each tag to the adapter's id and fails closed otherwise.
+          THREE MEASURED FAILURES caught by my own guards before anything was published: the first run refused to publish
+            because AdamW's decoupled weight decay moved frozen rows even with zero gradient; the strict adapter loader
+            refused the file because `new_token_rows` rode along as an adapter tensor; the first A/B crashed on a stale
+            variable. All three fixed and the path re-run green.
+          REVIEW: REJECT -> APPROVE. F1/F2 (ids from `len(tokenizer)` vs tensors from `num_embeddings` unguarded; the
+            extended tokenizer unproven as the one the pairs use), F4 (sealed mapping sat beside the audio and its path
+            was printed), F5 (the `.tokenizer` existence check was vacuous), F7 (sub-tokens recorded into a discarded
+            local) - all fixed. F6 (sigh_* field names on tag rows) accepted and stated.
+          MODEL CARD UNTOUCHED: training ran against a READ-ONLY model volume with output in an isolated dir; the
+            chatterbox container was stopped only for the bounded training/render windows and restarted each time
+            (`embry-voice.service` was also stopped once, freed 0 bytes because the 8.2 GiB belongs to the container -
+            recorded because it was a wrong guess on my part - and was restarted immediately).
+          NOT YET PROVEN - THE EAR: three blind renders exist at
+            `outputs/retrain-20261115/ab2/ab2-{A,B,C}.wav` with the mapping in `outputs/retrain-20261115/sealed/`, and
+            the owner has not judged them. Until he does, NO claim is made that the new token produces a hearty laugh.
+            Also honest: the dataset is 8 slices of ONE span, so this proves the mechanism, not generalisation.
 260. [x] ITEM 165/258 REMAINDER CLOSED: `sfx_demo.py` LANDED `3ae556211c`, and SIX review rounds found TEN
      defects - including one I introduced that broke the feature outright.
      VERIFIED AFTER LANDING (not from memory): `sfx_demo.py` MATCH and `receipts/sfx-demo.reviewer.json`
