@@ -7547,7 +7547,7 @@ t
          24 kHz, text fdd5ff38…525fd, audio 8e4c6bbf…f3ebd.
      OWNER: this session (measurement + boundary); spyke lane (thread attachment literal).
 
-193. [~] NATIVE S3 TOKEN PATH for event tags: collaborate with the researcher so chatterbox-speak can
+193. [x] NATIVE S3 TOKEN PATH for event tags: collaborate with the researcher so chatterbox-speak can
      render tagged events from saved codec codes instead of only ElevenLabs/turbo tags.
      Verified from their artifacts this turn (not their prose):
        - `/tmp/hearty-laugh-proof/audio_tokens.json`: label "hearty laugh", codec
@@ -7639,6 +7639,24 @@ t
           the contract, its span sha256, the measured acoustics, and a human verdict NAMING that span; plus the codec
           id range if it is not `speech_tokenizer_v2_25hz`, and `rights_status` per asset. Sent to `researcher` with
           the exact refusal list so a bundle cannot be shaped to dodge the gate.
+        PILOT IDENTITY VERDICT RECEIVED AND THE ASSET PASSES THE GATE (2026-11-15). Graham's words, verbatim and
+          unedited: "i hear a [hearty laugh]", at utc 2026-11-15T15:59:13Z, after I played
+          /tmp/hearty-laugh-span/span.wav (span sha `c1375b5c…`, 3.480 s) with paplay on the default sink
+          (playback start 15:58:49Z, 3.563 s wall, exit 0 - the wall time proves it streamed rather than being written
+          through). The verdict names THAT span; it does not resolve the 62-token source event and it does not make
+          the asset producible.
+          Every input verified from the researcher's artifacts by me, not from prose: 87 span tokens (min 495, max
+          6402, all inside 0..6560, `tokens_sha256 71de06d3…` recomputed and matched), span 0.66-4.14 s, acoustics
+          raw_rms 0.0608 / ac_rms 0.0608 / peak 0.639 / active_run 0.54 / active_frac 0.578, decode
+          `output_sha256 d029436c…` (167,118 B, 83,520 frames, 3.480 s) with `decode_params {seed 1729,
+          n_cfm_timesteps 2}`, reference `4d8e829f…`, source `be8fd76b…`.
+          RESULT: `chatterbox.token_asset.v1` ACCEPTED as `research_only`; `assert_usable_for_sfx()` still REFUSES it,
+          which is correct - a standalone span verdict does not turn a stochastic decode into a producible SFX.
+          DURABLE, OUTSIDE ANY REPO (rights UNVERIFIED; tokens must not ship in skill fixtures):
+            `outputs/token-assets/hearty-laugh-span-20261115/bundle.json` (2,134 B)
+            `outputs/token-assets/hearty-laugh-span-20261115/identity-verdict.json`
+          Sent to `researcher` with the verbatim words and the timestamp, and told explicitly not to re-derive or
+          re-time them.
 194. [x] REPAIR the A34 findings on the pass-34 bytes (7 PASS / 4 FAIL), each reproduced FIRST, then
      rebuild ONE packet (pass 35). Verdict source: `outputs/reviews/a7-pass34-FAIL-20261113.md`.
      Pattern: four findings say the A33 repairs missed the real code path, so each is fixed AT THE PATH
