@@ -64,6 +64,32 @@
             ask "does the intended event occur?" That decides whether the current adapters are actually wrong or whether
             the envelope metric is lying. Only after that is a training change justified.
           Also landed from this round: base-26 A/B labels (IndexError at 31 variants) and the --steps >= 1 guard.
+        NV-DETECTOR MEASUREMENT: THE BATCH CONVERSION DOES NOT PRODUCE THE EVENTS (2026-11-15). This settles whether
+          the envelope metric was lying. It was crude; the detector agrees with it, and more strongly.
+          Method: AudioSet AST (MIT/ast-finetuned-audioset-10-10-0.4593) over the 31 renders AND the 70 ear-confirmed
+            source clips, scoring the probability of the label that NAMES the intended event (Laughter, Gasp, Groan,
+            Sigh, Cough, Sniff, Crying-sobbing, Chuckle-chortle, Throat clearing).
+          RESULT: sources **8/63 at p>=0.5, mean p 0.179**; renders **0/27 at p>=0.5, mean p 0.033**. The top predicted
+            label on nearly every render is **"Speech"**. Example pairs (source -> render): [sigh weary] 0.822 -> 0.008,
+            [sigh shaky] 0.518 -> 0.010, [gasp sharp] 0.563 -> 0.250, [laugh full] 0.082 -> 0.010.
+          INTERPRETATION, stated plainly: the trained tag rows make the model SPEAK, not perform the event. The tokenizer
+            mechanism is sound (real ids, trained rows, loadable artifacts, frozen vocab intact) but the tag->event
+            association did not take. Two earlier levers (more steps, hotter row LR) are therefore not just unhelpful,
+            they were aimed at the wrong problem.
+          WHY, with numbers from the literature the search surfaced: NVSpeech fine-tunes on **573 hours** of
+            paralinguistic data; SynParaSpeech uses **118.75 hours for 6 categories**; NV-Bench treats NV data as
+            long-tailed and rare. We trained on 70 clips = **~3 minutes of audio, ~0.05 hours** - three to four orders of
+            magnitude short. No learning-rate or step-count fix bridges that.
+          WHAT THIS MEANS FOR THE PRODUCT, and it is the useful part: for these events the EAR-CONFIRMED SFX SPLICE is the
+            working path (70 clips, 11 categories, judged good by the owner on 2026-11-14). Trained tokens are the right
+            tool only where an event has ENOUGH real audio behind it - which we do not have today for any of the 31 tags.
+          DECISION NEEDED FROM THE OWNER (not mine to take): (a) keep SFX splicing as the shipping route for events and
+            stop spending GPU on tag training until a real NV corpus exists; (b) acquire a licensed NV corpus
+            (NonverbalTTS / NVS / NVSpeech-scale) and revisit; or (c) scope trained tokens to the one thing we do have
+            depth in, if any. My recommendation is (a) now, (b) only as an explicit project with a data budget.
+          HONEST RETRACTION: item 259's framing that the tokenizer extension would let us "add tags as needed" is true of
+            the MECHANISM and false of the QUALITY. Adding an id is cheap; making the model perform the event needs hours
+            of that event, not minutes.
 298. [x] GUIDANCE EVERY AGENT READS, GROUNDED IN RESEARCH (landed `13db80c2`, reviewed REJECT->REJECT->APPROVE).
         `references/emotion-tags-and-pauses.md`: 72 table rows across events, laughter, distress, surprise, warmth and
           discourse, each with rendering route AND status - **13 LIVE, 1 TRAINED-R&D, 31 BACKLOG** - plus six fixture
