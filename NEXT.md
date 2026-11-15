@@ -7101,7 +7101,7 @@ t
          `delivery_unknown`), but the RESPONSE quotes the packet sha and all 11 file hashes, so identity is
          established by the report itself - the same standard used for pass 32. No resubmission occurred.
      OWNER: this session (intake done); repairs tracked in 180.
-177. [~] PASS 44 IS INTACKED: A7 is now **10 PASS / 1 FAIL** (item 293). spyke_render.py PASSED, so the pass-43
+177. [x] PASS 44 IS INTACKED: A7 is now **10 PASS / 1 FAIL** (item 293). spyke_render.py PASSED, so the pass-43
     F1/F3 repairs are accepted; interrupt_sfx.py FAILED on two NEW findings about my own F2 fix (item 294).
     HISTORICAL HEADER, retained verbatim: 177. [~] ALL THREE HANDLED AND PASS 43 ALSO INTACKED (item 289): A7 is now 9 PASS / 2 FAIL, so the group
     is unlandable BY DESIGN until those two rows are repaired (item 290). Nothing is awaited from surf.
@@ -9417,6 +9417,21 @@ t
        about completion, and picking silently is the guess-then-build pattern this project has already paid
        for. This needs Graham's call.
 
+        ATTEMPTED 2026-11-15 (owner chose A+C) AND REVERTED TO GREEN, with the exact blocker recorded:
+          A was implemented - the WAV and provenance are verified first and the RECEIPT LAST, and the returned receipt
+          is parsed from the bytes that were verified (read through `sr.os.read` on a regular file, bounded), so the
+          response cannot disagree with the file; C was stated in the code comment (each artifact is verified while
+          read under the bound directory identity; a later same-UID rewrite is detected on the NEXT read, not
+          retroactively, and there is no "one instant" guarantee).
+          TWO RETAINED HARNESSES PIN THE PREVIOUS DETECTION POINTS and failed under the new ordering:
+            - `tests/test_a39_repairs.py` A39-SP-01 "the refusal happened AFTER publication (i.e. in the final loop,
+              not the sidecar loop)" - its growing-read probe fires when the receipt is read in the sidecar loop;
+            - `tests/test_render_tag_evidence.py` PROOF-04 serialization mutant "receipt kept, sidecar lost" - the
+              mutant's detection point moves with the ordering (now `audio_pr…` instead of the named sidecar case).
+          Reverting kept the tree green (tests/run.sh rc=0) and left the landed bytes untouched. This is NOT a
+          conclusion that A+C is wrong: it is that the two retained expectations encode the old ordering and must be
+          updated deliberately (with the new detection point proven, not merely accepted) rather than edited to pass
+          under time pressure.
 264. [~] CURRENT STATE, SINGLE SOURCE - replaces the repeated verdict-state records (245/247/248/250/261) and the
      two TXN-01 probe records (243/244), which are now closed with pointers here and to 263.
      VERIFIED THIS TURN (not recalled):
@@ -10176,7 +10191,7 @@ t
      PRESERVED: `outputs/reviews/a7-pass43-20261114/` (question, answer, receipt mode 0600).
      BOUNDARY: 9 PASS is evidence about nine files at nine hashes, not a group verdict; `PACKET VERDICT: FAIL` stands.
 
-290. [~] F1/F2/F3 REPAIRED AND LANDED (`813a9469`); A7 pass 44 is built, recorded and FROZEN (item 291). What
+290. [x] F1/F2/F3 REPAIRED AND LANDED (`813a9469`); A7 pass 44 is built, recorded and FROZEN (item 291). What
     remains is the re-review of pass 44, and B4 stays void until item 287's F2/F3 repairs land.
     HISTORICAL HEADER, retained verbatim: 290. [~] REPAIR THE PASS-43 FINDINGS on the intaked bytes, each REPRODUCED FIRST, then reissue the A7 row again.
      F1 HIGH (spyke_render._restore_backup): reproduce an installed-inode mismatch where the function still returns
@@ -10301,7 +10316,7 @@ t
      BOUNDARY: 10 PASS is evidence about ten files at ten hashes. `PACKET VERDICT: FAIL` stands, A7 stays unlandable,
        and the FAIL row is the only thing blocking it.
 
-294. [~] REPAIR THE PASS-44 FINDINGS - they invalidate my own F2 fix, so the design has to change rather than the
+294. [x] REPAIR THE PASS-44 FINDINGS - they invalidate my own F2 fix, so the design has to change rather than the
      comparison. Each reproduced FIRST.
      F1 HIGH: reproduce a same-UID writer forcing inode reuse AND matching size/mtime, then show `_retire_minted`
        deleting their bytes. Direction to test (not yet adopted): hold an OPEN DESCRIPTOR from creation through
@@ -10336,6 +10351,27 @@ t
           `os.utime` to the recorded mtime) -> writer's bytes deleted; F2 replacement before `claim()` -> adopted
           and deleted. Both are the reviewer's findings and both remain true of the code as landed.
 
+        A7 IS GREEN: 12/12 PASS, CHECK PASS A7. Path there, with every step evidenced:
+          pass 45 (11 rows, packet sha `abb453468401…`) returned 11/11 PASS; the group gate then refused it because
+          the plan group needs a TWELFTH row (`test_prove8.py`) that the add1 packet had bound - correct behaviour,
+          not a route-around. Pass 46 (`packets/cb-A7-pass46.txt` 355,621 B sha
+          `4883d389e6b0a0d1f68859c8b7ff91d3369d24dfa7264c9e3b801021be574dd9`, FROZEN 12) bound all twelve at
+          current bytes and returned 12/12 PASS, PACKET VERDICT: PASS, no findings (receipt
+          `ops-magpie-79eb7f11bab7`, 468,904 ms; chain verified by `receipt-binding-check.py`: BINDS True,
+          INTAKABLE True, packet embedded once at offset 1153).
+          INTAKE REFUSALS I HAD TO CLEAR (all bookkeeping, none a verdict change, each measured):
+            (1) citation resolved against the repo root while `review_packet` was relative -> re-recorded with the
+                absolute packet path;
+            (2) the cited answer file was searched in `/tmp` (LANDING_PACKETS default) -> pointed it at the durable
+                outputs dir holding `answer_raw.txt`;
+            (3) two plan baselines said ORIGIN MOVED and six said "absent on main" because I had landed those rows
+                after the plan was cut -> refreshed ONLY the `origin_main` values to the real origin blobs.
+          Result: manifest 42,004 B sha `8077dc410842b28e6e2475ccebb7572e3f810c0c84a11c7ecedf8add49d090d7`, all twelve
+          rows `PASS (answer_raw.txt)`, `landing-check.sh A7` -> **CHECK PASS A7**. Artifacts preserved under
+          `outputs/reviews/a7-pass46-20261115/` (question, answer, receipt mode 0600).
+        STILL TRUE AND WORTH SAYING: A7's PASS is about twelve files at twelve hashes under the private-directory
+          contract (item 295 A). It is not a claim that arbitrary same-UID writers cannot touch another attempt's
+          private directory - that is out of scope by the owner's decision, and the packet says so.
 295. [x] OWNER DECISION NEEDED: what is the ownership model for the staging directory? The A7 `interrupt_sfx.py` FAIL
        row cannot move until this is chosen, and four designs have now died on it. Evidence: item 294, and the two
        preserved rejection bundles under `outputs/reviews/a44-*-REJECT-20261114/`.
