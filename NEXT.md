@@ -9434,7 +9434,7 @@ t
      The watcher remains a REPORT, not a gate: it mutates nothing and `--require-ready` is the only failure
        mode. Its value now is that its silence is explicitly labelled as absence.
 
-263. [~] A39-TXN-01 IS NOW A WRITTEN DECISION, not a probe queue: `outputs/txn-01-decision.md`
+263. [x] A39-TXN-01 IS NOW A WRITTEN DECISION, not a probe queue: `outputs/txn-01-decision.md`
      (4,789 B, sha256 `ab993da141cbb629daf5151aa7c23076`), three options with costs and the evidence that
      would settle each.
      WHY A DOCUMENT AND NOT A FIFTH PROBE: my four attempts failed in four different ways (hang; SP-03
@@ -9471,6 +9471,36 @@ t
           conclusion that A+C is wrong: it is that the two retained expectations encode the old ordering and must be
           updated deliberately (with the new detection point proven, not merely accepted) rather than edited to pass
           under time pressure.
+        A+C IMPLEMENTED AND LANDED (`a3bda9ea`), with the two detection points RE-PROVED rather than assumed:
+          - `spyke_render.py`: the WAV and provenance are verified first and the RECEIPT LAST; the returned receipt is
+            parsed from the bytes that were verified (read through `sr.os.read`, regular file only, bounded). A
+            post-publication mismatch raises `_DirIdentityChanged` - the same family as the other post-publication
+            refusals - because a bare RuntimeError takes the full rollback path and would DISCARD an already-published
+            WAV (that was exactly why `A39-SP-01` went red under my first cut).
+          - Strengthened beyond the memo: a receipt that LOST evidence the render produced
+            (`tag_handling`/`affect_effect`/`pace_effect`) is REFUSED. Returning a receipt that merely agrees with a
+            lossy file is a loss dressed as success; `PROOF-04`'s serialization mutant now asserts the refusal.
+          - New decisive case `TXN-01 A+C` in `test_a39_repairs.py`: the probe flips a DIGIT inside `total_elapsed_ms`
+            on the ONLY final receipt read, so the bytes stay valid JSON and the digest guard is the thing that must
+            refuse. Fixed 29/29; with the digest guard disabled the case FAILS (27/29).
+        TWO SELF-INFlicted FALSE PROOFS, disclosed because both looked green: my first B4-F1 case swapped on the FIRST
+          `/proc/self/fd` readlink (before the file open), so it also passed on the PRE-FIX code; and my first TXN-01
+          case flipped the LAST byte, which broke JSON so pydantic refused and the case passed without the digest
+          guard. Both cases were corrected and re-proved against mutants.
+
+296. [~] B PASS 9 FINDINGS (2 PASS / 2 FAIL intaked 2026-11-15). Repairs land one at a time at the cited paths.
+        DONE - F1 HIGH `speak_core._open_verified`: reproduced the reviewer's scenario (rename the real root aside and
+          symlink the root's NAME to an outside directory AFTER the file is opened) and showed the pre-fix code
+          ACCEPTED `<outside>/evil.wav`. Fix binds the root by DESCRIPTOR before the file open: open dir, fstat, read
+          its authoritative /proc path, prove the NAME still resolves to that identity, compare the opened file against
+          the BOUND root path, and re-stat the NAME afterwards (the first version re-fstat'd the same descriptor, which
+          the reviewer correctly called vacuous). Retained case is mutation-proven (mutant 21/22). LANDED `a3bda9ea`.
+        OPEN - F2 MEDIUM `arc_chart._safe_publish(overwrite=True)` renames an existing destination DIRECTORY to a hidden
+          `.prev` name and publishes a file in its place: it rejects symlinks but not non-regular destinations.
+        OPEN - F3 LOW `speak_core.evaluate_gate()` still appends top-level `text`/`answer_text` for a snapshot with
+          `render_chunks`; F4 LOW `arc_chart.load_receipts()`/`load_arc_receipt()` do not catch ValueError/TypeError
+          when converting receipt duration fields.
+        OWNER: this session (repairs); researcher (B pass 10 at the new bytes once all four are in).
 264. [~] CURRENT STATE, SINGLE SOURCE - replaces the repeated verdict-state records (245/247/248/250/261) and the
      two TXN-01 probe records (243/244), which are now closed with pointers here and to 263.
      VERIFIED THIS TURN (not recalled):
