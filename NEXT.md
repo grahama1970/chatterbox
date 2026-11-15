@@ -40,6 +40,30 @@
             L3 stop driving non-speech events through TEXT tokens: S3Gen-level conditioning may be the right layer for
                acoustics, with the text token only selecting it. Measure before building.
             L4 ear test on the 8 tags already >= 0.5, so a crude metric is checked against perception before more runs.
+        TWO TRAINING HYPOTHESES TESTED AND REJECTED BY MEASUREMENT (2026-11-15), landed `99010581`:
+          - **more steps is not the lever**: 500 steps mean envelope corr 0.280 (6/31 >= 0.5) vs 2000 steps 0.238 (8/31).
+            Loss fell 4.94 -> 0.93 while reproduction got slightly worse - the adapter fits token sequences without
+            reproducing the event's acoustics.
+          - **hotter new-row LR is not the lever either**: the literature (PEFT trainable_token_indices; token+LoRA
+            recipes) says new embedding rows need 1e-3..1e-2, not the adapter's 2e-5. Tested 1e-3: mean 0.193 (4/31),
+            WORSE than 0.280. So `--vocab-lr` exists with the MEASURED-BETTER default (inherit the adapter rate) and
+            1e-3 as an explicit opt-in; the review rejected my first cut for inverting that (F1 MEDIUM) and for a silent
+            no-op flag (F2 LOW), both fixed.
+          WHAT THE SEARCH DID SETTLE (Brave, 2026-11-15):
+          - the TEXT-TAG route is the literature standard, not a mistake: NVSpeech (18 inline paralinguistic categories,
+            arXiv 2508.04195), Luna-TTS NNV tokens (2608.11593), NV-Bench functional taxonomy (2603.15352), NVV-SuperBench
+            (2604.16211) all control NVs by inline tags or instruction tokens. So do not move this to S3Gen on a hunch.
+          - the standard failure mode for new tokens + LoRA is EXACTLY ours ("the random vectors assigned to your new
+            tokens stay random"), which is why the rows are trained at all - and why the LR experiment was worth running.
+          - **THE MEASUREMENT IS NOW THE WEAK LINK**: a 48-point RMS envelope correlation is a crude proxy. The literature
+            evaluates NV synthesis with NV detectors on EVENT PRESENCE and PLACEMENT (NV-ASR / BEATs; NV-Bench reports
+            instruction alignment + acoustic fidelity, not envelope shape). Our own numbers move in the wrong direction
+            as loss drops, which is what a bad metric looks like.
+          NEXT EXPERIMENT (cheapest decisive): measure event presence with a detector before any more training -
+            run a small audio-classification model (AST/PANNs or BEATs) on the 31 renders and the 70 source clips and
+            ask "does the intended event occur?" That decides whether the current adapters are actually wrong or whether
+            the envelope metric is lying. Only after that is a training change justified.
+          Also landed from this round: base-26 A/B labels (IndexError at 31 variants) and the --steps >= 1 guard.
 298. [x] GUIDANCE EVERY AGENT READS, GROUNDED IN RESEARCH (landed `13db80c2`, reviewed REJECT->REJECT->APPROVE).
         `references/emotion-tags-and-pauses.md`: 72 table rows across events, laughter, distress, surprise, warmth and
           discourse, each with rendering route AND status - **13 LIVE, 1 TRAINED-R&D, 31 BACKLOG** - plus six fixture
