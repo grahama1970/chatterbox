@@ -9719,7 +9719,7 @@ t
        `cred-name` on `_COMPLEX_TOKEN`, 0-byte answer (`b1ad7fa0…`, item 275); B4 pass 7 retired unsubmitted
        (`ea9f2b71…`, this item). **None of the three is awaiting a verdict any more.**
 
-277. [~] PASS 19 IS THE ONE LIVE PACKET AND IT IS BLOCKED ON A CONTENT DECISION, NOT ON SURF - asked, not assumed.
+277. [x] PASS 19 IS THE ONE LIVE PACKET AND IT IS BLOCKED ON A CONTENT DECISION, NOT ON SURF - asked, not assumed.
      MEASURED THIS TURN: `cb-A7-pass19.txt` 101,790 B sha `b1ad7fa0…`, **5/5 bound, 0 drift**; the attempt dir
        `/tmp/cb-A7-pass19-review` has `answer_raw.txt` **0 bytes** and `summary.json` `ok:false` with
        `secret-guard egress refused ... reasons:["cred-name"]`. So no verdict exists, and no amount of waiting
@@ -9749,6 +9749,25 @@ t
        (c) LEAVE pass 19 unsubmitted and drop it as a packet.
        Recommended: (a). All three need Graham; none is mine to take.
 
+        DECIDED AND IMPLEMENTED (owner: "proceed with recommendations"): RENAME. `_COMPLEX_TOKEN` ->
+          `_COMPLEXITY_PATTERN` at its definition and single use; the regex and its behaviour are unchanged, no
+          guard was weakened and no exemption was added. The rename removed the credential-NAME heuristic's
+          refusal, which also unblocked the twenty-odd hunks of SK-01/SK-13 work that had been sitting unlanded in
+          `scripts/speak.py` while the landed harnesses (test_prove5/6/7, test_t1_20) already required it.
+          That file was reviewed at its real bytes (deepseek/deepseek-v4-pro: APPROVE, F1/F2/F3 all LOW) and the
+          findings were IMPLEMENTED before landing: a dead `import tempfile` removed; `$` -> `\Z` so an id
+          "abc\n" no longer passes (Python's `$` matches before a trailing newline); `normalized_before_render`
+          now labelled only when the caller actually supplied an original_text. LANDED `7f0bd6ba`.
+          Also landed `e2ffcfac`: `tests/run.sh` (769088f1, pass-45 PASS) and `tests/test_prove8.py` (abfc587e,
+          add1 pass-10 PASS) at exactly the bytes their reviewers saw, because their unlanded state had split the
+          A7 plan group across two packets.
+        STRUCTURAL FINDING FROM THE INTAKE: the A7 plan group needs TWELVE rows but pass 45 bound eleven (the
+          twelfth, `test_prove8.py`, came from the add1 packet), so the group gate refused EITHER verdict alone -
+          correct behaviour, not a defect to route around. `packets/cb-A7-pass46.txt` (355,621 B sha
+          `4883d389e6b0a0d1f68859c8b7ff91d3369d24dfa7264c9e3b801021be574dd9`) binds all twelve at current bytes,
+          is FROZEN (governed=12, receipt sha `74939a0873db29cd8f3fcd58c4b7ab8f0893d08e9b2b9ab983fe8d1c114f8df3`)
+          and is with `researcher`.
+        REMAINING: reissue pass 19 at the new `speak.py` bytes (its own 5-file group) once the A7 lane is free.
 278. [x] EVIDENCE AUDIT FOR THE ITEM-149 DECISION: the brief cited a p value that does not exist on disk, and the
      measurement that DOES survive says something the brief never mentioned.
      SEARCHED, NOT ASSUMED: `grep -rl "0.0043"` across every receipt and artifact under `outputs/` returns **zero
