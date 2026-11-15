@@ -9457,6 +9457,32 @@ t
             until the next packet round. The proof is the container logs and receipts, not a fixture.
           BLIND EAR STILL OPEN: current renders are `outputs/retrain-20261115/ab3/ab3-{A,B,C}.wav` (v3 adapter, loss
             0.1120), mapping in `outputs/retrain-20261115/sealed/`. No claim about how it sounds until the owner listens.
+        BLIND EAR VERDICT RECEIVED ON THE v3 ADAPTER - THE NEW TOKEN LOST (2026-11-15T17:15:51Z). Owner's words,
+          verbatim: "i think A". Unsealed AFTER he answered (shas verified against the sealed record):
+            A = `[laugh]`  <- chosen
+            B = `[hearty laugh]`  (the new id 50276, trained)
+            C = `Hahaha!`         (plain text)
+          So the trained new token was NOT preferred over the tag that already existed. Recorded in
+          `outputs/retrain-20261115/ab3-verdict.json` with his hedge ("i think", one listen) and the limitation that the
+          training set was 8 slices of ONE span, so loss 0.1120 is memorisation rather than learning the event. This is
+          a valid, useful FAIL: the tokenizer extension works, the DATA is not yet enough to beat an existing tag.
+          RETRACTION OF MY OWN FRAMING: item 259's earlier text said the ear step was the only thing left and implied a
+          good listen would close the rung. It did not; a losing listen moves the rung back to the training data.
+        RETAINED CPU CONTRACT LANDED `f3142149` (`tests/test_new_token_contract.py`, 14 cases, runs on the HOST with
+          torch-cpu - no GPU, no model download, against the REAL `_extend_text_vocab`). Every guard is
+          mutation-proved ONE AT A TIME: len/emb -> NTC-07, head/emb -> NTC-08, id collision -> NTC-09, UNK -> NTC-10,
+          wrong-space head init -> NTC-05b.
+          THE CONTRACT IMMEDIATELY FOUND A REAL DEFECT: the new `text_head` row was warmed from the EMBEDDING sub-token
+          mean - same shape, wrong space - so the head started in embedding coordinates. Fixed to use the head's own
+          rows; the mutant that restores the old line fails NTC-05b (13/14).
+          Two cases were initially INDECISIVE (they passed for unrelated reasons): a crash-vs-SystemExit difference hid
+          the head guard, and a 999-id collision failed on an IndexError instead of exercising the guard. Both were
+          rebuilt to assert the CONSEQUENCE of the missing guard (no partial mutation; an existing row not overwritten)
+          before they were accepted.
+          Adapter regenerated at the corrected bytes: `lora-v4.pt`, loss 5.8734 -> 0.1150, blind set `ab4/` - NOT yet
+          listened to, so no claim is made that the fix changes the outcome.
+          STILL BLOCKED FROM THE SUITE: `tests/run.sh` is bound at `769088f1` in the PASSed A7 packet, so this file
+            cannot be registered there yet. It runs standalone until the next packet round.
 260. [x] ITEM 165/258 REMAINDER CLOSED: `sfx_demo.py` LANDED `3ae556211c`, and SIX review rounds found TEN
      defects - including one I introduced that broke the feature outright.
      VERIFIED AFTER LANDING (not from memory): `sfx_demo.py` MATCH and `receipts/sfx-demo.reviewer.json`
