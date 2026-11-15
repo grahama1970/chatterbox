@@ -7202,7 +7202,7 @@ t
        - Submission delegated to surf with the exact path/size/sha; surf ACKed: "direct original attachment
          only, 107759 bytes / ea9f2b71…, reviewer must verify raw-byte identity". No receipt yet -> 179.
      OWNER: this session (repairs/rebuild done); surf (submission).
-179. [~] Obtain the B pass 7 submission receipt from surf, then intake its verdict FIRST-CLASS.
+179. [x] Obtain the B pass 7 submission receipt from surf, then intake its verdict FIRST-CLASS.
      AWAITING surf: the packet is frozen and the submission was ACKed, but it is NOT PROVEN SUBMITTED.
      EVIDENCE FROM THE CURRENT ARTIFACTS (`/tmp/surf-cb-B7/`): `response.md.receipt.json` (schema
      `surf.webgpt_submit_receipt.v1`, receipt_at 2026-11-13T05:40:18Z) reads `status: "prepared_prompt"` and
@@ -7227,6 +7227,22 @@ t
      A FAIL is a valid outcome; repair findings by reproducing them first.
      OWNER: surf (receipt); this session (intake).
 
+        CLOSED AS RETIRED, NOT OBTAINED (2026-11-15). The receipt this item asks for has NEVER EXISTED, measured
+          this turn rather than inferred from the note:
+          - no capture directory for B4 pass 7 (`/tmp/cb-B4-pass7*` holds the packet only, no `response.md`/`raw.md`);
+          - no `ops-magpie` receipt mentions B4 or pass 7 (grep over every receipt in
+            `~/.local/state/ops-magpie/receipts/` returns nothing);
+          - surf's own record is `submitted_to_chatgpt: false`, so there was never an answer to capture.
+          The packet itself is also VOID BY DRIFT, so even a late answer would bind nothing: it claims
+          `speak_core.py 3ac73ce6`, `arc_chart.py cfce6214`, `test_core_contract.py de77f4ae`, and the live bytes are
+          `6b837818`, `641db2f9`, `4c181fb1` (three repairs landed since: `172df304`, `5ece2502`, `d4aa127c`).
+          Nothing to obtain, nothing to intake. SUPERSEDED BY B PASS 9, below.
+        B PASS 9 BUILT, BOUND AND FROZEN - NOT SUBMITTED (submission spends credits; awaiting the owner's go):
+          `packets/cb-B4-pass9.txt` 127,846 B sha
+          `f0ca9e05563f8e3192d13f5ad28db66de9275161f0423ad38ac6deb9985f2124`, 4 governed rows at today's bytes
+          (`speak_core.py 6b837818`, `arc_chart.py 641db2f9`, `test_core_contract.py 4c181fb1`,
+          `test_prove4.py c4e12463`). The preamble states the three repairs (B8-SC-01 `172df304`, B8-SC-02
+          `5ece2502`, B4-F3 `d4aa127c`) and the gates run at these bytes. Freeze: FROZEN governed=4.
 180. [x] Repair the A33 findings on the pass-33 bytes, each reproduced FIRST, then rebuild ONE A7 packet
      (pass 34) and submit it.
      DONE. Every finding was reproduced on the pass-33 bytes BEFORE the fix, then verified after it.
