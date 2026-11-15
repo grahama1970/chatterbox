@@ -10317,7 +10317,7 @@ t
           `os.utime` to the recorded mtime) -> writer's bytes deleted; F2 replacement before `claim()` -> adopted
           and deleted. Both are the reviewer's findings and both remain true of the code as landed.
 
-295. [~] OWNER DECISION NEEDED: what is the ownership model for the staging directory? The A7 `interrupt_sfx.py` FAIL
+295. [x] OWNER DECISION NEEDED: what is the ownership model for the staging directory? The A7 `interrupt_sfx.py` FAIL
        row cannot move until this is chosen, and four designs have now died on it. Evidence: item 294, and the two
        preserved rejection bundles under `outputs/reviews/a44-*-REJECT-20261114/`.
        OPTION A - PRIVATE STAGING DIR (recommended): create the staging directory with `mkdtemp` (0700) and treat
@@ -10337,3 +10337,23 @@ t
          Cost: loses the "interrupt caught mid-synthesis keeps the raw for inspection" behaviour, which is why the
          staging dir exists.
        OWNER: Graham. No further design attempt until A, B or C is chosen.
+        DECIDED AND IMPLEMENTED (owner: "proceed with recommendations"): OPTION A. The staging directory is
+          PRIVATE to the attempt (`mkdtemp`, 0700); a concurrent writer must not write into another attempt's
+          private directory, and same-UID writers inside it are OUT OF SCOPE BY DECISION. `__exit__` compares no
+          identity fields at all: names this attempt minted are removed (bounded cleanup), and ANY entry whose name
+          was not minted parks the WHOLE directory with one atomic rename and is reported, so unknown bytes survive.
+          `_retire_minted` and the tuple-as-safety-gate are deleted; `_is_ours` is bookkeeping only.
+          The minted-set completeness the reviewer demanded was MEASURED, not assumed: production writes exactly
+          `mint("raw.wav")` plus its `.src` sibling, `_ours_names()` registers both, and the full retained suite
+          reported ZERO "did not mint" parks.
+          Review: deepseek/deepseek-v4-pro. FIRST review REJECTED (F1 HIGH completeness, F2 redundancy, F3
+          unlink-by-name); all three were answered with measured evidence and explicit statements rather than
+          waived, and the re-review returned APPROVE, NO FINDINGS.
+          Gates: tests/run.sh rc=0, PUBLISH_BY_NAME: clean, all retained harnesses PASS, a39 27/27 (two cases
+          retargeted at the contract), a7 70/70 (A43-F2 restated). LANDED `5010d35f`.
+        A7 PASS 45 BUILT, RECORDED, FROZEN, HANDED: `packets/cb-A7-pass45.txt` 320,257 B sha
+          `abb4534684011f67d40f4e86040824ab0c7a53e61bf31008198aee71761830b6`, 11 governed rows (interrupt_sfx.py
+          `31393e46`, test_a7_pass10_repairs.py `7efff710`; the other nine unchanged from pass 44). Freeze receipt
+          `submission-freeze.json` sha `f6db72e2f24b289cce73d5d30381988cf7cb14cc0b1235f44b8d9c8d9a68b9d6`;
+          board VERDICT DRIFT solely because `cb-B4-pass8` is void (B pass 9 still owed). Handed to `researcher`
+          with size + sha and the standing "do not hash the text" cover.
