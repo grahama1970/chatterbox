@@ -9425,6 +9425,38 @@ t
             `outputs/retrain-20261115/ab2/ab2-{A,B,C}.wav` with the mapping in `outputs/retrain-20261115/sealed/`, and
             the owner has not judged them. Until he does, NO claim is made that the new token produces a hearty laugh.
             Also honest: the dataset is 8 slices of ONE span, so this proves the mechanism, not generalisation.
+        THE THREE FAILURES EXAMINED AS CLASSES (owner: "shouldnt you examine your 3 failures first?"), LANDED
+          `f3fc4ecb`. Naming a failure is not examining it; each one below was traced to its class, the class was
+          searched for other instances, and every instance was REPRODUCED before it was fixed.
+          Class 1 - "a zero gradient means nothing moved": I had zeroed the frozen rows' grads and assumed that was
+            protection. AdamW's DECOUPLED weight decay moves every element regardless of gradient, so the frozen rows
+            drifted and my post-train assertion refused to publish. Fix kept (weight_decay=0 for the vocabulary group +
+            per-step restore + post-train torch.equal). SECOND INSTANCE FOUND IN MY OWN FIX: the two parameter groups
+            were split by SHAPE (`p.shape[0] == new_vocab`), so a LoRA tensor whose first dimension happened to equal the
+            vocabulary size would have been misclassified. Now split by IDENTITY with a count assertion.
+          Class 2 - "a record riding along in a tensor dict": the strict adapter loader refused the checkpoint because
+            `new_token_rows` looked like an adapter tensor. My first fix popped it in the A/B stage ONLY. SECOND INSTANCE,
+            REPRODUCED: `cmd_eval` refused EVERY new-token adapter - "checkpoint contains 1 key(s) outside the adapter set
+            (first new_token_rows); refusing to load". cmd_eval now applies the vocabulary rows through the same helper
+            and strips the record before the strict load.
+          Class 3 - "no static check ever ran on this file": the stale-variable crash was caught at runtime because
+            nothing checked names ahead of time. Running `ruff --select F821` found a REAL defect in the file I landed
+            earlier: `hashlib` was UNDEFINED at module level (only cmd_ab/cmd_eval imported it locally), so
+            `cmd_data_gen` raised NameError. Imported once at module level; ruff F821/F841/F811 now clean.
+          Class 4 - found only by RUNNING the eval stage: `save_wav(x, sr, str)` called `path.with_name` on a str, so
+            eval had NEVER executed at these bytes ('str' object has no attribute 'with_name'). save_wav coerces to Path,
+            which fixes every caller rather than the one that was found.
+          MEASURED AFTER: ruff clean; train rc=0 'New tokens: [('[hearty laugh]', 50276)] (vocab 50276 -> 50277)', loss
+            5.8734 -> 0.1120; A/B rc=0 with 3 renders and the mapping sealed outside the audio dir; eval now RUNS and
+            honestly returns ORDERING FAIL at --samples 1 (0.400 < 1.160 < 0.840) - its own gate working on one sample,
+            not a broken path.
+          HONEST CONSEQUENCE: the file I reported as "landed" at `0ec1acdd` was partly BROKEN (data-gen NameError, eval
+            never ran). The mechanism shipped, the surrounding stages did not; that overstatement is mine.
+          STILL NOT ENTERED: no retained automated test covers these stages (they need GPU + peft inside the container),
+            and `tests/run.sh` is bound at `769088f1` in the PASSed A7 packet, so a lint gate cannot be registered there
+            until the next packet round. The proof is the container logs and receipts, not a fixture.
+          BLIND EAR STILL OPEN: current renders are `outputs/retrain-20261115/ab3/ab3-{A,B,C}.wav` (v3 adapter, loss
+            0.1120), mapping in `outputs/retrain-20261115/sealed/`. No claim about how it sounds until the owner listens.
 260. [x] ITEM 165/258 REMAINDER CLOSED: `sfx_demo.py` LANDED `3ae556211c`, and SIX review rounds found TEN
      defects - including one I introduced that broke the feature outright.
      VERIFIED AFTER LANDING (not from memory): `sfx_demo.py` MATCH and `receipts/sfx-demo.reviewer.json`
