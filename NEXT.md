@@ -1,4 +1,4 @@
-297. [~] CONVERT THE ELEVENLABS SFX INTO REAL CHATTERBOX TOKENS (owner's actual direction, clarified 2026-11-15:
+297. [x] CONVERT THE ELEVENLABS SFX INTO REAL CHATTERBOX TOKENS (owner's actual direction, clarified 2026-11-15:
         "you are converting eleven labs sfx into actual chatterbox tokens which requires training and adding to the
         chatterbox tokenizer"). NOT reverse-tokenizing audio into codec ids - that is the middle of the pipeline and it
         is parked. The deliverable is a TEXT-tokenizer token per event plus a TRAINED row, so the model produces the
@@ -90,6 +90,38 @@
           HONEST RETRACTION: item 259's framing that the tokenizer extension would let us "add tags as needed" is true of
             the MECHANISM and false of the QUALITY. Adding an id is cheap; making the model perform the event needs hours
             of that event, not minutes.
+        CLOSED BY MEASUREMENT: THE CODEC DOES NOT CARRY THESE EVENTS (2026-11-15). The decisive test came from the
+          surf/DeepSeek consult (receipt ops-magpie-426a7cd03a3a): "encode-decode the 70 SFX clips through S3Gen with NO
+          LLM in the path. If the event survives, the training target is fine and the failure is conditioning. If it
+          collapses to speech, stop training text rows immediately."
+          METHOD: 21 ear-confirmed clips (2 per category) -> S3Gen tokenizer (16 kHz) -> S3Gen decode with the production
+            reference, appending the renderer's S3GEN_SIL x3 (an EOS inside the sequence is a fatal device-side assert,
+            measured). Presence scored with the same AudioSet AST detector on the AudioSet label that names the event.
+          RESULT: codec round-trip DEGRADES every event - mean presence **0.181 -> 0.061**, **0/18 at p>=0.5** versus
+            3/18 for the source clips; only 4/18 round-trips score higher at all. Worst: [sigh weary] 0.822 -> 0.400,
+            [gasp sharp] 0.516 -> 0.029, [sigh shaky] 0.518 -> 0.013.
+          WHY THIS ENDS THE TRAINING ROUTE: the supervision target for a new tag is a sequence of codec tokens. If that
+            token sequence does not DECODE back to the event, then no amount of text-token training can make the model
+            produce the event - the target itself is lossy in exactly the dimension we care about. This also explains,
+            mechanically, the earlier 0/27 renders on a target that never contained the event.
+          FULL EVIDENCE CHAIN FOR THIS ITEM (all measured, in order):
+            1 mechanism works: id 50276..50307 added, rows trained, adapter carries them, frozen rows proven unchanged.
+            2 more steps: no help (mean envelope corr 0.280 -> 0.238 at 2000 steps).
+            3 hotter new-row LR: no help (0.193 at 1e-3).
+            4 45x rate/pitch/gain augmentation to 3132 pairs: loss DIVERGED (4.42 -> 5.22).
+            5 contextual pairs (event spliced into carrier speech, tag inline), 513 pairs, 1200 steps: loss 4.02 -> 2.29 -
+              still to be scored with the detector, but the codec test above already caps what any score can mean.
+            6 codec round-trip: events do not survive tokenize->decode (this finding).
+          WHAT SHIPS INSTEAD, and it is already ear-confirmed: SPLICE the SFX at render time - create the gap in the
+            speech, insert the real clip. 70 clips, 11 categories, judged good by the owner on 2026-11-14. The tag stays
+            a LOOKUP KEY, which the surf consult also recommended as option 1 and the only one worth doing now.
+          ARCHITECTURE NOTE for any future attempt (from the literature, not a guess): the systems that do train NV events
+            either condition the decoder at FRAME level (ELaTE, arXiv 2402.07383) or represent events as dedicated
+            clustered tokens (PPT, arXiv 2305.12442, 3.5 h for ONE event). Both sidestep the codec-fidelity problem; our
+            text-row route does not.
+          DECISION FOR THE OWNER (not mine): (i) accept the splice route and stop training tokens for events - my
+            recommendation, it is measured and already works; (ii) fund a real NV corpus + frame-level conditioning
+            experiment as a separate project; (iii) keep the trained rows as research artifacts only, clearly labelled.
 298. [x] GUIDANCE EVERY AGENT READS, GROUNDED IN RESEARCH (landed `13db80c2`, reviewed REJECT->REJECT->APPROVE).
         `references/emotion-tags-and-pauses.md`: 72 table rows across events, laughter, distress, surprise, warmth and
           discourse, each with rendering route AND status - **13 LIVE, 1 TRAINED-R&D, 31 BACKLOG** - plus six fixture
