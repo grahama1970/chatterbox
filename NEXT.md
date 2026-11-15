@@ -234,6 +234,10 @@ surf returned packet B FAIL (all four files). Majors:
      `sigh-weary` and `sigh-shaky` are confirmed. A machine PASS never substitutes for that listening.
 
 ## NEXT UP (open)
+        SUPERSEDED TAIL (corrected 2026-11-15): the "REMAINING BLOCKER IS THE OWNER'S EAR ... only sigh-weary and
+          sigh-shaky are confirmed" paragraph below described the state BEFORE the owner's verdict, not after. Verified
+          live: 83 manifest rows = 70 `human_confirmed` + 7 `culled_content_failed` + 6 `excluded_nonconforming`, and
+          `:8797/api/clips` returns 0 pending. The ear step is complete; do not re-open it for listening.
 105. [x] Surf Packet B pass 3 FAIL — 19/19 findings FIXED and PROVEN (report /tmp/surf-cb-B3/response.md sha256 fd044e6f2ea72674).
      Evidence: /tmp/pb3-proof/receipt.json 13/13 `db3f8a4c6e6e6c36` (AC-02, SK-01, SC-01, AC-04 — forced race, byte hashes); receipt2.json 7/7 `151e5bd15d0cdd41` (SC-05 exact-body digest, SC-06/SC-08 delivery merge, SC-09 WAV validation, SK-08 unique run dirs); receipt3.json 10/10 `662d4c8f5e03de38` (SC-04 receipt fields from the snapshot, SK-09 final-text laugh gate, SK-10 chunk transcript, AC-05 escaping); receipt4.json 19/19 `708b715b5db969ff` (SK-06 sentence preservation 5/9/10/13, SK-07 option forwarding + mode refusal, SC-07 gain on the wire, SC-10 revalidation, SC-11 owned `audio.wav`); `test_core_contract.py` rc=0 with the TC-02 body-digest oracle, TC-04 valid fixtures/only UnsupportedTagError, TC-06 non-silence + measured gain.
      Retained eval: `../agentic-evals/run.sh run fixtures/agentic_eval.json --timeout-seconds 900` → READY, PASS 13 / FAIL 0, 135,298 B sha `f7373ca244380a4e7`.
@@ -8563,7 +8567,7 @@ t
        after the backend is known). Code is live in the container and verified, repo files edited but
        uncommitted. Next action: fix F2 (and F1/F3 cheaply), re-review, then land with the receipt.
 
-227. [~] ITEM 11 (ear verdict) PREPARED FOR THE OWNER - the listening itself is the only remaining human step.
+227. [x] ITEM 11 (ear verdict) PREPARED FOR THE OWNER - CLOSED: the listening happened (owner verdict 2026-11-14) and every clip now has a disposition.
      SURFACE VERIFIED LIVE this turn: `curl :8797/` -> 200 (60,595 B); `curl :8797/api/clips` -> 200,
        58,828 B, keys include asr_transcript/category/duration/event_identity/exists/file/frames/id/
        needs_human_listen/peak/rms/rate/seconds/sha256/status/variant/voice.
@@ -8650,6 +8654,14 @@ t
        without it: 74 entries all `awaiting_owner_verdict`, 0 confirmed, 4 that no verdict can rescue
        (below the project's own gate), 70 listenable in 157.5 s of montage. A machine PASS is not an ear.
 
+        CLOSED WITH MEASURED EVIDENCE (2026-11-15): the count discrepancy above is resolved - the queue is EMPTY,
+          not waiting. `curl :8797/api/clips` now returns **200, `[]`, 0 pending clips** on the live surface
+          (PID 843440), and `outputs/sfx-library/manifest.json` holds **83 rows: 70 `human_confirmed`,
+          7 `culled_content_failed`, 6 `excluded_nonconforming`** - every clip has a disposition, so there is no
+          longer a "52+ still need a verdict" state. The earlier 74-clip freeze grew by 9 rows between the prep and
+          the verdict, which is why the old counts did not reconcile; the manifest is the authority now.
+          Retracting my own stale claim: item 11's tail still said "only sigh-weary and sigh-shaky are confirmed",
+          which was true before 2026-11-14 and false after. Corrected in place.
 228. [x] PASS-39 VERDICT INTADED FIRST-CLASS (before any repair), per the standing process.
      SOURCE verified before use, not trusted: `/tmp/surf-cb-A39-webgpt-cleared/response.md`,
        20,379 B, sha256 `ad39b2f664f6017f28ee88e066a03c201727fb74574332bf22309953c7d1d20e` == the value
