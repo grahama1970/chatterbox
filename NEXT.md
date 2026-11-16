@@ -10935,7 +10935,7 @@ t
           board VERDICT DRIFT solely because `cb-B4-pass8` is void (B pass 9 still owed). Handed to `researcher`
           with size + sha and the standing "do not hash the text" cover.
 
-299. [ ] USE THE NATIVE-EVENT LANE WE ALREADY EVALUATED, INSTEAD OF EXTENDING A CODEC THAT CANNOT CARRY EVENTS
+299. [x] USE THE NATIVE-EVENT LANE WE ALREADY EVALUATED, INSTEAD OF EXTENDING A CODEC THAT CANNOT CARRY EVENTS
         The owner's challenge was correct: this repo already contains the tried-and-true answer, and the tokenizer work was
           bespoke. `outputs/engine-eval-20261107/matrix-final.json` (2026-11-07) found: **Orpheus-3B has the richest
           native control - 8 event + 10 emotion + 10 audio tags**, with `<sigh>` actually vocalized (+1.3 s of audio, gaps
@@ -10953,6 +10953,45 @@ t
           1,172 ids at 8.8 bits entropy (plenty of vocabulary) but the decoder renders those sequences as speech, and more
           CFM steps do not recover them (0.132/0.093/0.093). Extending a text token cannot fix a decoder that has never
           been trained on event audio. See `references/extending-the-tokenizer.md` §4a.
+        CLOSED 2026-11-16 as PREMISE FALSIFIED BY ITS OWN ARTIFACT - not built, because there is nothing to build.
+          THE SAME FILE CONTAINS BOTH THE CLAIM AND ITS REFUTATION, and this item read only the first:
+            matrix.orpheus_3b.emotion_tags     "<sigh> vocalized (+1.3s audio, 0.28-0.72s gaps; ear-check pending)"
+            perceptual_verdicts_20261107.inline_tag_sigh.orpheus_<sigh>   "**FAIL** - audible tail energy but not
+              perceived as emotion"
+            perceptual_verdicts_20261107.inline_tag_sigh.chatterbox_[sigh] "**FAIL** - rendered as trailing
+              near-silence (tail energy 1% of speech)"
+            perceptual_verdicts_20261107.inline_tag_sigh.cosyvoice2_instruct "**FAIL** - changed delivery, no
+              recognizable sigh"
+          THE "+1.3 s" WAS NEVER A SIGH MEASUREMENT, for two independent reasons found in the eval's own inputs:
+            (1) WRONG TAG SYNTAX: `lines.json` L4-tagged reads "Show me the raw receipt. **[sigh]**" - square brackets.
+                Orpheus's native vocabulary is `<sigh>`, as the claim line itself writes. So the tagged render did not
+                use the engine's event token at all.
+            (2) DIFFERENT BASIS: O1-plain-leo ("The build is ready.", 0.85 s) was compared against O2-tagged-leo
+                ("Show me the raw receipt. [sigh]", 2.13 s). Those are different sentences, so +1.28 s is mostly
+                sentence length, not vocalization. Duration across two texts cannot show an event exists.
+          INDEPENDENT CHECK I RAN (AudioSet AST, the same detector as nv_presence.py - which DOES score real sigh clips
+            at ~0.82, so the label is not blind to sighs):
+              orpheus   max sigh p = 0.012 over 5 renders; every tagged render classified Speech (p 0.58-0.80)
+              chatterbox/cosyvoice/fish similarly: max sigh p 0.017 / 0.003 / n-a
+              blind listener pack (scored blind, KEY.md NOT opened): 8 of 9 files Speech at 0.47-0.81 with sigh p
+                0.000-0.012; the single exception is blind01 with gasp p=0.413 - which is the one file whose audio is
+                long enough to hold an event, not evidence of a sigh.
+            Artifacts: engine-eval-20261107/{engine-presence-ab.json, blind-scores.json, engine_presence_ab.py,
+            blind_score.py}.
+          WHAT THIS SETTLES, AND WHAT IT DOES NOT:
+            SETTLED: there is NO engine in this repo that renders a sigh natively today. Orpheus was the last
+              candidate and it fails at both the ear-recorded verdict and the classifier. So "route events to Orpheus"
+              would have landed a lane that does not do the thing it was chosen for.
+            NOT SETTLED, and worth one bounded retry before declaring Orpheus dead: the eval never tried `<sigh>` with
+              the SAME sentence as its plain baseline. That is a 10-minute test, and it is the only untested cell in
+              the matrix. Its serve is also DOWN now - measured: nothing listening on 5001/5002/5005, only the
+              Chatterbox service on 8020 - so the retry needs the vllm lane started first.
+            UNCHANGED: the owner's ear remains the perceptual gate for anything we ship, but it is no longer this
+              item's gate, because the question moved from "is Orpheus better?" to "does any engine do this at all?"
+              and two independent methods already say no.
+          CONSEQUENCE FOR THE ROADMAP: the live options are exactly two - splice (shipped, hardened, 2502aacc) and
+            flow training (item 302: mechanism proven on the non-turbo checkpoint, -0.714 on the trained sigh; item 303
+            carries the corpus test). Adding an engine lane is no longer on the table on this evidence.
 
 300. [x] REFRESH THE B4 ORIGIN_MAIN BASELINES SO THE CAPTURED PASS VERDICTS CAN BE LEDGERED
         CLOSED 2026-11-16: root cause fixed at the tool. record-packet.py copied origin_main_sha256 from the manifest,
