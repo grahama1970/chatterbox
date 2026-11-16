@@ -11299,3 +11299,27 @@ t
          lever either and the native-event track closes for good with three independent nulls behind it.
        Note: this is inference-only. It does not contradict item 306's "no further training runs" - and if it works,
          the training track becomes unnecessary rather than resumed.
+
+309. [~] SURF PASSES 19 AND 43: ONE DECISION TAKEN, ONE DEFECT FIXED, ONE INSTABILITY ACCEPTED
+       PASS 43 = FAIL, and it was right. surf's F1 pointed at `scripts/interrupt_sfx.py:187 raw.unlink(missing_ok=True)` in the
+         SHARED output directory, against the file's own rule at `:704` and its fd-pinned precedent at `:896-898`. I verified
+         by reading and found a SECOND one they did not surface: `:595 q.unlink()` inside the private staging dir. Both fixed
+         in `29a133fa`: the ffmpeg input now lives in a private 0700 mkdtemp tree removed with `fs_ops.shutil_rmtree`, and the
+         per-entry delete loop plus its rmdir loop became the same private-tree removal after the existing minted-name check.
+         `grep -n '\.unlink(' scripts/interrupt_sfx.py` now returns nothing. Evidence: A39 41/41 with all four ASR-01 cases,
+         wg-pass2 PASS, `tests/run.sh` rc=0, sanity rc=0 incl. a live render, PUBLISH_BY_NAME clean.
+         MY REVIEWER OBJECTED that `mkdtemp(dir=out.parent)` is still a shared-parent name; I did not chase it and recorded the
+         reason - this file already uses the identical pattern at `:394` and `:482`, and same-UID safety is the documented
+         boundary of fs_ops, whereas surf's finding was a name in a SHARED dir, a different class.
+       PASS 19 = DECLINED THE RENAME, chose UNREVIEWED. surf measured that renaming `_key` -> `_cred` in the two TEST files
+         makes both scan clean, and offered a verified patch. I ran it in a scratch copy instead of arguing: it BREAKS both
+         proofs - pass10 goes 24/24 -> "mutant anchor occurs 0x in narrator_sfx_batch.py", batch goes 28/28 ->
+         "AttributeError: module 'nsb' has no attribute '_cred'". Because `m` in those tests IS the production module
+         (`spec_from_file_location("nsb", SPEC)`), the monkeypatch works only while production reads the module-global `_key`;
+         renaming the target makes the assertion test the real `_key()` instead of the stub. Clean egress bought by making
+         tests vacuous is the exact failure this lane exists to prevent. Decision sent to surf: bind those two files as
+         UNREVIEWED, no patch, no guard exemption.
+       THE INSTABILITY IS NOW A STANDING RULE: identical bytes (input_sha256 d5ebf5bc0a21…) produced PACKET PASS
+         (`ops-magpie-a0615cb68726`) and PACKET FAIL (`ops-magpie-6b8029eb3ff0`) on two runs over a 315 KB packet. A single
+         reviewer pass is not a gate at that size. From now on a lone PASS is treated as no evidence, and a FAIL is confirmed
+         by READING THE CODE - which is how F1 was settled. Recorded so a future PASS is not trusted on one run.
