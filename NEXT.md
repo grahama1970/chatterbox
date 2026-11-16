@@ -10164,7 +10164,7 @@ t
        st_ino) recorded when each own intermediate is created, unlink only on a match, and PARK when identity
        is unknown or differs. That is fix-by-construction, not a narrower name list.
 
-275. [~] PASS 19 IS NOT AWAITING SURF ANY MORE - its attempt was REFUSED AT EGRESS, and I stopped there.
+275. [x] PASS 19 IS NOT AWAITING SURF ANY MORE - its attempt was REFUSED AT EGRESS, and I stopped there.
      WHAT HAPPENED: researcher ran it and the transport refused to send:
        `summary.json`: `ok:false`, `"secret-guard egress refused: {\"decision\":\"block\",
          \"reasons\":[\"cred-name\"], \"counts\":{\"secret\":1}}"`; `answer_raw.txt` **0 bytes**,
@@ -10189,6 +10189,28 @@ t
        pass-41 FAIL and the round-2 review F1 HIGH), deepseek APPROVE with no findings, harness 21/21.
      STILL LIVE: item 164 is now UNBLOCKED (its file is free) but not done; item 263 (TXN-01 design choice)
        and the pass-19 content decision above both need Graham. B4 pass 7 still has no captured answer.
+        CLOSED 2026-11-16 as REFUSED-NOT-REVIEWED at these bytes, with the decision ROUTED rather than left hanging.
+          The item's diagnosis was right but incomplete: it named `_COMPLEX_TOKEN` (since renamed `7f0bd6ba`), and the
+          trigger set moved on. Re-measured today with the guard's own matcher over all five bound files: **12 hits**,
+          and **dropping narrator_sfx_batch.py entirely still leaves 8** - there is no subset of this packet that sends.
+            scripts/speak.py:386                       key=lambda p: _SPEED_RANK.get(p, 1)
+            scripts/review_store.py:94                 sorted(events, key=lambda row: ...)
+            tests/test_t1_pass10_repairs.py:68,76,82   headers={"xi-api-key": _key(), ...}  (+ 3 monkeypatches)
+            tests/test_t1_batch_proof.py:132           m._key = lambda: "test-key"
+            scripts/narrator_sfx_batch.py:57,65,82,335 DEFAULT_KEY_FILE / key_file / xi-api-key headers
+          TEN OF TWELVE CANNOT BE RENAMED AT ALL: `key=lambda` is a stdlib keyword argument (renaming it is a TypeError)
+          and `xi-api-key` is a vendor HTTP header name. The only two identifiers that are ours change nothing. So the
+          "rename the local identifier" option in this item is now measured to be impossible, not merely unattractive.
+          AND THE GUARD CONTRADICTS ITS OWN TESTED POLICY: `pi-extension/test_credname.mjs:60` asserts that cred-name is
+          "bash/tool_result-only; write/edit content allows kwargs", yet the EGRESS sink applies it to a packet that IS
+          file content. That is a scope gap in one sink, not a heuristic to loosen.
+          ROUTED: work order at outputs/guard-scope-workorder-20261116.md - the 12-line evidence table (no values),
+          the three options (honour the existing scope decision in egress / add a hashed code-terms allowlist / nothing),
+          and an explicit statement of what this lane did NOT do (no renames, no string splits, no exemptions, no guard
+          edit). Sent to the secret-guard owning session.
+          WHAT STAYS TRUE: pass 41 went through and produced a real verdict, so the guard discriminates on content rather
+          than blocking the lane - the correct behaviour under its rules. Nothing here is evidence the guard is wrong to
+          refuse secrets; it is evidence it cannot tell a stdlib kwarg from a credential assignment.
 
 276. [x] B4 PASS 7 RETIRED: it was never submitted, and it can never bind again at those bytes.
      MEASURED THIS TURN, not inferred from the absence of a file:
