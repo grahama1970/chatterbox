@@ -11166,7 +11166,7 @@ t
             result was conditioning, not capability. Cheap: same corpus, same curve, one change.
           WHAT SHIPS IS UNCHANGED: splice (2502aacc). Nothing in this result argues for replacing it.
 
-304. [ ] PUBLISH-BY-NAME GATE IS LINE-ORIENTED, SO CALL-SHAPE EVADES IT
+304. [x] PUBLISH-BY-NAME GATE IS LINE-ORIENTED, SO CALL-SHAPE EVADES IT
        Reviewer finding on 2026-11-16, kept as work rather than a code comment: tests/check_publish_by_name.py matches a
          call expression on ONE line and only against the first argument. So these all evade a gate whose whole job is to
          catch name-based publication:
@@ -11182,6 +11182,36 @@ t
          and the fs_ops primitives, and add adversarial retained cases for each evasion shape above - each written so it
          FAILS against the current line-oriented checker before the fix lands. Mutation-prove it: break a fix, watch the
          case go red.
+        CLOSED 2026-11-16. The gate now parses call expressions, and doing so exposed SEVEN REAL name-based publications
+        that the line version had been reporting as "clean" - including the shipped splice route.
+          THE GATE: rewritten on `ast`. It resolves direct calls, multi-line calls, keyword calls, `from X import y`,
+            `import X as Y`, module-bound names (`m = os`), chained bindings (`f = o.link`), annotated bindings
+            (`f: object = os.link`), tuple-unpacked aliases (`f, g = os.link, os.rename`), Path `.replace`/`.rename`,
+            and os/shutil forms; it FAILS CLOSED on a file it cannot parse. Dynamic dispatch (getattr/eval/*args) is
+            declared out of scope in the docstring - a static gate cannot see it, and pretending otherwise would be the
+            same lie as reporting clean.
+          WHAT IT FOUND ON FIRST RUN (7 sites, all previously invisible):
+            chunked_render.py  staging.replace(out_path)      hum_render.py      tmp.replace(wav)
+            eval_webgpt_audio.py temporary.replace(output)    sfx_demo.py        tmp.replace(out)
+            sfx_inline.py      tmp.replace(args.out)          sfx_regen.py       tmp.replace(MANIFEST)
+            listen_review.py   tmp.replace(MANIFEST)
+            Every one is the same shape: a predictable name beside a shared destination. Two private-dir cases
+            (test_core_contract.py's own mkdtemp, compare_variants.py's fresh uuid run dir) got reasoned ALLOW entries.
+          THE FIX: one vetted primitive, `fs_ops.publish_bytes(dest, data, replace=True)` - stage into an O_TMPFILE
+            descriptor (no name to swap) and install from that descriptor, with the payload re-verified against the
+            descriptor. Round-trip and no-clobber both proved before it was used for anything.
+          RETAINED PROOF AT ORIGIN BYTES (fresh `git archive origin/main`): evasions **31/31**, PUBLISH_BY_NAME clean,
+            tests/run.sh **rc=0** "all retained harnesses PASS", sanity **rc=0**. Plus: `sfx_inline` live render still
+            binds (inserted_pcm16_sha256 == the sliced WAV bytes), and the mutation proof - removing os.rename detection
+            turns two cases red, restoring turns them green.
+          THE REVIEWER AND THE HONESTY OF ITS VERDICT: seven rounds, every finding real and every one fixed and kept as
+            a case (multi-line/keyword/rename -> AST; a missing `import tempfile` in hum_render that would have shipped
+            as a NameError; from-import aliases; module aliases; chained bindings needing a fixpoint; `m = os`; AnnAssign;
+            tuple unpack). **No PASS was obtained on the final bytes** and the receipt says so rather than claiming one -
+            its last round named the tuple-unpack shape, which is fixed and covered, and the class it keeps probing
+            (computed targets) converges on dynamic dispatch, which is the declared boundary.
+          WHAT THIS MEANS FOR THE SPLICE ROUTE: nothing changes behaviourally - same audio, same receipt, same bindings
+            verified above. What changes is that the publication step no longer acts on a swappable name.
 
 305. [x] DECIDE WHETHER TO BUY BREADTH FOR FLOW TRAINING, AND AT WHAT LICENCE
        Where this stands: item 303 showed the flow tolerates 23 clips with no neighbour damage but does not transfer the
@@ -11215,3 +11245,13 @@ t
          answer, and no further training runs are justified without a new idea.
        Guardrails: voice service stopped, one process, container capped (the box has OOM-killed arangod before), and
          every run reports peak MiB next to its numbers.
+
+307. [ ] CONTINUE ADVERSARIAL ROUNDS ON THE PUBLISH GATE, OR ACCEPT THE DECLARED BOUNDARY
+       Where it stands: 31 retained shapes caught, seven review rounds each finding a narrower static shape, and a
+         documented boundary at dynamic dispatch (getattr/eval/*args/computed targets).
+       The question: keep paying for rounds that now find only shapes requiring a computed call target, or declare the
+         static surface complete and route those to review? Evidence for stopping: each round since the third has been a
+         narrower variant of "the primitive is reached via a name we did not resolve", and the last two rounds cost more
+         to adjudicate than the shapes they found.
+       Work if continued: one round per shape, each added as a retained case, and stop when a round names only
+         dynamic-dispatch forms - then record that as the closure condition rather than leaving it open-ended.
