@@ -9839,34 +9839,43 @@ t
             byte-identical to origin/main, so this is a real hole plus a likely inverted expectation. Tracked as item 301.
           NEXT (owner: researcher): B pass 10 reissued at these new bytes - every bound byte has moved again.
 
-264. [~] CURRENT STATE, SINGLE SOURCE - replaces the repeated verdict-state records (245/247/248/250/261) and the
-     two TXN-01 probe records (243/244), which are now closed with pointers here and to 263.
-     VERIFIED THIS TURN (not recalled):
-       pass 19 `b1ad7fa081324d5a…`  5/5 bound, 0 drift, **NO verdict artifact** anywhere - still with surf.
-       pass 41 `63e01ca4da9ca816…`  11/11 bound, 0 drift, **NO verdict artifact**, no new review dir since the
-         handoff - still with surf.
-       B4 pass 7                    no answer was ever captured (256: response.md absent, raw.md 0 B).
-     SO THE HONEST READING IS: nothing arrived. The watcher now says that in words (262) instead of leaving
-       `ready_to_process: none` to be guessed at.
-     WHAT IS LANDED AND SETTLED (each git-verified at landing): A39 repairs SP-01 `ff830827`, SP-02 `5572ceee`,
-       ASR-01 `64ee2aff`, SP-03 `246817e6`, IS-01 `8222f96e`; retained harness `69c21654` (17/17 with controls);
-       tag-alias F2 `cce7d2a6` (27/27); new-tag preparation `a563b5b4` (23/23, round-4 APPROVE); `sfx_demo.py`
-       `3ae55621` (round-6 APPROVE, measured splice 90,042 B / 1.02 s); `speak_core.py` graham mapping removed
-       `04c2a2d4`; watcher `verdict-watch.py` fixed (262).
+264. [x] CURRENT STATE, SINGLE SOURCE - replaces the repeated verdict-state records (245/247/248/250/261) and the
+     two TXN-01 probe records (243/244). VERIFIED 2026-11-16 by command, not recalled.
+     VERDICT ARTIFACTS - both packets the researcher was owed are now resolved, and one of them was NOT "nothing arrived":
+       pass 41 `63e01ca4da9ca816…` 306,049 B - **a verdict EXISTS and was intaked**: outcome FAIL, finding labels
+         SP-03 PASS / IS-01 FAIL / TXN-01 FAIL, reviewer researcher/ops-magpie receipt `ops-magpie-aabaeea80245`
+         (deepseek/deepseek-v4-pro). EVIDENCE: outputs/reviews/a7-pass41-researcher-20261114/{answer.txt,intake.json}.
+         The earlier "no verdict artifact" reading was wrong - it was looking for a per-file VERDICT block, and the reply
+         was finding-level. Both FAILs have since been repaired: IS-01 `8222f96e`, TXN-01 (A+C) `a3bda9ea` with a
+         decisive case in tests/test_a39_repairs.py. What remains is a REISSUE at the new bytes, not a wait.
+       pass 19 `b1ad7fa081324d5a…` - still NO verdict artifact anywhere under outputs/reviews; with surf.
+     B4 - CLOSED AND LEDGERED (was the long-open hole): pass 10 packet `cb-B4-pass10.txt` b00d3176… reviewed PASS on all
+       four files, intaked, ledger rows bound: speak_core da6699f8 / arc_chart aee16751 / test_core_contract 4c181fb1 /
+       test_prove4 cd61f6e3; landing manifest 43,039 B sha `1caa5b95…`. Item 256 closed; item 300 (the baseline bug that
+       blocked intake) fixed at record-packet.py.
+     B PASS 9 - ALL FOUR FINDINGS REPAIRED AND LANDED (item 296 closed): F1 `a3bda9ea`, F2 `83a73e5d`, F3 `e151ae42`,
+       F4 `1b0e537b`. Each reproduced first, retained, mutation-proved, reviewed by deepseek. Harness
+       tests/test_a39_repairs.py 39/41; the two reds are pre-existing ASR-01 cases, tracked as item 301.
+     ACOUSTICS - what is now MEASURED (this replaced two wrong earlier conclusions):
+       The vocoder is NOT the blocker: B0-B3 ladder on the production path - B0 reproduces the component call (spec corr
+         1.000), B1 re-analysis 0.999, B2 recorded speech 0.998, B3 EVENTS through native mel -> frozen HiFT: sigh
+         0.822 -> 0.793, gasp 0.516 -> 0.394, laugh 0.075 -> 0.106, with a speech control on the same label at 0.009.
+       The loss is upstream, in tokenizer -> token-to-mel (and possibly reference conditioning), not the decoder and not
+         the text-token row alone. The matched-speaker condition is UNAVAILABLE (no same-speaker reference for the
+         ElevenLabs clips), which is not the same as FAILED - recorded in references/extending-the-tokenizer.md §4a.
+       Trained text tokens still do not produce events (0/27 at detector p>=0.5); 2000 steps, hotter row LR and 45x
+         augmentation were each measured worse or diverging. Retrain requirement closed (254/259) as: mechanism + gate
+         delivered, generation not claimed.
+       SHIPPING: tag-as-cue + real clip spliced into a 150 ms level-matched gap - `scripts/sfx_inline.py` `b37cafb5`,
+         receipt bound to the written PCM16 samples; 1 ms splice, 0.99 s TTS for 2.97 s of speech. 70 ear-confirmed clips.
      OPEN, EACH WITH A NAMED OWNER - this is the whole list:
-       133  surf: the pass-19 verdict (and pass 41's).
+       133  surf: the pass-19 verdict artifact (pass 41 is resolved above).
        149  Graham: pacing-only vs audible for an inline tag (measured p = 0.0043, 0.32 s median delta).
-       164  blocked by the in-flight packet: `test_wg_pass2_repairs.py` is bound in pass 41; editing it voids it.
-       165  the `/voices` mount does not exist, so a "graham" reference still cannot resolve; `spyke_render.py`
-            keeps the dead entry because it is bound in pass 41 (edit after the verdict returns).
-       177/179  surf: packet submissions (B4 pass 7 has no captured answer).
+       165  the /voices mount does not exist, so a "graham" reference still cannot resolve.
        193  researcher: native S3 token path collaboration.
-       227  Graham: the listening step on the ear-verdict page (`:8797` live, 15 players, 74 clip rows).
-       254/259  a serialized GPU window: the A5000 has 23,667 of 24,564 MiB held by the live service that peer
-            lanes render through, so training must not be started unilaterally.
-       256  surf: B4 pass 7 needs a real answer capture.
-       263  Graham: the TXN-01 decision (A+C recommended) - `outputs/txn-01-decision.md`, sha `ab993da1…`.
-     Nothing on this list is blocked on work I can do without either surf returning or a decision above.
+       227  Graham: the listening step on the ear-verdict page (:8797 live, 74 clip rows).
+       301  this session: two retained ASR-01 cases red at origin bytes (one real hole, one likely inverted expectation).
+       NEW  A7/B reissue at today's bytes now that both FAILs and all four B9 findings are repaired.
 
 265. [x] RETRAIN MECHANISM PROVEN IN ISOLATION - the "can it be trained at all" question is now measured, not
      assumed. Durable, outside `/tmp`:
