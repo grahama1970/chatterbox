@@ -11090,7 +11090,7 @@ t
             expressions line-by-line on the first argument, so a multi-line `os.link(`, a keyword call, or a
             rename/symlink form evades the gate. Recorded, not silently accepted, and not fixed inside this repair.
 
-303. [~] THE FLOW LEARNS, SO THE BLOCKER IS NOW DATA VOLUME AND THE TURBO LOSS -
+303. [x] THE FLOW LEARNS, SO THE BLOCKER IS NOW DATA VOLUME AND THE TURBO LOSS -
      WHAT THIS ITEM MUST SETTLE (one question, then the decision): does training on MANY event clips learn the event
        WITHOUT destroying the others, and does a held-out render then contain it? Item 302 proved the mechanism works
        and that n=1 damages neighbours (+0.48 gasp, +0.33 chuckle, +0.77 cough while the trained sigh fell -0.71).
@@ -11107,6 +11107,36 @@ t
      WINDOW: measured and ample - 5,111 MiB peak for the flow vs 24,564 MiB total, 0.173 s/step, so a 4-fold run over
        the local bank is minutes. Still: voice service stopped, one process, no fan-out, and the container capped -
        the kernel has OOM-killed arangod on this box before (Nov 10) and that must not be repeated.
+        CLOSED 2026-11-16: data volume FIXES the damage and does NOT yet transfer - so the item's stop condition applies.
+          RUN: non-turbo flow, 24 clips from the human_confirmed bank across 9 labels (Sigh 2, others 1-3), leave-one-out
+            on `sigh-shaky.wav` (Sigh) -> 23 training clips, 400 steps at lr 1e-5. 60.9 s total, 0.152 s/step, peak
+            5,416.7 MiB. Artifact: outputs/token-train/flow-fold-test.json.
+          (1) NEIGHBOUR DAMAGE: GONE. This is the finding that matters. The n=1 run had damaged gasp +0.48, chuckle +0.33,
+              cough +0.77. With 23 clips: mean per-clip delta **-0.287** (i.e. everything improved on average) and
+              **0 of 23 clips regressed beyond its own measured spread** (worst delta -0.751 against a 1.572 noise band).
+              So the earlier "one example wrecks the neighbours" result was small-n, not a property of the mechanism.
+          (2) TRANSFER TO AN UNSEEN CLIP: NOT DEMONSTRATED. Held-out `sigh-shaky.wav`: 1.1752 -> 1.12781, delta **-0.047**
+              against a **0.763** noise band. That is inside the noise: the flow learned its training clips, not the
+              concept of the event.
+          (3) AUDIO PRESENCE: NOT DEMONSTRATED, and I am not counting the +0.013 as a win. The held-out audio scored
+              sigh p 0.0278 before and 0.0404 after - but the SOURCE CLIP ITSELF only scores 0.4813 as Sigh (its top
+              label is Gasp at 0.5675), so this clip is a weak reference and nothing bounded can be concluded from it.
+              Recording `held_out_presence_improved: true` in the artifact is technically true and substantively
+              meaningless at 0.028 -> 0.040; flagged here so the field is not read as a result later.
+          ITEM'S OWN STOP CONDITION: "if every clip's eval delta stays within its own noise band, the flow is not
+            absorbing event identity in a way we can steer - report and stop rather than buying more compute."
+            That is exactly what measured: 0 of 23 outside noise, held-out inside noise. So: reported, and NOT scaled
+            blindly into a bigger run.
+          HARNESS COSTS PAID THIS TURN, disclosed because they consumed most of it: seven failed runs, every one my own
+            bug, each named and fixed - host paths checked before translation (empty corpus); alphabetical truncation
+            dropping every Sigh (empty held-out set); AST trying to write into a read-only mount; HF_HOME overridden in
+            script; `n_cfm_timesteps` not passed to the generator; mel truncated instead of tokens (the model's own
+            embed_ref truncates TOKENS, and the 233-vs-234 mismatch came from that); and `flow.inference` being
+            `@torch.inference_mode`, which left the flow unable to save activations for backward - fixed structurally by
+            measuring on one model instance and training on a freshly built second one, not by fighting the flag.
+          WHAT IS NOW KNOWN PRECISELY: the mechanism tolerates breadth the moment it has any; what it does not yet do is
+            generalise the event to a clip it has not seen, at 23 clips and 400 steps. Next step is an owner decision
+            (item 305) about whether to buy breadth from the public corpus / ElevenLabs, not another blind run.
 
 304. [ ] PUBLISH-BY-NAME GATE IS LINE-ORIENTED, SO CALL-SHAPE EVADES IT
        Reviewer finding on 2026-11-16, kept as work rather than a code comment: tests/check_publish_by_name.py matches a
@@ -11124,3 +11154,19 @@ t
          and the fs_ops primitives, and add adversarial retained cases for each evasion shape above - each written so it
          FAILS against the current line-oriented checker before the fix lands. Mutation-prove it: break a fix, watch the
          case go red.
+
+305. [ ] DECIDE WHETHER TO BUY BREADTH FOR FLOW TRAINING, AND AT WHAT LICENCE
+       Where this stands: item 303 showed the flow tolerates 23 clips with no neighbour damage but does not transfer the
+         event to an unseen clip (held-out delta -0.047, noise 0.763). More of the same tiny bank will not answer that;
+         breadth will, or nothing will.
+       Three routes, with what each costs:
+         (a) PUBLIC CORPUS: `nonverbalspeech/nonverbalspeech38k` (38k clips, text+audio, task-tagged text-to-speech).
+             CC-BY-NC-4.0 = research/non-commercial only, so fine for deciding the science and NOT for a shipped model.
+             `YuxinXie/VocalSound` is the smaller, multi-speaker alternative.
+         (b) ELEVENLABS PER PERSONA: generate as many events as needed in the ALREADY-CONFIRMED voice, which is the only
+             route that also settles identity (the speaker-encoder check showed voiced events carry identity, so a
+             persona-voice sigh is not the same asset as a donor sigh). Costs API calls.
+         (c) STOP AT SPLICE: keep what ships (2502aacc) and treat native events as unproven.
+       The decision is an owner call because (a) constrains what a shipped model may be, and (b) spends money.
+       One measurement would make the decision cheap: 200-400 clips from (a), same leave-one-out protocol as 303, and
+         report whether the held-out delta finally exceeds its noise band. If it does not, (c) is the answer.
