@@ -11229,7 +11229,7 @@ t
        One measurement would make the decision cheap: 200-400 clips from (a), same leave-one-out protocol as 303, and
          report whether the held-out delta finally exceeds its noise band. If it does not, (c) is the answer.
 
-306. [ ] CONDITION EACH TRAINING PAIR ON ITS OWN SPEAKER, THEN RE-RUN THE CURVE
+306. [x] CONDITION EACH TRAINING PAIR ON ITS OWN SPEAKER, THEN RE-RUN THE CURVE
        The measurement that decides it: with per-clip speaker conditioning instead of one fixed reference embedding,
          does the held-out delta finally exceed its noise band, and does the rendered sigh probability move off 0.25?
        Evidence this is the right next variable, from item 305: the flow improved its TRAINING pairs (mean -0.504 to
@@ -11245,6 +11245,35 @@ t
          answer, and no further training runs are justified without a new idea.
        Guardrails: voice service stopped, one process, container capped (the box has OOM-killed arangod before), and
          every run reports peak MiB next to its numbers.
+        CLOSED 2026-11-16: the conditioning confound is RULED OUT - and it exposed a better baseline than the one we were
+        training from.
+          ONE VARIABLE CHANGED vs item 305: each pair is conditioned on the embedding of the CLIP'S OWN audio (model's own
+            speaker encoder) instead of one fixed reference voice. Corpus, held-out clip, eval sample, seeds, lr and
+            checkpoints identical. Artifact: outputs/token-train/flow-corpus-curve-cond.json.
+          HELD-OUT DELTA, fixed-emb -> own-emb (noise band 0.828 in both runs):
+            step  400:  -0.186  ->  -0.247      beats noise: NO / NO
+            step  800:  -0.350  ->  -0.356      beats noise: NO / NO
+            step 1600:  -0.254  ->  -0.264      beats noise: NO / NO
+          So the mismatch I introduced was NOT the cause. Per-label (own-emb, final): every group improved its TRAINING
+            clips - Breathing -0.48, Cough -0.72, Gasp -0.93, Laughter -0.25, Sigh -0.35, Sniff -0.39, Throat clearing
+            -0.84, Yawning -0.70 - and **outside_noise = 0 for every single group**. The flow fits, it does not generalise.
+          THE FINDING THAT MATTERS MORE THAN THE NULL: presence on the held-out clip.
+            source clip 0.6352 (valid reference: its own top label is Sigh)
+            UNTRAINED render, own-embedding conditioning: **0.4582**
+            AFTER 1600 steps of training: **0.2933** (top label Gasp)
+            Compare item 305, where the untrained render scored 0.2473 under the WRONG (fixed) conditioning.
+            Two consequences: (a) the untrained model already renders this event far better than we thought, and getting
+            the conditioning right is worth more than 1600 training steps; (b) training on this corpus actively DEGRADED
+            that rendering, by 36% relative. Training was not merely useless here, it was harmful.
+          ITEM'S OWN STOP CONDITION APPLIED: "if per-clip conditioning leaves the held-out delta inside its noise band too,
+            then the flow is not the lever at this data scale and item 305's option (c) is the answer, and no further
+            training runs are justified without a new idea."
+            -> OPTION (c) ADOPTED: keep splice (2502aacc) as what ships; native events stay UNPROVEN under training.
+            -> NO further training runs on the flow without a new idea. The corpus run is parked, not pending.
+          THE NEW IDEA THIS MEASUREMENT PRODUCED (opened as 308, not run): conditioning was worth more than training.
+            If the correct conditioning already yields 0.458 from an untrained flow, then the lever may be INFERENCE
+            conditioning - feeding an event's own mel as the prompt/cond - rather than training the weights at all. That is
+            an inference experiment, costs seconds, and is not a training run.
 
 307. [ ] CONTINUE ADVERSARIAL ROUNDS ON THE PUBLISH GATE, OR ACCEPT THE DECLARED BOUNDARY
        Where it stands: 31 retained shapes caught, seven review rounds each finding a narrower static shape, and a
@@ -11255,3 +11284,18 @@ t
          to adjudicate than the shapes they found.
        Work if continued: one round per shape, each added as a retained case, and stop when a round names only
          dynamic-dispatch forms - then record that as the closure condition rather than leaving it open-ended.
+
+308. [ ] TEST WHETHER PROMPT CONDITIONING - NOT TRAINING - IS THE LEVER
+       Evidence: an UNTRAINED flow rendered the held-out sigh at presence 0.458 when conditioned on the clip's own
+         embedding, versus 0.247 under a mismatched fixed embedding, and training then DEGRADED it to 0.293. So
+         conditioning moved the number more than 1600 training steps did, in the opposite direction.
+       Question this item settles: does feeding an EVENT's own mel as the flow's prompt/cond (the `prompt_feat` path,
+         rather than training weights) raise event presence in spoken output?
+       How, bounded: take 5 sentences x 3 events; render each twice - once with the plain reference prompt (today's
+         behaviour), once with an event's mel as the conditioning prompt - and score both with AudioSet AST for the
+         intended event. Report per event, with the speech-quality guard (intelligibility must not collapse).
+       Pass bar: presence rises above the plain-prompt render for at least 2 of 3 events, and the speech control clip
+         does not degrade. Drop condition: no event moves, or speech degrades - then record that conditioning is not the
+         lever either and the native-event track closes for good with three independent nulls behind it.
+       Note: this is inference-only. It does not contradict item 306's "no further training runs" - and if it works,
+         the training track becomes unnecessary rather than resumed.
