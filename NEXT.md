@@ -9803,7 +9803,7 @@ t
           case flipped the LAST byte, which broke JSON so pydantic refused and the case passed without the digest
           guard. Both cases were corrected and re-proved against mutants.
 
-296. [~] B PASS 9 FINDINGS (2 PASS / 2 FAIL intaked 2026-11-15). Repairs land one at a time at the cited paths.
+296. [x] B PASS 9 FINDINGS (2 PASS / 2 FAIL intaked 2026-11-15). Repairs land one at a time at the cited paths.
         DONE - F1 HIGH `speak_core._open_verified`: reproduced the reviewer's scenario (rename the real root aside and
           symlink the root's NAME to an outside directory AFTER the file is opened) and showed the pre-fix code
           ACCEPTED `<outside>/evil.wav`. Fix binds the root by DESCRIPTOR before the file open: open dir, fstat, read
@@ -9815,7 +9815,30 @@ t
         OPEN - F3 LOW `speak_core.evaluate_gate()` still appends top-level `text`/`answer_text` for a snapshot with
           `render_chunks`; F4 LOW `arc_chart.load_receipts()`/`load_arc_receipt()` do not catch ValueError/TypeError
           when converting receipt duration fields.
-        OWNER: this session (repairs); researcher (B pass 10 at the new bytes once all four are in).
+        OWNER: this session (repairs); researcher (B pass 10 at the new bytes once all four are in).        CLOSED 2026-11-16: ALL FOUR FINDINGS REPAIRED AND LANDED, one at a time at the cited paths.
+          F1 HIGH `speak_core._open_verified`     LANDED `a3bda9ea` - root bound by DESCRIPTOR before the file open;
+            reproduced first (rename the real root aside, symlink the NAME after the open; pre-fix ACCEPTED
+            <outside>/evil.wav). Retained case mutation-proven (mutant 21/22).
+          F2 MEDIUM `arc_chart._safe_publish`     LANDED `83a73e5d` - refuses a destination that exists and is not a
+            regular file. Reproduced: a DIRECTORY `out.svg` holding keep.txt was renamed to .<uuid>.prev and a FILE
+            published at its name, no refusal, success returned. Guard added; directory keeps its file; control shows a
+            regular file is still replaceable; mutation (guard stripped) reproduces the displacement.
+          F3 LOW  `speak_core.evaluate_gate`      LANDED `e151ae42` - with a chunk plan the gate scans the CHUNKS, which
+            are what the batch path speaks, and not the top-level fields. Reproduced: a plan whose only chunk said
+            "The build is ready." was refused with ['[wistful sigh]', '[[pause:800]'] from stale top-level text. Four
+            retained checks (stale top level ignored / bad tag in a chunk still refused / named pause in a chunk
+            answer_text still refused / no chunks -> top level still judged); mutant 33/36, fixed 34/36. APPROVE.
+          F4 LOW  `arc_chart.load_receipts/load_arc_receipt` LANDED `1b0e537b` - a non-numeric duration SKIPS that
+            receipt with a named warning instead of crashing the scan, and does not become 0.0 (a zero duration would
+            draw an instantaneous turn - a different lie). Reproduced: ValueError on "abc", TypeError on a dict.
+            Reviewer then found `+inf`/"Infinity"/1e999 passing the NaN-only check; fixed with math.isfinite and a
+            retained check; that mutation fails exactly the new check (38/41 vs 39/41 fixed). APPROVE after the fix.
+          Harness state at these bytes: tests/test_a39_repairs.py 39/41. The two failures are pre-existing and NOT from
+            these repairs: "A39-ASR-01 interrupt_sfx._asr_snapshot rejects an enlarged sealed descriptor" reports
+            refused=False, and the sfx_verify counterpart reports refused=True yet still fails - the two files are
+            byte-identical to origin/main, so this is a real hole plus a likely inverted expectation. Tracked as item 301.
+          NEXT (owner: researcher): B pass 10 reissued at these new bytes - every bound byte has moved again.
+
 264. [~] CURRENT STATE, SINGLE SOURCE - replaces the repeated verdict-state records (245/247/248/250/261) and the
      two TXN-01 probe records (243/244), which are now closed with pointers here and to 263.
      VERIFIED THIS TURN (not recalled):
@@ -10841,3 +10864,12 @@ t
           `git show origin/main:<path>` at record time, and treat "absent on origin" as an explicit null rather than a
           mismatch; then re-run the B4 intake so the four PASS rows become hash-bound ledger entries instead of a captured
           report sitting beside the manifest.
+
+301. [ ] TWO RETAINED ASR-01 CASES ARE RED AT ORIGIN BYTES
+        Evidence: tests/test_a39_repairs.py reports 39/41. The failures are
+          "A39-ASR-01 interrupt_sfx._asr_snapshot rejects an enlarged sealed descriptor"  -> refused=False
+          "A39-ASR-01 sfx_verify.transcribe rejects an enlarged sealed descriptor"       -> detail reads refused=True
+        scripts/interrupt_sfx.py and scripts/sfx_verify.py are byte-identical to origin/main, so this is not local drift.
+        Work: reproduce an enlarged sealed descriptor on each surface; add the refusal where it is missing, and check
+          whether the sfx_verify case asserts the opposite of what it means (a refusal reported as a failure). Retained,
+          mutation-proved, landed one at a time. Do not touch them as part of another repair.
