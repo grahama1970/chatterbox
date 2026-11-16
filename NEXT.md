@@ -10758,3 +10758,22 @@ t
           `submission-freeze.json` sha `f6db72e2f24b289cce73d5d30381988cf7cb14cc0b1235f44b8d9c8d9a68b9d6`;
           board VERDICT DRIFT solely because `cb-B4-pass8` is void (B pass 9 still owed). Handed to `researcher`
           with size + sha and the standing "do not hash the text" cover.
+
+299. [ ] USE THE NATIVE-EVENT LANE WE ALREADY EVALUATED, INSTEAD OF EXTENDING A CODEC THAT CANNOT CARRY EVENTS
+        The owner's challenge was correct: this repo already contains the tried-and-true answer, and the tokenizer work was
+          bespoke. `outputs/engine-eval-20261107/matrix-final.json` (2026-11-07) found: **Orpheus-3B has the richest
+          native control - 8 event + 10 emotion + 10 audio tags**, with `<sigh>` actually vocalized (+1.3 s of audio, gaps
+          0.28-0.72 s); chatterbox's 13 tags render events weakly (`[crying]` inert); CosyVoice2 has no inline tags at all
+          and needs natural-language instruct2. Its own recommendation was HYBRID: keep Chatterbox as the persona-reference
+          engine (exact pauses, receipts, contract layer) and add the Orpheus lane for native event tags, with SFX clips as
+          engine-agnostic assets.
+        The gate nobody has run: the blind listener pack. `outputs/engine-eval-20261107/listener-pack/` has blind01-09.wav
+          plus KEY.md (sealed mapping). Every engine decision in this repo is currently unfalsified at the ear, including
+          this one. Owner rates: is the sigh actually vocalized, naturalness, pleasantness.
+        Work: (1) owner listens to the pack; (2) wire the Orpheus lane behind the same contract/receipts layer (its serve
+          was reachable at the eval, renders rc=0, RTF 0.27 on the small case, stock voices leo/tara); (3) route event
+          rendering to Orpheus, keep chatterbox for persona-voice speech, keep splicing as the fallback that always works.
+        Why this supersedes the tokenizer route for events: measured here on 2026-11-15 - our codec encodes events across
+          1,172 ids at 8.8 bits entropy (plenty of vocabulary) but the decoder renders those sequences as speech, and more
+          CFM steps do not recover them (0.132/0.093/0.093). Extending a text token cannot fix a decoder that has never
+          been trained on event audio. See `references/extending-the-tokenizer.md` §4a.
