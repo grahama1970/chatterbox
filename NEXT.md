@@ -11047,7 +11047,7 @@ t
           ARTIFACTS: outputs/token-train/{flow-probe.log, flow-probe-nonturbo.json, flow-train-probe.json} + scripts.
           NEXT DEPENDS ON ONE DECISION: serve non-turbo with a trained flow, or write the meanflow loss for turbo.
 
-301. [ ] TWO RETAINED ASR-01 CASES ARE RED AT ORIGIN BYTES
+301. [x] TWO RETAINED ASR-01 CASES ARE RED AT ORIGIN BYTES
         Evidence: tests/test_a39_repairs.py reports 39/41. The failures are
           "A39-ASR-01 interrupt_sfx._asr_snapshot rejects an enlarged sealed descriptor"  -> refused=False
           "A39-ASR-01 sfx_verify.transcribe rejects an enlarged sealed descriptor"       -> detail reads refused=True
@@ -11055,6 +11055,40 @@ t
         Work: reproduce an enlarged sealed descriptor on each surface; add the refusal where it is missing, and check
           whether the sfx_verify case asserts the opposite of what it means (a refusal reported as a failure). Retained,
           mutation-proved, landed one at a time. Do not touch them as part of another repair.
+        CLOSED 2026-11-16: the two red cases were a SYMPTOM of an incomplete landing, and both are green at origin.
+          WHAT WAS ACTUALLY BROKEN, found by measuring at origin instead of in my working tree:
+            `git archive origin/main` then import -> `ModuleNotFoundError: fs_ops`, then `wav_guard`. Four landed scripts
+            (interrupt_sfx, sfx_verify, speak, spyke_render) import fs_ops; tests/mutant_support.py is imported by four
+            landed harnesses; three landed harnesses BIND `scripts/narrator_sfx_batch.py` as the production source under
+            test, and that file had never been landed. Eight harnesses referenced by tests/run.sh were also absent.
+            Net effect: at origin `import speak` failed outright, tests/test_a39_repairs.py could not even run, and
+            tests/run.sh could not execute. Locally everything was green because the files existed but were untracked -
+            which is exactly how this item could claim "byte-identical to origin/main" while measuring the wrong thing.
+          LANDED IN THREE STEPS, each reviewed (deepseek/deepseek-flash, provider-different from the author):
+            `6d6075a9` scripts/fs_ops.py (366 lines; the import-graph hole)
+            `de7b0c98` scripts/wav_guard.py + tests/mutant_support.py + 8 harnesses + check_publish_by_name.py
+            `93bea415` scripts/narrator_sfx_batch.py + drifted review_store.py/review_server.py
+                       + tests/test_review_origin_header.py + tests/run.sh
+          PROOF AT ORIGIN BYTES (fresh `git archive origin/main`, run in /tmp):
+            imports      speak, interrupt_sfx, sfx_verify, spyke_render, wav_guard, fs_ops, narrator_sfx_batch -> OK
+            a39 harness  **41/41 checks**, and all four A39-ASR-01 cases PASS
+                         (both `interrupt_sfx._asr_snapshot` and `sfx_verify.transcribe` reject an enlarged sealed
+                         descriptor and materialise no substituted bytes)
+            tests/run.sh **rc=0** "tests: all retained harnesses PASS", PUBLISH_BY_NAME: clean
+            sanity.sh    **rc=0**
+          THE REVIEWER EARNED ITS KEEP AND WAS ALSO WRONG TWICE - adjudicated, not obeyed:
+            F2 review_server.py Origin on GET: **REAL**. The local change required an Origin header on the GET path,
+               and browsers send none on navigation or same-origin non-CORS fetch, so the review page's own data fetch
+               would 403 and the UI would show nothing. Fixed by allowing a missing Origin for GET from loopback only,
+               while POST still requires a match; 8 retained cases (test_review_origin_header.py) pin both directions.
+            F1 review_store.py "fsync gone": **FALSE POSITIVE** - fs_ops.stage_bytes does `os.fsync(fd)` before
+               returning the descriptor, which is then linked and the directory fsynced. The reviewer could not see
+               fs_ops because it was not in that bundle.
+            F3 "test patches a symbol that exists nowhere": **MISSING CONTEXT** - `_publish_fd_no_replace` is defined in
+               scripts/narrator_sfx_batch.py, the file that had never landed. That is what prompted landing it.
+          NEW FOLLOW-UP OPENED (304): the reviewer's one surviving finding - check_publish_by_name.py matches call
+            expressions line-by-line on the first argument, so a multi-line `os.link(`, a keyword call, or a
+            rename/symlink form evades the gate. Recorded, not silently accepted, and not fixed inside this repair.
 
 303. [~] THE FLOW LEARNS, SO THE BLOCKER IS NOW DATA VOLUME AND THE TURBO LOSS -
      WHAT THIS ITEM MUST SETTLE (one question, then the decision): does training on MANY event clips learn the event
@@ -11073,3 +11107,20 @@ t
      WINDOW: measured and ample - 5,111 MiB peak for the flow vs 24,564 MiB total, 0.173 s/step, so a 4-fold run over
        the local bank is minutes. Still: voice service stopped, one process, no fan-out, and the container capped -
        the kernel has OOM-killed arangod on this box before (Nov 10) and that must not be repeated.
+
+304. [ ] PUBLISH-BY-NAME GATE IS LINE-ORIENTED, SO CALL-SHAPE EVADES IT
+       Reviewer finding on 2026-11-16, kept as work rather than a code comment: tests/check_publish_by_name.py matches a
+         call expression on ONE line and only against the first argument. So these all evade a gate whose whole job is to
+         catch name-based publication:
+           os.link(
+    staged,
+    dest,
+)                multi-line call
+           link_no_clobber(src=staged, dest=dest)             keyword arguments
+           Path.replace / os.rename / os.symlink forms         different primitives, same hazard
+       This is a test-side gate, not production code, so it was not a reason to withhold the modules that landed - but a
+         gate that a trivial reformat defeats is worse than no gate, because it reports clean.
+       Work: match the CALL EXPRESSION (parse with ast, not a line regex), cover os.link/os.rename/os.replace/os.symlink
+         and the fs_ops primitives, and add adversarial retained cases for each evasion shape above - each written so it
+         FAILS against the current line-oriented checker before the fix lands. Mutation-prove it: break a fix, watch the
+         case go red.
