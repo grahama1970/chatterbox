@@ -10214,7 +10214,7 @@ t
        `cred-name` on `_COMPLEX_TOKEN`, 0-byte answer (`b1ad7fa0…`, item 275); B4 pass 7 retired unsubmitted
        (`ea9f2b71…`, this item). **None of the three is awaiting a verdict any more.**
 
-276. [~] TRAINING STARTS AT THE FLOW, BECAUSE THAT IS WHERE THE EVENT IS LOST -
+302. [~] TRAINING STARTS AT THE FLOW, BECAUSE THAT IS WHERE THE EVENT IS LOST -
      WHY THE FLOW AND NOT T3: measured this session - the speech tokenizer carries the events (3,150 tokens, 1,172 ids,
        8.8 bits vs 236 ids for speech), and the vocoder renders them from native mel (sigh 0.822 -> 0.793, gasp 0.516 ->
        0.394, speech control 0.009). What destroys them is token -> mel: presence 0.18 -> 0.06 round trip. T3's tag row
