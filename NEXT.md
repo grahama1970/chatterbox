@@ -9848,7 +9848,12 @@ t
          The earlier "no verdict artifact" reading was wrong - it was looking for a per-file VERDICT block, and the reply
          was finding-level. Both FAILs have since been repaired: IS-01 `8222f96e`, TXN-01 (A+C) `a3bda9ea` with a
          decisive case in tests/test_a39_repairs.py. What remains is a REISSUE at the new bytes, not a wait.
-       pass 19 `b1ad7fa081324d5a…` - still NO verdict artifact anywhere under outputs/reviews; with surf.
+       pass 19 `b1ad7fa081324d5a…` - still NO verdict artifact, and NOT because surf is sitting on it: the attempt was
+         REFUSED AT EGRESS by secret-guard (`reasons:["cred-name"]`, count 1, answer files 0 bytes) because the packet
+         contains one credential-shaped ASSIGNMENT - `_COMPLEX_TOKEN =` in scripts/speak.py (a compiled phrase regex, a
+         false positive of the heuristic). Per item 275/277 this waits on Graham's CONTENT decision (rename at source and
+         break callers? exclude the file? split the packet?), never on a reworded packet: a guard refusal is not a verdict
+         and must not be routed around.
      B4 - CLOSED AND LEDGERED (was the long-open hole): pass 10 packet `cb-B4-pass10.txt` b00d3176… reviewed PASS on all
        four files, intaked, ledger rows bound: speak_core da6699f8 / arc_chart aee16751 / test_core_contract 4c181fb1 /
        test_prove4 cd61f6e3; landing manifest 43,039 B sha `1caa5b95…`. Item 256 closed; item 300 (the baseline bug that
@@ -9869,7 +9874,8 @@ t
        SHIPPING: tag-as-cue + real clip spliced into a 150 ms level-matched gap - `scripts/sfx_inline.py` `b37cafb5`,
          receipt bound to the written PCM16 samples; 1 ms splice, 0.99 s TTS for 2.97 s of speech. 70 ear-confirmed clips.
      OPEN, EACH WITH A NAMED OWNER - this is the whole list:
-       133  surf: the pass-19 verdict artifact (pass 41 is resolved above).
+       133/275  Graham: the pass-19 CONTENT decision (secret-guard refusal on `_COMPLEX_TOKEN`); pass 41 is resolved
+            above, so this is the only packet still without a verdict.
        149  Graham: pacing-only vs audible for an inline tag (measured p = 0.0043, 0.32 s median delta).
        165  the /voices mount does not exist, so a "graham" reference still cannot resolve.
        193  researcher: native S3 token path collaboration.
