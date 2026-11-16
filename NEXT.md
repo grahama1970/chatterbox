@@ -9989,7 +9989,7 @@ t
      With that, the dead-voice cleanup is complete in three files: `speak_core.py` landed (`04c2a2d4`),
        `sfx_demo.py` landed (`3ae55621`), and `spyke_render.py` prepared and waiting on the packet.
 
-270. [~] THE ASK TO SURF TIMED OUT, AND I OBTAINED A BOUND REVIEW ON A TRANSPORT THAT DOES NOT DEPEND ON IT -
+270. [x] THE ASK TO SURF TIMED OUT, AND I OBTAINED A BOUND REVIEW ON A TRANSPORT THAT DOES NOT DEPEND ON IT -
      recorded as REPORTED, not as the external gate.
      THE ASK (item 268): sent 19:33Z, `intercom ask`. Result: **no reply within 10 minutes**; delivery state
        `injected`. Not a cancellation, not a refusal - simply unanswered. Surf's host is alive (log 14:46:55) but
@@ -10021,6 +10021,23 @@ t
        finding - so TXN-01 stays OPEN and is now better specified. It does not get "fixed" by a document.
      The external verdict for pass 41 and pass 19 is still outstanding on surf (or on Graham choosing a
        different reviewer lane).
+        CLOSED 2026-11-16: SUPERSEDED by a provider-metered, first-class intake of the SAME packet, and the finding it
+          raised is repaired. Verified against the artifacts, not recalled:
+            local, caller-computed (this item):    SP-03 PASS, IS-01 PASS, TXN-01 FAIL  - 2,737 B answer, sha 85f10c7c…
+            metered, researcher/ops-magpie:        SP-03 PASS, IS-01 FAIL, TXN-01 FAIL  - receipt ops-magpie-aabaeea80245,
+              served deepseek/deepseek-v4-pro, intake outputs/reviews/a7-pass41-researcher-20261114/intake.json
+          BOTH AGREE ON TXN-01, and it is the finding that mattered: after the final `_assert_content_in_dir` returns clean, a
+            same-UID writer replaced `out_path`; nothing re-read it, `_assert_dir_unchanged` compared only the parent
+            directory's identity, and the function returned `ok=True` with an `audio_sha256` that no longer matched the WAV.
+            Repaired as TXN-01 A+C (`a3bda9ea`): the receipt is verified LAST from the bytes that were actually returned, and
+            a receipt changed between verification and return is REFUSED - retained case "TXN-01 A+C ... is REFUSED"
+            plus a probe-reached-the-final-read check so the case cannot pass vacuously. Mutation-proven (guard disabled:
+            27/29; enabled: 29/29).
+          THEY DISAGREE ON IS-01, and that is the useful lesson: the local caller-hash review said PASS, the metered one said
+            FAIL, and IS-01 had a real defect (repaired `8222f96e`). So a locally-run review with caller-computed hashes can
+            MISS a finding - it stays evidence, never the gate, exactly as this item argued.
+          The binding gap named here (a prompt asking a model to quote a hash "the packet header states", which a file cannot
+            contain about itself) is why identity is now stated in the ENVELOPE and verified out-of-band.
 
 271. [x] TXN-01 CLAIM CONFIRMED AGAINST MY OWN BYTES - the local review's ordering is real, and I checked it by
      reading the code rather than accepting the answer.
