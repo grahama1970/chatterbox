@@ -9480,7 +9480,7 @@ t
        fabricate for a real person's voice.
      Net: the confusing defect is gone; the "graham" voice still cannot be used.
 
-256. [~] PACKET B4 PASS 7 (item 179): NO VERDICT WAS EVER CAPTURED, and I now hold the evidence.
+256. [x] PACKET B4 PASS 7 (item 179): NO VERDICT WAS EVER CAPTURED, and I now hold the evidence.
      The packet existed ONLY in `/tmp`: copied to `outputs/packets/cb-B4-pass7.txt`, sha256
        `ea9f2b71bc8194abd28ba4daa0c846c3`, 107,759 B, identical before/after the copy. Its binding still
        matches the tree exactly: **3 bound, 0 drift**.
@@ -9493,6 +9493,19 @@ t
        submission". The only B verdict on record is `b4-pass6-FAIL-20261113.md`.
      ACTION: B4 pass 7 needs an actual answer capture. I am not re-submitting an identical packet into a
        round whose transport already lost one answer; that is surf's transport to repair and re-run.
+        CLOSED 2026-11-16: THE VERDICT IS CAPTURED **AND LEDGERED**. Earlier entries in this item said the intake was
+          refused on stale origin baselines; that is fixed and the rows are now hash-bound PASS entries.
+          packet  outputs/packets/cb-B4-pass10.txt  133,357 B  sha256 b00d3176…  (4 files bound, 0 stale)
+          review  outputs/reviews/b4-pass10-deepseek-20261115.md  4,070 B  (deepseek/deepseek-v4-pro; author provider zai)
+                  VERDICT scripts/speak_core.py da6699f8…: PASS / scripts/arc_chart.py aee16751…: PASS /
+                  scripts/test_core_contract.py 4c181fb1…: PASS / tests/test_prove4.py cd61f6e3…: PASS /
+                  PACKET VERDICT: PASS
+          ledger  verdict-intake --group B4 --apply: four PASS rows applied, manifest written 43,039 B
+                  sha256 1caa5b95c2fb381dd1ca05ce9398f2f1d4e3944fe5b45d3b8d8e2c2ba1a794d7  (item 300's fix)
+          Also landed with this: 83a73e5d - arc_chart refuses a destination that exists and is not a regular file
+            (B4-F2 reproduced: a directory holding keep.txt was renamed to .<uuid>.prev and a file published at its
+            name; guard added, retained case plus a regular-file control, mutation-proved by stripping the guard).
+
 
 257. [x] NEW-TAG PREPARATION LANDED `a563b5b4e8` - the mechanical half of the retrain requirement, and the
      review earned it.
@@ -10803,7 +10816,20 @@ t
           CFM steps do not recover them (0.132/0.093/0.093). Extending a text token cannot fix a decoder that has never
           been trained on event audio. See `references/extending-the-tokenizer.md` §4a.
 
-300. [ ] REFRESH THE B4 ORIGIN_MAIN BASELINES SO THE CAPTURED PASS VERDICTS CAN BE LEDGERED
+300. [x] REFRESH THE B4 ORIGIN_MAIN BASELINES SO THE CAPTURED PASS VERDICTS CAN BE LEDGERED
+        CLOSED 2026-11-16: root cause fixed at the tool. record-packet.py copied origin_main_sha256 from the manifest,
+          so any file whose origin moved after its row was created failed landing-check forever ("ORIGIN MOVED"),
+          and a file absent from origin at row creation stayed null ("ALREADY ON MAIN ... (was absent)") even once it
+          landed. It now re-derives the baseline at record time with
+            git show origin/main:<path>  ->  sha256, and an explicit None when the path is absent.
+          Proof it works: recorded cb-B4-pass10 at today's bytes, then intaked a real reviewer PASS report and the four
+          rows applied (manifest 43,039 B sha256 1caa5b95…). Before the fix the same two commands refused with three
+          ORIGIN MOVED lines and one ALREADY ON MAIN.
+          Not fixed and still red: the board sweep run during diagnosis reports 15 failing guards, including
+            submission-freeze.py rc=1, harness-module-identities.py IDENTITIES_DRIFT, and
+            verdict-watch-attribution-guard.py ATTRIBUTION_BROKEN (two cases: a genuine submission reports
+            SUBMITTED_NO_ANSWER, and "with both present the genuine dir wins"). Separate work, not part of this fix.
+
         Evidence: after recording cb-B4-pass10 and intaking reviews/b4-pass10-deepseek-20261115.md, landing-check exits 1
           with "ORIGIN MOVED skills/chatterbox-speak/scripts/speak_core.py", the same for arc_chart.py and
           test_core_contract.py, and "ALREADY ON MAIN .../tests/test_prove4.py (was absent)". record-packet copies
