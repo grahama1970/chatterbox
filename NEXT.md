@@ -10236,7 +10236,7 @@ t
        `cred-name` on `_COMPLEX_TOKEN`, 0-byte answer (`b1ad7fa0…`, item 275); B4 pass 7 retired unsubmitted
        (`ea9f2b71…`, this item). **None of the three is awaiting a verdict any more.**
 
-302. [~] TRAINING STARTS AT THE FLOW, BECAUSE THAT IS WHERE THE EVENT IS LOST -
+302. [x] TRAINING STARTS AT THE FLOW, BECAUSE THAT IS WHERE THE EVENT IS LOST -
      WHY THE FLOW AND NOT T3: measured this session - the speech tokenizer carries the events (3,150 tokens, 1,172 ids,
        8.8 bits vs 236 ids for speech), and the vocoder renders them from native mel (sigh 0.822 -> 0.793, gasp 0.516 ->
        0.394, speech control 0.009). What destroys them is token -> mel: presence 0.18 -> 0.06 round trip. T3's tag row
@@ -10979,6 +10979,34 @@ t
           `git show origin/main:<path>` at record time, and treat "absent on origin" as an explicit null rather than a
           mismatch; then re-run the B4 intake so the four PASS rows become hash-bound ledger entries instead of a captured
           report sitting beside the manifest.
+        CLOSED 2026-11-16: the flow DOES learn an event - and the turbo checkpoint has no loss to learn with.
+          (1) LOAD / ARCHITECTURE - the finding that changes the plan. The upstream fine-tuner freezes exactly what we
+              want frozen (mel2wav, CAMPPlus speaker encoder, S3 tokenizer) and trains only the flow: **1,121 named
+              tensors, 112,549,360 params**. BUT it loads via `ChatterboxTTS.from_local`, i.e. the NON-TURBO checkpoint.
+              On OUR turbo snapshot the flow's decoder has `meanflow=True` and this codebase has **no training loss for
+              it**: `BASECFM.compute_loss` (matcha/flow_matching.py:84) calls the estimator without `r`, and
+              `decoder.py:265` then raises `'NoneType' object has no attribute 'ndim'`. Meanflow is handled only in
+              `inference` (flow_matching.py:136 passes `r=r_in`). So "train the flow" is a REAL option only for the
+              non-turbo model, or after writing a meanflow loss. Our live service renders with turbo.
+          (2) LOSS DECREASES - yes, targeted, and measured against noise. Non-turbo flow, 60 steps x 0.173 s on the
+              `sigh-shaky.wav` clip alone, fixed-seed eval (8 draws per measurement, because compute_loss samples a
+              random timestep):
+                train loss  1.40894 (first 5) -> 0.46840 (last 5)
+                eval delta on the trained sigh  **-0.71386**  (exceeds the before/after noise band)
+                eval delta on gasp +0.47899, chuckle +0.33458, cough +0.76564  <- ALL ROSE
+              So the flow CAN be taught a specific event, and one clip teaches it by damaging the others - textbook
+              overfit on n=1, exactly the "the ceiling is the DATA" lesson from v8. Peak 5,111 MiB (vs the 18,136 MiB
+              T3 run), safely inside the measured window.
+          (3) HELD-OUT EVENT PRESENCE - NOT RUN, and now correctly sequenced AFTER (2)'s data problem: with n=1 the
+              other clips regress, so a presence test would measure forgetting, not learning.
+          MY OWN ERRORS THIS TURN, disclosed because they nearly produced a false negative: my first "loss" comparison
+              round-robined four different clips, so "0.60657 -> 0.76037" was meaningless; and four probe attempts died
+              on my own mistakes (a bespoke loss call passing cond=None; reading `conds.gen` as an object when it is a
+              dict; and reusing a conditioning embedding that still carried a graph from `prepare_conditionals`, which
+              is what "backward through the graph a second time" actually was). The fix in each case was to call the
+              model's OWN `flow.compute_loss(batch, device)` and detach conditioning once.
+          ARTIFACTS: outputs/token-train/{flow-probe.log, flow-probe-nonturbo.json, flow-train-probe.json} + scripts.
+          NEXT DEPENDS ON ONE DECISION: serve non-turbo with a trained flow, or write the meanflow loss for turbo.
 
 301. [ ] TWO RETAINED ASR-01 CASES ARE RED AT ORIGIN BYTES
         Evidence: tests/test_a39_repairs.py reports 39/41. The failures are
@@ -10988,3 +11016,21 @@ t
         Work: reproduce an enlarged sealed descriptor on each surface; add the refusal where it is missing, and check
           whether the sfx_verify case asserts the opposite of what it means (a refusal reported as a failure). Retained,
           mutation-proved, landed one at a time. Do not touch them as part of another repair.
+
+303. [~] THE FLOW LEARNS, SO THE BLOCKER IS NOW DATA VOLUME AND THE TURBO LOSS -
+     WHAT THIS ITEM MUST SETTLE (one question, then the decision): does training on MANY event clips learn the event
+       WITHOUT destroying the others, and does a held-out render then contain it? Item 302 proved the mechanism works
+       and that n=1 damages neighbours (+0.48 gasp, +0.33 chuckle, +0.77 cough while the trained sigh fell -0.71).
+     DECISIVE TEST: 4-fold. Train on all event clips except one held out; report (a) eval delta across ALL clips with
+       fixed-seed eval, (b) whether the held-out clip's event is present in a decoded render at all (the same presence
+       metric that scored 0.06 for token round-trip vs 0.793 from native mel). Corpus candidates already identified:
+       nonverbalspeech/nonverbalspeech38k (38k clips, CC-BY-NC-4.0 - research only) and YuxinXie/VocalSound.
+     STOP CONDITION: if every clip's eval delta stays within its own noise band, the flow is not absorbing event
+       identity in a way we can steer - a design finding, report and stop rather than buying more compute.
+     THE TURBO QUESTION, to be settled WITH the corpus result, not before: (a) serve non-turbo + trained flow, (b) write
+       the meanflow loss for turbo (decoder.py:265 needs `r`; flow_matching.py:136 shows the intended semantics), or
+       (c) leave turbo untouched and keep the splice route for events. (a) changes what the live service runs; (b) is
+       bespoke research work; (c) is what ships today.
+     WINDOW: measured and ample - 5,111 MiB peak for the flow vs 24,564 MiB total, 0.173 s/step, so a 4-fold run over
+       the local bank is minutes. Still: voice service stopped, one process, no fan-out, and the container capped -
+       the kernel has OOM-killed arangod on this box before (Nov 10) and that must not be repeated.
