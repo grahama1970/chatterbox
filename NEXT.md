@@ -10085,7 +10085,7 @@ t
        bound 0 drift, both **NO verdict artifact**; surf's log is fresh (14:52) but its newest artifact is
        12:27, so the submission order sent at 14:52 is delivered and not yet actioned.
 
-273. [~] BOTH REVIEW LANES NOW CARRY AN ORDER, AND THE TRAINING WINDOW IS QUANTIFIED (item 259 no longer says
+273. [x] BOTH REVIEW LANES NOW CARRY AN ORDER, AND THE TRAINING WINDOW IS QUANTIFIED (item 259 no longer says
      "needs GPU", it says how much).
      LANE STATE, measured this turn:
        surf `01a07bbf` - CONNECTED and IDLE (verified via intercom list, 32% ctx). Work order sent twice:
@@ -10108,6 +10108,25 @@ t
        3.77 GiB total. The 0.00 GiB figure was wrong and is superseded by this line.
      NOTHING IS CHECKED OFF ON THE STRENGTH OF A REQUEST: item 133 needs a response artifact, and neither lane
        has produced one.
+        CLOSED 2026-11-16. Two things this item asked for, both now measured rather than asserted:
+          TRAINING WINDOW, measured on the REAL trainer (not arithmetic): 40 optimizer updates in 14 s = **0.35 s per
+            update**; peak GPU **18,136 MiB of 24,564** while training, leaving **6,428 MiB** spare. Baseline before the
+            run was 11,929 MiB, i.e. the trainer adds ~6.2 GiB on top of the loaded models. So the window is real but only
+            exists when the live voice service is not rendering - the earlier "343 MiB free" reading in this item was a
+            peer render in flight, not a permanent condition. Artifacts: outputs/token-train/window-train.log + sampler.
+          Two attempts at a bespoke measurement harness failed first (T3 asserts the sequence is wrapped in BOT/EOT; and
+            reusing `m.conds.t3` after a backward raises "Trying to backward through the graph a second time"), which is
+            itself the cost evidence for this track: bespoke plumbing before any result.
+          REVIEW LANES: pass 41 got its FIRST-CLASS metered verdict (item 274) and pass 19's order is moot - the packet
+            is unsendable at any byte state (item 268). Neither close rests on a request being sent.
+        ALSO LANDED HERE (item 275's sibling): the SFX-inline production route is hardened and shipped - `2502aacc`.
+          All 42 tags discoverable (the old listing hid 10 single-word tags incl. [gasp], [cry], [chuckle]); exit codes now
+          distinguish 0 ok / 2 refused / 3 service unavailable / 4 service answered with an error; PEP 723 deps make it run
+          standalone; 8 ms edge fades remove the concat click without softening an attack; the receipt names the fields that
+          actually prove what landed (source_sha256, gain_vs_source, inserted_sample_range, inserted_pcm16_sha256).
+          Five review rounds on deepseek found NINE real defects (F1-F9) that my own reading missed, all fixed before PASS;
+          receipt at outputs/reviews/inline-hardening-20261116/reviewer-receipt.json. 22/22 retained checks, tests/run.sh
+          and sanity.sh green.
 
 274. [x] PASS-41 VERDICT INTACKED FIRST-CLASS - FAIL on two findings, and one of them is a defect I shipped.
      THE VERDICT (researcher/ops-magpie, receipt `ops-magpie-aabaeea80245`):
@@ -10194,6 +10213,26 @@ t
      PACKET LEDGER, all three, this turn: pass 41 intaked FAIL (`63e01ca4…`); pass 19 REFUSED at egress,
        `cred-name` on `_COMPLEX_TOKEN`, 0-byte answer (`b1ad7fa0…`, item 275); B4 pass 7 retired unsubmitted
        (`ea9f2b71…`, this item). **None of the three is awaiting a verdict any more.**
+
+276. [~] TRAINING STARTS AT THE FLOW, BECAUSE THAT IS WHERE THE EVENT IS LOST -
+     WHY THE FLOW AND NOT T3: measured this session - the speech tokenizer carries the events (3,150 tokens, 1,172 ids,
+       8.8 bits vs 236 ids for speech), and the vocoder renders them from native mel (sigh 0.822 -> 0.793, gasp 0.516 ->
+       0.394, speech control 0.009). What destroys them is token -> mel: presence 0.18 -> 0.06 round trip. T3's tag row
+       was the WRONG lever and is already known dead (0/27; text-token augmentation DIVERGED 1.61 -> 5.33). So the
+       trainable stage is S3Gen's flow, and an upstream script for exactly that exists and is already cloned:
+       `stlohrey/chatterbox-finetuning` -> `src/finetune_s3gen.py` ("the flow part will be trained, HiFiGAN frozen").
+     FIRST DECISIVE TEST, before writing any trainer of our own: run that script against OUR checkpoint (t3_turbo_v1 +
+       s3gen + s3gen_meanflow) on a tiny slice of the event corpus, and answer three questions with numbers:
+         (1) does it LOAD our checkpoint and report the flow's trainable parameter set (names + count, not a claim)?
+         (2) does the flow loss DECREASE on event tokens within a bounded run (~10 min, ~500 updates at the measured
+             0.35 s/update = ~3 min of compute, well inside the 6.4 GiB headroom)?
+         (3) does a held-out render then contain the event at all (the same presence metric that scored 0.06)?
+     WHAT WOULD MAKE ME STOP: (1) fails = wrong architecture assumption, report and stop; (2) flat = the data, not the
+       optimiser (the v8 lesson) and the same-species question below becomes the blocker; (3) absent at (2) pass = the
+       conditioning path cannot carry an event token, which is a design finding worth more than another run.
+     OPEN DATA QUESTION THAT GATES A REAL RUN (not this first test): our event clips are donor voices. Training them
+       against a persona reference teaches the donor's acoustics. Needs an owner decision: model-generated events in the
+       persona's own voice (six exist) or real recordings.
 
 277. [x] PASS 19 IS THE ONE LIVE PACKET AND IT IS BLOCKED ON A CONTENT DECISION, NOT ON SURF - asked, not assumed.
      MEASURED THIS TURN: `cb-A7-pass19.txt` 101,790 B sha `b1ad7fa0…`, **5/5 bound, 0 drift**; the attempt dir
