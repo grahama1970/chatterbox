@@ -9934,7 +9934,7 @@ t
      VERDICT STATE at the same instant: pass 19 `b1ad7fa0…` 5/5 bound 0 drift, pass 41 `63e01ca4…` 11/11 bound
        0 drift, both **NO verdict artifact**. Item 133 stays open; nothing arrived to intake.
 
-268. [~] "WAITING ON SURF" IS NOW MEASURABLY A STALLED LANE, NOT A PENDING SUBMISSION - and that is a different
+268. [x] "WAITING ON SURF" IS NOW MEASURABLY A STALLED LANE, NOT A PENDING SUBMISSION - and that is a different
      fact from the one the previous records state.
      MEASURED THIS TURN (2026-11-14T19:32Z):
        surf host is ALIVE: `/tmp/surf-host.log` mtime 14:32:55 local, last entry `CLI client disconnected` at
@@ -9951,6 +9951,28 @@ t
      WHAT I AM DOING: one direct ask to surf, batching the two decisions it owns - submit pass 41 and pass 19,
        or say explicitly that they are abandoned so I can record withdrawal honestly. Then this item stays open
        on evidence rather than on hope.
+        CLOSED 2026-11-16 with a stronger finding than "stalled lane": THE PASS-19 PACKET WAS NEVER SENDABLE AT ALL.
+          Measured with the secret-guard's OWN matcher (detector.mjs CRED_NAME_RE, run over each bound file):
+            scripts/speak.py                      1 hit   ["key=lambda"]
+            tests/test_t1_pass10_repairs.py       5 hits  ["_key = lambda:", "key\": _key(),"]
+            scripts/review_store.py               1 hit   ["key=lambda"]
+            tests/test_t1_batch_proof.py          1 hit   ["_key = lambda:"]
+            scripts/narrator_sfx_batch.py         4 hits  ["DEFAULT_KEY_FILE = Path.home()", "key_file = Path(os.environ.get(", "key\": _key(),"]
+          A rebuild at today's bytes (cb-A7-pass19-v3.txt, 103,430 B sha d18aea3d…) still trips 12 times, and dropping
+            narrator_sfx_batch.py (cb-A7-pass19-v3-split.txt, 80,231 B sha abab87…) still trips 8 - so there is no packet
+            containing these files that can leave. Surf could not have submitted pass 19 at any point; the lane was never
+            the blocker, and neither was the `_COMPLEX_TOKEN` rename (already landed long ago: the trigger set moved on to
+            ordinary Python idioms).
+          WHY A RENAME CANNOT FIX IT: `key=lambda` is a stdlib keyword argument (sorted/min/max) and `"key": _key()` is a
+            dict key - neither can be renamed without changing behaviour. Only `_key = lambda:`, `DEFAULT_KEY_FILE` and
+            `key_file` are ours. So the packet cannot be cleaned by editing identifiers alone.
+          What DID work on a comparable packet: pass 41 got an intaked verdict through the researcher/ops-magpie API lane
+            (receipt ops-magpie-aabaeea80245) while the browser lane produced nothing for seven hours - so the API lane is
+            the working transport, and it is what B4 pass 10 used too.
+          DECISION FOR GRAHAM (now quantified, tracked with item 275): (a) let review packets skip fenced code blocks in
+            the egress scan - a guard change, owner-only; (b) leave these four files UNREVIEWED and say so; (c) rename only
+            the three identifiers we own and accept that `key=lambda` / `"key":` still block, which means (b) anyway.
+            No guard was weakened and no packet was reworded to slip past a classifier.
 
 269. [x] LAST DEAD-VOICE PATCH PREPARED, NOT APPLIED - because applying it now would void the review in flight.
      `spyke_render.py` is the only file still mapping `"graham"` to `/work/voices/graham_owner.wav`, a path that
