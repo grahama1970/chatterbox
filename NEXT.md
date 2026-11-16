@@ -9418,7 +9418,7 @@ t
        tags, next free id 50276, so adding a tag means resizing the embedding and training the new row.
        Aliases are a shippable substitute, not the requested capability.
 
-254. [~] RETRAIN REQUIREMENT (owner: "crucial that we can add new tags to the tokenizer as we need them and
+254. [x] RETRAIN REQUIREMENT (owner: "crucial that we can add new tags to the tokenizer as we need them and
      retrain") - FIRST FEASIBILITY RUNG MEASURED, MECHANICAL HALF PROVEN, TRAINING NOT DONE.
      Run as an isolated probe INSIDE the container, writing only to the container's `/tmp`; the live HF cache
        was never touched. Measured, not recalled:
@@ -9442,6 +9442,31 @@ t
        cache.
      THE PROBE COPY (1.9 GB) WAS DELETED from the container `/tmp` after the numbers were recorded.
 
+        CLOSED 2026-11-15 with the capability built, gated and landed. The requirement is met in ONE form and impossible in
+          the other, and both halves are now measured rather than argued:
+          MET - "add new tags to the tokenizer as we need them and retrain". Real ids from the base vocabulary
+            (50276->50307 across the 31-tag run), trained input/output rows warm-started from each tag's own sub-token rows,
+            frozen rows snapshotted and asserted bit-identical, adapter carries the rows AND the extended tokenizer, loader
+            validates the saved tokenizer and fails closed. Retained contract tests/test_new_token_contract.py 14/14 (each
+            guard mutation-proved individually) and tests/test_token_asset_gate.py 26/26, BOTH NOW REGISTERED in
+            tests/run.sh so the standing harness runs them (tests/run.sh rc=0, "PUBLISH_BY_NAME: clean").
+            Runbook: references/extending-the-tokenizer.md - executable container command (one line; backslash continuations
+            inside -lc are literal), the invariants with the case that proves each, the measured dead ends, the verdict chain
+            contract -> codec gate -> detector -> ear. Reviewed deepseek/deepseek-v4-pro: REJECT x2 (7 findings, four HIGH)
+            then APPROVE. Landed 0416aad8.
+          IMPOSSIBLE - a trained tag GENERATING the event. Measured, in order: renders 0/27 at detector p>=0.5; codec
+            encode->decode drops presence 0.181->0.061 (0/18); the codec is NOT short of vocabulary (events use 1,172 unique
+            ids at 8.8 bits vs speech 236/6.98); more decoder refinement does not recover them (CFM 2/10/30 -> 0.132/0.093/
+            0.093). The decoder's inverse map is defined on speech-like sequences, so the training target is lossy before
+            training starts. No amount of steps, LR or augmentation changes that - all three were tried and measured worse.
+          SHIPPED INSTEAD - the cue route, landed b37cafb5: scripts/sfx_inline.py splits a line at each [tag], renders the
+            speech segments in the same voice, and inserts the ear-confirmed clip into a 150 ms level-matched gap. Receipt
+            written last and bound to the written artifact: source clip sha256, applied gain, exact inserted_sample_range,
+            and a hash of the stored PCM16 samples re-read from the file (independent read-back verified True). Reviewed
+            deepseek: REJECT (4 findings incl. level target diluted by silence, voice-blind clip choice, unverifiable hash)
+            then APPROVE. Demo: outputs/sfx-inline/demo-alex-sigh-weary.wav, sigh lands at 2.19 s for 1.52 s.
+          NOT CLAIMED: that chatterbox synthesises sighs. It cannot, for the reason above, and no future tokenizer work here
+            will change that without a decoder trained on event audio.
 255. [x] ITEM 165 PART 1 CLOSED BY THE OWNER: Graham ran the flat command and I verified the EFFECT, not the
      report. `/mnt/storage12tb/embry-voice/voices/graham_owner.wav` -> "No such file or directory", and the
      parent `/mnt/storage12tb/embry-voice/voices/` is now empty (`total 0`). The bogus root-owned EMPTY
