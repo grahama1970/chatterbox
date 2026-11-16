@@ -10802,3 +10802,16 @@ t
           1,172 ids at 8.8 bits entropy (plenty of vocabulary) but the decoder renders those sequences as speech, and more
           CFM steps do not recover them (0.132/0.093/0.093). Extending a text token cannot fix a decoder that has never
           been trained on event audio. See `references/extending-the-tokenizer.md` §4a.
+
+300. [ ] REFRESH THE B4 ORIGIN_MAIN BASELINES SO THE CAPTURED PASS VERDICTS CAN BE LEDGERED
+        Evidence: after recording cb-B4-pass10 and intaking reviews/b4-pass10-deepseek-20261115.md, landing-check exits 1
+          with "ORIGIN MOVED skills/chatterbox-speak/scripts/speak_core.py", the same for arc_chart.py and
+          test_core_contract.py, and "ALREADY ON MAIN .../tests/test_prove4.py (was absent)". record-packet copies
+          origin_main_sha256 from the manifest and does not re-derive it from git, so a file whose origin changed after the
+          row was created can never satisfy the checker; --sweep does not refresh it either (sweep itself fails 15 guards:
+          submission-freeze rc=1, harness-module-identities IDENTITIES_DRIFT, verdict-watch-attribution-guard
+          ATTRIBUTION_BROKEN).
+        Work: give record-packet (or a dedicated refresh step) a mode that re-derives origin_main_sha256 from
+          `git show origin/main:<path>` at record time, and treat "absent on origin" as an explicit null rather than a
+          mismatch; then re-run the B4 intake so the four PASS rows become hash-bound ledger entries instead of a captured
+          report sitting beside the manifest.
