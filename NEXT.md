@@ -11137,6 +11137,34 @@ t
           WHAT IS NOW KNOWN PRECISELY: the mechanism tolerates breadth the moment it has any; what it does not yet do is
             generalise the event to a clip it has not seen, at 23 clips and 400 steps. Next step is an owner decision
             (item 305) about whether to buy breadth from the public corpus / ElevenLabs, not another blind run.
+        CLOSED 2026-11-16: BREADTH WAS BOUGHT AND MEASURED - it does NOT fix transfer, and the render barely moves.
+          Owner authorised the cheap measurement; this is it, run exactly as specified (200-400 corpus clips, same
+          protocol as item 303).
+          CORPUS: downloaded `nonverbalspeech/nonverbalspeech38k` shard 0 (473,620,638 B). Its `non_verbal_region`
+            column gives the exact event span, so clips are **event-only cuts** (±60 ms padding) rather than "a clip
+            that contains one". 834 usable clips extracted; the run used 391 (up to 60 per label).
+            Artifacts: /mnt/storage12tb/scratch/nvs38k/{shard0.parquet, extract.py, manifest.json, wavs/}.
+            LICENCE RECORDED WITH THE DATA: **CC-BY-NC-4.0 - research only, NOT shippable.** Every manifest row keeps
+            its shard/row provenance so a licence audit is possible later.
+          RESULT (held out `nvs-sighing-00000.wav`, 390 training clips, non-turbo flow, 1600 steps, 279 s, 5,421 MiB):
+            step  400: held-out delta -0.186  noise 0.826  beats_noise=NO   train mean -0.504  0 regressed beyond noise
+            step  800: held-out delta -0.350  noise 0.826  beats_noise=NO   train mean -0.573  0 regressed beyond noise
+            step 1600: held-out delta -0.254  noise 0.826  beats_noise=NO   train mean -0.570  0 regressed beyond noise
+            per-clip at 1600: 0 of 40 eval clips improved beyond their own noise, 0 regressed beyond it.
+            PRESENCE (the point of the exercise): source clip scores 0.6352 as **Sigh** (its own top label - a valid
+            reference this time, unlike item 303's 0.48). The held-out render: 0.2473 before (top label Gasp 0.3013),
+            0.2539 after (top label Gasp 0.4578). Training moved neither the intended probability nor the top label.
+          SO IT IS NEITHER DATA VOLUME NOR STEP BUDGET at this scale: 391 event-only clips and a 4x step increase left
+            both the loss transfer and the audio where they were. That kills the "just needs more clips" story I was
+            telling, which is why the measurement was worth taking.
+          WHY THIS RESULT IS PROBABLY AN ARTEFACT OF MY OWN DESIGN, and the next test - stated before building it:
+            every training pair is a corpus speaker's mel conditioned on ONE fixed embedding (embry's reference), so the
+            flow sees a voice/target mismatch on every single sample. A flow that has to predict speaker-specific mel
+            from tokens should be conditioned on the SAME speaker it is predicting. Test: compute a per-clip speaker
+            embedding with the model's own voice encoder (voiced events carry identity, per the 2026-11-16 check) and
+            condition each pair on its own embedding. If the held-out delta then beats its noise band, the earlier null
+            result was conditioning, not capability. Cheap: same corpus, same curve, one change.
+          WHAT SHIPS IS UNCHANGED: splice (2502aacc). Nothing in this result argues for replacing it.
 
 304. [ ] PUBLISH-BY-NAME GATE IS LINE-ORIENTED, SO CALL-SHAPE EVADES IT
        Reviewer finding on 2026-11-16, kept as work rather than a code comment: tests/check_publish_by_name.py matches a
@@ -11155,7 +11183,7 @@ t
          FAILS against the current line-oriented checker before the fix lands. Mutation-prove it: break a fix, watch the
          case go red.
 
-305. [ ] DECIDE WHETHER TO BUY BREADTH FOR FLOW TRAINING, AND AT WHAT LICENCE
+305. [x] DECIDE WHETHER TO BUY BREADTH FOR FLOW TRAINING, AND AT WHAT LICENCE
        Where this stands: item 303 showed the flow tolerates 23 clips with no neighbour damage but does not transfer the
          event to an unseen clip (held-out delta -0.047, noise 0.763). More of the same tiny bank will not answer that;
          breadth will, or nothing will.
@@ -11170,3 +11198,20 @@ t
        The decision is an owner call because (a) constrains what a shipped model may be, and (b) spends money.
        One measurement would make the decision cheap: 200-400 clips from (a), same leave-one-out protocol as 303, and
          report whether the held-out delta finally exceeds its noise band. If it does not, (c) is the answer.
+
+306. [ ] CONDITION EACH TRAINING PAIR ON ITS OWN SPEAKER, THEN RE-RUN THE CURVE
+       The measurement that decides it: with per-clip speaker conditioning instead of one fixed reference embedding,
+         does the held-out delta finally exceed its noise band, and does the rendered sigh probability move off 0.25?
+       Evidence this is the right next variable, from item 305: the flow improved its TRAINING pairs (mean -0.504 to
+         -0.570) while never transferring to an unseen clip, and the render's top label stayed "Gasp" throughout. Every
+         training pair paired a corpus speaker's mel with embry's embedding, so the conditioning was wrong on 390 of 390
+         samples. That is a confound I introduced, not a property of the model.
+       How: for each clip, embed its own audio with the model's voice encoder (s3.speaker_encoder) and pass that as the
+         conditioning; keep everything else identical to flow_corpus_curve.py so the comparison is one variable.
+         Voiced events (sigh/laugh/cry) should work; unvoiced (gasp/cough/sniff) may not carry identity, so report per
+         label rather than pooling - if only unvoiced clips stay flat, that is a finding about what the encoder can see.
+       Stop condition: if per-clip conditioning leaves the held-out delta inside its noise band too, then the flow is not
+         the lever at this data scale and item 305's option (c) - keep splice, treat native events as unproven - is the
+         answer, and no further training runs are justified without a new idea.
+       Guardrails: voice service stopped, one process, container capped (the box has OOM-killed arangod before), and
+         every run reports peak MiB next to its numbers.
