@@ -11421,3 +11421,34 @@ t
          (b) a full F5-TTS-style fine-tune with vocabulary expansion over ~5 epochs on NVS-38K - a different model, a real
              research project, not a parameter change on chatterbox's frozen flow.
          Anything short of those two is a variation of the four nulls above.
+
+311. [~] ALTERNATIVE ENGINES WITH NATIVE NONVERBAL TAGS: DIA LOADED AND RUNNING, COSYVOICE2 RE-EVALUATED
+     Owner asked for an alternative instead of giving up. Brave found two candidates that both CLONE A VOICE and advertise
+     native nonverbal tags, and one of them corrects an earlier mistake of ours.
+     FINDING 1 - OUR EARLIER COSYVOICE2 VERDICT WAS WRONG. Item 299's engine matrix recorded "CosyVoice2: NO inline tags,
+       natural-language instruct2 only". The CosyVoice documentation and Hugging Face finetune cards show otherwise: tags
+       such as `[laughter]`, `[breath]` go INLINE in the text of `inference_cross_lingual` / zero-shot, alongside zero-shot
+       voice cloning from a ~3 s reference. Our eval only ever exercised `inference_instruct2` (natural language), never the
+       inline-tag path. So CosyVoice2 is a LIVE candidate, not a rejected one - 0.5B, clones a voice, and has the tags.
+     FINDING 2 - DIA-1.6B ADVERTISES 19 NONVERBAL TAGS AND VOICE CLONING: (laughs), (clears throat), (sighs), (gasps),
+       (coughs), (groans), (sniffs), (chuckle), (screams), (inhales), (exhales), (sneezes), (humming), (applause)... The
+       model card says it produces "nonverbal communications like laughter, coughing, clearing throat", with voice cloning
+       from an audio prompt. 1.6B, open weights.
+     WHAT I GOT RUNNING (measured, not claimed): Dia-1.6B downloaded (model 1.6B params, 19.33 GB of repo assets) and it
+       LOADS AND GENERATES inside our container on stock transformers - 3,185 MiB peak VRAM, so it fits the box easily
+       alongside nothing else. "generate()" returns DAC audio TOKENS (shape 1 x 1201 x 9), not a waveform.
+     WHERE IT STANDS, HONESTLY: my hand-rolled decode (special-token filter + transpose to (batch, codebooks, frames))
+       produces a 13.57 s waveform that scores Speech 0.019 and no event - i.e. NOISE, not speech. So Dia's event question
+       is UNVERIFIED, not answered: a probe-plumbing defect on my side, and the fix is known and narrow - call the
+       `nari-labs/dia` package's own `Dia.from_pretrained(...).generate(text)` which returns audio directly, instead of
+       reassembling the decoder by hand.
+     NEXT ACTION, in this order (cheapest and most likely to move):
+       1. Dia via the official package (pip install from the repo, one call, audio back). Score with the same AudioSet
+          presence metric that rejected chatterbox four times, so the comparison is apples-to-apples.
+       2. CosyVoice2 inline-tag path: clone one persona reference, put `[laughter]` and `[breath]` INLINE, score it. This is
+          the candidate our own eval mis-measured, so it deserves the test more than Dia does.
+       3. Only if either clears presence > 0.1 with intact speech does a second engine lane become real; otherwise splice
+          stays the answer and this item closes with two measured negatives.
+     WHY THIS IS NOT A REPEAT OF THE CHATTERBOX WORK: both candidates carry the tags in their TRAINING DATA and vocabulary
+       from the start (Dia: 19 tags, dialogue-trained; CosyVoice2: 1,500 h of instructed data including `[laughter]`), which
+       is exactly what chatterbox lacks - our four nulls were attempts to graft that on afterwards.
