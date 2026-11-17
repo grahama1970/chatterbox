@@ -11384,3 +11384,40 @@ t
          (`ops-magpie-a0615cb68726`) and PACKET FAIL (`ops-magpie-6b8029eb3ff0`) on two runs over a 315 KB packet. A single
          reviewer pass is not a gate at that size. From now on a lone PASS is treated as no evidence, and a FAIL is confirmed
          by READING THE CODE - which is how F1 was settled. Recorded so a future PASS is not trusted on one run.
+
+310. [x] NATIVE EVENTS IN CHATTERBOX: CLOSED ON FOUR INDEPENDENT MEASUREMENTS, WITH WHAT WOULD BE NEEDED TO REOPEN
+       Owner asked for an unblock or a decision. The search produced a real finding and then a real no.
+       WHAT THE WEB EVIDENCE SAYS (Brave, 2026-11-16):
+         - Upstream chatterbox documents the tags as a FEATURE: `EVENT_TAGS = ["[clear throat]","[sigh]","[shush]","[cough]",
+           "[groan]","[sniff]","[gasp]","[chuckle]","[laugh]"]`, and the Nano/Turbo model cards say "Paralinguistic tags are
+           now native to both Nano and Turbo models". So this is not something we had to invent.
+         - But upstream's own issue #186 reports exactly our symptom: "the tokenizer includes emotional tokens like
+           [laughter] and [sigh], but the model doesn't seem to generate or follow them".
+         - The published recipes that DO work are different engines, not chatterbox: NonVerbalSpeech-38K fine-tunes
+           **F5-TTS with an expanded vocabulary** ([breath], [sigh], ...) for **5 epochs**; ChatTTS has real token-level
+           control units `[laugh]`, `[uv_break]`, `[lbreak]` in a model trained on 100k+ hours of dialogue. Neither is a
+           path we can take inside chatterbox's frozen flow.
+       OUR PLUMBING WAS NEVER THE PROBLEM - measured, not assumed: our cached turbo snapshot DOES ship `added_tokens.json`
+         with 19 added tokens, and `[sigh]` resolves to a SINGLE token id 50268 (vocab 50276). `[laugh]` -> 50275.
+       SO I TESTED THE MODEL DIRECTLY, bypassing our own tag stripper, with the tag intact in the text:
+         tagged   "The build is ready. [sigh] I checked the receipt twice."  3.44 s  Sigh 0.006  Gasp 0.063  Speech 0.798
+         untagged "The build is ready. I checked the receipt twice."          2.64 s  Sigh 0.002  Gasp 0.025  Speech 0.758
+         delta: +0.8 s of audio, sigh probability +0.0038 (noise). The tag DOES change the output - it adds three quarters
+         of a second - but what it adds is not a detectable sigh at 0.006 against a 0.48-0.79 target for real clips.
+         That is the upstream #186 symptom reproduced locally through the model's own path.
+       FOUR INDEPENDENT NULLS NOW, four different levers:
+         1. token round-trip          event present in tokens (1,172 ids, 8.8 bits), destroyed by token->mel (0.18 -> 0.06)
+         2. flow fine-tuning          391 corpus clips, 1600 steps: held-out inside noise, and it DEGRADED 0.458 -> 0.293
+         3. prompt conditioning       length-matched: presence 0.001-0.018 against a 0.48-0.79 target
+         4. native turbo tags         +0.8 s of audio, sigh probability 0.006 (this item)
+       DECISION: give up on native events inside chatterbox. The splice route (2502aacc) is the shipped answer and it
+         already delivers all nine events in the persona voices with receipts. Further chatterbox attempts need a new
+         MECHANISM, not another parameter or dataset.
+       WHAT WOULD LEGITIMATELY REOPEN IT (so this is a decision, not a mood):
+         (a) an engine change: ChatTTS for laughter (its `[laugh]` is a real token in a 100k-hour dialogue model), evaluated
+             on our presence metric before any adoption - it has no zero-shot voice cloning, so it would be a second lane
+             for stock voices only, exactly the shape item 299 rejected for Orpheus but with a native token instead of a
+             claim; or
+         (b) a full F5-TTS-style fine-tune with vocabulary expansion over ~5 epochs on NVS-38K - a different model, a real
+             research project, not a parameter change on chatterbox's frozen flow.
+         Anything short of those two is a variation of the four nulls above.
