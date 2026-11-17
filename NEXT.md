@@ -11275,7 +11275,7 @@ t
             conditioning - feeding an event's own mel as the prompt/cond - rather than training the weights at all. That is
             an inference experiment, costs seconds, and is not a training run.
 
-307. [ ] CONTINUE ADVERSARIAL ROUNDS ON THE PUBLISH GATE, OR ACCEPT THE DECLARED BOUNDARY
+307. [x] CONTINUE ADVERSARIAL ROUNDS ON THE PUBLISH GATE, OR ACCEPT THE DECLARED BOUNDARY
        Where it stands: 31 retained shapes caught, seven review rounds each finding a narrower static shape, and a
          documented boundary at dynamic dispatch (getattr/eval/*args/computed targets).
        The question: keep paying for rounds that now find only shapes requiring a computed call target, or declare the
@@ -11284,6 +11284,38 @@ t
          to adjudicate than the shapes they found.
        Work if continued: one round per shape, each added as a retained case, and stop when a round names only
          dynamic-dispatch forms - then record that as the closure condition rather than leaving it open-ended.
+        CLOSED 2026-11-16: BOTH - I continued until a round named a boundary, then declared it, and made the boundary
+        checkable instead of vague.
+          THE PROCEDURE THIS ITEM SET FOR ITSELF: "one round per shape, each added as a retained case, and stop when a round
+            names only dynamic-dispatch forms." Carried out in 4 rounds, asking for an EXHAUSTIVE enumeration each time
+            rather than one shape per round (which would have taken 30 rounds for the shapes that turned up).
+          COVERED NOW, 23 statically resolvable shapes, 50 retained cases (all red against the pre-AST checker):
+            posix aliases (import posix / from posix import link), `from os import *`, relative imports, walrus bindings,
+            for-targets, nested and starred tuple-unpacking, class-attribute and instance-attribute bindings, conditional
+            (IfExp) bindings, alias chains longer than the old 8-hop budget, os.renames, shutil.copytree, Path.symlink_to /
+            hardlink_to, keyword forms of the path methods (p.rename(target=dest)), RECURSIVE scan of scripts/ (a
+            scripts/lib/x.py was invisible before), and a LOUD allowlist: allowlisted files are still scanned and reported.
+          FOUND WHILE DOING IT, fixed: `os.renames` and `shutil.copytree` were absent from the primitive table; Path
+            `symlink_to`/`hardlink_to` were absent from the method table; the keyword form of a path method escaped both
+            branches. And one I introduced myself: keying ALLOW on the BASENAME meant that under the new recursive scan a
+            newly added `scripts/sub/fs_ops.py` would inherit the exemption - now ALLOW is keyed on the path relative to
+            the scan root and a nested file that shadows an allowlisted name is reported as an offender, with a retained
+            case that builds exactly that tree.
+          THE BOUNDARY, now written in the checker docstring rather than left to memory - 10 value-flow shapes, each
+            demonstrated by the reviewer, each deliberately uncovered:
+              {"k": os.link}["k"](s, d)           OPS[0](s, d) with OPS = [os.link]
+              (os.link if c else os.rename)(s,d)  getattr(os, "link")(s, d) with a literal name
+              map(os.link, stageds, dests)        functools.partial(os.link, staged)(dest)
+              [f(s, d) for f in (os.link,)]       f = os.link; self.pub = f; self.pub(s, d)
+            Decision rule recorded with them: covering that class needs dataflow analysis, which belongs in a type checker
+            or a review, not in a 200-line gate that must stay readable and false-positive-free.
+          WHY THIS IS THE RIGHT PLACE TO STOP, with the evidence: the gate has already earned its cost once - it found 7
+            real name-based publications the line version reported "clean" (item 304). Each further round now finds shapes
+            nobody in this repo writes, and the last round's only real find was a hole I had just introduced myself.
+          PROOF AT ORIGIN BYTES (fresh `git archive origin/main`): evasions **50/50**, PUBLISH_BY_NAME clean, tests/run.sh
+            **rc=0** "all retained harnesses PASS", sanity **rc=0**. Mutation proof: removing posix support turns two cases
+            red, restoring greens them. Landed `679d7850`; receipt PASS on the final bytes after 4 rounds
+            (outputs/reviews/publish-gate-closure-20261116/).
 
 308. [ ] TEST WHETHER PROMPT CONDITIONING - NOT TRAINING - IS THE LEVER
        Evidence: an UNTRAINED flow rendered the held-out sigh at presence 0.458 when conditioned on the clip's own
