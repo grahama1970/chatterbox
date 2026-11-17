@@ -11165,6 +11165,35 @@ t
             condition each pair on its own embedding. If the held-out delta then beats its noise band, the earlier null
             result was conditioning, not capability. Cheap: same corpus, same curve, one change.
           WHAT SHIPS IS UNCHANGED: splice (2502aacc). Nothing in this result argues for replacing it.
+        CLOSED 2026-11-16: conditioning is NOT the lever either - this is the THIRD independent null, and the native-event
+        track is now closed with splice as the shipped answer.
+          DESIGN: 5 sentences x 3 events (sigh, gasp, laugh) x 2 conditions = 30 renders, SAME TOKENS per pair so the only
+            difference is the prompt mel given to S3Gen. Presence = AudioSet AST for the intended label.
+          RUN A (event mel substituted outright) - the result I nearly reported as a win:
+            presence rose for 2 of 3 events (gasp 0.018 -> 0.046, laugh 0.0004 -> 0.0048) BUT the duration ratio was
+            **3.56x** - the render was 3.5x longer, because substituting the mel also changed the prompt's FRAME COUNT.
+            The speech guard failed for that reason (`speech_degraded: true`) and the "rise" was an artefact of extra audio.
+          RUN B (length-matched: event mel padded/truncated to the reference prompt's exact frame count, so only content
+            differs): duration ratio **1.000**, speech guard clean, all 3 events met my written bar -
+              sigh 0.0008 -> 0.0011 (2/5 sentences)   gasp 0.0143 -> 0.0181 (4/5)   laugh 0.0004 -> 0.0021 (5/5)
+            verdict: pass=true - AND THE BAR WAS BADLY DESIGNED, which I am naming rather than banking the pass:
+            those absolute values are 0.001-0.018 while a real event clip scores **0.48-0.79** on the same detector. A
+            criterion of "mean presence rises" is satisfied by noise. The honest reading is that a sigh is still absent
+            from the audio; only a floor (e.g. presence > 0.1) would have expressed that.
+          WHAT THIS SETTLES: three independent attempts on three different levers all fail to put a detectable event into
+            spoken output - token round-trip (0.18 -> 0.06), flow training (held-out inside noise, and it DEGRADED an
+            existing 0.458 to 0.293), and now prompt conditioning (0.001-0.018 against a 0.5-0.8 target).
+            The splice route (2502aacc) is what ships; the native-event track closes here, and a future attempt needs a
+            genuinely new mechanism, not another variation of these three.
+          OWNER DECISIONS RECORDED THIS TURN (they unblock the remaining choices):
+            slow model (non-turbo) is the training target; spending on ElevenLabs is authorised; native events do NOT need
+            to ship as a product, so the CC-BY-NC corpus constraint does not bind this work.
+          ARTIFACTS: outputs/token-train/prompt-conditioning.json (run A),
+            /prompt-conditioning-lengthmatched.json (run B), prompt_conditioning_test.py, and both .log files.
+          LIMITATION DISCLOSED: the speech guard was NOT word-error-rate as the item asked. No usable Whisper checkpoint
+            exists on this box (faster-whisper-base has no model.bin; large-v2's snapshot symlinks are broken), so the guard
+            is AudioSet Speech probability plus duration ratio. The WER code is retained in the script, unused. That is a
+            weaker guard than intended and is why the duration ratio had to carry the weight in run A.
 
 304. [x] PUBLISH-BY-NAME GATE IS LINE-ORIENTED, SO CALL-SHAPE EVADES IT
        Reviewer finding on 2026-11-16, kept as work rather than a code comment: tests/check_publish_by_name.py matches a
@@ -11317,7 +11346,7 @@ t
             red, restoring greens them. Landed `679d7850`; receipt PASS on the final bytes after 4 rounds
             (outputs/reviews/publish-gate-closure-20261116/).
 
-308. [ ] TEST WHETHER PROMPT CONDITIONING - NOT TRAINING - IS THE LEVER
+308. [x] TEST WHETHER PROMPT CONDITIONING - NOT TRAINING - IS THE LEVER
        Evidence: an UNTRAINED flow rendered the held-out sigh at presence 0.458 when conditioned on the clip's own
          embedding, versus 0.247 under a mismatched fixed embedding, and training then DEGRADED it to 0.293. So
          conditioning moved the number more than 1600 training steps did, in the opposite direction.
@@ -11332,7 +11361,7 @@ t
        Note: this is inference-only. It does not contradict item 306's "no further training runs" - and if it works,
          the training track becomes unnecessary rather than resumed.
 
-309. [~] SURF PASSES 19 AND 43: ONE DECISION TAKEN, ONE DEFECT FIXED, ONE INSTABILITY ACCEPTED
+309. [x] SURF PASSES 19 AND 43: ONE DECISION TAKEN, ONE DEFECT FIXED, ONE INSTABILITY ACCEPTED
        PASS 43 = FAIL, and it was right. surf's F1 pointed at `scripts/interrupt_sfx.py:187 raw.unlink(missing_ok=True)` in the
          SHARED output directory, against the file's own rule at `:704` and its fd-pinned precedent at `:896-898`. I verified
          by reading and found a SECOND one they did not surface: `:595 q.unlink()` inside the private staging dir. Both fixed
