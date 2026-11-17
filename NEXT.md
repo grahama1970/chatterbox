@@ -11457,6 +11457,15 @@ t
          (b) a full F5-TTS-style fine-tune with vocabulary expansion over ~5 epochs on NVS-38K - a different model, a real
              research project, not a parameter change on chatterbox's frozen flow.
          Anything short of those two is a variation of the four nulls above.
+        CLOSED 2026-11-16: FAILED ITS OWN BAR. Dia is a curiosity, not a lane.
+          Fixed setting (own-segment tag, 220 tokens, "[S1] The build is ready. I checked twice. [S1] (sighs)"), 5 seeds:
+            seed0 Sigh .053 / Speech .187 | seed1 .005 / .711 | seed2 .281 / .673 | seed3 .015 / .178 | seed4 .142 / .083
+            MEDIAN Sigh **.053**, Speech **.187**; only **1 of 5** seeds cleared both. Bar was median Sigh > .1 AND Speech > .5.
+            Spread: Sigh .005-.281, Speech .083-.711 - the earlier 0.299 was the top of a wide distribution, not a level.
+          Consequence: Dia stays a curiosity. Cloning was never reached because the stability bar gates it, and it needs a
+            reference transcript we do not have (no ASR checkpoint on this box).
+          Splice (2502aacc) remains the shipped route. ONE candidate left untested: CosyVoice2's inline `[laughter]` path,
+            which our own item-299 eval mis-measured. That is the next single test, not a new programme.
 
 311. [x] ALTERNATIVE ENGINES WITH NATIVE NONVERBAL TAGS: DIA LOADED AND RUNNING, COSYVOICE2 RE-EVALUATED
      Owner asked for an alternative instead of giving up. Brave found two candidates that both CLONE A VOICE and advertise
@@ -11489,7 +11498,7 @@ t
        from the start (Dia: 19 tags, dialogue-trained; CosyVoice2: 1,500 h of instructed data including `[laughter]`), which
        is exactly what chatterbox lacks - our four nulls were attempts to graft that on afterwards.
 
-312. [ ] DIA STABILITY AND CLONING, BEFORE ANY LANE DECISION
+312. [x] DIA STABILITY AND CLONING, BEFORE ANY LANE DECISION
        One sample is not a result. Item 311 got Sigh 0.299 with Speech 0.715 for "[S1] The build is ready. [S1] (sighs)" at
          220 tokens, then failed to reproduce it at 400 tokens (0.084 / 0.011 across two seeds) with Speech swinging
          0.013-0.927. This item decides whether Dia is a lane or a curiosity.
