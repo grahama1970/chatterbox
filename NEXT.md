@@ -11384,6 +11384,42 @@ t
          (`ops-magpie-a0615cb68726`) and PACKET FAIL (`ops-magpie-6b8029eb3ff0`) on two runs over a 315 KB packet. A single
          reviewer pass is not a gate at that size. From now on a lone PASS is treated as no evidence, and a FAIL is confirmed
          by READING THE CODE - which is how F1 was settled. Recorded so a future PASS is not trusted on one run.
+        CLOSED 2026-11-16 with the FIRST POSITIVE RESULT of the whole track, plus the exact place it stops being reliable.
+          WRONG CALL CORRECTED FIRST: I had declared the native-event track closed after four nulls inside chatterbox. That
+            was premature - two other engines carry these tags in their TRAINING DATA, which is what chatterbox lacks.
+            CosyVoice2's earlier rejection (item 299) was also wrong: it does accept inline `[laughter]` / `[breath]` with
+            zero-shot cloning; our eval only ever exercised the natural-language instruct2 path.
+          DIA-1.6B, MEASURED (all on the same AudioSet presence metric that scored chatterbox at 0.006):
+            loads and runs on this box: 1.6B params, **3,185 MiB peak VRAM**, stock transformers, output decoded through
+            `processor.decode(...)` - my earlier hand-rolled DAC decode produced noise (Speech 0.019); the sanctioned call
+            produces real speech (plain sentence: **Speech 0.968**).
+            WITH THE TAG AS ITS OWN SEGMENT, generation bounded to 220 tokens:
+              "[S1] The build is ready. [S1] (sighs)"   -> **Sigh 0.299**, Speech 0.715   <- a real, detectable sigh
+              "[S1] The build is ready. (sighs) I checked twice." -> Sigh 0.157, Gasp 0.462, Speech 0.329 (event yes, speech damaged)
+              "[S1] ... twice. (sighs)" (tag at end)   -> Sigh 0.006  (tag ignored at the end)
+              plain baseline                            -> Sigh 0.002, Speech 0.052
+            So Dia DOES vocalize (sighs) when the tag is placed as its own segment - 0.299 against chatterbox's 0.006, a
+            50x difference - and the sentence survives at Speech 0.715.
+          AND HERE IS WHERE IT IS NOT YET A LANE - measured, not assumed:
+            UNSTABLE ACROSS SEEDS. At 400 tokens, same text: sigh 0.084 (seed 0) vs 0.011 (seed 1); gasp 0.001 vs 0.438;
+              Speech ranged 0.013 to 0.927. The 0.299 did not reproduce at the longer length. So the effect is real but not
+              yet reliable, and every number above is one sample.
+            VOICE CLONING IS NOT WIRED YET. Passing `audio=[ref]` gave IDENTICAL output for (sighs) and (laughs)
+              (0.002/0.016/0.055/0.002/0.887, 30.00 s both) - the audio-prompt path ignored the text. Per the model card
+              the reference must be given WITH ITS TRANSCRIPT before the script ("[S1] <ref transcript> [S2] <script>"),
+              and we do not have embry's reference transcript on this box (no ASR checkpoint - see item 308's limitation).
+          RECORDED HONESTLY AS A PROCESS POINT: the owner was right that stopping was premature. Five plumbing failures on
+            Dia (dtype, decode shape, codebook filter, DAC device, special tokens) were all mine, and each fix moved the
+            probe forward; the sanctioned `processor.decode` call was the answer the whole time.
+          NEXT ITERATIONS, in order and each with a pass bar:
+            1. STABILITY: 5 seeds x the own-segment placement, report mean/min/max presence. Pass = median Sigh > 0.1 with
+               Speech > 0.5 in the majority of seeds. If it does not clear that, Dia is a curiosity, not a lane.
+            2. CLONING: obtain a transcript for the reference clip (needs an ASR checkpoint - the blocker from item 308),
+               then use the card's "[S1] <ref transcript> [S2] <script>" format and re-score. Pass = the event survives AND
+               speaker similarity to the reference is >= 0.6 on the voice encoder.
+            3. OTHER EVENTS: (laughs) / (gasps) / (coughs) at their own segment, same stability bar.
+            4. COSYVOICE2 INLINE PATH: the candidate we mis-measured - clone one persona, put `[laughter]` inline, score.
+          WHAT SHIPS IS UNCHANGED: splice (2502aacc). Dia is a research lead with one good sample, not a replacement yet.
 
 310. [x] NATIVE EVENTS IN CHATTERBOX: CLOSED ON FOUR INDEPENDENT MEASUREMENTS, WITH WHAT WOULD BE NEEDED TO REOPEN
        Owner asked for an unblock or a decision. The search produced a real finding and then a real no.
@@ -11422,7 +11458,7 @@ t
              research project, not a parameter change on chatterbox's frozen flow.
          Anything short of those two is a variation of the four nulls above.
 
-311. [~] ALTERNATIVE ENGINES WITH NATIVE NONVERBAL TAGS: DIA LOADED AND RUNNING, COSYVOICE2 RE-EVALUATED
+311. [x] ALTERNATIVE ENGINES WITH NATIVE NONVERBAL TAGS: DIA LOADED AND RUNNING, COSYVOICE2 RE-EVALUATED
      Owner asked for an alternative instead of giving up. Brave found two candidates that both CLONE A VOICE and advertise
      native nonverbal tags, and one of them corrects an earlier mistake of ours.
      FINDING 1 - OUR EARLIER COSYVOICE2 VERDICT WAS WRONG. Item 299's engine matrix recorded "CosyVoice2: NO inline tags,
@@ -11452,3 +11488,16 @@ t
      WHY THIS IS NOT A REPEAT OF THE CHATTERBOX WORK: both candidates carry the tags in their TRAINING DATA and vocabulary
        from the start (Dia: 19 tags, dialogue-trained; CosyVoice2: 1,500 h of instructed data including `[laughter]`), which
        is exactly what chatterbox lacks - our four nulls were attempts to graft that on afterwards.
+
+312. [ ] DIA STABILITY AND CLONING, BEFORE ANY LANE DECISION
+       One sample is not a result. Item 311 got Sigh 0.299 with Speech 0.715 for "[S1] The build is ready. [S1] (sighs)" at
+         220 tokens, then failed to reproduce it at 400 tokens (0.084 / 0.011 across two seeds) with Speech swinging
+         0.013-0.927. This item decides whether Dia is a lane or a curiosity.
+       Work: 5 seeds x the own-segment tag placement at a FIXED token budget, mean/min/max reported per event; then the
+         cloning format from the model card ("[S1] <reference transcript> [S2] <script with tag>") once a transcript exists
+         for the reference clip, scored for both event presence and speaker similarity.
+       Blocker to name up front: there is NO ASR checkpoint on this box (faster-whisper-base has no model.bin; large-v2's
+         snapshot symlinks are broken), so a reference transcript must be supplied or a whisper model downloaded. That same
+         blocker weakened the speech guard in item 308.
+       Pass bar: median Sigh > 0.1 with Speech > 0.5 across seeds, and after cloning an event that survives with speaker
+         similarity >= 0.6. Fail -> Dia is recorded as a curiosity and splice stays the only answer.
